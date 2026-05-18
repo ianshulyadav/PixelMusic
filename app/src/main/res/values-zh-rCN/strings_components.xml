@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">显示罗马音</string>
     <string name="lyrics_more_show_translations">显示翻译</string>
     <string name="lyrics_more_disable_immersive_once">关闭沉浸模式（仅本次）</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">歌词左对齐</string>
     <string name="cd_lyrics_align_center">歌词居中对齐</string>
     <string name="cd_lyrics_align_right">歌词右对齐</string>

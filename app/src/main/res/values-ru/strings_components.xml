@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Показать романизацию</string>
     <string name="lyrics_more_show_translations">Показать перевод</string>
     <string name="lyrics_more_disable_immersive_once">Выйти из иммерсивного (раз)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">По левому краю</string>
     <string name="cd_lyrics_align_center">По центру</string>
     <string name="cd_lyrics_align_right">По правому краю</string>

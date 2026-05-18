@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Show romanization</string>
     <string name="lyrics_more_show_translations">Show translations</string>
     <string name="lyrics_more_disable_immersive_once">Disable immersive (once)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">Align lyrics left</string>
     <string name="cd_lyrics_align_center">Align lyrics center</string>
     <string name="cd_lyrics_align_right">Align lyrics right</string>

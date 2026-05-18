@@ -116,6 +116,10 @@ import com.theveloper.pixelplay.presentation.components.snapping.rememberLazyLis
 import com.theveloper.pixelplay.presentation.components.snapping.rememberSnapperFlingBehavior
 import com.theveloper.pixelplay.utils.LyricsUtils
 import com.theveloper.pixelplay.presentation.components.subcomps.LyricsMoreBottomSheet
+import android.content.BroadcastReceiver
+import android.content.Intent
+import android.content.IntentFilter
+import androidx.compose.ui.platform.LocalView
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -348,6 +352,27 @@ fun LyricsSheet(
     }
     val animatedLyricsBlurStrength by animatedLyricsBlurStrengthFlow.collectAsStateWithLifecycle(initialValue = 2.5f)
 
+    // Read keep-screen-on preference from DataStore
+    val keepScreenOnFlow = remember(context) {
+        context.dataStore.data.map { it[booleanPreferencesKey("keep_screen_on_lyrics")] ?: false }
+    }
+    var keepScreenOn by remember { mutableStateOf(false) }
+    // Sync DataStore → local state
+    LaunchedEffect(Unit) {
+        keepScreenOnFlow.collect { keepScreenOn = it }
+    }
+
+    // Apply FLAG_KEEP_SCREEN_ON via the window when enabled
+    val view = LocalView.current
+    DisposableEffect(keepScreenOn) {
+        if (keepScreenOn) {
+            view.keepScreenOn = true
+        }
+        onDispose {
+            view.keepScreenOn = false
+        }
+    }
+
     val resolvedAutoscrollSpec = autoscrollAnimationSpec ?: if (useAnimatedLyrics) {
         spring(
             stiffness = Spring.StiffnessMediumLow,
@@ -396,6 +421,25 @@ fun LyricsSheet(
     val overlayTranslation = remember { Animatable(0f) }
     val swipeProgress = remember { Animatable(0f) }
     val coroutineScope = rememberCoroutineScope()
+
+    // Reset keep-screen-on when the physical screen goes off (power button / OEM sleep gesture).
+    // ACTION_SCREEN_OFF is a guaranteed platform broadcast; no OEM can suppress it.
+    DisposableEffect(Unit) {
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: android.content.Context, intent: Intent) {
+                if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                    keepScreenOn = false
+                    coroutineScope.launch {
+                        context.dataStore.edit { prefs ->
+                            prefs[booleanPreferencesKey("keep_screen_on_lyrics")] = false
+                        }
+                    }
+                }
+            }
+        }
+        context.registerReceiver(receiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
+        onDispose { context.unregisterReceiver(receiver) }
+    }
 
     // Auto-hide controls logic
     LaunchedEffect(immersiveLyricsEnabled, lastInteractionTime, showSyncedLyrics, isImmersiveTemporarilyDisabled) {
@@ -943,6 +987,15 @@ fun LyricsSheet(
                     onSetImmersiveTemporarilyDisabled = {
                         resetImmersiveTimer()
                         onSetImmersiveTemporarilyDisabled(it)
+                    },
+                    keepScreenOn = keepScreenOn,
+                    onKeepScreenOnChange = { enabled ->
+                        keepScreenOn = enabled
+                        coroutineScope.launch {
+                            context.dataStore.edit { prefs ->
+                                prefs[booleanPreferencesKey("keep_screen_on_lyrics")] = enabled
+                            }
+                        }
                     },
                     lyricsAlignment = lyricsAlignment,
                     onLyricsAlignmentChange = { newAlignment ->
@@ -1568,6 +1621,11 @@ fun LyricWordSpan(
     unhighlightedColor: Color,
     modifier: Modifier = Modifier
 ) {
+    val wordAnimSpec = if (useAnimatedLyrics) spring<Float>(
+        stiffness = Spring.StiffnessVeryLow,
+        dampingRatio = Spring.DampingRatioMediumBouncy
+    ) else tween(durationMillis = 200)
+
     val color by animateColorAsState(
         targetValue = if (isHighlighted) highlightedColor else unhighlightedColor,
         animationSpec = if (useAnimatedLyrics) spring(
@@ -1576,6 +1634,23 @@ fun LyricWordSpan(
         ) else tween(durationMillis = 200),
         label = "wordColor"
     )
+
+    // Scale: pop up to 1.15 on highlight, settle back to 1f. Only active when
+    // animated lyrics is on — layout is untouched because it's applied in graphicsLayer.
+    val scale by animateFloatAsState(
+        targetValue = if (useAnimatedLyrics && isHighlighted) 1.15f else 1f,
+        animationSpec = wordAnimSpec,
+        label = "wordScale"
+    )
+
+    // Alpha: unhighlighted words dim slightly so the active word pops without
+    // needing a hard color contrast. Only active when animated lyrics is on.
+    val alpha by animateFloatAsState(
+        targetValue = if (useAnimatedLyrics && !isHighlighted) 0.55f else 1f,
+        animationSpec = wordAnimSpec,
+        label = "wordAlpha"
+    )
+
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -1592,6 +1667,12 @@ fun LyricWordSpan(
             style = style,
             color = color,
             fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal,
+            // Scale and alpha applied at draw phase — zero layout impact per frame.
+            modifier = Modifier.graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                this.alpha = alpha
+            }
         )
     }
 }

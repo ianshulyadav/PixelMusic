@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Mostra romanizzazione</string>
     <string name="lyrics_more_show_translations">Mostra traduzioni</string>
     <string name="lyrics_more_disable_immersive_once">Disabilita immersivo (una volta)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">Allinea testo a sinistra</string>
     <string name="cd_lyrics_align_center">Allinea testo al centro</string>
     <string name="cd_lyrics_align_right">Allinea testo a destra</string>

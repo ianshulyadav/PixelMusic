@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">로마자 표기 표시</string>
     <string name="lyrics_more_show_translations">번역 표시</string>
     <string name="lyrics_more_disable_immersive_once">몰입 모드 해제 (1회)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">가사 왼쪽 정렬</string>
     <string name="cd_lyrics_align_center">가사 가운데 정렬</string>
     <string name="cd_lyrics_align_right">가사 오른쪽 정렬</string>

@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Romanisierung anzeigen</string>
     <string name="lyrics_more_show_translations">Übersetzungen anzeigen</string>
     <string name="lyrics_more_disable_immersive_once">Immersive einmal deaktivieren</string>
+    <string name="lyrics_more_keep_screen_on">Bildschirm an lassen</string>
     <string name="cd_lyrics_align_left">Lyrics linksbündig</string>
     <string name="cd_lyrics_align_center">Lyrics zentriert</string>
     <string name="cd_lyrics_align_right">Lyrics rechtsbündig</string>

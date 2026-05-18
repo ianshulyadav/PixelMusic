@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Tampilkan romanisasi</string>
     <string name="lyrics_more_show_translations">Tampilkan terjemahan</string>
     <string name="lyrics_more_disable_immersive_once">Nonaktifkan imersif (sekali)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">Rata kiri lirik</string>
     <string name="cd_lyrics_align_center">Rata tengah lirik</string>
     <string name="cd_lyrics_align_right">Rata kanan lirik</string>

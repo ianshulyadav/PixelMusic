@@ -23,6 +23,7 @@
     <string name="lyrics_more_show_romanization">Vis romanisering</string>
     <string name="lyrics_more_show_translations">Vis oversettelser</string>
     <string name="lyrics_more_disable_immersive_once">Deaktiver immersiv modus (én gang)</string>
+    <string name="lyrics_more_keep_screen_on">Keep screen on</string>
     <string name="cd_lyrics_align_left">Venstrejuster tekst</string>
     <string name="cd_lyrics_align_center">Midtstill tekst</string>
     <string name="cd_lyrics_align_right">Høyrejuster tekst</string>
