@@ -2109,7 +2109,8 @@ class PlayerViewModel @Inject constructor(
         val next = when (current) {
             com.theveloper.pixelplay.data.model.StorageFilter.ALL -> com.theveloper.pixelplay.data.model.StorageFilter.ONLINE
             com.theveloper.pixelplay.data.model.StorageFilter.ONLINE -> com.theveloper.pixelplay.data.model.StorageFilter.OFFLINE
-            com.theveloper.pixelplay.data.model.StorageFilter.OFFLINE -> com.theveloper.pixelplay.data.model.StorageFilter.ALL
+            com.theveloper.pixelplay.data.model.StorageFilter.OFFLINE -> com.theveloper.pixelplay.data.model.StorageFilter.DOWNLOADED_ONLY
+            com.theveloper.pixelplay.data.model.StorageFilter.DOWNLOADED_ONLY -> com.theveloper.pixelplay.data.model.StorageFilter.ALL
         }
         setStorageFilter(next)
     }
@@ -3290,15 +3291,29 @@ class PlayerViewModel @Inject constructor(
             // Pre-resolve the starting song's cloud URI before ExoPlayer touches it.
             // This populates the resolvedUriCache so resolveDataSpec finds it instantly.
             val startingUri = MediaItemBuilder.playbackUri(effectiveStartSong)
+            val scheme = startingUri.scheme
             if (
-                startingUri.scheme == "telegram" ||
-                startingUri.scheme == "netease" ||
-                startingUri.scheme == "qqmusic" ||
-                startingUri.scheme == "navidrome" ||
-                startingUri.scheme == "jellyfin"
+                scheme == "telegram" ||
+                scheme == "netease" ||
+                scheme == "qqmusic" ||
+                scheme == "navidrome" ||
+                scheme == "jellyfin" ||
+                scheme == "gdrive" ||
+                scheme == "youtube"
             ) {
-                if (startingUri.scheme == "telegram") {
+                if (scheme == "telegram") {
                     ensureTelegramPlaybackObserversStarted()
+                }
+                if (scheme == "youtube") {
+                    val videoId = startingUri.toString().substringAfter("youtube://")
+                    val ytSong = try {
+                        com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(context).songRepository().getSong(videoId)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    if (ytSong?.audioFilePath != null && java.io.File(ytSong.audioFilePath).exists()) {
+                        dualPlayerEngine.registerLocalPath(startingUri.toString(), ytSong.audioFilePath)
+                    }
                 }
                 dualPlayerEngine.resolveCloudUri(startingUri)
             }
@@ -3348,13 +3363,28 @@ class PlayerViewModel @Inject constructor(
             scheme != "netease" &&
             scheme != "qqmusic" &&
             scheme != "navidrome" &&
-            scheme != "jellyfin"
+            scheme != "jellyfin" &&
+            scheme != "gdrive" &&
+            scheme != "youtube"
         ) {
             return mediaItem
         }
 
         if (scheme == "telegram") {
             ensureTelegramPlaybackObserversStarted()
+        }
+
+        if (scheme == "youtube") {
+            val videoId = originalUri.toString().substringAfter("youtube://")
+            val ytSong = try {
+                com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(context).songRepository().getSong(videoId)
+            } catch (e: Exception) {
+                null
+            }
+            if (ytSong?.audioFilePath != null && java.io.File(ytSong.audioFilePath).exists()) {
+                dualPlayerEngine.registerLocalPath(originalUri.toString(), ytSong.audioFilePath)
+                return mediaItem.buildUpon().setUri(Uri.fromFile(java.io.File(ytSong.audioFilePath))).build()
+            }
         }
 
         val resolvedUri = dualPlayerEngine.resolveCloudUri(originalUri)

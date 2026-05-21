@@ -1,6 +1,7 @@
 package com.theveloper.pixelplay.data.remote.youtube
 
 import android.content.Context
+import android.util.LruCache
 import android.widget.Toast
 import androidx.core.net.toUri
 import com.theveloper.pixelplay.data.database.youtube.AppDatabase
@@ -22,10 +23,21 @@ import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.schabi.newpipe.extractor.ServiceList
+import java.io.File
 import java.util.Locale
 
 object YoutubeHelper {
     private val client = OkHttpClient()
+
+    /**
+     * LRU cache for resolved YouTube stream URLs.
+     * Key format: "<videoId>_low" or "<videoId>_high".
+     * Holds up to 100 entries; expired/invalid entries are evicted lazily on next access.
+     */
+    val streamUrlLruCache = LruCache<String, String>(100)
+
+    /** Register a locally-available file path for a YouTube video ID so playback is instant. */
+    private val localFilePathCache = LruCache<String, String>(200)
 
     fun extractYouTubeVideoId(url: String): String? {
         val uri = url.toUri()
@@ -396,15 +408,31 @@ object YoutubeHelper {
         )
     }
 
+    /**
+     * Returns the highest-quality stream URL for the given YouTube song.
+     * Checks the in-memory LRU cache first, then falls back to local file if available,
+     * then resolves from YouTube.
+     */
     suspend fun getSongPlayerUrl(
         context: Context,
         song: Song,
         allowLocal: Boolean = false
     ): String {
+        val videoId = song.youtubeId
+
+        // ── OFFLINE-FIRST GATE ─────────────────────────────────────────────────
+        // Check in-memory local path cache (populated by downloads/workers)
+        val cachedLocalPath = localFilePathCache.get(videoId)
+        if (cachedLocalPath != null && File(cachedLocalPath).exists()) {
+            UmihiHelper.printd("$videoId : Playing from in-memory local file cache")
+            return cachedLocalPath
+        }
+        // ──────────────────────────────────────────────────────────────────────
+
         val localSongRepository = AppDatabase.getInstance(context).songRepository()
         var savedSong: Song? = null
         try {
-            savedSong = localSongRepository.getSong(song.youtubeId)
+            savedSong = localSongRepository.getSong(videoId)
         } catch (ex: Exception) {
             Toast.makeText(context, "Failed to get song from local repository", Toast.LENGTH_LONG)
                 .show()
@@ -412,24 +440,104 @@ object YoutubeHelper {
         }
 
         if (savedSong != null) {
-            if (allowLocal && savedSong.audioFilePath != null) {
-                UmihiHelper.printd("${song.youtubeId} : Was downloaded")
+            // Always prefer local file — not just when allowLocal is true
+            if (savedSong.audioFilePath != null && File(savedSong.audioFilePath).exists()) {
+                UmihiHelper.printd("$videoId : Was downloaded, playing from local file")
+                // Populate in-memory cache for next time
+                localFilePathCache.put(videoId, savedSong.audioFilePath)
                 return savedSong.audioFilePath
+            }
+
+            // Check high-quality LRU cache
+            val cachedHigh = streamUrlLruCache.get("${videoId}_high")
+            if (cachedHigh != null) {
+                UmihiHelper.printd("$videoId : Got high-quality URL from LRU cache")
+                return cachedHigh
             }
 
             if (savedSong.streamUrl != null) {
                 if (isYoutubeUrlValid(savedSong.streamUrl)) {
-                    UmihiHelper.printd("${song.youtubeId} : Got url from saved")
+                    UmihiHelper.printd("$videoId : Got url from saved")
+                    streamUrlLruCache.put("${videoId}_high", savedSong.streamUrl)
                     return savedSong.streamUrl
                 }
-                UmihiHelper.printd("${song.youtubeId} : Saved url was invalid")
+                UmihiHelper.printd("$videoId : Saved url was invalid")
             }
         }
 
-        val newUri = getSongUrlFromYoutube(song)
-        localSongRepository.setStreamUrl(songId = song.youtubeId, streamUrl = newUri)
-        UmihiHelper.printd("${song.youtubeId} : Got url from YouTube and saved song")
+        val newUri = getSongUrlFromYoutube(song, lowQuality = false)
+        streamUrlLruCache.put("${videoId}_high", newUri)
+        localSongRepository.setStreamUrl(songId = videoId, streamUrl = newUri)
+        UmihiHelper.printd("$videoId : Got high-quality url from YouTube and saved song")
         return newUri
+    }
+
+    /**
+     * Returns the LOWEST-bitrate stream URL for the given song for instant playback start.
+     * Uses the LRU cache keyed by "<videoId>_low".
+     * Target resolution time: < 200 ms on a normal connection.
+     */
+    suspend fun getLowestQualityStreamUrl(context: Context, song: Song): String {
+        val videoId = song.youtubeId
+
+        // Offline-first gate
+        val cachedLocalPath = localFilePathCache.get(videoId)
+        if (cachedLocalPath != null && File(cachedLocalPath).exists()) {
+            return cachedLocalPath
+        }
+        val localSongRepository = AppDatabase.getInstance(context).songRepository()
+        val savedSong = try { localSongRepository.getSong(videoId) } catch (_: Exception) { null }
+        if (savedSong?.audioFilePath != null && File(savedSong.audioFilePath).exists()) {
+            localFilePathCache.put(videoId, savedSong.audioFilePath)
+            return savedSong.audioFilePath
+        }
+
+        // LRU cache hit
+        streamUrlLruCache.get("${videoId}_low")?.let { return it }
+        // If high-quality is already cached, use it immediately (better than re-resolving)
+        streamUrlLruCache.get("${videoId}_high")?.let { return it }
+
+        val lowUrl = getSongUrlFromYoutube(song, lowQuality = true)
+        streamUrlLruCache.put("${videoId}_low", lowUrl)
+        return lowUrl
+    }
+
+    /**
+     * Returns the HIGHEST-bitrate stream URL. Checks LRU cache first.
+     */
+    suspend fun getHighestQualityStreamUrl(context: Context, song: Song): String {
+        val videoId = song.youtubeId
+
+        // Offline-first gate
+        val cachedLocalPath = localFilePathCache.get(videoId)
+        if (cachedLocalPath != null && File(cachedLocalPath).exists()) {
+            return cachedLocalPath
+        }
+        val localSongRepository = AppDatabase.getInstance(context).songRepository()
+        val savedSong = try { localSongRepository.getSong(videoId) } catch (_: Exception) { null }
+        if (savedSong?.audioFilePath != null && File(savedSong.audioFilePath).exists()) {
+            localFilePathCache.put(videoId, savedSong.audioFilePath)
+            return savedSong.audioFilePath
+        }
+
+        streamUrlLruCache.get("${videoId}_high")?.let { return it }
+
+        val highUrl = getSongUrlFromYoutube(song, lowQuality = false)
+        streamUrlLruCache.put("${videoId}_high", highUrl)
+        return highUrl
+    }
+
+    /** Register a downloaded local file path so future plays are instant (offline gate). */
+    fun registerLocalFilePath(youtubeId: String, filePath: String) {
+        if (filePath.isNotBlank() && File(filePath).exists()) {
+            localFilePathCache.put(youtubeId, filePath)
+        }
+    }
+
+    /** Invalidate a cached stream URL (e.g. after the remote URL expires). */
+    fun invalidateStreamCache(youtubeId: String) {
+        streamUrlLruCache.remove("${youtubeId}_low")
+        streamUrlLruCache.remove("${youtubeId}_high")
     }
 
     private fun extractDuration(songContent: JsonObject): String {
@@ -483,9 +591,15 @@ object YoutubeHelper {
         return ""
     }
 
+    /**
+     * Resolves a stream URL from YouTube.
+     * @param lowQuality If true, picks the lowest-bitrate audio stream for fastest startup.
+     *                   If false (default), picks the highest bitrate for best quality.
+     */
     private suspend fun getSongUrlFromYoutube(
         song: Song,
-        retries: Int = Constants.YoutubeApi.RETRY_COUNT
+        retries: Int = Constants.YoutubeApi.RETRY_COUNT,
+        lowQuality: Boolean = false
     ): String {
         val service = ServiceList.YouTube
 
@@ -497,7 +611,15 @@ object YoutubeHelper {
                 val streamUrl = withContext(Dispatchers.IO) {
                     val extractor = service.getStreamExtractor(song.youtubeUrl)
                     extractor.fetchPage()
-                    extractor.audioStreams.maxBy { it.averageBitrate }.content
+                    val streams = extractor.audioStreams
+                    val selectedStream = if (lowQuality) {
+                        // Lowest bitrate = fastest to start buffering
+                        streams.minByOrNull { it.averageBitrate } ?: streams.first()
+                    } else {
+                        // Highest bitrate = best audio quality
+                        streams.maxByOrNull { it.averageBitrate } ?: streams.first()
+                    }
+                    selectedStream.content
                 }
 
                 return streamUrl

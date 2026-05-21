@@ -15,6 +15,13 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.WorkManager
+import com.theveloper.pixelplay.data.remote.youtube.YoutubePlaylistDataSource
+import com.theveloper.pixelplay.data.remote.youtube.PlaylistDownloadWorker
+import com.theveloper.pixelplay.data.model.youtube.Playlist
+import com.theveloper.pixelplay.data.model.youtube.PlaylistInfo
 import com.theveloper.pixelplay.data.database.AlbumEntity
 import com.theveloper.pixelplay.data.database.ArtistEntity
 import com.theveloper.pixelplay.data.database.MusicDao
@@ -1821,7 +1828,58 @@ constructor(
     private suspend fun syncYoutubeData() {
         Log.i(TAG, "Syncing YouTube songs to main database (Unified Mode)...")
         try {
+            val settings = youtubeDatastoreRepository.settings.first()
             val appDatabase = com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(applicationContext)
+
+            // 1. Fetch remote user-created playlists
+            try {
+                val remotePlaylists = YoutubePlaylistDataSource().retrieveAll(settings)
+                remotePlaylists.forEach { playlistInfo ->
+                    val emptyPlaylist = Playlist(playlistInfo, emptyList())
+                    val fullPlaylist = YoutubePlaylistDataSource().retrieveOne(emptyPlaylist, settings)
+                    appDatabase.playlistRepository().insertPlaylistWithSongs(fullPlaylist)
+
+                    // Enqueue background download for the playlist
+                    val workRequest = OneTimeWorkRequestBuilder<PlaylistDownloadWorker>()
+                        .setInputData(workDataOf(PlaylistDownloadWorker.PLAYLIST_KEY to playlistInfo.id))
+                        .setConstraints(Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build())
+                        .build()
+                    WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                        "playlist_dl_${playlistInfo.id}",
+                        ExistingWorkPolicy.KEEP,
+                        workRequest
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to fetch remote YouTube playlists", e)
+            }
+
+            // 2. Fetch and sync Liked Songs playlist ("LM")
+            try {
+                val likedPlaylistInfo = PlaylistInfo(id = "liked_songs", title = "Liked Songs")
+                val emptyLikedPlaylist = Playlist(likedPlaylistInfo, emptyList())
+                val fullLikedPlaylist = YoutubePlaylistDataSource().retrieveOne(emptyLikedPlaylist, settings)
+                if (fullLikedPlaylist.songs.isNotEmpty()) {
+                    appDatabase.playlistRepository().insertPlaylistWithSongs(fullLikedPlaylist)
+                    
+                    val workRequest = OneTimeWorkRequestBuilder<PlaylistDownloadWorker>()
+                        .setInputData(workDataOf(PlaylistDownloadWorker.PLAYLIST_KEY to "liked_songs"))
+                        .setConstraints(Constraints.Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build())
+                        .build()
+                    WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+                        "playlist_dl_liked_songs",
+                        ExistingWorkPolicy.KEEP,
+                        workRequest
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to sync remote YouTube liked songs", e)
+            }
+
             val youtubePlaylists = appDatabase.playlistRepository().getAll()
             val downloadedSongs = appDatabase.songRepository().getDownloadedSongs()
 

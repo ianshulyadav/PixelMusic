@@ -418,6 +418,7 @@ class MusicRepositoryImpl @Inject constructor(
         StorageFilter.ALL -> 0
         StorageFilter.OFFLINE -> 1
         StorageFilter.ONLINE -> 2
+        StorageFilter.DOWNLOADED_ONLY -> 3
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

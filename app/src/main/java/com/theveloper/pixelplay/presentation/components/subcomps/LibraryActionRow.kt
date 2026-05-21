@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.Dataset
 import androidx.compose.material.icons.rounded.PhoneAndroid
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -343,11 +344,13 @@ fun LibraryActionRow(
                          com.theveloper.pixelplay.data.model.StorageFilter.ALL -> Icons.Rounded.Dataset
                          com.theveloper.pixelplay.data.model.StorageFilter.ONLINE -> Icons.Rounded.Cloud
                          com.theveloper.pixelplay.data.model.StorageFilter.OFFLINE -> Icons.Rounded.PhoneAndroid
+                         com.theveloper.pixelplay.data.model.StorageFilter.DOWNLOADED_ONLY -> Icons.Rounded.Download
                      }
                      val tooltipText = when(currentStorageFilter) {
                          com.theveloper.pixelplay.data.model.StorageFilter.ALL -> stringResource(R.string.library_storage_filter_all_songs)
                          com.theveloper.pixelplay.data.model.StorageFilter.ONLINE -> stringResource(R.string.library_storage_filter_online)
                          com.theveloper.pixelplay.data.model.StorageFilter.OFFLINE -> stringResource(R.string.library_storage_filter_offline)
+                         com.theveloper.pixelplay.data.model.StorageFilter.DOWNLOADED_ONLY -> stringResource(R.string.library_storage_filter_downloaded_only)
                      }
                      val tooltipState = rememberTooltipState()
 

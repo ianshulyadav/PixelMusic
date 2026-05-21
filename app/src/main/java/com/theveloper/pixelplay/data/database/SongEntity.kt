@@ -149,7 +149,10 @@ private fun SongEntity.toSongInternal(artists: List<ArtistRef>): Song {
         } else null,
         mimeType = this.mimeType,
         bitrate = this.bitrate,
-        sampleRate = this.sampleRate
+        sampleRate = this.sampleRate,
+        youtubeId = if (this.contentUriString.startsWith("youtube://")) {
+            this.contentUriString.removePrefix("youtube://")
+        } else null
     )
 }
 

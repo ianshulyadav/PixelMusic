@@ -227,7 +227,7 @@ fun PlaylistBottomSheet(
 
                     if (songs.size == 1) {
                          playlistViewModel.addOrRemoveSongFromPlaylists(
-                            songs.first().id,
+                            songs.first(),
                             selectedPlaylists.filter { it.value }.keys.toList(),
                             currentPlaylistId
                         )
@@ -236,7 +236,7 @@ fun PlaylistBottomSheet(
                          val selectedPlaylistIds = selectedPlaylists.filter { it.value }.keys.toList()
                          if (selectedPlaylistIds.isNotEmpty()) {
                              playlistViewModel.addSongsToPlaylists(
-                                 songs.map { it.id },
+                                 songs,
                                  selectedPlaylistIds
                              )
                          }

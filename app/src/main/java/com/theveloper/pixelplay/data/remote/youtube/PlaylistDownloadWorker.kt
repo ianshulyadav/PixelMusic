@@ -15,14 +15,30 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.cancellation.CancellationException
 
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.EntryPointAccessors
+import kotlin.math.absoluteValue
+
 class PlaylistDownloadWorker(
     private val appContext: Context,
     private val params: WorkerParameters
 ) : CoroutineWorker(appContext, params) {
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface WorkerEntryPoint {
+        fun musicDao(): com.theveloper.pixelplay.data.database.MusicDao
+    }
+
     private val playlistRepository = AppDatabase.getInstance(appContext).playlistRepository()
     private val localSongRepository = AppDatabase.getInstance(appContext).songRepository()
     private val songRepository = SongRepository()
+    private val musicDao = EntryPointAccessors.fromApplication(
+        appContext,
+        WorkerEntryPoint::class.java
+    ).musicDao()
 
     @OptIn(UnstableApi::class)
     override suspend fun doWork(): Result {
@@ -87,6 +103,10 @@ class PlaylistDownloadWorker(
                                 )
 
                                 localSongRepository.create(updatedSong)
+                                if (audioPath != null) {
+                                    val mainId = -(15_000_000_000_000L + song.youtubeId.hashCode().toLong().absoluteValue)
+                                    musicDao.updateSongFilePath(mainId, audioPath)
+                                }
                                 UmihiNotificationManager.showPlaylistDownloadProgress(
                                     appContext,
                                     playlist,

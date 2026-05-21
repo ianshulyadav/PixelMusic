@@ -42,6 +42,15 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import com.theveloper.pixelplay.data.database.MusicDao
+import com.theveloper.pixelplay.data.database.SongEntity
+import com.theveloper.pixelplay.data.database.AlbumEntity
+import com.theveloper.pixelplay.data.database.ArtistEntity
+import com.theveloper.pixelplay.data.database.SongArtistCrossRef
+import com.theveloper.pixelplay.data.database.SourceType
+import com.theveloper.pixelplay.data.database.serializeArtistRefs
+import com.theveloper.pixelplay.data.model.ArtistRef
+import kotlin.math.absoluteValue
 
 data class PlaylistUiState(
     val playlists: List<Playlist> = emptyList(),
@@ -75,6 +84,7 @@ class PlaylistViewModel @Inject constructor(
     private val dailyMixManager: DailyMixManager,
     private val aiPlaylistGenerator: AiPlaylistGenerator,
     private val m3uManager: M3uManager,
+    private val musicDao: MusicDao,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -661,27 +671,131 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
+    private suspend fun ensureSongsPersisted(songs: List<Song>): List<String> {
+        val mappedIds = mutableListOf<String>()
+        val songsToInsert = mutableListOf<SongEntity>()
+        val albumsToInsert = mutableListOf<AlbumEntity>()
+        val artistsToInsert = mutableListOf<ArtistEntity>()
+        val crossRefsToInsert = mutableListOf<SongArtistCrossRef>()
+
+        songs.forEach { song ->
+            if (song.id.startsWith("youtube_") || song.youtubeId != null) {
+                val yId = song.youtubeId ?: song.id.removePrefix("youtube_")
+                val songId = -(15_000_000_000_000L + yId.hashCode().toLong().absoluteValue)
+                mappedIds.add(songId.toString())
+
+                // Check if already in DB
+                val existing = musicDao.getSongByIdOnce(songId)
+                if (existing == null) {
+                    val albumId = -(16_000_000_000_000L + "YouTube Music".lowercase().hashCode().toLong().absoluteValue)
+                    val artistId = -(17_000_000_000_000L + song.artist.lowercase().hashCode().toLong().absoluteValue)
+
+                    val artist = ArtistEntity(
+                        id = artistId,
+                        name = song.artist,
+                        trackCount = 1,
+                        imageUrl = null
+                    )
+                    artistsToInsert.add(artist)
+
+                    val album = AlbumEntity(
+                        id = albumId,
+                        title = "YouTube Music",
+                        artistName = song.artist,
+                        artistId = artistId,
+                        songCount = 1,
+                        dateAdded = System.currentTimeMillis(),
+                        year = 0,
+                        albumArtUriString = song.albumArtUriString
+                    )
+                    albumsToInsert.add(album)
+
+                    val youtubeArtistRefs = listOf(
+                        ArtistRef(
+                            id = artistId,
+                            name = song.artist,
+                            isPrimary = true
+                        )
+                    )
+
+                    val entity = SongEntity(
+                        id = songId,
+                        title = song.title,
+                        artistName = song.artist,
+                        artistId = artistId,
+                        albumArtist = null,
+                        albumName = "YouTube Music",
+                        albumId = albumId,
+                        contentUriString = "youtube://$yId",
+                        albumArtUriString = song.albumArtUriString,
+                        duration = song.duration,
+                        genre = "YouTube",
+                        filePath = song.path,
+                        parentDirectoryPath = "/Cloud/YouTube",
+                        isFavorite = song.isFavorite,
+                        lyrics = song.lyrics,
+                        trackNumber = song.trackNumber,
+                        discNumber = song.discNumber,
+                        year = song.year,
+                        dateAdded = System.currentTimeMillis(),
+                        mimeType = song.mimeType ?: "audio/webm",
+                        bitrate = song.bitrate,
+                        sampleRate = song.sampleRate,
+                        telegramChatId = null,
+                        telegramFileId = null,
+                        artistsJson = serializeArtistRefs(youtubeArtistRefs),
+                        sourceType = SourceType.YOUTUBE
+                    )
+                    songsToInsert.add(entity)
+                    crossRefsToInsert.add(
+                        SongArtistCrossRef(
+                            songId = songId,
+                            artistId = artistId,
+                            isPrimary = true
+                        )
+                    )
+                }
+            } else {
+                mappedIds.add(song.id)
+            }
+        }
+
+        if (songsToInsert.isNotEmpty()) {
+            musicDao.incrementalSyncMusicData(
+                songs = songsToInsert,
+                albums = albumsToInsert.distinctBy { it.id },
+                artists = artistsToInsert.distinctBy { it.id },
+                crossRefs = crossRefsToInsert,
+                deletedSongIds = emptyList()
+            )
+        }
+        return mappedIds
+    }
+
     /**
      * @param playlistIds Ids of playlists to add the song to
      * */
     fun addOrRemoveSongFromPlaylists(
-        songId: String,
+        song: Song,
         playlistIds: List<String>,
         currentPlaylistId: String?
     ) {
         viewModelScope.launch {
+            val mappedIds = ensureSongsPersisted(listOf(song))
+            val mappedSongId = mappedIds.firstOrNull() ?: song.id
             val removedFromPlaylists =
-                playlistPreferencesRepository.addOrRemoveSongFromPlaylists(songId, playlistIds)
+                playlistPreferencesRepository.addOrRemoveSongFromPlaylists(mappedSongId, playlistIds)
             if (currentPlaylistId != null && removedFromPlaylists.contains (currentPlaylistId)) {
-                removeSongFromPlaylist(currentPlaylistId, songId)
+                removeSongFromPlaylist(currentPlaylistId, mappedSongId)
             }
         }
     }
 
-    fun addSongsToPlaylists(songIds: List<String>, playlistIds: List<String>) {
+    fun addSongsToPlaylists(songs: List<Song>, playlistIds: List<String>) {
         viewModelScope.launch {
+            val mappedIds = ensureSongsPersisted(songs)
             playlistIds.forEach { playlistId ->
-                playlistPreferencesRepository.addSongsToPlaylist(playlistId, songIds)
+                playlistPreferencesRepository.addSongsToPlaylist(playlistId, mappedIds)
             }
         }
     }

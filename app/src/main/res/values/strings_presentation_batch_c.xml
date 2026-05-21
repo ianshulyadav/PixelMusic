@@ -19,6 +19,7 @@
     <string name="library_storage_filter_all_songs">All songs</string>
     <string name="library_storage_filter_online">CLOUD</string>
     <string name="library_storage_filter_offline">LOCAL</string>
+    <string name="library_storage_filter_downloaded_only">DOWNLOADED</string>
     <string name="cd_sort_options">Sort options</string>
 
     <!-- Fetch lyrics (manual search fields) -->

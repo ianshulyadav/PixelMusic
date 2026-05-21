@@ -357,6 +357,13 @@ class DualPlayerEngine @Inject constructor(
 
     private var isReleased = false
     private val resolvedUriCache = LruCache<String, Uri>(100)
+    private val localFilePathCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    fun registerLocalPath(youtubeUri: String, filePath: String) {
+        if (filePath.isNotBlank()) {
+            localFilePathCache[youtubeUri] = filePath
+        }
+    }
 
     init {
         initialize()
@@ -631,9 +638,23 @@ class DualPlayerEngine @Inject constructor(
                 val scheme = uri.scheme
                 if (scheme in REMOTE_MEDIA_SCHEMES) {
                     val originalUri = uri.toString()
+                    val localPath = localFilePathCache[originalUri]
+                    if (localPath != null && java.io.File(localPath).exists()) {
+                        return dataSpec.buildUpon().setUri(Uri.fromFile(java.io.File(localPath))).build()
+                    }
+
                     val resolved = resolvedUriCache.get(originalUri)
                     if (resolved != null) {
                         return dataSpec.buildUpon().setUri(resolved).build()
+                    }
+
+                    try {
+                        val fallbackResolved = runBlocking { resolveCloudUri(uri) }
+                        if (fallbackResolved != uri) {
+                            return dataSpec.buildUpon().setUri(fallbackResolved).build()
+                        }
+                    } catch (e: Exception) {
+                        Timber.tag("DualPlayerEngine").w(e, "Synchronous resolveCloudUri failed for %s", originalUri)
                     }
                     
                     Timber.tag("DualPlayerEngine").d("resolveDataSpec: Cache MISS for %s - attempting to use original URI", scheme)
@@ -648,7 +669,16 @@ class DualPlayerEngine @Inject constructor(
             .setMp4ExtractorFlags(Mp4Extractor.FLAG_WORKAROUND_IGNORE_EDIT_LISTS)
 
         val loadControl = DefaultLoadControl.Builder()
-            .setBufferDurationsMs(30_000, 60_000, 5_000, 5_000)
+            // ── Tuned for instant YouTube playback ───────────────────────────
+            // bufferForPlaybackMs: ExoPlayer starts playback after 500 ms is buffered
+            // (was 5000 ms). This shaves ~4 seconds off cold-start time.
+            .setBufferDurationsMs(
+                /* minBufferMs                   = */ 15_000,  // keep 15 s ahead
+                /* maxBufferMs                   = */ 50_000,  // buffer up to 50 s
+                /* bufferForPlaybackMs           = */ 500,     // start after 0.5 s (was 5000)
+                /* bufferForPlaybackAfterRebufferMs = */ 1_500  // after stall: restart after 1.5 s
+            )
+            .setBackBuffer(10_000, /* retainBackBufferFromKeyframe = */ true)
             .build()
 
         return ExoPlayer.Builder(context, renderersFactory)
@@ -789,12 +819,38 @@ class DualPlayerEngine @Inject constructor(
         try {
             val youtubeId = uriString.substringAfter("youtube://")
             val youtubeSong = com.theveloper.pixelplay.data.model.youtube.Song(youtubeId = youtubeId)
-            val path = com.theveloper.pixelplay.data.remote.youtube.YoutubeHelper.getSongPlayerUrl(context, youtubeSong, allowLocal = true)
-            if (path.startsWith("http")) {
-                Uri.parse(path)
-            } else {
-                Uri.fromFile(File(path))
+
+            // ── STAGE 1: Instant low-quality stream URL (< 300 ms target) ──────
+            // getLowestQualityStreamUrl checks offline-first (local file > LRU cache > network).
+            val path = com.theveloper.pixelplay.data.remote.youtube.YoutubeHelper
+                .getLowestQualityStreamUrl(context, youtubeSong)
+
+            // If we got a local file path, register it and return it directly.
+            if (!path.startsWith("http")) {
+                com.theveloper.pixelplay.data.remote.youtube.YoutubeHelper
+                    .registerLocalFilePath(youtubeId, path)
+                return@withContext Uri.fromFile(java.io.File(path))
             }
+
+            val lowUri = Uri.parse(path)
+
+            // ── STAGE 2: Pre-warm high-quality URL in background ─────────────
+            // We launch this without awaiting so ExoPlayer can begin buffering
+            // the low-quality URL immediately while the high-quality URL resolves.
+            scope.launch(Dispatchers.IO) {
+                try {
+                    val highPath = com.theveloper.pixelplay.data.remote.youtube.YoutubeHelper
+                        .getHighestQualityStreamUrl(context, youtubeSong)
+                    if (highPath.startsWith("http")) {
+                        // Cache it so the next time this song is resolved it's instant
+                        resolvedUriCache.put(uriString, Uri.parse(highPath))
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("DualPlayerEngine").w(e, "Stage-2 high-quality pre-warm failed for $youtubeId")
+                }
+            }
+
+            lowUri
         } catch (e: Exception) {
             Timber.tag("DualPlayerEngine").e(e, "resolveYoutubeUriAsync failed for $uriString")
             null
