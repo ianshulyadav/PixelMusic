@@ -42,6 +42,10 @@ data class PlaylistInfo(
     val title: String = "",
     val coverHref: String = "",
     val coverPath: String? = null,
+    /** Number of songs at last successful sync. Used for delta detection. */
+    val lastSyncSongCount: Int = 0,
+    /** Epoch millis of last successful sync. */
+    val lastSyncTimestamp: Long = 0L,
 ) {
     val isDownloadedPlaylist: Boolean
         get() = id == Constants.Downloads.DOWNLOADED_PLAYLIST_ID

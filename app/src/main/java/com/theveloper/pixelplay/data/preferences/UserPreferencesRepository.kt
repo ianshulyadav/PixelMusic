@@ -239,6 +239,14 @@ constructor(
         // ReplayGain
         val REPLAYGAIN_ENABLED = booleanPreferencesKey("replaygain_enabled")
         val REPLAYGAIN_USE_ALBUM_GAIN = booleanPreferencesKey("replaygain_use_album_gain")
+
+        // Streaming & Data Optimization
+        val STREAMING_AUDIO_QUALITY_WIFI = stringPreferencesKey("streaming_audio_quality_wifi")
+        val STREAMING_AUDIO_QUALITY_MOBILE = stringPreferencesKey("streaming_audio_quality_mobile")
+        val FORCE_HIGH_QUALITY_ON_MOBILE = booleanPreferencesKey("force_high_quality_on_mobile")
+        val ALBUM_ART_QUALITY_MOBILE = stringPreferencesKey("album_art_quality_mobile")
+        val CACHE_LIKED_SONGS_OFFLINE = booleanPreferencesKey("cache_liked_songs_offline")
+        val STORAGE_LIMIT_MB = intPreferencesKey("storage_limit_mb") // 0 = unlimited
     }
 
     val appRebrandDialogShownFlow: Flow<Boolean> =
@@ -792,6 +800,93 @@ constructor(
     }
 
     // ===== End ReplayGain =====
+
+    // ===== Streaming & Data Optimization =====
+
+    /** Audio quality when on WiFi. Default: HIGH (256 kbps). */
+    val streamingAudioQualityWifiFlow: Flow<StreamingAudioQuality> =
+        dataStore.data.map { preferences ->
+            StreamingAudioQuality.fromName(preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_WIFI])
+        }
+
+    suspend fun setStreamingAudioQualityWifi(quality: StreamingAudioQuality) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_WIFI] = quality.name
+        }
+    }
+
+    /** Audio quality when on mobile data. Default: LOW (64 kbps). */
+    val streamingAudioQualityMobileFlow: Flow<StreamingAudioQuality> =
+        dataStore.data.map { preferences ->
+            StreamingAudioQuality.fromName(
+                preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_MOBILE]
+            ).let { if (it == StreamingAudioQuality.HIGH) StreamingAudioQuality.LOW else it }
+        }
+
+    suspend fun setStreamingAudioQualityMobile(quality: StreamingAudioQuality) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_MOBILE] = quality.name
+        }
+    }
+
+    /** If true, ignore metered network and stream at WiFi quality regardless. Default: false. */
+    val forceHighQualityOnMobileFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.FORCE_HIGH_QUALITY_ON_MOBILE] ?: false
+        }
+
+    suspend fun setForceHighQualityOnMobile(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.FORCE_HIGH_QUALITY_ON_MOBILE] = enabled
+        }
+    }
+
+    /** Album art quality on mobile data. Default: LOW (256px). */
+    val albumArtQualityMobileFlow: Flow<AlbumArtQuality> =
+        dataStore.data.map { preferences ->
+            try {
+                AlbumArtQuality.valueOf(
+                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "LOW"
+                )
+            } catch (e: Exception) {
+                AlbumArtQuality.LOW
+            }
+        }
+
+    suspend fun setAlbumArtQualityMobile(quality: AlbumArtQuality) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] = quality.name
+        }
+    }
+
+    /** If true, automatically download audio of liked YouTube songs. Default: false. */
+    val cacheLikedSongsOfflineFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.CACHE_LIKED_SONGS_OFFLINE] ?: false
+        }
+
+    suspend fun setCacheLikedSongsOffline(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CACHE_LIKED_SONGS_OFFLINE] = enabled
+        }
+    }
+
+    /**
+     * Storage limit in MB for downloaded songs and album art.
+     * 0 = unlimited. Default: 2048 MB (2 GB).
+     */
+    val storageLimitMbFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            (preferences[PreferencesKeys.STORAGE_LIMIT_MB] ?: 2048).coerceIn(0, 10240)
+        }
+
+    suspend fun setStorageLimitMb(limitMb: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STORAGE_LIMIT_MB] = limitMb.coerceIn(0, 10240)
+        }
+    }
+
+    // ===== End Streaming & Data Optimization =====
 
     val allowedDirectoriesFlow: Flow<Set<String>> =
             dataStore.data.map { preferences ->

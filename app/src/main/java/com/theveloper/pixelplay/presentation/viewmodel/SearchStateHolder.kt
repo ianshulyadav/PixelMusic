@@ -1,5 +1,7 @@
 package com.theveloper.pixelplay.presentation.viewmodel
 
+import android.util.LruCache
+
 import com.theveloper.pixelplay.data.model.SearchFilterType
 import com.theveloper.pixelplay.data.model.SearchHistoryItem
 import com.theveloper.pixelplay.data.model.SearchResultItem
@@ -44,8 +46,12 @@ class SearchStateHolder @Inject constructor(
     private val youtubeSongRepository: com.theveloper.pixelplay.data.remote.youtube.SongRepository,
 ) {
     private companion object {
-        const val SEARCH_DEBOUNCE_MS = 300L
+        const val SEARCH_DEBOUNCE_MS = 250L // Reduced from 300ms for faster response
+        const val SEARCH_CACHE_SIZE = 20
     }
+
+    // In-memory LRU cache for recent search results — instant display for repeated queries
+    private val searchResultCache = LruCache<String, ImmutableList<SearchResultItem>>(SEARCH_CACHE_SIZE)
 
     private data class SearchRequest(
         val query: String,
@@ -95,6 +101,12 @@ class SearchStateHolder @Inject constructor(
                         return@collectLatest
                     }
 
+                    // Show cached results immediately while fresh results load
+                    val cachedResults = searchResultCache.get(normalizedQuery)
+                    if (cachedResults != null) {
+                        _searchResults.value = cachedResults
+                    }
+
                     try {
                         val currentFilter = _selectedSearchFilter.value
                         val localSearchFlow = musicRepository.searchAll(normalizedQuery, currentFilter)
@@ -132,6 +144,8 @@ class SearchStateHolder @Inject constructor(
                             val immutableResults = resultsList.toImmutableList()
                             if (_searchResults.value != immutableResults) {
                                 _searchResults.value = immutableResults
+                                // Cache for future instant display
+                                searchResultCache.put(normalizedQuery, immutableResults)
                             }
                         }
                     } catch (_: CancellationException) {

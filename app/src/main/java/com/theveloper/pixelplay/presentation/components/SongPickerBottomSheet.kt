@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -697,7 +698,7 @@ fun SongPickerList(
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(filteredSongs, key = { it.id }) { song ->
+                itemsIndexed(filteredSongs, key = { index, song -> "${song.id}_$index" }) { _, song ->
                     SongPickerRow(
                         song = song,
                         selectedSongIds = selectedSongIds,

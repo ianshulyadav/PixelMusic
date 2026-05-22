@@ -25,6 +25,12 @@ data class Song(
     val streamUrl: String? = null,
     val audioFilePath: String? = null,
     val uid: String = UUID.randomUUID().toString(),
+    /** If true, this song was explicitly downloaded by the user and must NOT be auto-deleted. */
+    val isPermanentlyDownloaded: Boolean = false,
+    /** Epoch millis when the audio file was downloaded. 0 = never downloaded. */
+    val downloadTimestamp: Long = 0L,
+    /** Genre fetched from YouTube Music API. Null = not yet fetched. */
+    val genre: String? = null,
 ) {
     val mediaItem: MediaItem
         get() {

@@ -19,7 +19,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.WorkManager
 import com.theveloper.pixelplay.data.remote.youtube.YoutubePlaylistDataSource
-import com.theveloper.pixelplay.data.remote.youtube.PlaylistDownloadWorker
 import com.theveloper.pixelplay.data.model.youtube.Playlist
 import com.theveloper.pixelplay.data.model.youtube.PlaylistInfo
 import com.theveloper.pixelplay.data.database.AlbumEntity
@@ -1104,7 +1103,7 @@ constructor(
                 contentUriString = contentUriString,
                 albumArtUriString = albumArtUriString,
                 duration = raw.duration,
-                genre = genre,
+                genre = genre?.takeIf { it.isNotBlank() } ?: "Local Music",
                 filePath = raw.filePath,
                 parentDirectoryPath = parentDir,
                 trackNumber = trackNumber,
@@ -1831,50 +1830,45 @@ constructor(
             val settings = youtubeDatastoreRepository.settings.first()
             val appDatabase = com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(applicationContext)
 
-            // 1. Fetch remote user-created playlists
+            // 1. Fetch remote user-created playlists (delta sync — only insert new songs)
             try {
                 val remotePlaylists = YoutubePlaylistDataSource().retrieveAll(settings)
                 remotePlaylists.forEach { playlistInfo ->
+                    val existingPlaylist = appDatabase.playlistRepository().getPlaylistById(playlistInfo.id)
+                    val existingSongCount = existingPlaylist?.info?.lastSyncSongCount ?: 0
+
                     val emptyPlaylist = Playlist(playlistInfo, emptyList())
                     val fullPlaylist = YoutubePlaylistDataSource().retrieveOne(emptyPlaylist, settings)
-                    appDatabase.playlistRepository().insertPlaylistWithSongs(fullPlaylist)
 
-                    // Enqueue background download for the playlist
-                    val workRequest = OneTimeWorkRequestBuilder<PlaylistDownloadWorker>()
-                        .setInputData(workDataOf(PlaylistDownloadWorker.PLAYLIST_KEY to playlistInfo.id))
-                        .setConstraints(Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build())
-                        .build()
-                    WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-                        "playlist_dl_${playlistInfo.id}",
-                        ExistingWorkPolicy.KEEP,
-                        workRequest
-                    )
+                    // Delta check: only process if song count changed or first sync
+                    if (fullPlaylist.songs.size != existingSongCount || existingPlaylist == null) {
+                        // Use preserving insert — keeps existing downloaded songs intact
+                        appDatabase.playlistRepository().insertPlaylistWithSongsPreserving(
+                            fullPlaylist,
+                            appDatabase.songRepository()
+                        )
+                        Log.i(TAG, "Delta synced playlist '${playlistInfo.title}': ${fullPlaylist.songs.size} songs (was $existingSongCount)")
+                    } else {
+                        Log.d(TAG, "Skipping playlist '${playlistInfo.title}' — no changes (${existingSongCount} songs)")
+                    }
+                    // NOTE: Auto-download removed. Users download via playlist options menu (Component 24).
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch remote YouTube playlists", e)
             }
 
-            // 2. Fetch and sync Liked Songs playlist ("LM")
+            // 2. Fetch and sync Liked Songs playlist ("LM") — delta sync
             try {
                 val likedPlaylistInfo = PlaylistInfo(id = "liked_songs", title = "Liked Songs")
                 val emptyLikedPlaylist = Playlist(likedPlaylistInfo, emptyList())
                 val fullLikedPlaylist = YoutubePlaylistDataSource().retrieveOne(emptyLikedPlaylist, settings)
                 if (fullLikedPlaylist.songs.isNotEmpty()) {
-                    appDatabase.playlistRepository().insertPlaylistWithSongs(fullLikedPlaylist)
-                    
-                    val workRequest = OneTimeWorkRequestBuilder<PlaylistDownloadWorker>()
-                        .setInputData(workDataOf(PlaylistDownloadWorker.PLAYLIST_KEY to "liked_songs"))
-                        .setConstraints(Constraints.Builder()
-                            .setRequiredNetworkType(NetworkType.CONNECTED)
-                            .build())
-                        .build()
-                    WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-                        "playlist_dl_liked_songs",
-                        ExistingWorkPolicy.KEEP,
-                        workRequest
+                    // Preserving insert — only insert new liked songs, keep existing downloads
+                    appDatabase.playlistRepository().insertPlaylistWithSongsPreserving(
+                        fullLikedPlaylist,
+                        appDatabase.songRepository()
                     )
+                    // NOTE: Auto-download removed. Users download via playlist options or "Cache liked songs" setting.
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to sync remote YouTube liked songs", e)
@@ -1975,7 +1969,7 @@ constructor(
                         contentUriString = "youtube://${ySong.youtubeId}",
                         albumArtUriString = ySong.thumbnailPath ?: ySong.thumbnailHref,
                         duration = durationMs,
-                        genre = YOUTUBE_GENRE,
+                        genre = ySong.genre?.takeIf { it.isNotBlank() } ?: YOUTUBE_GENRE,
                         filePath = ySong.audioFilePath ?: "",
                         parentDirectoryPath = YOUTUBE_PARENT_DIRECTORY,
                         isFavorite = false,

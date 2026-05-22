@@ -246,24 +246,26 @@ fun RecentlyPlayedScreen(
                                 modifier = Modifier.padding(horizontal = 16.dp)
                             )
                         }
-                        items(group.songs, key = { songUi -> songUi.song.id }, contentType = { "recently_played_song" }) { item ->
-                            EnhancedSongListItem(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                song = item.song,
-                                isCurrentSong = currentSongId == item.song.id,
-                                isPlaying = currentSongId == item.song.id && isPlaying,
-                                onClick = {
-                                    playerViewModel.playSongs(
-                                        songsToPlay = queueSongs,
-                                        startSong = item.song,
-                                        queueName = queueRecentlyPlayed
-                                    )
-                                },
-                                onMoreOptionsClick = { song ->
-                                    playerViewModel.selectSongForInfo(song)
-                                    showSongInfoBottomSheet = true
-                                }
-                            )
+                        group.songs.forEachIndexed { songIndex, item ->
+                            item(key = "rp_${groupIndex}_${songIndex}_${item.song.id}", contentType = "recently_played_song") {
+                                EnhancedSongListItem(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    song = item.song,
+                                    isCurrentSong = currentSongId == item.song.id,
+                                    isPlaying = currentSongId == item.song.id && isPlaying,
+                                    onClick = {
+                                        playerViewModel.playSongs(
+                                            songsToPlay = queueSongs,
+                                            startSong = item.song,
+                                            queueName = queueRecentlyPlayed
+                                        )
+                                    },
+                                    onMoreOptionsClick = { song ->
+                                        playerViewModel.selectSongForInfo(song)
+                                        showSongInfoBottomSheet = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }

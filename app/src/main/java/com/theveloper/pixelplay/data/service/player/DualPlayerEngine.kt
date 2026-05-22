@@ -670,15 +670,16 @@ class DualPlayerEngine @Inject constructor(
 
         val loadControl = DefaultLoadControl.Builder()
             // ── Tuned for instant YouTube playback ───────────────────────────
-            // bufferForPlaybackMs: ExoPlayer starts playback after 500 ms is buffered
-            // (was 5000 ms). This shaves ~4 seconds off cold-start time.
+            // minBufferMs: Reduced from 15s to 2s for faster cold-start
+            // bufferForPlaybackMs: Start playback after 500ms buffer (instant feel)
+            // bufferForPlaybackAfterRebufferMs: After stall restart after 1s (user req: min 1s)
             .setBufferDurationsMs(
-                /* minBufferMs                   = */ 15_000,  // keep 15 s ahead
+                /* minBufferMs                   = */ 2_000,   // reduced from 15s — faster startup
                 /* maxBufferMs                   = */ 50_000,  // buffer up to 50 s
-                /* bufferForPlaybackMs           = */ 500,     // start after 0.5 s (was 5000)
-                /* bufferForPlaybackAfterRebufferMs = */ 1_500  // after stall: restart after 1.5 s
+                /* bufferForPlaybackMs           = */ 500,     // start after 0.5 s (instant feel)
+                /* bufferForPlaybackAfterRebufferMs = */ 1_000 // after stall: restart after 1 s (was 1.5s)
             )
-            .setBackBuffer(10_000, /* retainBackBufferFromKeyframe = */ true)
+            .setBackBuffer(15_000, /* retainBackBufferFromKeyframe = */ true)
             .build()
 
         return ExoPlayer.Builder(context, renderersFactory)

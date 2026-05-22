@@ -34,7 +34,7 @@ object YoutubeHelper {
      * Key format: "<videoId>_low" or "<videoId>_high".
      * Holds up to 100 entries; expired/invalid entries are evicted lazily on next access.
      */
-    val streamUrlLruCache = LruCache<String, String>(100)
+    val streamUrlLruCache = LruCache<String, String>(200)
 
     /** Register a locally-available file path for a YouTube video ID so playback is instant. */
     private val localFilePathCache = LruCache<String, String>(200)
@@ -534,6 +534,43 @@ object YoutubeHelper {
         }
     }
 
+    /**
+     * Returns a stream URL respecting the user's quality ceiling.
+     * Used by the network-aware playback system:
+     * - On WiFi: maxBitrateKbps comes from StreamingAudioQuality (user's WiFi setting)
+     * - On metered: maxBitrateKbps comes from StreamingAudioQuality (user's mobile setting)
+     * - Always starts at lowest quality first, then upgrades (handled by caller)
+     *
+     * @param maxBitrateKbps Maximum bitrate ceiling in kbps. 0 = no ceiling (highest available).
+     */
+    suspend fun getSongPlayerUrlWithQuality(
+        context: Context,
+        song: Song,
+        maxBitrateKbps: Int = 0
+    ): String {
+        val videoId = song.youtubeId
+
+        // Offline-first gate
+        val cachedLocalPath = localFilePathCache.get(videoId)
+        if (cachedLocalPath != null && File(cachedLocalPath).exists()) {
+            return cachedLocalPath
+        }
+        val localSongRepository = AppDatabase.getInstance(context).songRepository()
+        val savedSong = try { localSongRepository.getSong(videoId) } catch (_: Exception) { null }
+        if (savedSong?.audioFilePath != null && File(savedSong.audioFilePath).exists()) {
+            localFilePathCache.put(videoId, savedSong.audioFilePath)
+            return savedSong.audioFilePath
+        }
+
+        // LRU cache check
+        val cacheKey = if (maxBitrateKbps > 0) "${videoId}_q${maxBitrateKbps}" else "${videoId}_high"
+        streamUrlLruCache.get(cacheKey)?.let { return it }
+
+        val url = getSongUrlFromYoutube(song, lowQuality = false, maxBitrateKbps = maxBitrateKbps)
+        streamUrlLruCache.put(cacheKey, url)
+        return url
+    }
+
     /** Invalidate a cached stream URL (e.g. after the remote URL expires). */
     fun invalidateStreamCache(youtubeId: String) {
         streamUrlLruCache.remove("${youtubeId}_low")
@@ -595,11 +632,15 @@ object YoutubeHelper {
      * Resolves a stream URL from YouTube.
      * @param lowQuality If true, picks the lowest-bitrate audio stream for fastest startup.
      *                   If false (default), picks the highest bitrate for best quality.
+     * @param maxBitrateKbps If > 0, caps the selected stream to this bitrate ceiling (in kbps).
+     *                       Picks the highest bitrate stream that doesn't exceed the ceiling.
+     *                       If no stream is within the ceiling, falls back to the lowest available.
      */
     private suspend fun getSongUrlFromYoutube(
         song: Song,
         retries: Int = Constants.YoutubeApi.RETRY_COUNT,
-        lowQuality: Boolean = false
+        lowQuality: Boolean = false,
+        maxBitrateKbps: Int = 0
     ): String {
         val service = ServiceList.YouTube
 
@@ -612,12 +653,26 @@ object YoutubeHelper {
                     val extractor = service.getStreamExtractor(song.youtubeUrl)
                     extractor.fetchPage()
                     val streams = extractor.audioStreams
-                    val selectedStream = if (lowQuality) {
-                        // Lowest bitrate = fastest to start buffering
-                        streams.minByOrNull { it.averageBitrate } ?: streams.first()
-                    } else {
-                        // Highest bitrate = best audio quality
-                        streams.maxByOrNull { it.averageBitrate } ?: streams.first()
+                    val selectedStream = when {
+                        lowQuality -> {
+                            // Lowest bitrate = fastest to start buffering
+                            streams.minByOrNull { it.averageBitrate } ?: streams.first()
+                        }
+                        maxBitrateKbps > 0 -> {
+                            // Quality ceiling: pick highest bitrate within ceiling
+                            val maxBitrateBps = maxBitrateKbps * 1000
+                            val withinCeiling = streams.filter { it.averageBitrate <= maxBitrateBps }
+                            if (withinCeiling.isNotEmpty()) {
+                                withinCeiling.maxByOrNull { it.averageBitrate } ?: withinCeiling.first()
+                            } else {
+                                // No stream within ceiling, pick lowest available
+                                streams.minByOrNull { it.averageBitrate } ?: streams.first()
+                            }
+                        }
+                        else -> {
+                            // Highest bitrate = best audio quality
+                            streams.maxByOrNull { it.averageBitrate } ?: streams.first()
+                        }
                     }
                     selectedStream.content
                 }

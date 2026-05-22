@@ -49,4 +49,16 @@ interface LocalSongDataSource {
 
     @Delete
     suspend fun delete(song: Song)
+
+    /** Get all song IDs that exist in the local DB. Used for delta sync. */
+    @Query("SELECT youtubeId FROM songs WHERE youtubeId IN (:ids)")
+    suspend fun getExistingSongIds(ids: List<String>): List<String>
+
+    /** Mark a song as permanently downloaded by the user (won't be auto-deleted). */
+    @Query("UPDATE songs SET isPermanentlyDownloaded = 1, downloadTimestamp = :timestamp WHERE youtubeId = :songId")
+    suspend fun markAsPermanentlyDownloaded(songId: String, timestamp: Long = System.currentTimeMillis())
+
+    /** Update the genre for a song. */
+    @Query("UPDATE songs SET genre = :genre WHERE youtubeId = :songId")
+    suspend fun updateGenre(songId: String, genre: String)
 }

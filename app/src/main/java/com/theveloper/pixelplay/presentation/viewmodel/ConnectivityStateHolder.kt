@@ -64,6 +64,11 @@ class ConnectivityStateHolder @Inject constructor(
     private val _isOnline = MutableStateFlow(false)
     val isOnline: StateFlow<Boolean> = _isOnline.asStateFlow()
 
+    // Metered Network State — single source of truth for all network-aware features
+    // Defaults to true (metered/mobile data) as a safe assumption until we know otherwise
+    private val _isMeteredNetwork = MutableStateFlow(true)
+    val isMeteredNetwork: StateFlow<Boolean> = _isMeteredNetwork.asStateFlow()
+
     // Bluetooth State
     private val _isBluetoothEnabled = MutableStateFlow(false)
     val isBluetoothEnabled: StateFlow<Boolean> = _isBluetoothEnabled.asStateFlow()
@@ -137,6 +142,9 @@ class ConnectivityStateHolder @Inject constructor(
         
         _isOnline.value = capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        _isMeteredNetwork.value = capabilities?.hasCapability(
+            NetworkCapabilities.NET_CAPABILITY_NOT_METERED
+        ) != true
 
         updateBluetoothEnabledState()
 
@@ -161,6 +169,11 @@ class ConnectivityStateHolder @Inject constructor(
                 
                 checkConnectivity()
                 
+                // Update metered state based on current network capabilities
+                _isMeteredNetwork.value = !networkCapabilities.hasCapability(
+                    NetworkCapabilities.NET_CAPABILITY_NOT_METERED
+                )
+                
                 if (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
                     _isWifiEnabled.value = true
                     updateWifiInfo()
@@ -175,6 +188,10 @@ class ConnectivityStateHolder @Inject constructor(
                 val caps = connectivityManager.getNetworkCapabilities(currentNetwork)
                 _isWifiEnabled.value = caps?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
                 if (!_isWifiEnabled.value) _wifiName.value = null
+                // Default to metered when network is lost or fallback to cellular
+                _isMeteredNetwork.value = caps?.hasCapability(
+                    NetworkCapabilities.NET_CAPABILITY_NOT_METERED
+                ) != true
             }
             
             private fun checkConnectivity() {

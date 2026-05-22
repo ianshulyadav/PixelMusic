@@ -3468,10 +3468,23 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun toggleFavorite() {
-        playbackStateHolder.stablePlayerState.value.currentSong?.id?.let { songId ->
-            viewModelScope.launch {
-                val currentlyFavorite = favoriteSongIds.value.contains(songId)
-                setFavoriteStatusEverywhere(songId, !currentlyFavorite)
+        val currentSong = playbackStateHolder.stablePlayerState.value.currentSong ?: return
+        val songId = currentSong.id
+        viewModelScope.launch {
+            val currentlyFavorite = favoriteSongIds.value.contains(songId)
+            setFavoriteStatusEverywhere(songId, !currentlyFavorite)
+
+            // Component 30: For YouTube songs, mark as permanently stored when liked
+            if (!currentlyFavorite && currentSong.contentUriString?.startsWith("youtube://") == true) {
+                launch(Dispatchers.IO) {
+                    try {
+                        val videoId = currentSong.contentUriString.substringAfter("youtube://")
+                        val appDb = com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(context)
+                        appDb.songRepository().markAsPermanentlyDownloaded(videoId)
+                    } catch (e: Exception) {
+                        Timber.w(e, "Failed to mark YouTube song as permanently downloaded")
+                    }
+                }
             }
         }
     }
@@ -3481,6 +3494,23 @@ class PlayerViewModel @Inject constructor(
             val currentlyFavorite = favoriteSongIds.value.contains(song.id)
             val targetFavoriteState = if (removing) false else !currentlyFavorite
             setFavoriteStatusEverywhere(song.id, targetFavoriteState)
+
+            // Component 30: For YouTube songs, mark as permanently stored when liked
+            if (targetFavoriteState && song.contentUriString?.startsWith("youtube://") == true) {
+                launch(Dispatchers.IO) {
+                    try {
+                        val videoId = song.contentUriString.substringAfter("youtube://")
+                        val appDb = com.theveloper.pixelplay.data.database.youtube.AppDatabase.getInstance(context)
+                        val ytSong = appDb.songRepository().getSong(videoId)
+                        if (ytSong != null) {
+                            // Mark as permanently downloaded so it's never auto-deleted
+                            appDb.songRepository().markAsPermanentlyDownloaded(videoId)
+                        }
+                    } catch (e: Exception) {
+                        Timber.w(e, "Failed to mark YouTube song as permanently downloaded")
+                    }
+                }
+            }
         }
     }
 

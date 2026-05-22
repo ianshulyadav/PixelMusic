@@ -70,6 +70,36 @@ interface LocalPlaylistDataSource {
         insertCrossRefs(refs)
     }
 
+    /**
+     * Insert playlist and only NEW songs (not already in DB).
+     * Preserves existing songs' download state and metadata.
+     * Updates the playlist info's sync tracking fields.
+     */
+    @Transaction
+    suspend fun insertPlaylistWithSongsPreserving(
+        playlist: Playlist,
+        songDataSource: LocalSongDataSource,
+    ) {
+        // Update playlist info with sync tracking
+        val updatedInfo = playlist.info.copy(
+            lastSyncSongCount = playlist.songs.size,
+            lastSyncTimestamp = System.currentTimeMillis()
+        )
+        insertPlaylist(updatedInfo)
+
+        val allSongIds = playlist.songs.map { it.youtubeId }
+        val existingIds = songDataSource.getExistingSongIds(allSongIds).toSet()
+        val newSongs = playlist.songs.filter { it.youtubeId !in existingIds }
+
+        if (newSongs.isNotEmpty()) {
+            insertSongs(newSongs)
+        }
+
+        // Always update cross refs to reflect current playlist composition
+        val refs = playlist.songs.map { song -> PlaylistSongCrossRef(playlist.info.id, song.youtubeId) }
+        insertCrossRefs(refs)
+    }
+
     @Query("DELETE FROM playlists")
     suspend fun deleteAll()
 

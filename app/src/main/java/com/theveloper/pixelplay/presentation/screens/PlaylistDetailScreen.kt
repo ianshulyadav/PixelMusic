@@ -592,11 +592,11 @@ fun PlaylistDetailScreen(
                         ) {
                             itemsIndexed(
                                 localReorderableSongs,
-                                key = { _, item -> item.id },
-                                contentType = { _, _ -> "playlist_song" }) { _, song ->
+                                key = { index, item -> "${item.id}_$index" },
+                                contentType = { _, _ -> "playlist_song" }) { index, song ->
                                 ReorderableItem(
                                     state = reorderableState,
-                                    key = song.id,
+                                    key = "${song.id}_$index",
                                 ) { isDragging ->
                                     val scale by animateFloatAsState(
                                         if (isDragging) 1.05f else 1f,
