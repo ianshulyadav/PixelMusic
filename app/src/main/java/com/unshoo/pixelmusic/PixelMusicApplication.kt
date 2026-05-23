@@ -44,11 +44,7 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     @Inject
     lateinit var telegramCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.TelegramCoilFetcher.Factory>
 
-    @Inject
-    lateinit var navidromeCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.NavidromeCoilFetcher.Factory>
 
-    @Inject
-    lateinit var jellyfinCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.JellyfinCoilFetcher.Factory>
 
     @Inject
     lateinit var localArtworkCoilFetcherFactory: dagger.Lazy<com.unshoo.pixelmusic.data.image.LocalArtworkCoilFetcher.Factory>
@@ -146,8 +142,6 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
             .components {
                 add(localArtworkCoilFetcherFactory.get())
                 add(telegramCoilFetcherFactory.get())
-                add(navidromeCoilFetcherFactory.get())
-                add(jellyfinCoilFetcherFactory.get())
             }
             .build()
     }

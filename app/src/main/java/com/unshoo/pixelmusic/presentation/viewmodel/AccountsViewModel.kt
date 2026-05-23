@@ -3,10 +3,6 @@ package com.unshoo.pixelmusic.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unshoo.pixelmusic.data.gdrive.GDriveRepository
-import com.unshoo.pixelmusic.data.jellyfin.JellyfinRepository
-import com.unshoo.pixelmusic.data.navidrome.NavidromeRepository
-import com.unshoo.pixelmusic.data.netease.NeteaseRepository
-import com.unshoo.pixelmusic.data.qqmusic.QqMusicRepository
 import com.unshoo.pixelmusic.data.repository.MusicRepository
 import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,10 +23,6 @@ import org.drinkless.tdlib.TdApi
 enum class ExternalServiceAccount {
     TELEGRAM,
     GOOGLE_DRIVE,
-    NETEASE,
-    QQ_MUSIC,
-    NAVIDROME,
-    JELLYFIN,
     YOUTUBE
 }
 
@@ -52,10 +44,6 @@ class AccountsViewModel @Inject constructor(
     private val telegramRepository: TelegramRepository,
     private val musicRepository: MusicRepository,
     private val gDriveRepository: GDriveRepository,
-    private val neteaseRepository: NeteaseRepository,
-    private val qqMusicRepository: QqMusicRepository,
-    private val navidromeRepository: NavidromeRepository,
-    private val jellyfinRepository: JellyfinRepository,
     private val datastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository,
     private val syncManager: com.unshoo.pixelmusic.data.worker.SyncManager,
     @ApplicationContext private val context: Context
@@ -87,34 +75,6 @@ class AccountsViewModel @Inject constructor(
         connected to folderCount
     }
 
-    private val neteaseStateFlow = combine(
-        neteaseRepository.isLoggedInFlow,
-        neteaseRepository.getPlaylists().map { it.size }
-    ) { connected, playlistCount ->
-        connected to playlistCount
-    }
-
-    private val qqMusicStateFlow = combine(
-        qqMusicRepository.isLoggedInFlow,
-        qqMusicRepository.getPlaylists().map { it.size }
-    ) { connected, playlistCount ->
-        connected to playlistCount
-    }
-
-    private val navidromeStateFlow = combine(
-        navidromeRepository.isLoggedInFlow,
-        navidromeRepository.getPlaylists().map { it.size }
-    ) { connected, playlistCount ->
-        connected to playlistCount
-    }
-
-    private val jellyfinStateFlow = combine(
-        jellyfinRepository.isLoggedInFlow,
-        jellyfinRepository.getPlaylists().map { it.size }
-    ) { connected, playlistCount ->
-        connected to playlistCount
-    }
-
     private val youtubeStateFlow = combine(
         datastoreRepository.cookies.map { it.toRawCookie().isNotEmpty() }.distinctUntilChanged(),
         com.unshoo.pixelmusic.data.database.youtube.AppDatabase.getInstance(context).playlistRepository().observeAll().map { it.size }
@@ -127,10 +87,6 @@ class AccountsViewModel @Inject constructor(
             listOf(
                 telegramStateFlow,
                 gDriveStateFlow,
-                neteaseStateFlow,
-                qqMusicStateFlow,
-                navidromeStateFlow,
-                jellyfinStateFlow,
                 youtubeStateFlow
             )
         ) { it.toList() },
@@ -138,11 +94,7 @@ class AccountsViewModel @Inject constructor(
     ) { states, activeLogouts ->
         val (telegramConnected, telegramChannelCount) = states[0] as Pair<Boolean, Int>
         val (gDriveConnected, gDriveFolderCount) = states[1] as Pair<Boolean, Int>
-        val (neteaseConnected, neteasePlaylistCount) = states[2] as Pair<Boolean, Int>
-        val (qqConnected, qqPlaylistCount) = states[3] as Pair<Boolean, Int>
-        val (navidromeConnected, navidromePlaylistCount) = states[4] as Pair<Boolean, Int>
-        val (jellyfinConnected, jellyfinPlaylistCount) = states[5] as Pair<Boolean, Int>
-        val (youtubeConnected, youtubePlaylistCount) = states[6] as Pair<Boolean, Int>
+        val (youtubeConnected, youtubePlaylistCount) = states[2] as Pair<Boolean, Int>
 
         val connectedAccounts = buildList {
             if (telegramConnected) {
@@ -179,74 +131,6 @@ class AccountsViewModel @Inject constructor(
                     )
                 )
             }
-            if (neteaseConnected) {
-                add(
-                    ExternalAccountUiModel(
-                        service = ExternalServiceAccount.NETEASE,
-                        title = "Netease Music",
-                        accountLabel = neteaseRepository.userNickname
-                            ?.takeIf { it.isNotBlank() }
-                            ?: "Netease account connected",
-                        syncedContentLabel = formatCount(
-                            count = neteasePlaylistCount,
-                            singular = "synced playlist",
-                            plural = "synced playlists"
-                        ),
-                        isLoggingOut = ExternalServiceAccount.NETEASE in activeLogouts
-                    )
-                )
-            }
-            if (qqConnected) {
-                add(
-                    ExternalAccountUiModel(
-                        service = ExternalServiceAccount.QQ_MUSIC,
-                        title = "QQ Music",
-                        accountLabel = qqMusicRepository.userNickname
-                            ?.takeIf { it.isNotBlank() }
-                            ?: "QQ Music account connected",
-                        syncedContentLabel = formatCount(
-                            count = qqPlaylistCount,
-                            singular = "synced playlist",
-                            plural = "synced playlists"
-                        ),
-                        isLoggingOut = ExternalServiceAccount.QQ_MUSIC in activeLogouts
-                    )
-                )
-            }
-            if (navidromeConnected) {
-                add(
-                    ExternalAccountUiModel(
-                        service = ExternalServiceAccount.NAVIDROME,
-                        title = "Subsonic",
-                        accountLabel = navidromeRepository.username
-                            ?.takeIf { it.isNotBlank() }
-                            ?: "Subsonic account connected",
-                        syncedContentLabel = formatCount(
-                            count = navidromePlaylistCount,
-                            singular = "synced playlist",
-                            plural = "synced playlists"
-                        ),
-                        isLoggingOut = ExternalServiceAccount.NAVIDROME in activeLogouts
-                    )
-                )
-            }
-            if (jellyfinConnected) {
-                add(
-                    ExternalAccountUiModel(
-                        service = ExternalServiceAccount.JELLYFIN,
-                        title = "Jellyfin",
-                        accountLabel = jellyfinRepository.username
-                            ?.takeIf { it.isNotBlank() }
-                            ?: "Jellyfin account connected",
-                        syncedContentLabel = formatCount(
-                            count = jellyfinPlaylistCount,
-                            singular = "synced playlist",
-                            plural = "synced playlists"
-                        ),
-                        isLoggingOut = ExternalServiceAccount.JELLYFIN in activeLogouts
-                    )
-                )
-            }
             if (youtubeConnected) {
                 add(
                     ExternalAccountUiModel(
@@ -267,10 +151,6 @@ class AccountsViewModel @Inject constructor(
         val disconnectedServices = buildList {
             if (!telegramConnected) add(ExternalServiceAccount.TELEGRAM)
             if (!gDriveConnected) add(ExternalServiceAccount.GOOGLE_DRIVE)
-            if (!neteaseConnected) add(ExternalServiceAccount.NETEASE)
-            if (!qqConnected) add(ExternalServiceAccount.QQ_MUSIC)
-            if (!navidromeConnected) add(ExternalServiceAccount.NAVIDROME)
-            if (!jellyfinConnected) add(ExternalServiceAccount.JELLYFIN)
             if (!youtubeConnected) add(ExternalServiceAccount.YOUTUBE)
         }
 
@@ -294,10 +174,6 @@ class AccountsViewModel @Inject constructor(
                             musicRepository.clearTelegramData()
                         }
                         ExternalServiceAccount.GOOGLE_DRIVE -> gDriveRepository.logout()
-                        ExternalServiceAccount.NETEASE -> neteaseRepository.logout()
-                        ExternalServiceAccount.QQ_MUSIC -> qqMusicRepository.logout()
-                        ExternalServiceAccount.NAVIDROME -> navidromeRepository.logout()
-                        ExternalServiceAccount.JELLYFIN -> jellyfinRepository.logout()
                         ExternalServiceAccount.YOUTUBE -> {
                             datastoreRepository.saveCookies(com.unshoo.pixelmusic.data.model.youtube.Cookies(""))
                             datastoreRepository.saveDataSyncId("")

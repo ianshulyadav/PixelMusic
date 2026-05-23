@@ -43,6 +43,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -3065,7 +3066,7 @@ fun LibraryFoldersTab(
                                     }
                                 }
 
-                                items(songsToShow, key = { it.id }, contentType = { "song" }) { song ->
+                                itemsIndexed(songsToShow, key = { index, song -> "${song.id}_$index" }, contentType = { _, _ -> "song" }) { _, song ->
                                     EnhancedSongListItem(
                                         song = song,
                                         isPlaying = stablePlayerState.currentSong?.id == song.id && stablePlayerState.isPlaying,

@@ -25,7 +25,6 @@ import com.unshoo.pixelmusic.data.model.youtube.PlaylistInfo
 import com.unshoo.pixelmusic.data.database.AlbumEntity
 import com.unshoo.pixelmusic.data.database.ArtistEntity
 import com.unshoo.pixelmusic.data.database.MusicDao
-import com.unshoo.pixelmusic.data.database.NeteaseDao
 import com.unshoo.pixelmusic.data.database.SongArtistCrossRef
 import com.unshoo.pixelmusic.data.database.SongEntity
 import com.unshoo.pixelmusic.data.database.SourceType
@@ -35,7 +34,6 @@ import com.unshoo.pixelmusic.data.database.FavoritesEntity
 import com.unshoo.pixelmusic.data.database.resolveAlbumArtUri
 import com.unshoo.pixelmusic.data.database.serializeArtistRefs
 import com.unshoo.pixelmusic.data.model.ArtistRef
-import com.unshoo.pixelmusic.data.navidrome.NavidromeRepository
 import com.unshoo.pixelmusic.data.media.AudioMetadataReader
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
@@ -84,8 +82,6 @@ constructor(
         private val userPreferencesRepository: UserPreferencesRepository,
         private val lyricsRepository: LyricsRepository,
         private val telegramDao: TelegramDao,
-        private val neteaseDao: NeteaseDao,
-        private val navidromeRepository: NavidromeRepository,
         private val playlistPreferencesRepository: PlaylistPreferencesRepository,
         private val youtubeDatastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository,
         private val favoritesDao: FavoritesDao
@@ -389,17 +385,9 @@ constructor(
                     // OPT #7: Guard each source to avoid opening Room transactions when
                     // the user hasn't configured that cloud provider.
                     val hasTelegramChannels = telegramDao.getAllChannels().first().isNotEmpty()
-                    val neteaseCount = neteaseDao.getNeteaseCount()
-                    // For Navidrome, we only do network sync if SYNC_THRESHOLD_MS (24h) threshold has passed.
-                    val navidromeNeedsNetworkSync = navidromeRepository.isLoggedIn && 
-                        (System.currentTimeMillis() - navidromeRepository.lastFullSyncTime >= NavidromeRepository.SYNC_THRESHOLD_MS)
-                    
                     val isYoutubeConnected = youtubeDatastoreRepository.cookies.first().toRawCookie().isNotEmpty()
                     
-                    val needsActiveCloudSync = hasTelegramChannels ||
-                        neteaseCount > 0 ||
-                        navidromeNeedsNetworkSync ||
-                        isYoutubeConnected
+                    val needsActiveCloudSync = hasTelegramChannels || isYoutubeConnected
 
                     if (needsActiveCloudSync) {
                         setProgress(
@@ -413,20 +401,6 @@ constructor(
                         syncTelegramData()
                     } else {
                         Log.d(TAG, "Skipping Telegram sync — no channels configured.")
-                    }
-
-                    // syncNeteaseData already has an internal isEmpty guard; a lightweight
-                    // count check here avoids even calling into the function.
-                    if (neteaseCount > 0) {
-                        syncNeteaseData()
-                    } else {
-                        Log.d(TAG, "Skipping Netease sync — no songs in local cache.")
-                    }
-
-                    if (navidromeRepository.isLoggedIn) {
-                        syncNavidromeData()
-                    } else {
-                        Log.d(TAG, "Skipping Navidrome sync — not logged in.")
                     }
 
                     if (isYoutubeConnected) {
@@ -1644,187 +1618,6 @@ constructor(
             Log.i(TAG, "Synced ${songsToInsert.size} Telegram songs with Unified Metadata.")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to sync Telegram data", e)
-        }
-    }
-
-    private suspend fun syncNeteaseData() {
-        Log.i(TAG, "Syncing Netease songs to main database (Unified Mode)...")
-        try {
-            val neteaseSongs = neteaseDao.getAllNeteaseSongsList()
-            val existingUnifiedNeteaseIds = musicDao.getAllNeteaseSongIds()
-
-            if (neteaseSongs.isEmpty()) {
-                if (existingUnifiedNeteaseIds.isNotEmpty()) {
-                    musicDao.clearAllNeteaseSongs()
-                }
-                Log.d(TAG, "No Netease songs to sync.")
-                return
-            }
-
-            val songsToInsert = ArrayList<SongEntity>(neteaseSongs.size)
-            val artistsToInsert = LinkedHashMap<Long, ArtistEntity>()
-            val albumsToInsert = LinkedHashMap<Long, AlbumEntity>()
-            val crossRefsToInsert = mutableListOf<SongArtistCrossRef>()
-
-            neteaseSongs.forEach { nSong ->
-                val songId = toUnifiedNeteaseSongId(nSong.neteaseId)
-                val artistNames = parseNeteaseArtistNames(nSong.artist)
-                val primaryArtistName = artistNames.firstOrNull() ?: "Unknown Artist"
-                val primaryArtistId = toUnifiedNeteaseArtistId(primaryArtistName)
-
-                artistNames.forEachIndexed { index, artistName ->
-                    val artistId = toUnifiedNeteaseArtistId(artistName)
-                    artistsToInsert.putIfAbsent(
-                        artistId,
-                        ArtistEntity(
-                            id = artistId,
-                            name = artistName,
-                            trackCount = 0,
-                            imageUrl = null
-                        )
-                    )
-                    crossRefsToInsert.add(
-                        SongArtistCrossRef(
-                            songId = songId,
-                            artistId = artistId,
-                            isPrimary = index == 0
-                        )
-                    )
-                }
-
-                val albumId = toUnifiedNeteaseAlbumId(nSong.albumId, nSong.album)
-                val albumName = nSong.album.ifBlank { "Unknown Album" }
-                albumsToInsert.putIfAbsent(
-                    albumId,
-                    AlbumEntity(
-                        id = albumId,
-                        title = albumName,
-                        artistName = primaryArtistName,
-                        artistId = primaryArtistId,
-                        songCount = 0,
-                        dateAdded = nSong.dateAdded,
-                        year = 0,
-                        albumArtUriString = nSong.albumArtUrl
-                    )
-                )
-
-                // Build artists JSON
-                val neteaseArtistRefs = artistNames.mapIndexed { idx, name ->
-                    ArtistRef(
-                        id = toUnifiedNeteaseArtistId(name),
-                        name = name,
-                        isPrimary = idx == 0
-                    )
-                }
-
-                songsToInsert.add(
-                    SongEntity(
-                        id = songId,
-                        title = nSong.title,
-                        artistName = nSong.artist.ifBlank { primaryArtistName },
-                        artistId = primaryArtistId,
-                        albumArtist = null,
-                        albumName = albumName,
-                        albumId = albumId,
-                        contentUriString = "netease://${nSong.neteaseId}",
-                        albumArtUriString = nSong.albumArtUrl,
-                        duration = nSong.duration,
-                        genre = NETEASE_GENRE,
-                        filePath = "",
-                        parentDirectoryPath = NETEASE_PARENT_DIRECTORY,
-                        isFavorite = false,
-                        lyrics = null,
-                        trackNumber = 0,
-                        year = 0,
-                        dateAdded = nSong.dateAdded.takeIf { it > 0 } ?: System.currentTimeMillis(),
-                        mimeType = nSong.mimeType,
-                        bitrate = nSong.bitrate,
-                        sampleRate = null,
-                        telegramChatId = null,
-                        telegramFileId = null,
-                        artistsJson = serializeArtistRefs(neteaseArtistRefs),
-                        sourceType = SourceType.NETEASE
-                    )
-                )
-            }
-
-            val albumCounts = songsToInsert.groupingBy { it.albumId }.eachCount()
-            val finalAlbums = albumsToInsert.values.map { album ->
-                album.copy(songCount = albumCounts[album.id] ?: 0)
-            }
-
-            val currentUnifiedSongIds = songsToInsert.map { it.id }.toSet()
-            val deletedUnifiedSongIds = existingUnifiedNeteaseIds.filter { it !in currentUnifiedSongIds }
-
-            musicDao.incrementalSyncMusicData(
-                songs = songsToInsert,
-                albums = finalAlbums,
-                artists = artistsToInsert.values.toList(),
-                crossRefs = crossRefsToInsert,
-                deletedSongIds = deletedUnifiedSongIds
-            )
-            Log.i(TAG, "Synced ${songsToInsert.size} Netease songs with Unified Metadata.")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to sync Netease data", e)
-        }
-    }
-
-    private fun parseNeteaseArtistNames(rawArtist: String): List<String> {
-        if (rawArtist.isBlank()) return listOf("Unknown Artist")
-        val parsed = rawArtist.split(Regex("\\s*[,/&;+、]\\s*"))
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-            .distinct()
-        return if (parsed.isEmpty()) listOf("Unknown Artist") else parsed
-    }
-
-    private fun toUnifiedNeteaseSongId(neteaseId: Long): Long {
-        return -(NETEASE_SONG_ID_OFFSET + neteaseId.absoluteValue)
-    }
-
-    private fun toUnifiedNeteaseAlbumId(albumId: Long, albumName: String): Long {
-        val normalized = if (albumId > 0L) {
-            albumId.absoluteValue
-        } else {
-            albumName.lowercase().hashCode().toLong().absoluteValue
-        }
-        return -(NETEASE_ALBUM_ID_OFFSET + normalized)
-    }
-
-    private fun toUnifiedNeteaseArtistId(artistName: String): Long {
-        return -(NETEASE_ARTIST_ID_OFFSET + artistName.lowercase().hashCode().toLong().absoluteValue)
-    }
-
-    private suspend fun syncNavidromeData() {
-        if (!navidromeRepository.isLoggedIn) return
-
-        val lastSync = navidromeRepository.lastFullSyncTime
-        val currentTime = System.currentTimeMillis()
-
-        // Only auto-sync Navidrome during main library sync if it's been more than SYNC_THRESHOLD_MS (24h)
-        if (currentTime - lastSync < NavidromeRepository.SYNC_THRESHOLD_MS) {
-            Log.d(TAG, "Skipping Navidrome sync during main library sync - last sync was recent.")
-            // Still sync unified library from local cache to be safe
-            navidromeRepository.syncUnifiedLibrarySongsFromNavidrome()
-            return
-        }
-
-        Log.i(TAG, "Syncing Navidrome data from server...")
-        try {
-            // Fetch playlists and songs from the Navidrome server, then sync to unified library
-            val result = navidromeRepository.syncAllPlaylistsAndSongs()
-            result.fold(
-                onSuccess = { summary ->
-                    Log.i(TAG, "Navidrome sync complete: ${summary.playlistCount} playlists, ${summary.syncedSongCount} songs synced (${summary.failedPlaylistCount} failed)")
-                },
-                onFailure = { e ->
-                    Log.w(TAG, "Navidrome server sync failed, falling back to local cache sync", e)
-                    // Fallback: at least sync what we already have cached
-                    navidromeRepository.syncUnifiedLibrarySongsFromNavidrome()
-                }
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to sync Navidrome data", e)
         }
     }
 

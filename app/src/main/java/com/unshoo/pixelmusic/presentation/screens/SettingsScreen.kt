@@ -211,6 +211,13 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxSize()
         ) {
             item {
+                ProfileHeaderCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp)
+                )
+            }
+            item {
                 val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
                 ExpressiveSettingsGroup {
                     val mainCategories = SettingsCategory.entries.filter {
@@ -501,6 +508,93 @@ private fun getCategoryColors(category: SettingsCategory, isDark: Boolean): Pair
             SettingsCategory.EQUALIZER -> Color(0xFFFFDEAC) to Color(0xFF281900)
             SettingsCategory.DEVICE_CAPABILITIES -> Color(0xFFACEFEE) to Color(0xFF002022)
             SettingsCategory.ABOUT -> Color(0xFFEFF1F7) to Color(0xFF44474F)
+        }
+    }
+}
+
+@Composable
+private fun ProfileHeaderCard(modifier: Modifier = Modifier) {
+    val primary = MaterialTheme.colorScheme.primary
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
+    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
+    val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
+    val secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
+    val avatarGradient = remember(primary, secondaryContainer) {
+        androidx.compose.ui.graphics.Brush.linearGradient(
+            colors = listOf(primary, secondaryContainer)
+        )
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(28.dp),
+        color = surfaceContainer,
+        tonalElevation = 2.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Avatar circle with gradient and initial letter
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(62.dp)
+                    .clip(CircleShape)
+                    .background(avatarGradient)
+            ) {
+                Text(
+                    text = "A",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = onPrimary
+                )
+            }
+
+            // Name + handle
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "Yo! ANSHU",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "@Yo_Anshu",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            // Decorative accent badge
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(primaryContainer)
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AccountCircle,
+                    contentDescription = null,
+                    tint = onPrimaryContainer,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
     }
 }

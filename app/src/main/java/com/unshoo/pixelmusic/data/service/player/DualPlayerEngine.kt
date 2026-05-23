@@ -54,9 +54,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 
-import com.unshoo.pixelmusic.data.netease.NeteaseStreamProxy
-import com.unshoo.pixelmusic.data.navidrome.NavidromeStreamProxy
-import com.unshoo.pixelmusic.data.qqmusic.QqMusicStreamProxy
+
 
 data class ActiveDecoderInfo(
     val name: String,
@@ -77,10 +75,7 @@ class DualPlayerEngine @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val telegramRepository: TelegramRepository,
     private val telegramStreamProxy: com.unshoo.pixelmusic.data.telegram.TelegramStreamProxy,
-    private val neteaseStreamProxy: NeteaseStreamProxy,
-    private val qqMusicStreamProxy: QqMusicStreamProxy,
-    private val navidromeStreamProxy: NavidromeStreamProxy,
-    private val jellyfinStreamProxy: com.unshoo.pixelmusic.data.jellyfin.JellyfinStreamProxy,
+
     private val gdriveStreamProxy: com.unshoo.pixelmusic.data.gdrive.GDriveStreamProxy,
     private val telegramCacheManager: com.unshoo.pixelmusic.data.telegram.TelegramCacheManager,
     private val connectivityStateHolder: com.unshoo.pixelmusic.presentation.viewmodel.ConnectivityStateHolder
@@ -89,7 +84,7 @@ class DualPlayerEngine @Inject constructor(
         private const val AUDIO_OFFLOAD_BUFFERING_FALLBACK_MS = 4_000L
         private const val MAX_AUXILIARY_TIMELINE_ITEMS = 200
         private val LOCAL_MEDIA_SCHEMES = setOf("content", "file", "android.resource")
-        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "telegram", "netease", "qqmusic", "navidrome", "jellyfin", "gdrive", "youtube")
+        private val REMOTE_MEDIA_SCHEMES = setOf("http", "https", "telegram", "gdrive", "youtube")
     }
 
     data class TransitionTarget(
@@ -745,10 +740,6 @@ class DualPlayerEngine @Inject constructor(
 
         val resolved: Uri? = when (uri.scheme) {
             "telegram" -> resolveTelegramUriAsync(uri, uriString)
-            "netease" -> resolveNeteaseUriAsync(uriString)
-            "qqmusic" -> resolveQqMusicUriAsync(uriString)
-            "navidrome" -> resolveNavidromeUriAsync(uriString)
-            "jellyfin" -> resolveJellyfinUriAsync(uriString)
             "gdrive" -> resolveGDriveUriAsync(uriString)
             "youtube" -> resolveYoutubeUriAsync(uriString)
             else -> null
@@ -784,28 +775,7 @@ class DualPlayerEngine @Inject constructor(
         if (proxyUrl.isNotEmpty()) Uri.parse(proxyUrl) else null
     }
 
-    private suspend fun resolveNeteaseUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
-        if (!neteaseStreamProxy.ensureReady(5_000L)) return@withContext null
-        neteaseStreamProxy.resolveNeteaseUri(uriString)?.let { Uri.parse(it) }
-    }
 
-    private suspend fun resolveQqMusicUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
-        if (!qqMusicStreamProxy.ensureReady(5_000L)) return@withContext null
-        qqMusicStreamProxy.warmUpStreamUrl(uriString)
-        qqMusicStreamProxy.resolveQqMusicUri(uriString)?.let { Uri.parse(it) }
-    }
-
-    private suspend fun resolveNavidromeUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
-        if (!navidromeStreamProxy.ensureReady(5_000L)) return@withContext null
-        navidromeStreamProxy.warmUpStreamUrl(uriString)
-        navidromeStreamProxy.resolveNavidromeUri(uriString)?.let { Uri.parse(it) }
-    }
-
-    private suspend fun resolveJellyfinUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
-        if (!jellyfinStreamProxy.ensureReady(5_000L)) return@withContext null
-        jellyfinStreamProxy.warmUpStreamUrl(uriString)
-        jellyfinStreamProxy.resolveJellyfinUri(uriString)?.let { Uri.parse(it) }
-    }
 
     private suspend fun resolveGDriveUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
         if (!connectivityStateHolder.isOnline.value) {

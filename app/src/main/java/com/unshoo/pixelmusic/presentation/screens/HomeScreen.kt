@@ -88,10 +88,6 @@ import com.unshoo.pixelmusic.presentation.components.AlbumArtCollage
 import com.unshoo.pixelmusic.presentation.components.BetaInfoBottomSheet
 import com.unshoo.pixelmusic.presentation.components.Beta05CleanInstallDisclaimerDialog
 import com.unshoo.pixelmusic.presentation.components.ChangelogBottomSheet
-import com.unshoo.pixelmusic.presentation.netease.dashboard.NeteaseDashboardViewModel
-import com.unshoo.pixelmusic.presentation.jellyfin.dashboard.JellyfinDashboardViewModel
-import com.unshoo.pixelmusic.presentation.navidrome.dashboard.NavidromeDashboardViewModel
-import com.unshoo.pixelmusic.presentation.qqmusic.dashboard.QqMusicDashboardViewModel
 import com.unshoo.pixelmusic.presentation.components.DailyMixSection
 import com.unshoo.pixelmusic.presentation.components.HomeGradientTopBar
 import com.unshoo.pixelmusic.presentation.components.HomeOptionsBottomSheet
@@ -136,10 +132,6 @@ fun HomeScreen(
     paddingValuesParent: PaddingValues,
     playerViewModel: PlayerViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
-    neteaseViewModel: NeteaseDashboardViewModel = hiltViewModel(),
-    qqMusicViewModel: QqMusicDashboardViewModel = hiltViewModel(),
-    navidromeViewModel: NavidromeDashboardViewModel = hiltViewModel(),
-    jellyfinViewModel: JellyfinDashboardViewModel = hiltViewModel(),
     statsViewModel: StatsViewModel = hiltViewModel(),
     quickPicksViewModel: QuickPicksViewModel = hiltViewModel(),
     favoriteArtistReleasesViewModel: FavoriteArtistReleasesViewModel = hiltViewModel(),
@@ -591,27 +583,10 @@ fun HomeScreen(
         }
     }
     if (showStreamingProviderSheet) {
-        val isNeteaseLoggedIn by neteaseViewModel.isLoggedIn.collectAsStateWithLifecycle()
-        val isQqMusicLoggedIn by qqMusicViewModel.isLoggedIn.collectAsStateWithLifecycle()
-        val isNavidromeLoggedIn by navidromeViewModel.isLoggedIn.collectAsStateWithLifecycle()
-        val isJellyfinLoggedIn by jellyfinViewModel.isLoggedIn.collectAsStateWithLifecycle()
         StreamingProviderSheet(
             onDismissRequest = { showStreamingProviderSheet = false },
-            isNeteaseLoggedIn = isNeteaseLoggedIn,
-            onNavigateToNeteaseDashboard = {
-                navController.navigateSafely(Screen.NeteaseDashboard.route)
-            },
-            isQqMusicLoggedIn = isQqMusicLoggedIn,
-            onNavigateToQqMusicDashboard = {
-                navController.navigateSafely(Screen.QqMusicDashboard.route)
-            },
-            isNavidromeLoggedIn = isNavidromeLoggedIn,
-            onNavigateToNavidromeDashboard = {
-                navController.navigateSafely(Screen.NavidromeDashboard.route)
-            },
-            isJellyfinLoggedIn = isJellyfinLoggedIn,
-            onNavigateToJellyfinDashboard = {
-                navController.navigateSafely(Screen.JellyfinDashboard.route)
+            onNavigateToYoutubeAuth = {
+                navController.navigateSafely(Screen.YoutubeAuth.route)
             }
         )
     }

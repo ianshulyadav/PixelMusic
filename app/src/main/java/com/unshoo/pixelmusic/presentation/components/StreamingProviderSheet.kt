@@ -25,10 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.unshoo.pixelmusic.R
-import com.unshoo.pixelmusic.presentation.jellyfin.auth.JellyfinLoginActivity
-import com.unshoo.pixelmusic.presentation.navidrome.auth.NavidromeLoginActivity
-import com.unshoo.pixelmusic.presentation.netease.auth.NeteaseLoginActivity
-import com.unshoo.pixelmusic.presentation.qqmusic.auth.QqMusicLoginActivity
 import com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 
@@ -41,14 +37,7 @@ import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 @Composable
 fun StreamingProviderSheet(
     onDismissRequest: () -> Unit,
-    isNeteaseLoggedIn: Boolean = false,
-    onNavigateToNeteaseDashboard: () -> Unit = {},
-    isQqMusicLoggedIn: Boolean = false,
-    onNavigateToQqMusicDashboard: () -> Unit = {},
-    isNavidromeLoggedIn: Boolean = false,
-    onNavigateToNavidromeDashboard: () -> Unit = {},
-    isJellyfinLoggedIn: Boolean = false,
-    onNavigateToJellyfinDashboard: () -> Unit = {},
+    onNavigateToYoutubeAuth: () -> Unit = {},
     sheetState: SheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -105,6 +94,18 @@ fun StreamingProviderSheet(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     ProviderRow(
+                        iconPainter = painterResource(R.drawable.ic_youtube),
+                        iconTint = Color(0xFFFF0000),
+                        title = "YouTube Music",
+                        subtitle = "Stream and import playlists",
+                        shape = providerSegmentItemShape,
+                        onClick = {
+                            onNavigateToYoutubeAuth()
+                            onDismissRequest()
+                        }
+                    )
+
+                    ProviderRow(
                         iconPainter = painterResource(R.drawable.telegram),
                         iconTint = Color(0xFF2AABEE),
                         title = "Telegram",
@@ -124,74 +125,6 @@ fun StreamingProviderSheet(
                         shape = providerSegmentItemShape,
                         enabled = false,
                         onClick = { }
-                    )
-
-                    ProviderRow(
-                        iconPainter = painterResource(R.drawable.ic_navidrome_md3),
-                        iconTint = Color(0xFFE8A54B),
-                        title = "Subsonic",
-                        subtitle = if (isNavidromeLoggedIn) "Connected · Navidrome/Airsonic" else "Connect Navidrome & others",
-                        shape = providerSegmentItemShape,
-                        isConnected = isNavidromeLoggedIn,
-                        onClick = {
-                            if (isNavidromeLoggedIn) {
-                                onNavigateToNavidromeDashboard()
-                            } else {
-                                context.startActivity(Intent(context, NavidromeLoginActivity::class.java))
-                            }
-                            onDismissRequest()
-                        }
-                    )
-
-                    ProviderRow(
-                        iconPainter = painterResource(R.drawable.ic_jellyfin),
-                        iconTint = Color(0xFF00A4DC),
-                        title = "Jellyfin",
-                        subtitle = if (isJellyfinLoggedIn) "Connected" else "Connect your Jellyfin server",
-                        shape = providerSegmentItemShape,
-                        isConnected = isJellyfinLoggedIn,
-                        onClick = {
-                            if (isJellyfinLoggedIn) {
-                                onNavigateToJellyfinDashboard()
-                            } else {
-                                context.startActivity(Intent(context, JellyfinLoginActivity::class.java))
-                            }
-                            onDismissRequest()
-                        }
-                    )
-
-                    ProviderRow(
-                        iconPainter = painterResource(R.drawable.netease_cloud_music_logo_icon_206716__1_),
-                        iconTint = Color(0xFFE85959),
-                        title = "Netease Music",
-                        subtitle = if (isNeteaseLoggedIn) "Connected" else "Sign in to stream",
-                        shape = providerSegmentItemShape,
-                        isConnected = isNeteaseLoggedIn,
-                        onClick = {
-                            if (isNeteaseLoggedIn) {
-                                onNavigateToNeteaseDashboard()
-                            } else {
-                                context.startActivity(Intent(context, NeteaseLoginActivity::class.java))
-                            }
-                            onDismissRequest()
-                        }
-                    )
-
-                    ProviderRow(
-                        iconPainter = painterResource(R.drawable.qq_music),
-                        iconTint = Color(0xFF31C27C),
-                        title = "QQ Music",
-                        subtitle = if (isQqMusicLoggedIn) "Connected" else "Sign in to stream",
-                        shape = providerSegmentItemShape,
-                        isConnected = isQqMusicLoggedIn,
-                        onClick = {
-                            if (isQqMusicLoggedIn) {
-                                onNavigateToQqMusicDashboard()
-                            } else {
-                                context.startActivity(Intent(context, QqMusicLoginActivity::class.java))
-                            }
-                            onDismissRequest()
-                        }
                     )
                 }
             }

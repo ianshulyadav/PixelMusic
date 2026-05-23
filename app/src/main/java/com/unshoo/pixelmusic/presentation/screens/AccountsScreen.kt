@@ -80,10 +80,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.presentation.components.CollapsibleCommonTopBar
 import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
-import com.unshoo.pixelmusic.presentation.netease.auth.NeteaseLoginActivity
-import com.unshoo.pixelmusic.presentation.jellyfin.auth.JellyfinLoginActivity
-import com.unshoo.pixelmusic.presentation.navidrome.auth.NavidromeLoginActivity
-import com.unshoo.pixelmusic.presentation.qqmusic.auth.QqMusicLoginActivity
 import com.unshoo.pixelmusic.presentation.telegram.auth.TelegramLoginActivity
 import com.unshoo.pixelmusic.presentation.viewmodel.AccountsViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.ExternalAccountUiModel
@@ -95,10 +91,6 @@ import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 @Composable
 fun AccountsScreen(
     onBackClick: () -> Unit,
-    onOpenNeteaseDashboard: () -> Unit = {},
-    onOpenQqMusicDashboard: () -> Unit = {},
-    onOpenNavidromeDashboard: () -> Unit = {},
-    onOpenJellyfinDashboard: () -> Unit = {},
     onOpenYoutubeAuth: () -> Unit = {},
     viewModel: AccountsViewModel = hiltViewModel()
 ) {
@@ -210,12 +202,7 @@ fun AccountsScreen(
                         openService(
                             context = context,
                             service = ExternalServiceAccount.YOUTUBE,
-                            onOpenNeteaseDashboard = onOpenNeteaseDashboard,
-                            onOpenQqMusicDashboard = onOpenQqMusicDashboard,
-                            onOpenNavidromeDashboard = onOpenNavidromeDashboard,
-                            onOpenJellyfinDashboard = onOpenJellyfinDashboard,
-                            onOpenYoutubeAuth = onOpenYoutubeAuth,
-                            preferNeteaseDashboard = false
+                            onOpenYoutubeAuth = onOpenYoutubeAuth
                         )
                     },
                     onSync = {
@@ -248,25 +235,12 @@ fun AccountsScreen(
                             openService(
                                 context = context,
                                 service = account.service,
-                                onOpenNeteaseDashboard = onOpenNeteaseDashboard,
-                                onOpenQqMusicDashboard = onOpenQqMusicDashboard,
-                                onOpenNavidromeDashboard = onOpenNavidromeDashboard,
-                                onOpenJellyfinDashboard = onOpenJellyfinDashboard,
-                                onOpenYoutubeAuth = onOpenYoutubeAuth,
-                                preferNeteaseDashboard = true
+                                onOpenYoutubeAuth = onOpenYoutubeAuth
                             )
                         },
                         onLogout = { viewModel.logout(account.service) },
-                        painter = if (account.service == ExternalServiceAccount.NETEASE) {
-                            painterResource(R.drawable.netease_cloud_music_logo_icon_206716__1_)
-                        } else if (account.service == ExternalServiceAccount.QQ_MUSIC) {
-                            painterResource(R.drawable.qq_music)
-                        } else if (account.service == ExternalServiceAccount.TELEGRAM) {
+                        painter = if (account.service == ExternalServiceAccount.TELEGRAM) {
                             painterResource(R.drawable.telegram)
-                        } else if (account.service == ExternalServiceAccount.JELLYFIN) {
-                            painterResource(R.drawable.ic_jellyfin)
-                        } else if (account.service == ExternalServiceAccount.NAVIDROME) {
-                            painterResource(R.drawable.ic_navidrome_md3)
                         } else null
                     )
                 }
@@ -290,12 +264,7 @@ fun AccountsScreen(
                             openService(
                                 context = context,
                                 service = service,
-                                onOpenNeteaseDashboard = onOpenNeteaseDashboard,
-                                onOpenQqMusicDashboard = onOpenQqMusicDashboard,
-                                onOpenNavidromeDashboard = onOpenNavidromeDashboard,
-                                onOpenJellyfinDashboard = onOpenJellyfinDashboard,
-                                onOpenYoutubeAuth = onOpenYoutubeAuth,
-                                preferNeteaseDashboard = false
+                                onOpenYoutubeAuth = onOpenYoutubeAuth
                             )
                         },
                         title = if (nonYoutubeConnected.isNotEmpty()) "Connect More Services" else stringResource(R.string.presentation_batch_b_accounts_no_linked_title),
@@ -427,15 +396,6 @@ private fun ConnectedAccountCard(
     modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically
 ) {
-    if (account.service == ExternalServiceAccount.NAVIDROME) {
-        ServiceIcon(
-            service = account.service,
-            tint = palette.iconTint,
-            modifier = Modifier
-                .width(48.dp)
-                .height(40.dp)
-        )
-    } else {
         Surface(
             shape = AbsoluteSmoothCornerShape(16.dp, 60),
             color = palette.iconContainer
@@ -459,7 +419,6 @@ private fun ConnectedAccountCard(
                 )
             }
         }
-    }
 
     Spacer(Modifier.size(12.dp))
 
@@ -612,12 +571,8 @@ private fun EmptyAccountsCard(
             disconnectedServices.forEach { service ->
                 val isComingSoon = service == ExternalServiceAccount.GOOGLE_DRIVE
                 val painter = when (service) {
-                    ExternalServiceAccount.NETEASE -> painterResource(R.drawable.netease_cloud_music_logo_icon_206716__1_)
-                    ExternalServiceAccount.QQ_MUSIC -> painterResource(R.drawable.qq_music)
                     ExternalServiceAccount.TELEGRAM -> painterResource(R.drawable.telegram)
                     ExternalServiceAccount.GOOGLE_DRIVE -> painterResource(R.drawable.rounded_drive_export_24)
-                    ExternalServiceAccount.JELLYFIN -> painterResource(R.drawable.ic_jellyfin)
-                    ExternalServiceAccount.NAVIDROME -> painterResource(R.drawable.ic_navidrome_md3)
                     ExternalServiceAccount.YOUTUBE -> null
                 }
                 FilledTonalButton(
@@ -685,38 +640,6 @@ private fun servicePalette(service: ExternalServiceAccount): ServicePalette {
             primaryActionContainer = MaterialTheme.colorScheme.secondaryContainer,
             primaryActionTint = MaterialTheme.colorScheme.onSecondaryContainer
         )
-        ExternalServiceAccount.NETEASE -> ServicePalette(
-            iconContainer = MaterialTheme.colorScheme.errorContainer,
-            iconTint = MaterialTheme.colorScheme.onErrorContainer,
-            statusContainer = Color(0xFFFFE3E1),
-            statusTint = Color(0xFF7A1D16),
-            primaryActionContainer = MaterialTheme.colorScheme.errorContainer,
-            primaryActionTint = MaterialTheme.colorScheme.onErrorContainer
-        )
-        ExternalServiceAccount.QQ_MUSIC -> ServicePalette(
-            iconContainer = MaterialTheme.colorScheme.tertiaryContainer,
-            iconTint = MaterialTheme.colorScheme.onTertiaryContainer,
-            statusContainer = Color(0xFFFFF0C7),
-            statusTint = Color(0xFF704900),
-            primaryActionContainer = MaterialTheme.colorScheme.tertiaryContainer,
-            primaryActionTint = MaterialTheme.colorScheme.onTertiaryContainer
-        )
-        ExternalServiceAccount.NAVIDROME -> ServicePalette(
-            iconContainer = Color.White,
-            iconTint = Color.Unspecified,
-            statusContainer = Color(0xFFE1F5FE),
-            statusTint = Color(0xFF0277BD),
-            primaryActionContainer = Color(0xFFE3F2FD),
-            primaryActionTint = Color(0xFF1565C0)
-        )
-        ExternalServiceAccount.JELLYFIN -> ServicePalette(
-            iconContainer = Color(0xFF00A4DC),
-            iconTint = Color.White,
-            statusContainer = Color(0xFFE1F5FE),
-            statusTint = Color(0xFF0277BD),
-            primaryActionContainer = Color(0xFFE3F2FD),
-            primaryActionTint = Color(0xFF1565C0)
-        )
         ExternalServiceAccount.YOUTUBE -> ServicePalette(
             iconContainer = MaterialTheme.colorScheme.errorContainer,
             iconTint = MaterialTheme.colorScheme.onErrorContainer,
@@ -732,55 +655,18 @@ private fun accountIcon(service: ExternalServiceAccount): ImageVector {
     return when (service) {
         ExternalServiceAccount.TELEGRAM -> Icons.AutoMirrored.Rounded.Send
         ExternalServiceAccount.GOOGLE_DRIVE -> Icons.Rounded.CloudQueue
-        ExternalServiceAccount.NETEASE -> Icons.Rounded.MusicNote
-        ExternalServiceAccount.QQ_MUSIC -> Icons.Rounded.MusicNote
-        ExternalServiceAccount.NAVIDROME -> Icons.Rounded.CloudQueue
-        ExternalServiceAccount.JELLYFIN -> Icons.Rounded.CloudQueue
         ExternalServiceAccount.YOUTUBE -> Icons.Rounded.MusicNote
     }
 }
 
 @Composable
 private fun ServiceIcon(service: ExternalServiceAccount, tint: Color, modifier: Modifier = Modifier) {
-    if (service == ExternalServiceAccount.NAVIDROME) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.CenterStart
-        ) {
-            // Subsonic icon (Bottom) - No outer container
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_subsonic),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(32.dp)
-            )
-            
-            // Navidrome icon (Top) - Closer horizontal offset, no outer container
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_navidrome),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier
-                    .size(32.dp)
-                    .offset(x = 16.dp) // Closer overlap offset (was 24dp)
-            )
-        }
-    } else if (service == ExternalServiceAccount.JELLYFIN) {
-        Icon(
-            painter = painterResource(R.drawable.ic_jellyfin),
-            contentDescription = null,
-            tint = tint,
-            modifier = modifier
-        )
-    } else {
-        Icon(
-            imageVector = accountIcon(service),
-            contentDescription = null,
-            tint = tint,
-            modifier = modifier
-        )
-    }
+    Icon(
+        imageVector = accountIcon(service),
+        contentDescription = null,
+        tint = tint,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -788,10 +674,6 @@ private fun serviceDisplayName(service: ExternalServiceAccount): String {
     return when (service) {
         ExternalServiceAccount.TELEGRAM -> stringResource(R.string.presentation_batch_b_service_telegram)
         ExternalServiceAccount.GOOGLE_DRIVE -> stringResource(R.string.auth_gdrive_title)
-        ExternalServiceAccount.NETEASE -> stringResource(R.string.presentation_batch_b_service_netease)
-        ExternalServiceAccount.QQ_MUSIC -> stringResource(R.string.screen_qq_music_dashboard_title)
-        ExternalServiceAccount.NAVIDROME -> stringResource(R.string.cd_subsonic_logo)
-        ExternalServiceAccount.JELLYFIN -> stringResource(R.string.auth_jellyfin_title)
         ExternalServiceAccount.YOUTUBE -> "YouTube Client"
     }
 }
@@ -799,12 +681,7 @@ private fun serviceDisplayName(service: ExternalServiceAccount): String {
 private fun openService(
     context: Context,
     service: ExternalServiceAccount,
-    onOpenNeteaseDashboard: () -> Unit,
-    onOpenQqMusicDashboard: () -> Unit,
-    onOpenNavidromeDashboard: () -> Unit,
-    onOpenJellyfinDashboard: () -> Unit,
-    onOpenYoutubeAuth: () -> Unit,
-    preferNeteaseDashboard: Boolean
+    onOpenYoutubeAuth: () -> Unit
 ) {
     when (service) {
         ExternalServiceAccount.TELEGRAM -> {
@@ -815,46 +692,6 @@ private fun openService(
         }
         ExternalServiceAccount.GOOGLE_DRIVE -> {
             Toast.makeText(context, context.getString(R.string.accounts_google_drive_soon), Toast.LENGTH_SHORT).show()
-        }
-        ExternalServiceAccount.NETEASE -> {
-            if (preferNeteaseDashboard) {
-                onOpenNeteaseDashboard()
-            } else {
-                safeStartActivity(
-                    context = context,
-                    intent = Intent(context, NeteaseLoginActivity::class.java)
-                )
-            }
-        }
-        ExternalServiceAccount.QQ_MUSIC -> {
-            if (preferNeteaseDashboard) {
-                onOpenQqMusicDashboard()
-            } else {
-                safeStartActivity(
-                    context = context,
-                    intent = Intent(context, QqMusicLoginActivity::class.java)
-                )
-            }
-        }
-        ExternalServiceAccount.NAVIDROME -> {
-            if (preferNeteaseDashboard) {
-                onOpenNavidromeDashboard()
-            } else {
-                safeStartActivity(
-                    context = context,
-                    intent = Intent(context, NavidromeLoginActivity::class.java)
-                )
-            }
-        }
-        ExternalServiceAccount.JELLYFIN -> {
-            if (preferNeteaseDashboard) {
-                onOpenJellyfinDashboard()
-            } else {
-                safeStartActivity(
-                    context = context,
-                    intent = Intent(context, JellyfinLoginActivity::class.java)
-                )
-            }
         }
         ExternalServiceAccount.YOUTUBE -> {
             onOpenYoutubeAuth()

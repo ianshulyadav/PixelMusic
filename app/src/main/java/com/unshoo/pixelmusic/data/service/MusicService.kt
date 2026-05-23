@@ -90,10 +90,9 @@ import com.unshoo.pixelmusic.data.service.auto.AutoMediaBrowseTree
 import com.unshoo.pixelmusic.data.service.wear.buildWearThemePalette
 import com.unshoo.pixelmusic.data.service.wear.WearStatePublisher
 import com.unshoo.pixelmusic.presentation.viewmodel.ColorSchemePair
-import com.unshoo.pixelmusic.shared.WearIntents
 import com.unshoo.pixelmusic.utils.ArtworkTransportSanitizer
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
-import com.unshoo.pixelmusic.data.navidrome.NavidromeRepository
+import com.unshoo.pixelmusic.shared.WearIntents
 import com.unshoo.pixelmusic.di.AppScope
 import com.unshoo.pixelmusic.presentation.viewmodel.ListeningStatsTracker
 import com.unshoo.pixelmusic.data.remote.youtube.AutoQueueManager
@@ -143,8 +142,6 @@ class MusicService : MediaLibraryService() {
     lateinit var wearStatePublisher: WearStatePublisher
     @Inject
     lateinit var replayGainManager: com.unshoo.pixelmusic.data.media.ReplayGainManager
-    @Inject
-    lateinit var navidromeRepository: NavidromeRepository
     @Inject
     lateinit var listeningStatsTracker: ListeningStatsTracker
     @Inject
@@ -1119,64 +1116,12 @@ class MusicService : MediaLibraryService() {
         return startCommandResult
     }
 
-    private fun getNavidromeId(mediaItem: MediaItem?): String? {
-        if (mediaItem == null) return null
-        return mediaItem.mediaMetadata.extras?.getString(MediaItemBuilder.EXTERNAL_EXTRA_NAVIDROME_ID)
-            ?: mediaItem.mediaId.let { if (it.startsWith("navidrome_")) it.substringAfter("navidrome_") else null }
-            ?: mediaItem.mediaMetadata.extras?.getString(MediaItemBuilder.EXTERNAL_EXTRA_CONTENT_URI)?.let {
-                if (it.startsWith("navidrome://")) it.substringAfter("navidrome://") else null
-            }
-    }
-
-    private fun isNavidromeMediaItem(mediaItem: MediaItem?): Boolean {
-        return getNavidromeId(mediaItem) != null
-    }
-
-    private fun reportNavidromePlayback(state: String, mediaItem: MediaItem? = engine.masterPlayer.currentMediaItem) {
-        val player = engine.masterPlayer
-        // Ensure we capture player state on main thread to avoid IllegalStateException
-        val targetItem = mediaItem ?: return
-        val navidromeId = getNavidromeId(targetItem) ?: return
-
-        // If reporting for current item, use player position.
-        // If reporting "stopped" for a transition, use the item's duration as final position.
-        val positionMs = if (targetItem === player.currentMediaItem) {
-            player.currentPosition
-        } else {
-            targetItem.mediaMetadata.extras?.getLong(MediaItemBuilder.EXTERNAL_EXTRA_DURATION) ?: 0L
-        }
-        val playbackRate = player.playbackParameters.speed
-
-        // Use appScope for the network call so it survives if serviceScope is cancelled
-        appScope.launch(Dispatchers.IO) {
-            navidromeRepository.reportPlayback(
-                navidromeId = navidromeId,
-                positionMs = positionMs,
-                state = state,
-                playbackRate = playbackRate
-            )
-        }
-    }
-
+    private fun getNavidromeId(mediaItem: MediaItem?): String? = null
+    private fun isNavidromeMediaItem(mediaItem: MediaItem?): Boolean = false
+    private fun reportNavidromePlayback(state: String, mediaItem: MediaItem? = engine.masterPlayer.currentMediaItem) {}
     private var navidromePlaybackReportJob: Job? = null
-
-    private fun startNavidromePlaybackReporting() {
-        navidromePlaybackReportJob?.cancel()
-        navidromePlaybackReportJob = serviceScope.launch {
-            while (true) {
-                delay(30_000) // Report every 30 seconds
-                val player = engine.masterPlayer
-                if (player.isPlaying && isNavidromeMediaItem(player.currentMediaItem)) {
-                    reportNavidromePlayback("playing")
-                }
-            }
-        }
-    }
-
-    private fun stopNavidromePlaybackReporting() {
-        navidromePlaybackReportJob?.cancel()
-        navidromePlaybackReportJob = null
-    }
+    private fun startNavidromePlaybackReporting() {}
+    private fun stopNavidromePlaybackReporting() {}
 
     private val playerListener = object : Player.Listener {
         override fun onVolumeChanged(volume: Float) {
@@ -1244,11 +1189,6 @@ class MusicService : MediaLibraryService() {
             if (playbackState == Player.STATE_ENDED) {
                 listeningStatsTracker.finalizeCurrentSession()
                 val mediaItem = (mediaSession?.player ?: engine.masterPlayer).currentMediaItem
-                getNavidromeId(mediaItem)?.let { navidromeId ->
-                    appScope.launch(Dispatchers.IO) {
-                        navidromeRepository.scrobble(navidromeId, submission = true)
-                    }
-                }
 
                 endOfTrackTimerSongId = null
                 reportNavidromePlayback("stopped")
@@ -1284,13 +1224,7 @@ class MusicService : MediaLibraryService() {
             if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
                 val finishedItem = oldPosition.mediaItem
                 if (isNavidromeMediaItem(finishedItem)) {
-                    val prevId = getNavidromeId(finishedItem)
                     reportNavidromePlayback("stopped", finishedItem)
-                    if (prevId != null) {
-                        appScope.launch(Dispatchers.IO) {
-                            navidromeRepository.scrobble(prevId, submission = true)
-                        }
-                    }
                 }
             }
 

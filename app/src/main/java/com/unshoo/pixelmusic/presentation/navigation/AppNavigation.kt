@@ -227,18 +227,6 @@ fun AppNavigation(
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     AccountsScreen(
                         onBackClick = { navController.popBackStack() },
-                        onOpenNeteaseDashboard = {
-                            navController.navigateSafely(Screen.NeteaseDashboard.route)
-                        },
-                        onOpenQqMusicDashboard = {
-                            navController.navigateSafely(Screen.QqMusicDashboard.route)
-                        },
-                        onOpenNavidromeDashboard = {
-                            navController.navigateSafely(Screen.NavidromeDashboard.route)
-                        },
-                        onOpenJellyfinDashboard = {
-                            navController.navigateSafely(Screen.JellyfinDashboard.route)
-                        },
                         onOpenYoutubeAuth = {
                             navController.navigateSafely(Screen.YoutubeAuth.route)
                         }
@@ -545,58 +533,7 @@ fun AppNavigation(
                     )
                 }
             }
-            composable(
-                Screen.NeteaseDashboard.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    com.unshoo.pixelmusic.presentation.netease.dashboard.NeteaseDashboardScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-            }
-            composable(
-                Screen.QqMusicDashboard.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    com.unshoo.pixelmusic.presentation.qqmusic.dashboard.QqMusicDashboardScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-            }
-            composable(
-                Screen.NavidromeDashboard.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    com.unshoo.pixelmusic.presentation.navidrome.dashboard.NavidromeDashboardScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-            }
-            composable(
-                Screen.JellyfinDashboard.route,
-                enterTransition = { enterTransition() },
-                exitTransition = { exitTransition() },
-                popEnterTransition = { popEnterTransition() },
-                popExitTransition = { popExitTransition() },
-            ) {
-                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
-                    com.unshoo.pixelmusic.presentation.jellyfin.dashboard.JellyfinDashboardScreen(
-                        onBack = { navController.popBackStack() }
-                    )
-                }
-            }
+
             composable(
                 Screen.YoutubeAuth.route,
                 enterTransition = { enterTransition() },

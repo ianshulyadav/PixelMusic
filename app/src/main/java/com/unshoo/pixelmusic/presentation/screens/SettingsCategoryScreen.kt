@@ -57,6 +57,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.navigationBars
@@ -2760,7 +2761,7 @@ private fun PaletteRegenerateSongSheetContent(
                     }
                 }
             } else {
-                items(songs, key = { it.id }) { song ->
+                itemsIndexed(songs, key = { index, song -> "${song.id}_$index" }) { _, song ->
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceContainer,
                         shape = RoundedCornerShape(12.dp),

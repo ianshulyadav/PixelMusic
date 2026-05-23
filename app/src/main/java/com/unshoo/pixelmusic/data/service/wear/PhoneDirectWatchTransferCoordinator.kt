@@ -12,13 +12,10 @@ import androidx.core.net.toUri
 import com.unshoo.pixelmusic.data.gdrive.GDriveStreamProxy
 import com.google.android.gms.wearable.Wearable
 import com.unshoo.pixelmusic.data.model.Song
-import com.unshoo.pixelmusic.data.navidrome.NavidromeStreamProxy
-import com.unshoo.pixelmusic.data.netease.NeteaseStreamProxy
-import com.unshoo.pixelmusic.data.preferences.AlbumArtPaletteStyle
-import com.unshoo.pixelmusic.data.preferences.AlbumArtColorAccuracy
 import com.unshoo.pixelmusic.data.preferences.ThemePreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.ThemePreference
-import com.unshoo.pixelmusic.data.qqmusic.QqMusicStreamProxy
+import com.unshoo.pixelmusic.data.preferences.AlbumArtPaletteStyle
+import com.unshoo.pixelmusic.data.preferences.AlbumArtColorAccuracy
 import com.unshoo.pixelmusic.data.repository.MusicRepository
 import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.data.telegram.TelegramStreamProxy
@@ -62,10 +59,7 @@ class PhoneDirectWatchTransferCoordinator @Inject constructor(
     private val transferCancellationStore: PhoneWatchTransferCancellationStore,
     private val telegramRepository: TelegramRepository,
     private val telegramStreamProxy: Lazy<TelegramStreamProxy>,
-    private val neteaseStreamProxy: NeteaseStreamProxy,
-    private val qqMusicStreamProxy: QqMusicStreamProxy,
-    private val navidromeStreamProxy: NavidromeStreamProxy,
-    private val jellyfinStreamProxy: com.unshoo.pixelmusic.data.jellyfin.JellyfinStreamProxy,
+
     private val gDriveStreamProxy: GDriveStreamProxy,
     private val okHttpClient: OkHttpClient,
 ) {
@@ -394,25 +388,7 @@ class PhoneDirectWatchTransferCoordinator @Inject constructor(
         return when (uri.scheme?.lowercase()) {
             "http", "https" -> rawUri
             "telegram" -> resolveTelegramStreamUrl(song, uri, rawUri)
-            "netease" -> {
-                ensureCloudProxyReady(neteaseStreamProxy) || return null
-                neteaseStreamProxy.resolveNeteaseUri(rawUri)
-            }
-            "qqmusic" -> {
-                ensureCloudProxyReady(qqMusicStreamProxy) || return null
-                qqMusicStreamProxy.warmUpStreamUrl(rawUri)
-                qqMusicStreamProxy.resolveQqMusicUri(rawUri)
-            }
-            "navidrome" -> {
-                ensureCloudProxyReady(navidromeStreamProxy) || return null
-                navidromeStreamProxy.warmUpStreamUrl(rawUri)
-                navidromeStreamProxy.resolveNavidromeUri(rawUri)
-            }
-            "jellyfin" -> {
-                ensureCloudProxyReady(jellyfinStreamProxy) || return null
-                jellyfinStreamProxy.warmUpStreamUrl(rawUri)
-                jellyfinStreamProxy.resolveJellyfinUri(rawUri)
-            }
+
             "gdrive" -> {
                 ensureGDriveProxyReady() || return null
                 gDriveStreamProxy.resolveGDriveUri(rawUri)
@@ -447,15 +423,7 @@ class PhoneDirectWatchTransferCoordinator @Inject constructor(
         return proxy.getProxyUrl(fileId, knownSize)
     }
 
-    private suspend fun ensureCloudProxyReady(proxy: Any): Boolean {
-        return when (proxy) {
-            is NeteaseStreamProxy -> proxy.ensureReady(5_000L)
-            is QqMusicStreamProxy -> proxy.ensureReady(5_000L)
-            is NavidromeStreamProxy -> proxy.ensureReady(5_000L)
-            is com.unshoo.pixelmusic.data.jellyfin.JellyfinStreamProxy -> proxy.ensureReady(5_000L)
-            else -> false
-        }
-    }
+
 
     private suspend fun ensureGDriveProxyReady(): Boolean {
         if (gDriveStreamProxy.isReady()) return true

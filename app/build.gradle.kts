@@ -258,7 +258,7 @@ dependencies {
     implementation(libs.androidx.graphics.shapes)
 
     // Networking & Serialization
-    implementation(libs.newpipeextractor)
+    implementation(libs.newpipe.extractor)
     implementation(libs.fuel.android)
     implementation(libs.fuel.json)
     implementation(libs.androidx.media3.exoplayer.hls)

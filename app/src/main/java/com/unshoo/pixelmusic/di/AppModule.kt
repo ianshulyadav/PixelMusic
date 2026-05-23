@@ -34,7 +34,6 @@ import com.unshoo.pixelmusic.data.preferences.PlaylistPreferencesRepository
 import com.unshoo.pixelmusic.data.preferences.dataStore
 import com.unshoo.pixelmusic.data.media.SongMetadataEditor
 import com.unshoo.pixelmusic.data.network.deezer.DeezerApiService
-import com.unshoo.pixelmusic.data.network.netease.NeteaseApiService
 import com.unshoo.pixelmusic.data.network.lyrics.LrcLibApiService
 import com.unshoo.pixelmusic.data.repository.ArtistImageRepository
 import com.unshoo.pixelmusic.data.repository.LyricsRepository
@@ -233,18 +232,6 @@ object AppModule {
     fun provideLocalPlaylistDao(database: PixelMusicDatabase): LocalPlaylistDao {
         return database.localPlaylistDao()
     }
-
-    @Singleton
-    @Provides
-    fun provideQqMusicDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.QqMusicDao {
-        return database.qqmusicDao()
-    }
-
-    @Singleton
-    @Provides
-    fun provideNavidromeDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.NavidromeDao {
-        return database.navidromeDao()
-    }
     
     @Singleton
     @Provides
@@ -255,12 +242,6 @@ object AppModule {
     @Provides
     fun provideAiUsageDao(database: PixelMusicDatabase): AiUsageDao {
         return database.aiUsageDao()
-    }
-
-    @Singleton
-    @Provides
-    fun provideJellyfinDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.JellyfinDao {
-        return database.jellyfinDao()
     }
 
     @Provides
@@ -344,12 +325,6 @@ object AppModule {
     @Provides
     fun provideTelegramDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.TelegramDao {
         return database.telegramDao()
-    }
-
-    @Singleton
-    @Provides
-    fun provideNeteaseDao(database: PixelMusicDatabase): com.unshoo.pixelmusic.data.database.NeteaseDao {
-        return database.neteaseDao()
     }
 
     @Provides
