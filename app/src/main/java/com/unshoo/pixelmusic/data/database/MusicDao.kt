@@ -1951,10 +1951,51 @@ interface MusicDao {
      * restricted to source types with meaningful engagement data.
      */
     @Query("""
-        SELECT s.* FROM songs s
-        INNER JOIN song_engagements e ON s.id = e.song_id
-        WHERE e.play_count > 0
-        ORDER BY e.last_played_timestamp DESC, e.play_count DESC
+        SELECT * FROM songs
+        WHERE id NOT IN (
+            SELECT CAST(song_id AS INTEGER)
+            FROM song_engagements
+            WHERE play_count > 0
+        )
+        ORDER BY (
+            CASE
+                -- Match related songs of recently played that also match favorite artists
+                WHEN id IN (
+                    SELECT related_song_id
+                    FROM related_song_map
+                    WHERE song_id IN (
+                        SELECT CAST(song_id AS INTEGER)
+                        FROM song_engagements
+                        WHERE play_count > 0
+                    )
+                ) AND artist_id IN (
+                    SELECT artist_id
+                    FROM songs
+                    WHERE is_favorite = 1
+                ) THEN 4
+                
+                -- Match related songs of recently played
+                WHEN id IN (
+                    SELECT related_song_id
+                    FROM related_song_map
+                    WHERE song_id IN (
+                        SELECT CAST(song_id AS INTEGER)
+                        FROM song_engagements
+                        WHERE play_count > 0
+                    )
+                ) THEN 3
+                
+                -- Match favorite artist songs
+                WHEN artist_id IN (
+                    SELECT artist_id
+                    FROM songs
+                    WHERE is_favorite = 1
+                ) THEN 2
+                
+                -- Fallback
+                ELSE 1
+            END
+        ) DESC, id DESC
         LIMIT :limit
     """)
     fun quickPicks(limit: Int = 20): Flow<List<SongEntity>>

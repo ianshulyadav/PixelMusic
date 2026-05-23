@@ -1209,6 +1209,10 @@ class MusicService : MediaLibraryService() {
             if (nextIndex != androidx.media3.common.C.INDEX_UNSET) {
                 runCatching { prefetchReplayGain(player.getMediaItemAt(nextIndex)) }
             }
+            val activePlayer = mediaSession?.player ?: engine.masterPlayer
+            if (activePlayer.shuffleModeEnabled && reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
+                applyCurrentFirstShuffleOrder()
+            }
         }
 
         override fun onPositionDiscontinuity(
@@ -1314,10 +1318,15 @@ class MusicService : MediaLibraryService() {
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             Timber.tag("MusicService")
                 .d("playerListener.onShuffleModeEnabledChanged: $shuffleModeEnabled")
+            if (shuffleModeEnabled) {
+                applyCurrentFirstShuffleOrder()
+            }
             requestWidgetFullUpdate(force = true)
             mediaSession?.let { refreshMediaSessionUi(it) }
             schedulePlaybackSnapshotPersist()
         }
+
+
 
         override fun onRepeatModeChanged(repeatMode: Int) {
             requestWidgetFullUpdate(force = true)
@@ -2943,6 +2952,31 @@ class MusicService : MediaLibraryService() {
         }
         refreshMediaSessionUi(session)
         requestWidgetFullUpdate(force = true)
+    }
+
+    private var isApplyingShuffleOrder = false
+    private fun applyCurrentFirstShuffleOrder() {
+        if (isApplyingShuffleOrder) return
+        val player = mediaSession?.player ?: engine.masterPlayer
+        val count = player.mediaItemCount
+        if (count <= 1) return
+        isApplyingShuffleOrder = true
+        try {
+            val currentIndex = player.currentMediaItemIndex.coerceIn(0, count - 1)
+            val shuffledIndices = IntArray(count) { it }
+            shuffledIndices.shuffle()
+            val currentPos = shuffledIndices.indexOf(currentIndex)
+            if (currentPos >= 0 && currentPos != 0) {
+                val temp = shuffledIndices[0]
+                shuffledIndices[0] = currentIndex
+                shuffledIndices[currentPos] = temp
+            }
+            (player as? androidx.media3.exoplayer.ExoPlayer)?.setShuffleOrder(
+                androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
+            )
+        } finally {
+            isApplyingShuffleOrder = false
+        }
     }
 
     private fun setCurrentSongFavoriteState(

@@ -720,13 +720,13 @@ fun YourMixHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(256.dp)
+            .height(140.dp)
             .padding(16.dp)
     ) {
         Column(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 48.dp, start = 12.dp)
+                .padding(top = 12.dp, start = 12.dp)
         ) {
             // Your Mix Title
             Text(

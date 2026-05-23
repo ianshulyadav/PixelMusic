@@ -155,118 +155,115 @@ fun PlaylistMultiSelectionBottomSheet(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // Actions list
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
-                    contentPadding = PaddingValues(bottom = 32.dp),
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Row 1: Delete, Export
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilledTonalButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                onDeleteAll()
+                                onDismiss()
+                            }
                         ) {
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    onDeleteAll()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Delete,
-                                    contentDescription = stringResource(R.string.cd_delete_all_songs)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.delete_action))
-                            }
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.cd_delete_all_songs)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.delete_action))
+                        }
 
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    onExportAll()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.FileDownload,
-                                    contentDescription = stringResource(R.string.cd_export_all)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.action_export))
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                onExportAll()
+                                onDismiss()
                             }
+                        ) {
+                            Icon(
+                                Icons.Rounded.FileDownload,
+                                contentDescription = stringResource(R.string.cd_export_all)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_export))
                         }
                     }
 
                     // Row 2: Merge, Share
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilledTonalButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                onMergeAll()
+                                onDismiss()
+                            }
                         ) {
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    onMergeAll()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Merge,
-                                    contentDescription = stringResource(R.string.cd_merge_all)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.action_merge))
-                            }
+                            Icon(
+                                Icons.Rounded.Merge,
+                                contentDescription = stringResource(R.string.cd_merge_all)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_merge))
+                        }
 
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    onShareAll()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Share,
-                                    contentDescription = stringResource(R.string.cd_share_all)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.action_share))
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                onShareAll()
+                                onDismiss()
                             }
+                        ) {
+                            Icon(
+                                Icons.Rounded.Share,
+                                contentDescription = stringResource(R.string.cd_share_all)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_share))
                         }
                     }
                 }

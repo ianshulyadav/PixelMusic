@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -307,7 +308,7 @@ private fun SongPickerSheet(songs: List<Song>, onSongSelected: (Song) -> Unit) {
             .padding(16.dp), textAlign = TextAlign.Center)
         LazyColumn(modifier = Modifier
             .fillMaxWidth()
-            .weight(1f, fill = false)
+            .heightIn(max = 450.dp)
             .padding(horizontal = 8.dp)) {
             items(songs, key = { it.id }) { song ->
                 SongPickerItem(song = song, onClick = { onSongSelected(song) })

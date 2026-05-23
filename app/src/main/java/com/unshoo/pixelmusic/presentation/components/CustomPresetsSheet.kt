@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -86,7 +87,7 @@ fun CustomPresetsSheet(
                 }
             } else {
                 LazyColumn(
-                    modifier = Modifier.weight(1f, fill = false)
+                    modifier = Modifier.heightIn(max = 400.dp)
                 ) {
                     items(presets, key = { it.name }) { preset ->
                         CustomPresetItem(

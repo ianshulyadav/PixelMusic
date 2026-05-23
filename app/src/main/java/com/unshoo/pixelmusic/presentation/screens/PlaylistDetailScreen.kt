@@ -9,6 +9,8 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -428,6 +430,7 @@ fun PlaylistDetailScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
                             .padding(start = 20.dp, end = 20.dp, bottom = 8.dp, top = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -467,7 +470,6 @@ fun PlaylistDetailScreen(
                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                             ),
                             modifier = Modifier
-                                .weight(0.75f)
                                 .height(actionButtonsHeight)
                                 .animateContentSize()
                         ) {
@@ -492,7 +494,6 @@ fun PlaylistDetailScreen(
                                 contentColor = removeIconColor
                             ),
                             modifier = Modifier
-                                .weight(1f)
                                 .height(actionButtonsHeight)
                                 .animateContentSize()
                                 .clip(RoundedCornerShape(removeCornerRadius))
@@ -521,7 +522,6 @@ fun PlaylistDetailScreen(
                                 contentColor = reorderIconColor
                             ),
                             modifier = Modifier
-                                .weight(1f)
                                 .height(actionButtonsHeight)
                                 .animateContentSize()
                                 .clip(RoundedCornerShape(reorderCornerRadius))
@@ -542,34 +542,19 @@ fun PlaylistDetailScreen(
                         }
 
                         if (currentPlaylist.source == "YOUTUBE") {
-                            Button(
+                            FilledTonalIconButton(
                                 onClick = {
                                     playerViewModel.downloadPlaylistSongs(currentPlaylist.id, currentPlaylist.songIds)
                                 },
-                                shape = CircleShape,
-                                contentPadding = PaddingValues(horizontal = 8.dp),
-                                colors = ButtonDefaults.buttonColors(
+                                colors = IconButtonDefaults.filledTonalIconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     contentColor = MaterialTheme.colorScheme.onSurface
                                 ),
-                                modifier = Modifier
-                                    .weight(1.2f)
-                                    .height(actionButtonsHeight)
-                                    .animateContentSize()
+                                modifier = Modifier.size(actionButtonsHeight)
                             ) {
                                 Icon(
-                                    modifier = Modifier.size(18.dp),
                                     imageVector = Icons.Rounded.Download,
-                                    contentDescription = downloadPlaylistLabel,
-                                    tint = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    modifier = Modifier.padding(end = 4.dp),
-                                    text = downloadPlaylistLabel,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    maxLines = 1
+                                    contentDescription = downloadPlaylistLabel
                                 )
                             }
                         }

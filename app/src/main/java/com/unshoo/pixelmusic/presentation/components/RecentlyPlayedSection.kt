@@ -97,8 +97,10 @@ fun RecentlyPlayedSection(
     }
     val sharedScrollState = rememberScrollState()
 
-    val sectionHeight = HomeRecentlyPlayedPillHeight * HomeRecentlyPlayedPillsPerColumn +
-            HomeRecentlyPlayedPillSpacing * (HomeRecentlyPlayedPillsPerColumn - 1)
+    val actualRecentlyPlayedRowsCount = songRows.count { it.pills.isNotEmpty() }
+    val sectionHeight = if (actualRecentlyPlayedRowsCount > 0) {
+        HomeRecentlyPlayedPillHeight * actualRecentlyPlayedRowsCount + HomeRecentlyPlayedPillSpacing * (actualRecentlyPlayedRowsCount - 1)
+    } else 0.dp
 
     Column(
         modifier = modifier

@@ -1244,20 +1244,14 @@ private fun ExpressiveAutoplayButton(
         contentColor = animatedContentColor,
         modifier = modifier
     ) {
-        Row(
+        Box(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Rounded.AllInclusive,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.autoplay),
                 modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = stringResource(R.string.autoplay),
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-                maxLines = 1
             )
         }
     }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -57,8 +58,10 @@ fun QuickPicksSection(
     val visible = remember(songs) { songs.take(QuickPicksLimit) }
     val rows = remember(visible) { buildQuickPickRows(visible) }
     val scrollState = rememberScrollState()
-    val sectionHeight = QuickPicksPillHeight * QuickPicksPillsPerColumn +
-            QuickPicksPillSpacing * (QuickPicksPillsPerColumn - 1)
+    val actualRowsCount = rows.size
+    val sectionHeight = if (actualRowsCount > 0) {
+        QuickPicksPillHeight * actualRowsCount + QuickPicksPillSpacing * (actualRowsCount - 1)
+    } else 0.dp
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -116,7 +119,7 @@ private fun QuickPickPill(
         modifier = Modifier
             .width(width)
             .height(QuickPicksPillHeight),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(QuickPicksPillHeight / 2),
         colors = CardDefaults.cardColors(containerColor = bgColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -138,7 +141,7 @@ private fun QuickPickPill(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(QuickPicksPillArtSize)
-                    .clip(RoundedCornerShape(10.dp))
+                    .clip(CircleShape)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(

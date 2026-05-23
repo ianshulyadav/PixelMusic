@@ -2641,7 +2641,7 @@ private fun LibraryTabSwitcherSheet(
 
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(minSize = 150.dp),
-                modifier = Modifier.weight(1f, fill = false),
+                modifier = Modifier.heightIn(max = 400.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)

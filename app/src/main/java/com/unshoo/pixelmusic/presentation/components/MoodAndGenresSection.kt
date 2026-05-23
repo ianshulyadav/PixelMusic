@@ -7,12 +7,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -50,6 +52,10 @@ import unshoo.ianshulyadav.pixelmusic.innertube.models.BrowseEndpoint
 import unshoo.ianshulyadav.pixelmusic.innertube.pages.MoodAndGenres
 import java.util.concurrent.ConcurrentHashMap
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+
 private val moodArtworkCache = ConcurrentHashMap<String, String>()
 private val MoodCardShape = RoundedCornerShape(24.dp)
 private val MoodCoverShape = RoundedCornerShape(16.dp)
@@ -61,26 +67,39 @@ fun MoodAndGenresSection(
     onItemClick: (MoodAndGenres.Item) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 160.dp),
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-        userScrollEnabled = false
+    val columnsCount = 2
+    val chunkedItems = remember(items) { items.chunked(columnsCount) }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(
-            items = items,
-            key = { "${it.title}:${it.endpoint?.browseId.orEmpty()}:${it.endpoint?.params.orEmpty()}" }
-        ) { item ->
-            MoodAndGenresCard(
-                item = item,
-                onClick = { onItemClick(item) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp)
-            )
+        chunkedItems.forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                rowItems.forEach { item ->
+                    MoodAndGenresCard(
+                        item = item,
+                        onClick = { onItemClick(item) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(4.dp)
+                    )
+                }
+                if (rowItems.size < columnsCount) {
+                    repeat(columnsCount - rowItems.size) {
+                        Spacer(modifier = Modifier.weight(1f).padding(4.dp))
+                    }
+                }
+            }
         }
     }
 }
+
 
 @Composable
 fun MoodAndGenresCard(
@@ -170,6 +189,7 @@ fun MoodAndGenresCard(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 10.dp, end = 32.dp)
+                .size(80.dp)
                 .graphicsLayer {
                     alpha = 0.24f; rotationZ = 13f
                     shape = MoodCoverShape; clip = true
@@ -190,6 +210,7 @@ fun MoodAndGenresCard(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(top = 12.dp, end = 16.dp)
+                .size(90.dp)
                 .graphicsLayer {
                     rotationZ = coverRotation
                     shadowElevation = coverShadowPx

@@ -207,206 +207,201 @@ fun MultiSelectionBottomSheet(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 // Actions list
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
-                    contentPadding = PaddingValues(bottom = 32.dp),
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Row 1: Play, Favorite, Share
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        MediumExtendedFloatingActionButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            MediumExtendedFloatingActionButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .fillMaxHeight(),
-                                onClick = {
-                                    onPlayAll()
-                                    onDismiss()
-                                },
-                                elevation = FloatingActionButtonDefaults.elevation(0.dp),
-                                shape = buttonShape,
-                                icon = {
-                                    Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.cd_play_all))
-                                },
-                                text = {
-                                    Text(
-                                        modifier = Modifier.padding(end = 0.dp),
-                                        style = MaterialTheme.typography.titleMediumEmphasized,
-                                        text = stringResource(R.string.action_play_all)
-                                    )
-                                }
+                                .weight(0.5f)
+                                .fillMaxHeight(),
+                            onClick = {
+                                onPlayAll()
+                                onDismiss()
+                            },
+                            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+                            shape = buttonShape,
+                            icon = {
+                                Icon(Icons.Rounded.PlayArrow, contentDescription = stringResource(R.string.cd_play_all))
+                            },
+                            text = {
+                                Text(
+                                    modifier = Modifier.padding(end = 0.dp),
+                                    style = MaterialTheme.typography.titleMediumEmphasized,
+                                    text = stringResource(R.string.action_play_all)
+                                )
+                            }
+                        )
+                        // Like/Unlike toggle button
+                        // If all are liked -> clicking will unlike all
+                        // If any is not liked -> clicking will like all
+                        FilledIconButton(
+                            modifier = Modifier
+                                .weight(0.25f)
+                                .fillMaxHeight(),
+                            onClick = {
+                                onToggleLikeAll(!allAreLiked) // true = like all, false = unlike all
+                                onDismiss()
+                            },
+                            shape = favoriteButtonShape,
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = favoriteButtonContainerColor,
+                                contentColor = favoriteButtonContentColor
                             )
-                            // Like/Unlike toggle button
-                            // If all are liked -> clicking will unlike all
-                            // If any is not liked -> clicking will like all
-                            FilledIconButton(
-                                modifier = Modifier
-                                    .weight(0.25f)
-                                    .fillMaxHeight(),
-                                onClick = {
-                                    onToggleLikeAll(!allAreLiked) // true = like all, false = unlike all
-                                    onDismiss()
-                                },
-                                shape = favoriteButtonShape,
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = favoriteButtonContainerColor,
-                                    contentColor = favoriteButtonContentColor
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize),
+                                imageVector = if (allAreLiked) 
+                                    Icons.Rounded.HeartBroken 
+                                else
+                                    Icons.Rounded.FavoriteBorder,
+                                contentDescription = stringResource(
+                                    if (allAreLiked) R.string.cd_unlike_all else R.string.cd_like_all
                                 )
-                            ) {
-                                Icon(
-                                    modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize),
-                                    imageVector = if (allAreLiked) 
-                                        Icons.Rounded.HeartBroken 
-                                    else
-                                        Icons.Rounded.FavoriteBorder,
-                                    contentDescription = stringResource(
-                                        if (allAreLiked) R.string.cd_unlike_all else R.string.cd_like_all
-                                    )
-                                )
-                            }
-                            
-                            FilledTonalIconButton(
-                                modifier = Modifier
-                                    .weight(0.25f)
-                                    .fillMaxHeight(),
-                                colors = IconButtonDefaults.filledIconButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary,
-                                    contentColor = MaterialTheme.colorScheme.onSecondary
-                                ),
-                                onClick = {
-                                    onShareAll()
-                                    onDismiss()
-                                },
-                                shape = CircleShape
-                            ) {
-                                Icon(
-                                    modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize),
-                                    imageVector = Icons.Rounded.Share,
-                                    contentDescription = stringResource(R.string.cd_share_all_as_zip)
-                                )
-                            }
+                            )
+                        }
+                        
+                        FilledTonalIconButton(
+                            modifier = Modifier
+                                .weight(0.25f)
+                                .fillMaxHeight(),
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                                contentColor = MaterialTheme.colorScheme.onSecondary
+                            ),
+                            onClick = {
+                                onShareAll()
+                                onDismiss()
+                            },
+                            shape = CircleShape
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize),
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = stringResource(R.string.cd_share_all_as_zip)
+                            )
                         }
                     }
                     
                     // Row 2: Add to Queue, Play Next
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilledTonalButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                .weight(0.6f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                            ),
+                            contentPadding = PaddingValues(horizontal = 0.dp),
+                            shape = CircleShape,
+                            onClick = {
+                                onAddToQueue()
+                                onDismiss()
+                            }
                         ) {
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.6f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                ),
-                                contentPadding = PaddingValues(horizontal = 0.dp),
-                                shape = CircleShape,
-                                onClick = {
-                                    onAddToQueue()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.QueueMusic,
-                                    contentDescription = stringResource(R.string.cd_add_all_to_queue)
-                                )
-                                Spacer(Modifier.width(14.dp))
-                                Text(stringResource(R.string.action_add_to_queue))
+                            Icon(
+                                Icons.AutoMirrored.Rounded.QueueMusic,
+                                contentDescription = stringResource(R.string.cd_add_all_to_queue)
+                            )
+                            Spacer(Modifier.width(14.dp))
+                            Text(stringResource(R.string.action_add_to_queue))
+                        }
+                        
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .weight(0.4f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiary
+                            ),
+                            contentPadding = PaddingValues(horizontal = 0.dp),
+                            shape = CircleShape,
+                            onClick = {
+                                onPlayNext()
+                                onDismiss()
                             }
-                            
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.4f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary
-                                ),
-                                contentPadding = PaddingValues(horizontal = 0.dp),
-                                shape = CircleShape,
-                                onClick = {
-                                    onPlayNext()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.QueueMusic,
-                                    contentDescription = stringResource(R.string.cd_play_next_in_queue)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.action_queue_next))
-                            }
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.QueueMusic,
+                                contentDescription = stringResource(R.string.cd_play_next_in_queue)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_queue_next))
                         }
                     }
                     
                     // Row 3: Add to Playlist, Delete
-                    item {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilledTonalButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    onAddToPlaylist()
-                                    onDismiss()
-                                }
-                            ) {
-                                Icon(
-                                    Icons.AutoMirrored.Rounded.PlaylistAdd,
-                                    contentDescription = stringResource(R.string.cd_add_to_playlist)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.shortcut_playlist_short))
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                onAddToPlaylist()
+                                onDismiss()
                             }
-                            
-                            FilledTonalButton(
-                                modifier = Modifier
-                                    .weight(0.5f)
-                                    .heightIn(min = 66.dp),
-                                colors = ButtonDefaults.filledTonalButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                ),
-                                shape = CircleShape,
-                                onClick = {
-                                    val activity = (context as? Activity)
-                                    if (activity != null) {
-                                        onDeleteAll(activity) { success ->
-                                            if (success) onDismiss()
-                                        }
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Rounded.PlaylistAdd,
+                                contentDescription = stringResource(R.string.cd_add_to_playlist)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.shortcut_playlist_short))
+                        }
+                        
+                        FilledTonalButton(
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .heightIn(min = 66.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = CircleShape,
+                            onClick = {
+                                val activity = (context as? Activity)
+                                if (activity != null) {
+                                    onDeleteAll(activity) { success ->
+                                        if (success) onDismiss()
                                     }
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Delete,
-                                    contentDescription = stringResource(R.string.cd_delete_all_songs)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.action_delete_all))
                             }
+                        ) {
+                            Icon(
+                                Icons.Rounded.Delete,
+                                contentDescription = stringResource(R.string.cd_delete_all_songs)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.action_delete_all))
                         }
                     }
                 }
