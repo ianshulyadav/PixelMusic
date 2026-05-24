@@ -147,7 +147,7 @@ object LikedSongsSyncHelper {
                                     songCount = 0,
                                     dateAdded = System.currentTimeMillis(),
                                     year = 0,
-                                    albumArtUriString = song.thumbnailHref
+                                    albumArtUriString = upgradeThumbnailUrlToHighQuality(song.thumbnailHref)
                                 )
                             )
 
@@ -160,7 +160,7 @@ object LikedSongsSyncHelper {
                                 albumName = albumName,
                                 albumId = albumId,
                                 contentUriString = "youtube://${song.youtubeId}",
-                                albumArtUriString = song.thumbnailPath ?: song.thumbnailHref,
+                                albumArtUriString = upgradeThumbnailUrlToHighQuality(song.thumbnailPath ?: song.thumbnailHref),
                                 duration = parseDurationStringToMillis(song.duration),
                                 genre = song.genre?.takeIf { it.isNotBlank() } ?: "YouTube Music",
                                 filePath = song.audioFilePath.orEmpty(),

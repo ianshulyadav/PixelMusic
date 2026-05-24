@@ -46,6 +46,7 @@ class MusicRepositoryImplTest {
     private val mockSongRepository: SongRepository = mockk(relaxed = true)
     private val mockFavoritesDao: FavoritesDao = mockk(relaxed = true)
     private val mockArtistImageRepository: ArtistImageRepository = mockk(relaxed = true)
+    private val mockYoutubeDatastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository = mockk(relaxed = true)
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -113,7 +114,8 @@ class MusicRepositoryImplTest {
 
             favoritesDao = mockFavoritesDao,
             artistImageRepository = mockArtistImageRepository,
-            folderTreeBuilder = mockk(relaxed = true)
+            folderTreeBuilder = mockk(relaxed = true),
+            youtubeDatastoreRepository = mockYoutubeDatastoreRepository
         )
     }
 

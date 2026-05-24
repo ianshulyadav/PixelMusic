@@ -69,9 +69,18 @@ object QueuePreloadManager {
         datastoreRepository = null
     }
 
+    fun updatePlayer(newPlayer: Player) {
+        val oldPlayer = playerRef
+        if (oldPlayer !== newPlayer) {
+            oldPlayer?.removeListener(playerListener)
+            playerRef = newPlayer
+            newPlayer.addListener(playerListener)
+            printd("QueuePreloadManager player updated")
+        }
+    }
+
     fun onControllerReady(player: Player) {
-        playerRef = player
-        player.addListener(playerListener)
+        updatePlayer(player)
     }
 
     private fun triggerPreload() {

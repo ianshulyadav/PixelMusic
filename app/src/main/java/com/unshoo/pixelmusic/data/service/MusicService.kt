@@ -297,6 +297,8 @@ class MusicService : MediaLibraryService() {
             oldPlayer.removeListener(playerListener)
             session.player = player
             player.addListener(playerListener)
+            AutoQueueManager.updatePlayer(player)
+            QueuePreloadManager.updatePlayer(player)
         }
 
         Timber.tag("MusicService").d(logMessage)

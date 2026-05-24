@@ -33,10 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.presentation.components.SmartImage
 
 private val QuickPicksPillHeight = 56.dp
 private val QuickPicksPillSpacing = 8.dp
@@ -133,17 +131,12 @@ private fun QuickPickPill(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val artUri = song.albumArtUriString
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(artUri)
-                    .diskCachePolicy(CachePolicy.ENABLED)
-                    .memoryCachePolicy(CachePolicy.ENABLED)
-                    .build(),
+            SmartImage(
+                model = artUri,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(QuickPicksPillArtSize)
-                    .clip(CircleShape)
+                shape = CircleShape,
+                modifier = Modifier.size(QuickPicksPillArtSize)
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(

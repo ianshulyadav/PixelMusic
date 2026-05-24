@@ -1789,7 +1789,7 @@ constructor(
                         songCount = 0,
                         dateAdded = System.currentTimeMillis(),
                         year = 0,
-                        albumArtUriString = ySong.thumbnailPath ?: ySong.thumbnailHref
+                        albumArtUriString = com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(ySong.thumbnailPath ?: ySong.thumbnailHref)
                     )
                 )
 
@@ -1814,7 +1814,7 @@ constructor(
                         albumName = albumName,
                         albumId = albumId,
                         contentUriString = "youtube://${ySong.youtubeId}",
-                        albumArtUriString = ySong.thumbnailPath ?: ySong.thumbnailHref,
+                        albumArtUriString = com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(ySong.thumbnailPath ?: ySong.thumbnailHref),
                         duration = durationMs,
                         genre = ySong.genre?.takeIf { it.isNotBlank() } ?: YOUTUBE_GENRE,
                         filePath = ySong.audioFilePath ?: "",
@@ -1871,7 +1871,7 @@ constructor(
                     playlistPreferencesRepository.createPlaylist(
                         name = playlist.info.title,
                         songIds = playlistSongIds,
-                        coverImageUri = playlist.info.coverPath ?: playlist.info.coverHref,
+                        coverImageUri = com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(playlist.info.coverPath ?: playlist.info.coverHref),
                         customId = playlist.info.id,
                         source = "YOUTUBE"
                     )
@@ -1880,7 +1880,7 @@ constructor(
                         existing.copy(
                             name = playlist.info.title,
                             songIds = playlistSongIds,
-                            coverImageUri = playlist.info.coverPath ?: playlist.info.coverHref
+                            coverImageUri = com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality(playlist.info.coverPath ?: playlist.info.coverHref)
                         )
                     )
                 }

@@ -10,6 +10,10 @@ fun upgradeThumbnailUrlToHighQuality(url: String?): String? {
     if (resizeRegex.containsMatchIn(url)) {
         return url.replace(resizeRegex, "=w1000-h1000")
     }
+    val sRegex = Regex("=s\\d+.*")
+    if (sRegex.containsMatchIn(url)) {
+        return url.replace(sRegex, "=s1000")
+    }
     if (url.contains("googleusercontent.com")) {
         return if (url.contains("=")) {
             url.substringBeforeLast("=") + "=w1000-h1000"

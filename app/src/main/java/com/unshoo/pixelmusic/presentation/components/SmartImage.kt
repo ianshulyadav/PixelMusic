@@ -102,7 +102,7 @@ fun SmartImage(
             val clampedH = if (heightPx > maxSize) maxSize else heightPx
             Size(clampedW, clampedH)
         } else {
-            baseSize
+            coil.size.Size.ORIGINAL
         }
     }
 
