@@ -8,6 +8,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.unshoo.pixelmusic.data.remote.youtube.Constants
+import com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
@@ -46,7 +47,7 @@ data class Song(
                         .setTitle(title)
                         .setArtist(artist)
                         .setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
-                        .setArtworkUri((thumbnailPath ?: thumbnailHref).toUri())
+                        .setArtworkUri(upgradeThumbnailUrlToHighQuality(thumbnailPath ?: thumbnailHref).orEmpty().toUri())
                         .setExtras(extras)
                         .build()
                 )

@@ -107,7 +107,7 @@ object QueuePreloadManager {
                     youtubeId = videoId,
                     title = mediaItem.mediaMetadata.title?.toString() ?: "",
                     artist = mediaItem.mediaMetadata.artist?.toString() ?: "",
-                    thumbnailHref = mediaItem.mediaMetadata.artworkUri?.toString() ?: ""
+                    thumbnailHref = upgradeThumbnailUrlToHighQuality(mediaItem.mediaMetadata.artworkUri?.toString()).orEmpty()
                 )
 
                 // 1. Preload stream URL (saves to DB so next play is instant)

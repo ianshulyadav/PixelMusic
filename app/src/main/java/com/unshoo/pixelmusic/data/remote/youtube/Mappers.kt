@@ -81,7 +81,7 @@ fun com.unshoo.pixelmusic.data.model.youtube.Song.toNativeSong(): Song {
         albumArtist = artist,
         path = audioFilePath.orEmpty(),
         contentUriString = "youtube://$youtubeId",
-        albumArtUriString = thumbnailPath ?: thumbnailHref,
+        albumArtUriString = upgradeThumbnailUrlToHighQuality(thumbnailPath ?: thumbnailHref),
         duration = durationMillis,
         genre = "YouTube",
         lyrics = null,

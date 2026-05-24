@@ -858,10 +858,10 @@ constructor(
         dataStore.data.map { preferences ->
             try {
                 AlbumArtQuality.valueOf(
-                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "LOW"
+                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "ORIGINAL"
                 )
             } catch (e: Exception) {
-                AlbumArtQuality.LOW
+                AlbumArtQuality.ORIGINAL
             }
         }
 
@@ -1667,9 +1667,9 @@ constructor(
             preferences[PreferencesKeys.ALBUM_ART_QUALITY]
                 ?.let {
                     try { AlbumArtQuality.valueOf(it) }
-                    catch (e: Exception) { AlbumArtQuality.MEDIUM }
+                    catch (e: Exception) { AlbumArtQuality.ORIGINAL }
                 }
-                ?: AlbumArtQuality.MEDIUM
+                ?: AlbumArtQuality.ORIGINAL
         }
 
     suspend fun setAlbumArtQuality(quality: AlbumArtQuality) {

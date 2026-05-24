@@ -14,7 +14,7 @@ fun MediaItem?.toSong(): Song {
         youtubeId = this?.mediaId ?: "",
         title = this?.mediaMetadata?.title?.toString() ?: "",
         artist = this?.mediaMetadata?.artist?.toString() ?: "",
-        thumbnailHref = this?.mediaMetadata?.artworkUri?.toString() ?: "",
+        thumbnailHref = upgradeThumbnailUrlToHighQuality(this?.mediaMetadata?.artworkUri?.toString()).orEmpty(),
         duration = extras?.getString(Constants.ExoPlayer.SongMetadata.DURATION) ?: ""
     )
 }

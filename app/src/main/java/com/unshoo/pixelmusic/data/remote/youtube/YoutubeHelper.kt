@@ -285,7 +285,7 @@ object YoutubeHelper {
                         ?.jsonArray?.firstOrNull()?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull ?: ""
                     val thumbnail = renderer["thumbnail"]?.jsonObject?.get("thumbnails")
                         ?.jsonArray?.last()?.jsonObject?.get("url")?.jsonPrimitive?.contentOrNull ?: ""
-                    Song(youtubeId = videoId, title = title, artist = artist, thumbnailHref = thumbnail)
+                    Song(youtubeId = videoId, title = title, artist = artist, thumbnailHref = upgradeThumbnailUrlToHighQuality(thumbnail))
                 }
             }
 
@@ -315,7 +315,7 @@ object YoutubeHelper {
                     ?.jsonArray?.firstOrNull()?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull ?: ""
                 val thumbnail = renderer["thumbnail"]?.jsonObject?.get("thumbnails")
                     ?.jsonArray?.last()?.jsonObject?.get("url")?.jsonPrimitive?.contentOrNull ?: ""
-                Song(youtubeId = videoId, title = title, artist = artist, thumbnailHref = thumbnail)
+                Song(youtubeId = videoId, title = title, artist = artist, thumbnailHref = upgradeThumbnailUrlToHighQuality(thumbnail))
             } ?: emptyList()
         } catch (e: Exception) {
             UmihiHelper.printe("extractRelatedSongs failed: ${e.message}")
@@ -391,7 +391,7 @@ object YoutubeHelper {
             ?.jsonObject?.get("url")
             ?.jsonPrimitive?.contentOrNull
 
-        return url ?: ""
+        return upgradeThumbnailUrlToHighQuality(url ?: "")
     }
 
     private fun parseSongsFromContents(

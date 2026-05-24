@@ -86,8 +86,8 @@ fun SmartImage(
     val userPreferencesRepository = entryPoint.userPreferencesRepository()
 
     val isMeteredNetwork by connectivityStateHolder.isMeteredNetwork.collectAsState()
-    val albumArtQualityWifi by userPreferencesRepository.albumArtQualityFlow.collectAsState(initial = AlbumArtQuality.MEDIUM)
-    val albumArtQualityMobile by userPreferencesRepository.albumArtQualityMobileFlow.collectAsState(initial = AlbumArtQuality.LOW)
+    val albumArtQualityWifi by userPreferencesRepository.albumArtQualityFlow.collectAsState(initial = AlbumArtQuality.ORIGINAL)
+    val albumArtQualityMobile by userPreferencesRepository.albumArtQualityMobileFlow.collectAsState(initial = AlbumArtQuality.ORIGINAL)
 
     val effectiveQuality = if (isMeteredNetwork) albumArtQualityMobile else albumArtQualityWifi
 

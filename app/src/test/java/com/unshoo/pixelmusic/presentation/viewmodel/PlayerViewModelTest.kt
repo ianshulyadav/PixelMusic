@@ -64,6 +64,7 @@ class PlayerViewModelTest {
     private lateinit var playerViewModel: PlayerViewModel
     private val mockMusicRepository: MusicRepository = mockk()
     private val mockUserPreferencesRepository: UserPreferencesRepository = mockk(relaxed = true)
+    private val mockYoutubeDatastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository = mockk(relaxed = true)
     private val mockAiPreferencesRepository: AiPreferencesRepository = mockk(relaxed = true)
     private val mockThemePreferencesRepository: ThemePreferencesRepository = mockk(relaxed = true)
     private val mockAlbumArtThemeDao: AlbumArtThemeDao = mockk(relaxed = true)
@@ -242,6 +243,7 @@ class PlayerViewModelTest {
             mockContext,
             mockMusicRepository,
             mockUserPreferencesRepository,
+            mockYoutubeDatastoreRepository,
             mockAiPreferencesRepository,
             mockThemePreferencesRepository,
             mockAlbumArtThemeDao,
