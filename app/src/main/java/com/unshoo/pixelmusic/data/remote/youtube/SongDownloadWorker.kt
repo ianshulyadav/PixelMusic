@@ -104,6 +104,8 @@ class SongDownloadWorker(
                 )
                 localSongRepository.create(updatedSong)
 
+                ensureYoutubeSongInLibrary(updatedSong)
+
                 if (audioPath != null) {
                     val mainId = -(15_000_000_000_000L + song.youtubeId.hashCode().toLong().absoluteValue)
                     val destinationFile = DownloadHelper.copyToPublicDownload(appContext, audioPath, song.title, song.artist)
@@ -133,6 +135,129 @@ class SongDownloadWorker(
                 Result.failure()
             }
         }
+    }
+
+    private fun toUnifiedYoutubeSongId(youtubeId: String): Long {
+        return -(15_000_000_000_000L + youtubeId.hashCode().toLong().absoluteValue)
+    }
+
+    private fun toUnifiedYoutubeAlbumId(albumName: String): Long {
+        return -(15_000_000_000_000L + albumName.hashCode().toLong().absoluteValue)
+    }
+
+    private fun toUnifiedYoutubeArtistId(artistName: String): Long {
+        return -(15_000_000_000_000L + artistName.hashCode().toLong().absoluteValue)
+    }
+
+    private fun parseYoutubeArtistNames(artistStr: String): List<String> {
+        if (artistStr.isBlank()) return listOf("Unknown Artist")
+        return artistStr.split(",", "&", "•", " feat.", " ft.", " vs ").map { it.trim() }.filter { it.isNotEmpty() }
+    }
+
+    private suspend fun ensureYoutubeSongInLibrary(song: Song) {
+        val songId = toUnifiedYoutubeSongId(song.youtubeId)
+        val title = song.title.takeIf { it.isNotBlank() } ?: "YouTube Video"
+        val artist = song.artist.takeIf { it.isNotBlank() } ?: "Unknown Artist"
+        val artistNames = parseYoutubeArtistNames(artist)
+        val primaryArtistName = artistNames.firstOrNull() ?: "Unknown Artist"
+        val primaryArtistId = toUnifiedYoutubeArtistId(primaryArtistName)
+
+        val artistsToInsert = artistNames.map { name ->
+            com.unshoo.pixelmusic.data.database.ArtistEntity(
+                id = toUnifiedYoutubeArtistId(name),
+                name = name,
+                trackCount = 0,
+                imageUrl = null
+            )
+        }
+
+        val crossRefsToInsert = artistNames.mapIndexed { index, name ->
+            val artistId = toUnifiedYoutubeArtistId(name)
+            com.unshoo.pixelmusic.data.database.SongArtistCrossRef(
+                songId = songId,
+                artistId = artistId,
+                isPrimary = index == 0
+            )
+        }
+
+        val albumId = toUnifiedYoutubeAlbumId("YouTube Music")
+        val albumName = "YouTube Music"
+        val albumToInsert = com.unshoo.pixelmusic.data.database.AlbumEntity(
+            id = albumId,
+            title = albumName,
+            artistName = primaryArtistName,
+            artistId = primaryArtistId,
+            songCount = 0,
+            dateAdded = System.currentTimeMillis(),
+            year = 0,
+            albumArtUriString = song.thumbnailPath ?: song.thumbnailHref
+        )
+
+        val artistsJson = try {
+            val arr = org.json.JSONArray()
+            artistNames.forEachIndexed { idx, name ->
+                val obj = org.json.JSONObject()
+                obj.put("id", toUnifiedYoutubeArtistId(name))
+                obj.put("name", name)
+                obj.put("primary", idx == 0)
+                arr.put(obj)
+            }
+            arr.toString()
+        } catch (e: Exception) {
+            null
+        }
+
+        val durationMs = try {
+            if (song.duration.contains(":")) {
+                val parts = song.duration.split(":")
+                when (parts.size) {
+                    1 -> parts[0].toLong() * 1000L
+                    2 -> (parts[0].toLong() * 60L + parts[1].toLong()) * 1000L
+                    3 -> ((parts[0].toLong() * 3600L + parts[1].toLong() * 60L + parts[2].toLong())) * 1000L
+                    else -> 0L
+                }
+            } else {
+                song.duration.toLongOrNull() ?: 0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
+
+        val songEntity = com.unshoo.pixelmusic.data.database.SongEntity(
+            id = songId,
+            title = title,
+            artistName = artist,
+            artistId = primaryArtistId,
+            albumArtist = null,
+            albumName = albumName,
+            albumId = albumId,
+            contentUriString = "youtube://${song.youtubeId}",
+            albumArtUriString = song.thumbnailPath ?: song.thumbnailHref,
+            duration = durationMs,
+            genre = song.genre?.takeIf { it.isNotBlank() } ?: "YouTube Music",
+            filePath = "",
+            parentDirectoryPath = "youtube://",
+            isFavorite = false,
+            lyrics = null,
+            trackNumber = 0,
+            year = 0,
+            dateAdded = System.currentTimeMillis(),
+            mimeType = "audio/webm",
+            bitrate = null,
+            sampleRate = null,
+            telegramChatId = null,
+            telegramFileId = null,
+            artistsJson = artistsJson,
+            sourceType = com.unshoo.pixelmusic.data.database.SourceType.YOUTUBE
+        )
+
+        musicDao.incrementalSyncMusicData(
+            songs = listOf(songEntity),
+            albums = listOf(albumToInsert),
+            artists = artistsToInsert,
+            crossRefs = crossRefsToInsert,
+            deletedSongIds = emptyList()
+        )
     }
 
     companion object {

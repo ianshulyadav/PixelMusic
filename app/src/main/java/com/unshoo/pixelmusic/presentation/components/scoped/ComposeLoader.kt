@@ -53,12 +53,13 @@ fun rememberSmoothProgress(
     isPlayingProvider: () -> Boolean,
     currentPositionProvider: () -> Long,
     totalDuration: Long,
+    songId: String,
     sampleWhilePlayingMs: Long = 200L,
     sampleWhilePausedMs: Long = 800L,
     isVisible: Boolean = true
 ): Pair<androidx.compose.runtime.State<Float>, androidx.compose.runtime.State<Long>> {
-    var sampledPosition by remember { mutableLongStateOf(0L) }
-    var sampledFraction by remember { mutableFloatStateOf(0f) }
+    var sampledPosition by remember(songId) { mutableLongStateOf(0L) }
+    var sampledFraction by remember(songId) { mutableFloatStateOf(0f) }
 
     val latestPositionProvider by rememberUpdatedState(newValue = currentPositionProvider)
     val latestIsPlayingProvider by rememberUpdatedState(newValue = isPlayingProvider)
@@ -75,7 +76,7 @@ fun rememberSmoothProgress(
     val safeUpperBound = totalDuration.coerceAtLeast(0L)
     val safeDuration = totalDuration.coerceAtLeast(1L)
 
-    LaunchedEffect(totalDuration) {
+    LaunchedEffect(totalDuration, songId) {
         fun sampleNow() {
             val rawPosition = latestPositionProvider()
             val clampedPosition = rawPosition.coerceIn(0L, safeUpperBound)
@@ -97,11 +98,11 @@ fun rememberSmoothProgress(
         }
     }
 
-    val fractionState = remember {
+    val fractionState = remember(songId) {
         derivedStateOf { sampledFraction }
     }
 
-    val displayedPositionState = remember(totalDuration) {
+    val displayedPositionState = remember(totalDuration, songId) {
         derivedStateOf {
             sampledPosition.coerceIn(0L, totalDuration.coerceAtLeast(0L))
         }

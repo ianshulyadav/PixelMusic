@@ -1686,14 +1686,15 @@ private fun PlayerProgressBarSection(
         isPlayingProvider = isPlayingProvider,
         currentPositionProvider = currentPositionProvider,
         totalDuration = displayDurationValue,
+        songId = songId,
         sampleWhilePlayingMs = if (isExpanded) 180L else 320L,
         sampleWhilePausedMs = 800L,
         isVisible = shouldRunRealtimeUpdates
     )
 
-    var sliderDragValue by remember { mutableStateOf<Float?>(null) }
+    var sliderDragValue by remember(songId) { mutableStateOf<Float?>(null) }
     // Optimistic Seek: Holds the target position immediately after seek to prevent snap-back
-    var optimisticPosition by remember { mutableStateOf<Long?>(null) }
+    var optimisticPosition by remember(songId) { mutableStateOf<Long?>(null) }
 
     // Reset seek state on song change to avoid stale position from previous song
     LaunchedEffect(songId) {
@@ -1795,29 +1796,31 @@ private fun PlayerProgressBarSection(
             // playerSheetVerticalDragGesture from intercepting slider touches. If the
             // user's drag has a vertical component, the inner handler absorbs it (consuming
             // the events) so the sheet-collapse gesture never activates in this area.
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures(onVerticalDrag = { _, _ -> })
-                    }
-            ) {
-                EfficientSlider(
-                    valueState = animatedProgressState,
-                    onValueChange = { sliderDragValue = it },
-                    onValueCommit = { finalValue ->
-                        val targetMs = (finalValue * durationForCalc).roundToLong()
-                        optimisticPosition = targetMs
-                        onSeek(targetMs)
-                        sliderDragValue = null
-                    },
-                    thumbColor = thumbColor,
-                    activeTrackColor = activeTrackColor,
-                    inactiveTrackColor = inactiveTrackColor,
-                    interactionSource = interactionSource,
-                    isPlaying = shouldAnimateWavyProgress,
-                    trackEdgePadding = progressSectionHorizontalInset
-                )
+            androidx.compose.runtime.key(songId) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {
+                            detectVerticalDragGestures(onVerticalDrag = { _, _ -> })
+                        }
+                ) {
+                    EfficientSlider(
+                        valueState = animatedProgressState,
+                        onValueChange = { sliderDragValue = it },
+                        onValueCommit = { finalValue ->
+                            val targetMs = (finalValue * durationForCalc).roundToLong()
+                            optimisticPosition = targetMs
+                            onSeek(targetMs)
+                            sliderDragValue = null
+                        },
+                        thumbColor = thumbColor,
+                        activeTrackColor = activeTrackColor,
+                        inactiveTrackColor = inactiveTrackColor,
+                        interactionSource = interactionSource,
+                        isPlaying = shouldAnimateWavyProgress,
+                        trackEdgePadding = progressSectionHorizontalInset
+                    )
+                }
             }
 
             // Isolated Time Labels

@@ -4,6 +4,7 @@ import android.content.ComponentCallbacks2
 import android.os.Trace
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.conflate
+import androidx.paging.filter
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import androidx.compose.ui.graphics.toArgb
@@ -137,10 +138,18 @@ class LibraryStateHolder @Inject constructor(
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val artistsPagingFlow: kotlinx.coroutines.flow.Flow<androidx.paging.PagingData<Artist>> =
-        kotlinx.coroutines.flow.combine(_currentArtistSortOption, effectiveStorageFilter) { sort, filter ->
-            sort to filter
-        }.flatMapLatest { (sortOption, filter) ->
-            musicRepository.getPaginatedArtists(sortOption, filter)
+        kotlinx.coroutines.flow.combine(
+            _currentArtistSortOption,
+            effectiveStorageFilter,
+            userPreferencesRepository.subscribedArtistIdsFlow
+        ) { sort, filter, subscribedIds ->
+            Triple(sort, filter, subscribedIds)
+        }.flatMapLatest { (sortOption, filter, subscribedIds) ->
+            musicRepository.getPaginatedArtists(sortOption, filter).map { pagingData ->
+                pagingData.filter { artist ->
+                    subscribedIds.contains(artist.id.toString())
+                }
+            }
         }
         .flowOn(Dispatchers.IO)
 
@@ -288,8 +297,13 @@ class LibraryStateHolder @Inject constructor(
         artistsJob = scope?.launch {
             _isLoadingCategories.value = true
             @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-            effectiveStorageFilter.flatMapLatest { filter ->
-                musicRepository.getArtists(filter)
+            kotlinx.coroutines.flow.combine(
+                effectiveStorageFilter.flatMapLatest { filter ->
+                    musicRepository.getArtists(filter)
+                },
+                userPreferencesRepository.subscribedArtistIdsFlow
+            ) { artists, subscribedIds ->
+                artists.filter { artist -> subscribedIds.contains(artist.id.toString()) }
             }.conflate().collect { artists ->
                 val sortedArtists = withContext(Dispatchers.Default) {
                     sortArtistsList(artists, _currentArtistSortOption.value).toImmutableList()

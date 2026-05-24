@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,6 +73,13 @@ class LyricsStateHolderTest {
             sourcePreference = com.unshoo.pixelmusic.data.model.LyricsSourcePreference.API_FIRST
         ) { "Lyrics already available" }
         scope.advanceUntilIdle()
+
+        // Wait up to 2 seconds for the background Dispatchers.IO task to finish and update searchUiState
+        val startTime = System.currentTimeMillis()
+        while (holder.searchUiState.value !is LyricsSearchUiState.Success && (System.currentTimeMillis() - startTime) < 2000) {
+            scope.runCurrent()
+            Thread.sleep(10)
+        }
 
         assertThat(holder.searchUiState.value).isEqualTo(LyricsSearchUiState.Success(storedLyrics))
         coVerify(exactly = 1) { musicRepository.getStoredLyrics(song) }

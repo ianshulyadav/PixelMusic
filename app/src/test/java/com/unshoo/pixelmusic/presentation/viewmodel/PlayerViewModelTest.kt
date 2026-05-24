@@ -148,6 +148,7 @@ class PlayerViewModelTest {
         coEvery { mockAiPreferencesRepository.aiProvider } returns flowOf("GEMINI")
         coEvery { mockAiPreferencesRepository.geminiApiKey } returns flowOf("")
         coEvery { mockAiPreferencesRepository.deepseekApiKey } returns flowOf("")
+        every { mockYoutubeDatastoreRepository.settings } returns flowOf(com.unshoo.pixelmusic.data.model.youtube.UmihiSettings())
 
         // Mock StateHolders Flows
         every { mockLibraryStateHolder.allSongs } returns _allSongsFlow
@@ -560,6 +561,7 @@ class PlayerViewModelTest {
         fun `triggerShuffleAllFromTile uses startAtZero when library is already loaded`() = runTest {
             val songs = listOf(song1, song2, song3)
             _allSongsFlow.value = songs.toImmutableList()
+            coEvery { mockMusicRepository.getRandomSongs(500) } returns songs
             stubShuffledPlayback(songs, "All Songs (Shuffled)", startSong = song1)
 
             playerViewModel.triggerShuffleAllFromTile()

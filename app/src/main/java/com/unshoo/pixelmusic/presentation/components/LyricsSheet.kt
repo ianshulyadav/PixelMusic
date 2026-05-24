@@ -973,7 +973,8 @@ fun LyricsSheet(
                         totalDuration = stablePlayerState.totalDuration,
                         onSeekTo = onSeekTo,
                         onSeekPreviewChange = { previewSeekPositionMs = it },
-                        isPlaying = isPlaying
+                        isPlaying = isPlaying,
+                        songId = stablePlayerState.currentSong?.id ?: ""
                     )
                 }
                 
@@ -1163,6 +1164,7 @@ private fun LyricsPlaybackSeekBar(
     onSeekTo: (Long) -> Unit,
     onSeekPreviewChange: (Long?) -> Unit,
     isPlaying: Boolean,
+    songId: String,
     modifier: Modifier = Modifier
 ) {
     val playbackPosition by playbackPositionFlow.collectAsStateWithLifecycle()
@@ -1176,6 +1178,7 @@ private fun LyricsPlaybackSeekBar(
         onSeek = onSeekTo,
         onSeekPreview = onSeekPreviewChange,
         isPlaying = isPlaying,
+        songId = songId,
         modifier = modifier
     )
 }

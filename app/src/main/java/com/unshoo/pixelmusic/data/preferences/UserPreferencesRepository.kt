@@ -248,6 +248,7 @@ constructor(
         val CACHE_LIKED_SONGS_OFFLINE = booleanPreferencesKey("cache_liked_songs_offline")
         val STORAGE_LIMIT_MB = intPreferencesKey("storage_limit_mb") // 0 = unlimited
         val FOLDER_ARTWORK_PREFERENCE = stringPreferencesKey("folder_artwork_preference")
+        val SUBSCRIBED_ARTIST_IDS = stringSetPreferencesKey("subscribed_artist_ids")
     }
 
     val appRebrandDialogShownFlow: Flow<Boolean> =
@@ -1897,6 +1898,22 @@ constructor(
         dataStore.edit {
             it.remove(PreferencesKeys.LAST_PLAYLIST_ID)
             it.remove(PreferencesKeys.LAST_PLAYLIST_NAME)
+        }
+    }
+
+    val subscribedArtistIdsFlow: Flow<Set<String>> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SUBSCRIBED_ARTIST_IDS] ?: emptySet()
+        }
+
+    suspend fun subscribeArtist(artistId: String, subscribe: Boolean) {
+        dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.SUBSCRIBED_ARTIST_IDS] ?: emptySet()
+            if (subscribe) {
+                preferences[PreferencesKeys.SUBSCRIBED_ARTIST_IDS] = current + artistId
+            } else {
+                preferences[PreferencesKeys.SUBSCRIBED_ARTIST_IDS] = current - artistId
+            }
         }
     }
 }

@@ -935,10 +935,27 @@ class DualPlayerEngine @Inject constructor(
         }
 
         if (playerB.playbackState == Player.STATE_IDLE) playerB.prepare()
-        if (playerB.playbackState == Player.STATE_BUFFERING) {
-            if (!awaitPlayerReady(playerB, 3000L)) {
+        if (playerB.playbackState != Player.STATE_READY) {
+            val isReady = if (playerB.playbackState == Player.STATE_BUFFERING) {
+                awaitPlayerReady(playerB, 3000L)
+            } else {
+                false
+            }
+            if (!isReady) {
+                Timber.tag("TransitionDebug").w("playerB not ready for transition (state=%d). Aborting and falling back to playerA.", playerB.playbackState)
                 playerA.volume = 1f
                 setPauseAtEndOfMediaItems(false)
+                
+                val isOutgoingStalled = playerA.playbackState == Player.STATE_ENDED || 
+                        playerA.playbackState == Player.STATE_BUFFERING ||
+                        (!playerA.isPlaying && playerA.duration != C.TIME_UNSET && playerA.currentPosition >= playerA.duration - 40000L)
+                if (isOutgoingStalled) {
+                    if (playerA.hasNextMediaItem()) {
+                        playerA.seekToNext()
+                        playerA.prepare()
+                        playerA.play()
+                    }
+                }
                 return
             }
         }

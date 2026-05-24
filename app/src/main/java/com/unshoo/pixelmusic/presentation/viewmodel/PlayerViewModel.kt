@@ -3076,7 +3076,7 @@ class PlayerViewModel @Inject constructor(
     // rebuildPlayerQueue functionality moved to PlaybackStateHolder (simplified)
     fun playSongs(songsToPlay: List<Song>, startSong: Song, queueName: String = "None", playlistId: String? = null) {
         cancelPendingFullQueuePlayback()
-        viewModelScope.launch {
+        fullQueuePlaybackJob = viewModelScope.launch {
             transitionSchedulerJob?.cancel()
 
             val validSongs = hydrateSongsIfNeeded(songsToPlay)
@@ -3152,7 +3152,7 @@ class PlayerViewModel @Inject constructor(
         startAtZero: Boolean = false
     ) {
         cancelPendingFullQueuePlayback()
-        viewModelScope.launch {
+        fullQueuePlaybackJob = viewModelScope.launch {
             val result = queueStateHolder.prepareShuffledQueueSuspending(songsToPlay, queueName, startAtZero)
             if (result == null) {
                 sendToast(context.getString(R.string.player_no_songs_to_shuffle))

@@ -47,10 +47,11 @@ fun PlayerSeekBar(
     onSeek: (Long) -> Unit,
     onSeekPreview: ((Long?) -> Unit)? = null,
     isPlaying: Boolean,
+    songId: String,
     modifier: Modifier = Modifier
 ) {
     val hapticFeedback = LocalHapticFeedback.current
-    val progressFraction = remember(currentPosition, totalDuration) {
+    val progressFraction = remember(currentPosition, totalDuration, songId) {
         if (totalDuration > 0) {
             (currentPosition.toFloat() / totalDuration.toFloat()).coerceIn(0f, 1f)
         } else {
@@ -58,14 +59,19 @@ fun PlayerSeekBar(
         }
     }
 
-    var isUserSeeking by remember { mutableStateOf(false) }
-    var seekFraction by remember { mutableFloatStateOf(progressFraction) }
+    var isUserSeeking by remember(songId) { mutableStateOf(false) }
+    var seekFraction by remember(songId) { mutableFloatStateOf(progressFraction) }
     val lastHapticStep = remember { intArrayOf(-1) }
 
     LaunchedEffect(progressFraction) {
         if (!isUserSeeking) {
             seekFraction = progressFraction
         }
+    }
+
+    LaunchedEffect(songId) {
+        seekFraction = 0f
+        isUserSeeking = false
     }
 
     Row(
@@ -90,36 +96,38 @@ fun PlayerSeekBar(
 //            color = onBackgroundColor,
 //            fontSize = 12.sp
 //        )
-        WavySliderExpressive(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 0.dp),
-                //.weight(0.8f),
-            value = seekFraction,
-            onValueChange = { newFraction ->
-                isUserSeeking = true
-                seekFraction = newFraction
-                onSeekPreview?.invoke((newFraction * totalDuration).roundToLong())
-                val quantized = (newFraction.coerceIn(0f, 1f) * 20f).toInt()
-                if (quantized != lastHapticStep[0]) {
-                    lastHapticStep[0] = quantized
-                    hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                }
-            },
-            onValueCommit = { finalFraction ->
-                onSeek((finalFraction * totalDuration).roundToLong())
-                onSeekPreview?.invoke(null)
-                isUserSeeking = false
-            },
-            strokeWidth = 5.dp, // Was trackHeight
-            thumbRadius = 8.dp,
-            activeTrackColor = primaryColor,
-            inactiveTrackColor = primaryColor.copy(alpha = 0.2f),
-            thumbColor = primaryColor,
-            wavelength = 30.dp, // Was waveLength
-            isPlaying = isPlaying,
-            semanticsLabel = "Playback position"
-        )
+        androidx.compose.runtime.key(songId) {
+            WavySliderExpressive(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 0.dp),
+                    //.weight(0.8f),
+                value = seekFraction,
+                onValueChange = { newFraction ->
+                    isUserSeeking = true
+                    seekFraction = newFraction
+                    onSeekPreview?.invoke((newFraction * totalDuration).roundToLong())
+                    val quantized = (newFraction.coerceIn(0f, 1f) * 20f).toInt()
+                    if (quantized != lastHapticStep[0]) {
+                        lastHapticStep[0] = quantized
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    }
+                },
+                onValueCommit = { finalFraction ->
+                    onSeek((finalFraction * totalDuration).roundToLong())
+                    onSeekPreview?.invoke(null)
+                    isUserSeeking = false
+                },
+                strokeWidth = 5.dp, // Was trackHeight
+                thumbRadius = 8.dp,
+                activeTrackColor = primaryColor,
+                inactiveTrackColor = primaryColor.copy(alpha = 0.2f),
+                thumbColor = primaryColor,
+                wavelength = 30.dp, // Was waveLength
+                isPlaying = isPlaying,
+                semanticsLabel = "Playback position"
+            )
+        }
 //        Text(
 //            modifier = Modifier.weight(0.2f),
 //            text = formatDuration(totalDuration),

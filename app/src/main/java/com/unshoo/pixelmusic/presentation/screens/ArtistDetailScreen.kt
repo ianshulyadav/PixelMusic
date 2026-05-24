@@ -114,6 +114,7 @@ fun ArtistDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
+    val isSubscribed by viewModel.isSubscribed.collectAsStateWithLifecycle(initialValue = false)
     
     // Optimization: Defer heavy list rendering until navigation transition settles
     var isTransitionFinished by remember { mutableStateOf(false) }
@@ -411,6 +412,8 @@ fun ArtistDetailScreen(
                             headerHeight = currentTopBarHeightDp,
                             headerImageRequestSize = headerImageRequestSize,
                             hasCustomImage = !artist.customImageUri.isNullOrBlank(),
+                            isSubscribed = isSubscribed,
+                            onSubscribeClick = { viewModel.toggleSubscription() },
                             onBackPressed = { navController.popBackStack() },
                             onPlayClick = {
                                 if (songs.isNotEmpty()) {
@@ -429,6 +432,8 @@ fun ArtistDetailScreen(
                             artist = artist,
                             effectiveImageUrl = uiState.effectiveImageUrl,
                             hasCustomImage = !artist.customImageUri.isNullOrBlank(),
+                            isSubscribed = isSubscribed,
+                            onSubscribeClick = { viewModel.toggleSubscription() },
                             songsCount = songs.size,
                             collapseFraction = collapseFraction,
                             headerHeight = currentTopBarHeightDp,
@@ -737,6 +742,8 @@ private fun SharedArtistTopBarProbe(
     headerHeight: Dp,
     headerImageRequestSize: Size,
     hasCustomImage: Boolean,
+    isSubscribed: Boolean,
+    onSubscribeClick: () -> Unit,
     onBackPressed: () -> Unit,
     onPlayClick: () -> Unit,
     onChangeImage: () -> Unit,
@@ -842,46 +849,66 @@ private fun SharedArtistTopBarProbe(
             fadeSubtitleOnCollapse = false,
             syncStatusBarWithContainer = false,
             actions = {
-                Box(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(end = 12.dp, top = 4.dp)
                 ) {
-                    FilledIconButton(
-                        onClick = { showImageMenu = true },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                        )
+                    Button(
+                        onClick = onSubscribeClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isSubscribed) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.surfaceContainerLow,
+                            contentColor = if (isSubscribed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.height(36.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Edit,
-                            contentDescription = stringResource(R.string.presentation_batch_d_edit_artist_image_cd)
+                        Text(
+                            text = if (isSubscribed) "Subscribed" else "Subscribe",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
 
-                    DropdownMenu(
-                        expanded = showImageMenu,
-                        onDismissRequest = { showImageMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.presentation_batch_d_change_photo)) },
-                            leadingIcon = {
-                                Icon(Icons.Rounded.AddAPhoto, contentDescription = null)
-                            },
-                            onClick = {
-                                showImageMenu = false
-                                onChangeImage()
-                            }
-                        )
-                        if (hasCustomImage) {
+                    Box {
+                        FilledIconButton(
+                            onClick = { showImageMenu = true },
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Edit,
+                                contentDescription = stringResource(R.string.presentation_batch_d_edit_artist_image_cd)
+                            )
+                        }
+
+                        DropdownMenu(
+                            expanded = showImageMenu,
+                            onDismissRequest = { showImageMenu = false }
+                        ) {
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.presentation_batch_d_reset_to_default)) },
+                                text = { Text(stringResource(R.string.presentation_batch_d_change_photo)) },
                                 leadingIcon = {
-                                    Icon(Icons.Rounded.Delete, contentDescription = null)
+                                    Icon(Icons.Rounded.AddAPhoto, contentDescription = null)
                                 },
                                 onClick = {
                                     showImageMenu = false
-                                    onClearCustomImage()
+                                    onChangeImage()
                                 }
                             )
+                            if (hasCustomImage) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.presentation_batch_d_reset_to_default)) },
+                                    leadingIcon = {
+                                        Icon(Icons.Rounded.Delete, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        showImageMenu = false
+                                        onClearCustomImage()
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -912,6 +939,8 @@ private fun CustomCollapsingTopBar(
     artist: Artist,
     effectiveImageUrl: String?,
     hasCustomImage: Boolean,
+    isSubscribed: Boolean,
+    onSubscribeClick: () -> Unit,
     songsCount: Int,
     collapseFraction: Float, // 0.0 = expandido, 1.0 = colapsado
     headerHeight: Dp,
@@ -1027,43 +1056,63 @@ private fun CustomCollapsingTopBar(
                     Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.auth_cd_back))
                 }
 
-                // Image edit button (visible only when header is mostly expanded)
+                // Subscribe & Image edit buttons (visible only when header is mostly expanded)
                 if (collapseFraction < 0.5f) {
                     var showImageMenu by remember { mutableStateOf(false) }
-                    Box(
+                    Row(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(end = 12.dp, top = 4.dp)
-                            .graphicsLayer { alpha = 1f - (collapseFraction * 4).coerceAtMost(1f) }
+                            .graphicsLayer { alpha = 1f - (collapseFraction * 4).coerceAtMost(1f) },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SmallFloatingActionButton(
-                            onClick = { showImageMenu = true },
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            contentColor = MaterialTheme.colorScheme.onSurface
+                        Button(
+                            onClick = onSubscribeClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSubscribed) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.surfaceContainerLow,
+                                contentColor = if (isSubscribed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            ),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                            modifier = Modifier.height(36.dp)
                         ) {
-                            Icon(Icons.Rounded.Edit, contentDescription = stringResource(R.string.presentation_batch_d_edit_artist_image_cd))
-                        }
-                        DropdownMenu(
-                            expanded = showImageMenu,
-                            onDismissRequest = { showImageMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.presentation_batch_d_change_photo)) },
-                                leadingIcon = { Icon(Icons.Rounded.AddAPhoto, contentDescription = null) },
-                                onClick = {
-                                    showImageMenu = false
-                                    onChangeImage()
-                                }
+                            Text(
+                                text = if (isSubscribed) "Subscribed" else "Subscribe",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
-                            if (hasCustomImage) {
+                        }
+
+                        Box {
+                            SmallFloatingActionButton(
+                                onClick = { showImageMenu = true },
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ) {
+                                Icon(Icons.Rounded.Edit, contentDescription = stringResource(R.string.presentation_batch_d_edit_artist_image_cd))
+                            }
+                            DropdownMenu(
+                                expanded = showImageMenu,
+                                onDismissRequest = { showImageMenu = false }
+                            ) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.presentation_batch_d_reset_to_default)) },
-                                    leadingIcon = { Icon(Icons.Rounded.Delete, contentDescription = null) },
+                                    text = { Text(stringResource(R.string.presentation_batch_d_change_photo)) },
+                                    leadingIcon = { Icon(Icons.Rounded.AddAPhoto, contentDescription = null) },
                                     onClick = {
                                         showImageMenu = false
-                                        onClearCustomImage()
+                                        onChangeImage()
                                     }
                                 )
+                                if (hasCustomImage) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.presentation_batch_d_reset_to_default)) },
+                                        leadingIcon = { Icon(Icons.Rounded.Delete, contentDescription = null) },
+                                        onClick = {
+                                            showImageMenu = false
+                                            onClearCustomImage()
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

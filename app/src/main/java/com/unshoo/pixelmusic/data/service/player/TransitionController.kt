@@ -227,16 +227,12 @@ class TransitionController @Inject constructor(
                     settings.mode, transitionPoint, duration, effectiveDuration
                 )
 
-                // --- CRITICAL FIX: Enable Pause At End ---
-                // We want to control the transition manually, so we prevent auto-advance.
-                engine.setPauseAtEndOfMediaItems(shouldPause = true)
-                Timber.tag("TransitionDebug").d("Enabled pauseAtEndOfMediaItems to prevent auto-skip.")
-
                 if (transitionPoint <= player.currentPosition) {
                     val remaining = (duration - player.currentPosition).coerceAtLeast(0L)
                     if (remaining > 0L) {
                         val adjustedDuration = remaining.coerceAtMost(effectiveDuration)
                         Timber.tag("TransitionDebug").w("Already past transition point! Triggering immediately.")
+                        engine.setPauseAtEndOfMediaItems(shouldPause = true)
                         engine.performTransition(settings.copy(durationMs = adjustedDuration.toInt()))
                     } else {
                         Timber.tag("TransitionDebug").w("Too close to end (%d ms left). Skipping to avoid glitch.", remaining)
@@ -249,8 +245,24 @@ class TransitionController @Inject constructor(
                 // Wait loop with adaptive sleep. 250ms near-end cadence still lands the crossfade
                 // within ±125ms of the target — imperceptible for a multi-second overlap, and 5×
                 // fewer wakeups in the last second of every track.
-                while (player.currentPosition < transitionPoint && isActive) {
+                var stallStartTime = 0L
+                while (player.currentPosition < transitionPoint && player.playbackState != Player.STATE_ENDED && isActive) {
                     val remaining = transitionPoint - player.currentPosition
+                    
+                    if (player.playWhenReady && (player.playbackState == Player.STATE_BUFFERING || !player.isPlaying)) {
+                        if (stallStartTime == 0L) {
+                            stallStartTime = android.os.SystemClock.elapsedRealtime()
+                        } else {
+                            val elapsedStall = android.os.SystemClock.elapsedRealtime() - stallStartTime
+                            if (remaining < 40_000L && elapsedStall > 3000L) {
+                                Timber.tag("TransitionDebug").w("Player stalled near track end. Breaking countdown loop to force transition.")
+                                break
+                            }
+                        }
+                    } else {
+                        stallStartTime = 0L
+                    }
+
                     val sleep = when {
                         remaining > 5000 -> 1000L
                         remaining > 1000 -> 250L
@@ -268,6 +280,7 @@ class TransitionController @Inject constructor(
                     if (remaining > 0L) {
                         val adjustedDuration = remaining.coerceAtMost(effectiveDuration)
                         Timber.tag("TransitionDebug").d("FIRING TRANSITION NOW!")
+                        engine.setPauseAtEndOfMediaItems(shouldPause = true)
                         engine.performTransition(settings.copy(durationMs = adjustedDuration.toInt()))
                     } else {
                         Timber.tag("TransitionDebug").w("Too close to end (%d ms left). Skipping to avoid glitch.", remaining)

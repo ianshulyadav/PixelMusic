@@ -169,7 +169,7 @@ object AutoQueueManager {
         val currentMediaItem = withContext(Dispatchers.Main) { player.currentMediaItem }
         val playbackUriStr = currentMediaItem?.localConfiguration?.uri?.toString()
         val metadataUriStr = currentMediaItem?.mediaMetadata?.extras?.getString("com.unshoo.pixelmusic.external.CONTENT_URI")
-        val contentUriStr = playbackUriStr ?: metadataUriStr
+        val contentUriStr = metadataUriStr ?: playbackUriStr
 
         var rawVideoId: String? = if (currentId.startsWith("youtube_")) {
             currentId.substringAfter("youtube_")

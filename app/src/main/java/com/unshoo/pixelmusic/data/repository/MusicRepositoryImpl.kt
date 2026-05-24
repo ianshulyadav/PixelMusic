@@ -1045,14 +1045,27 @@ class MusicRepositoryImpl @Inject constructor(
                             genre = ytSong.genre ?: "YouTube Music"
                         )
                     } else {
-                        insertYoutubeSongSkeleton(
-                            youtubeId = youtubeId,
-                            title = "YouTube Video",
-                            artist = "Unknown Artist",
-                            thumbnailUrl = null,
-                            duration = 0L,
-                            genre = "YouTube Music"
-                        )
+                        try {
+                            val networkSong = com.unshoo.pixelmusic.data.remote.youtube.SongDataSource().getSongInfo(youtubeId)
+                            insertYoutubeSongSkeleton(
+                                youtubeId = youtubeId,
+                                title = networkSong.title,
+                                artist = networkSong.artist,
+                                thumbnailUrl = networkSong.thumbnailPath ?: networkSong.thumbnailHref,
+                                duration = parseDurationStringToMillis(networkSong.duration),
+                                genre = networkSong.genre ?: "YouTube Music"
+                            )
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to fetch online metadata for liked song $youtubeId")
+                            insertYoutubeSongSkeleton(
+                                youtubeId = youtubeId,
+                                title = "YouTube Video",
+                                artist = "Unknown Artist",
+                                thumbnailUrl = null,
+                                duration = 0L,
+                                genre = "YouTube Music"
+                            )
+                        }
                     }
                 }
             }
