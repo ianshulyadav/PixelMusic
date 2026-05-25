@@ -768,9 +768,9 @@ fun SearchResultsList(
             ?.let { "Search: $it" }
             ?: "Search Results"
     }
-    val onSongResultClick = remember(playerViewModel, onItemSelected, searchQueueName) {
+    val onSongResultClick = remember(playerViewModel, onItemSelected, searchQueueName, songResultsQueue) {
         { song: Song ->
-            playerViewModel.showAndPlaySong(song, listOf(song), searchQueueName)
+            playerViewModel.showAndPlaySong(song, songResultsQueue, searchQueueName)
             onItemSelected()
         }
     }

@@ -118,47 +118,138 @@ class SearchStateHolder @Inject constructor(
                         val youtubeSearchFlow = flow {
                             val items = mutableListOf<SearchResultItem>()
 
-                            // 1. Fetch songs if applicable
-                            if (currentFilter == SearchFilterType.ALL || currentFilter == SearchFilterType.SONGS) {
-                                try {
-                                    val searchResult = withContext(Dispatchers.IO) {
-                                        unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
-                                            normalizedQuery,
-                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_SONG
-                                        ).getOrNull()
+                            try {
+                                when (currentFilter) {
+                                    SearchFilterType.ALL -> {
+                                        val summaryResult = withContext(Dispatchers.IO) {
+                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.searchSummary(normalizedQuery).getOrNull()
+                                        }
+                                        summaryResult?.summaries?.forEach { summary ->
+                                            summary.items.forEach { ytItem ->
+                                                when (ytItem) {
+                                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem -> {
+                                                        items.add(SearchResultItem.SongItem(ytItem.toNativeSong()))
+                                                    }
+                                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.ArtistItem -> {
+                                                        items.add(
+                                                            SearchResultItem.ArtistItem(
+                                                                com.unshoo.pixelmusic.data.model.Artist(
+                                                                    id = toUnifiedYoutubeArtistId(ytItem.title),
+                                                                    name = ytItem.title,
+                                                                    songCount = 0,
+                                                                    imageUrl = ytItem.thumbnail,
+                                                                    channelId = ytItem.id
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem -> {
+                                                        items.add(
+                                                            SearchResultItem.AlbumItem(
+                                                                com.unshoo.pixelmusic.data.model.Album(
+                                                                    id = toUnifiedYoutubeAlbumId(ytItem.title),
+                                                                    title = ytItem.title,
+                                                                    artist = ytItem.artists?.joinToString { it.name }.orEmpty(),
+                                                                    year = ytItem.year ?: 0,
+                                                                    dateAdded = System.currentTimeMillis(),
+                                                                    albumArtUriString = ytItem.thumbnail,
+                                                                    songCount = 0
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.PlaylistItem -> {
+                                                        items.add(
+                                                            SearchResultItem.PlaylistItem(
+                                                                com.unshoo.pixelmusic.data.model.Playlist(
+                                                                    id = ytItem.id,
+                                                                    name = ytItem.title,
+                                                                    songIds = emptyList(),
+                                                                    coverImageUri = ytItem.thumbnail,
+                                                                    source = "YOUTUBE"
+                                                                )
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    val apiSongs = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>() ?: emptyList()
-                                    items.addAll(apiSongs.map { SearchResultItem.SongItem(it.toNativeSong()) })
-                                } catch (e: Exception) {
-                                    Timber.e(e, "Error fetching YouTube search songs")
-                                }
-                            }
-
-                            // 2. Fetch artists if applicable
-                            if (currentFilter == SearchFilterType.ALL || currentFilter == SearchFilterType.ARTISTS) {
-                                try {
-                                    val searchResult = withContext(Dispatchers.IO) {
-                                        unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
-                                            normalizedQuery,
-                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_ARTIST
-                                        ).getOrNull()
+                                    SearchFilterType.SONGS -> {
+                                        val searchResult = withContext(Dispatchers.IO) {
+                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
+                                                normalizedQuery,
+                                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_SONG
+                                            ).getOrNull()
+                                        }
+                                        val apiSongs = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>() ?: emptyList()
+                                        items.addAll(apiSongs.map { SearchResultItem.SongItem(it.toNativeSong()) })
                                     }
-                                    val apiArtists = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.ArtistItem>() ?: emptyList()
-
-                                    items.addAll(apiArtists.map { apiArtist ->
-                                        SearchResultItem.ArtistItem(
-                                            com.unshoo.pixelmusic.data.model.Artist(
-                                                id = toUnifiedYoutubeArtistId(apiArtist.title),
-                                                name = apiArtist.title,
-                                                songCount = 0,
-                                                imageUrl = apiArtist.thumbnail,
-                                                channelId = apiArtist.id
+                                    SearchFilterType.ARTISTS -> {
+                                        val searchResult = withContext(Dispatchers.IO) {
+                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
+                                                normalizedQuery,
+                                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_ARTIST
+                                            ).getOrNull()
+                                        }
+                                        val apiArtists = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.ArtistItem>() ?: emptyList()
+                                        items.addAll(apiArtists.map { apiArtist ->
+                                            SearchResultItem.ArtistItem(
+                                                com.unshoo.pixelmusic.data.model.Artist(
+                                                    id = toUnifiedYoutubeArtistId(apiArtist.title),
+                                                    name = apiArtist.title,
+                                                    songCount = 0,
+                                                    imageUrl = apiArtist.thumbnail,
+                                                    channelId = apiArtist.id
+                                                )
                                             )
-                                        )
-                                    })
-                                } catch (e: Exception) {
-                                    Timber.e(e, "Error fetching YouTube search artists")
+                                        })
+                                    }
+                                    SearchFilterType.ALBUMS -> {
+                                        val searchResult = withContext(Dispatchers.IO) {
+                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
+                                                normalizedQuery,
+                                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_ALBUM
+                                            ).getOrNull()
+                                        }
+                                        val apiAlbums = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem>() ?: emptyList()
+                                        items.addAll(apiAlbums.map { apiAlbum ->
+                                            SearchResultItem.AlbumItem(
+                                                com.unshoo.pixelmusic.data.model.Album(
+                                                    id = toUnifiedYoutubeAlbumId(apiAlbum.title),
+                                                    title = apiAlbum.title,
+                                                    artist = apiAlbum.artists?.joinToString { it.name }.orEmpty(),
+                                                    year = apiAlbum.year ?: 0,
+                                                    dateAdded = System.currentTimeMillis(),
+                                                    albumArtUriString = apiAlbum.thumbnail,
+                                                    songCount = 0
+                                                )
+                                            )
+                                        })
+                                    }
+                                    SearchFilterType.PLAYLISTS -> {
+                                        val searchResult = withContext(Dispatchers.IO) {
+                                            unshoo.ianshulyadav.pixelmusic.innertube.YouTube.search(
+                                                normalizedQuery,
+                                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter.FILTER_FEATURED_PLAYLIST
+                                            ).getOrNull()
+                                        }
+                                        val apiPlaylists = searchResult?.items?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.PlaylistItem>() ?: emptyList()
+                                        items.addAll(apiPlaylists.map { apiPlaylist ->
+                                            SearchResultItem.PlaylistItem(
+                                                com.unshoo.pixelmusic.data.model.Playlist(
+                                                    id = apiPlaylist.id,
+                                                    name = apiPlaylist.title,
+                                                    songIds = emptyList(),
+                                                    coverImageUri = apiPlaylist.thumbnail,
+                                                    source = "YOUTUBE"
+                                                )
+                                            )
+                                        })
+                                    }
                                 }
+                            } catch (e: java.lang.Exception) {
+                                Timber.e(e, "Error executing YouTube search under filter $currentFilter")
                             }
 
                             emit(items)
@@ -334,6 +425,10 @@ class SearchStateHolder @Inject constructor(
 
     private fun toUnifiedYoutubeArtistId(artistName: String): Long {
         return -(17_000_000_000_000L + kotlin.math.abs(artistName.lowercase().hashCode().toLong()))
+    }
+
+    private fun toUnifiedYoutubeAlbumId(albumName: String): Long {
+        return -(16_000_000_000_000L + kotlin.math.abs(albumName.lowercase().hashCode().toLong()))
     }
 
     fun onCleared() {
