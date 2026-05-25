@@ -65,9 +65,7 @@ object SourceType {
             entity = ArtistEntity::class,
             parentColumns = ["id"],
             childColumns = ["artist_id"],
-            onDelete = ForeignKey.SET_NULL // Si un artista se borra, el artist_id de la canción se pone a null
-                                          // o podrías elegir CASCADE si las canciones no deben existir sin artista.
-                                          // SET_NULL es más flexible si las canciones pueden ser de "Artista Desconocido".
+            onDelete = ForeignKey.NO_ACTION // Prevent SET_NULL conflict with primitive NOT NULL artistId
         )
     ]
 )

@@ -588,7 +588,7 @@ class MusicRepositoryImpl @Inject constructor(
                                 contentUriString = ytSong.audioFilePath ?: "",
                                 albumArtUriString = ytSong.thumbnailPath ?: ytSong.thumbnailHref,
                                 duration = durationMs,
-                                mimeType = "audio/mpeg",
+                                mimeType = "audio/webm",
                                 bitrate = null,
                                 sampleRate = null,
                                 youtubeId = ytSong.youtubeId

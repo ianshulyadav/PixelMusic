@@ -892,11 +892,19 @@ object YoutubeHelper {
                             .get()
                             .header("Range", range)
                             .url(url),
-                        requestProfile,
+                        requestProfile
                     ).build()
-
+                val streamProxy = unshoo.ianshulyadav.pixelmusic.innertube.YouTube.streamProxy
+                val httpClient = if (streamProxy != null) {
+                    OkHttpClient.Builder()
+                        .connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES))
+                        .proxy(streamProxy)
+                        .build()
+                } else {
+                    client
+                }
                 val probeValid =
-                    client.newCall(rangeRequest).execute().use { response ->
+                    httpClient.newCall(rangeRequest).execute().use { response ->
                         val code = response.code
                         if (code == 403) return@use false
                         if (code !in 200..399 && code != 416) return@use false
@@ -1160,7 +1168,16 @@ object YoutubeHelper {
                 .head()
                 .build()
 
-            client.newCall(request).execute().use { response ->
+            val streamProxy = unshoo.ianshulyadav.pixelmusic.innertube.YouTube.streamProxy
+            val httpClient = if (streamProxy != null) {
+                OkHttpClient.Builder()
+                    .connectionPool(okhttp3.ConnectionPool(10, 5, java.util.concurrent.TimeUnit.MINUTES))
+                    .proxy(streamProxy)
+                    .build()
+            } else {
+                client
+            }
+            httpClient.newCall(request).execute().use { response ->
                 return@withContext response.isSuccessful
             }
         } catch (_: Exception) {

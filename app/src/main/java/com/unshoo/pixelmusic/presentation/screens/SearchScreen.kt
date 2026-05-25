@@ -770,7 +770,15 @@ fun SearchResultsList(
     }
     val onSongResultClick = remember(playerViewModel, onItemSelected, searchQueueName, songResultsQueue) {
         { song: Song ->
-            playerViewModel.showAndPlaySong(song, songResultsQueue, searchQueueName)
+            val youtubeId = song.youtubeId ?: if (song.id.startsWith("youtube_")) song.id.substringAfter("youtube_") else null
+            if (youtubeId != null) {
+                playerViewModel.playRadio(
+                    unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint(videoId = youtubeId),
+                    song.title
+                )
+            } else {
+                playerViewModel.showAndPlaySong(song, songResultsQueue, searchQueueName)
+            }
             onItemSelected()
         }
     }

@@ -29,7 +29,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         AiUsageEntity::class,
         RelatedSongMap::class
     ],
-    version = 44,
+    version = 45,
     exportSchema = true
 )
 abstract class PixelMusicDatabase : RoomDatabase() {
@@ -722,7 +722,7 @@ abstract class PixelMusicDatabase : RoomDatabase() {
                         telegram_file_id INTEGER,
                         PRIMARY KEY(id),
                         FOREIGN KEY(album_id) REFERENCES albums(id) ON UPDATE NO ACTION ON DELETE CASCADE,
-                        FOREIGN KEY(artist_id) REFERENCES artists(id) ON UPDATE NO ACTION ON DELETE SET NULL
+                        FOREIGN KEY(artist_id) REFERENCES artists(id) ON UPDATE NO ACTION ON DELETE NO ACTION
                     )
                 """.trimIndent()
             )
