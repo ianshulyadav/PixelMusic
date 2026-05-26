@@ -99,7 +99,7 @@ import com.unshoo.pixelmusic.presentation.viewmodel.PlaylistSelectionStateHolder
 import com.unshoo.pixelmusic.utils.formatSongCount
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 import androidx.compose.foundation.combinedClickable
-import kotlinx.coroutines.flow.map
+
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -359,13 +359,18 @@ fun PlaylistItem(
     val playlistPreviewSongIds = remember(playlist.songIds) {
         playlist.songIds.take(4)
     }
-    val playlistSongsInitialValue = remember(playlistPreviewSongIds) {
-        if (playlistPreviewSongIds.isEmpty()) emptyList<Song>() else null
+    // Use a one-shot load instead of a reactive Flow per-item.
+    // Previously, each PlaylistItem subscribed its own reactive DB Flow via observeSongs(),
+    // creating N simultaneous DB watchers for N playlists — causing ANR/freeze on large libraries.
+    // Now we do a single non-reactive fetch on the IO dispatcher and cache the result.
+    var playlistSongs by remember(playlistPreviewSongIds) {
+        mutableStateOf<List<Song>?>(if (playlistPreviewSongIds.isEmpty()) emptyList() else null)
     }
-    val playlistSongs by remember(playlistPreviewSongIds, playerViewModel) {
-        playerViewModel.observeSongs(playlistPreviewSongIds)
-            .map<List<Song>, List<Song>?> { it }
-    }.collectAsStateWithLifecycle(initialValue = playlistSongsInitialValue)
+    LaunchedEffect(playlistPreviewSongIds) {
+        if (playlistPreviewSongIds.isNotEmpty()) {
+            playlistSongs = playerViewModel.getSongs(playlistPreviewSongIds)
+        }
+    }
 
     val selectionScale by animateFloatAsState(
         targetValue = if (isSelected) 0.98f else 1f,

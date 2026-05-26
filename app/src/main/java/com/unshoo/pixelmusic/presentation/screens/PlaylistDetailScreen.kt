@@ -409,7 +409,7 @@ fun PlaylistDetailScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(76.dp),
-                        enabled = currentPlaylist.source == "YOUTUBE" || localReorderableSongs.isNotEmpty(),
+                        enabled = localReorderableSongs.isNotEmpty(),
                         shape = AbsoluteSmoothCornerShape(
                             cornerRadiusTL = 14.dp,
                             smoothnessAsPercentTR = 60,
