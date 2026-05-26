@@ -314,8 +314,14 @@ fun DailyMixScreen(
                         }
                         FilledTonalButton(
                             onClick = {
-                            // Shuffle disabled
-                        },
+                                if (dailyMixSongs.isNotEmpty()) {
+                                    playerViewModel.playSongsShuffled(
+                                        songsToPlay = dailyMixSongs,
+                                        queueName = dailyMixTitle,
+                                        startAtZero = true
+                                    )
+                                }
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(76.dp),

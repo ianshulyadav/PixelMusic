@@ -2808,10 +2808,23 @@ class PlayerViewModel @Inject constructor(
         val currentMediaController = playerCtrl ?: mediaController ?: return
         val count = currentMediaController.mediaItemCount
 
-        // Heuristic: skip if size hasn't changed.
-        // We don't include currentMediaId here because we don't need to rebuild the whole
-        // queue list just because the selection moved. Selection is handled by stablePlayerState.
-        val signature = "$count"
+        // Heuristic: skip if size and order of media items haven't changed.
+        val signature = if (count == 0) {
+            "0"
+        } else {
+            val timeline = currentMediaController.currentTimeline
+            if (timeline.isEmpty) {
+                "$count"
+            } else {
+                val window = Timeline.Window()
+                var hashCode = 17
+                for (i in 0 until count) {
+                    val mediaItem = timeline.getWindow(i, window).mediaItem
+                    hashCode = hashCode * 31 + mediaItem.mediaId.hashCode()
+                }
+                "$count-$hashCode"
+            }
+        }
         if (signature == lastQueueSignature) return
         lastQueueSignature = signature
 

@@ -214,7 +214,7 @@ fun ExploreScreen(
                         // 1) "For You" / Homepage content (includes albums, songs, playlists, artists)
                         if (uiState.selectedFilter == "All" || uiState.selectedFilter == "For You") {
                             nonTrendingSections.forEachIndexed { index, section ->
-                                item(key = "home_section_${section.title}_${index}_header") {
+                                item(key = "home_section_nontrending_${section.title}_${index}_header") {
                                     val isQuickPicks = section.title.contains("quick picks", ignoreCase = true)
                                     val quickPicksSongs = remember(section.items) {
                                         section.items.filterIsInstance<SongItem>().map { it.toNativeSong() }
@@ -233,7 +233,7 @@ fun ExploreScreen(
                                         actionLabel = if (isQuickPicks && quickPicksSongs.isNotEmpty()) "Play All" else null
                                     )
                                 }
-                                item(key = "home_section_${section.title}_${index}_carousel") {
+                                item(key = "home_section_nontrending_${section.title}_${index}_carousel") {
                                     YTItemCarousel(
                                         items = section.items,
                                         navController = navController,
@@ -316,10 +316,10 @@ fun ExploreScreen(
 
                             // Render Trending homepage sections (e.g. Trending community playlists)
                             trendingSections.forEachIndexed { index, section ->
-                                item(key = "home_section_${section.title}_${index}_header") {
+                                item(key = "home_section_trending_${section.title}_${index}_header") {
                                     SectionHeader(title = section.title)
                                 }
-                                item(key = "home_section_${section.title}_${index}_carousel") {
+                                item(key = "home_section_trending_${section.title}_${index}_carousel") {
                                     YTItemCarousel(
                                         items = section.items,
                                         navController = navController,

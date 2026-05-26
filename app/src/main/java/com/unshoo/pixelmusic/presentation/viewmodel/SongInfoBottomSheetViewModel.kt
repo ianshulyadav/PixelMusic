@@ -325,4 +325,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
             onResult(result.getOrNull())
         }
     }
+
+    fun isLoggedIn(): Boolean = YouTube.hasLoginCookie()
 }

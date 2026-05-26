@@ -397,7 +397,14 @@ fun PlaylistDetailScreen(
                     }
                     FilledTonalButton(
                         onClick = {
-                            // Shuffle disabled
+                            if (localReorderableSongs.isNotEmpty()) {
+                                playerViewModel.playSongsShuffled(
+                                    songsToPlay = localReorderableSongs,
+                                    queueName = currentPlaylist.name,
+                                    playlistId = currentPlaylist.id,
+                                    startAtZero = true
+                                )
+                            }
                         },
                         modifier = Modifier
                             .weight(1f)
