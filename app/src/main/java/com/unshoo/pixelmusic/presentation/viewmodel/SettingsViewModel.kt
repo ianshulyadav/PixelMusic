@@ -113,14 +113,15 @@ data class SettingsUiState(
     val replayGainUseAlbumGain: Boolean = false,
     val isSafeTokenLimitEnabled: Boolean = true,
     val streamingAudioQualityWifi: StreamingAudioQuality = StreamingAudioQuality.HIGH,
-    val streamingAudioQualityMobile: StreamingAudioQuality = StreamingAudioQuality.LOW,
+    val streamingAudioQualityMobile: StreamingAudioQuality = StreamingAudioQuality.HIGH,
     val forceHighQualityOnMobile: Boolean = false,
     val albumArtQualityMobile: AlbumArtQuality = AlbumArtQuality.LOW,
     val cacheLikedSongsOffline: Boolean = false,
     val storageLimitMb: Int = 2048,
     val preloadQueueEnabled: Boolean = true,
     val preloadQueueSize: Int = 5,
-    val playerStreamClient: PlayerStreamClient = PlayerStreamClient.ANDROID_VR
+    val playerStreamClient: PlayerStreamClient = PlayerStreamClient.ANDROID_VR,
+    val pureYtMusicOnly: Boolean = false
 )
 
 data class FailedSongInfo(
@@ -748,6 +749,18 @@ class SettingsViewModel @Inject constructor(
             userPreferencesRepository.playerStreamClientFlow.collect { client ->
                 _uiState.update { it.copy(playerStreamClient = client) }
             }
+        }
+
+        viewModelScope.launch {
+            userPreferencesRepository.pureYtMusicOnlyFlow.collect { enabled ->
+                _uiState.update { it.copy(pureYtMusicOnly = enabled) }
+            }
+        }
+    }
+
+    fun setPureYtMusicOnly(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setPureYtMusicOnly(enabled)
         }
     }
 

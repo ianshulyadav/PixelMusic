@@ -256,6 +256,7 @@ constructor(
         val FOLDER_ARTWORK_PREFERENCE = stringPreferencesKey("folder_artwork_preference")
         val SUBSCRIBED_ARTIST_IDS = stringSetPreferencesKey("subscribed_artist_ids")
         val PLAYER_STREAM_CLIENT = stringPreferencesKey("player_stream_client")
+        val PURE_YT_MUSIC_ONLY = booleanPreferencesKey("pure_yt_music_only")
     }
 
     val appRebrandDialogShownFlow: Flow<Boolean> =
@@ -834,13 +835,12 @@ constructor(
             preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_WIFI] = quality.name
         }
     }
-
-    /** Audio quality when on mobile data. Default: LOW (64 kbps). */
+    /** Audio quality when on mobile data. Default: HIGH. */
     val streamingAudioQualityMobileFlow: Flow<StreamingAudioQuality> =
         dataStore.data.map { preferences ->
             StreamingAudioQuality.fromName(
                 preferences[PreferencesKeys.STREAMING_AUDIO_QUALITY_MOBILE]
-            ).let { if (it == StreamingAudioQuality.HIGH) StreamingAudioQuality.LOW else it }
+            )
         }
 
     suspend fun setStreamingAudioQualityMobile(quality: StreamingAudioQuality) {
@@ -858,6 +858,17 @@ constructor(
     suspend fun setForceHighQualityOnMobile(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.FORCE_HIGH_QUALITY_ON_MOBILE] = enabled
+        }
+    }
+
+    val pureYtMusicOnlyFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.PURE_YT_MUSIC_ONLY] ?: false
+        }
+
+    suspend fun setPureYtMusicOnly(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PURE_YT_MUSIC_ONLY] = enabled
         }
     }
 

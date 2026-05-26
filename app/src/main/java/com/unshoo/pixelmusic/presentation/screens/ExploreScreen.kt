@@ -66,6 +66,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import com.unshoo.pixelmusic.presentation.components.QuickPicksSection
+import com.unshoo.pixelmusic.presentation.viewmodel.QuickPicksViewModel
 import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
@@ -93,9 +95,11 @@ fun ExploreScreen(
     navController: NavController,
     playerViewModel: PlayerViewModel,
     paddingValuesParent: PaddingValues,
-    exploreViewModel: ExploreViewModel = hiltViewModel()
+    exploreViewModel: ExploreViewModel = hiltViewModel(),
+    quickPicksViewModel: QuickPicksViewModel = hiltViewModel()
 ) {
     val uiState by exploreViewModel.uiState.collectAsStateWithLifecycle()
+    val quickPicks by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
     val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
     val isPlaying by remember(stablePlayerState) { mutableStateOf(stablePlayerState.isPlaying) }
     val currentSongId = stablePlayerState.currentSong?.id
@@ -128,6 +132,7 @@ fun ExploreScreen(
             isRefreshing = uiState.isRefreshing,
             onRefresh = {
                 exploreViewModel.loadData(forceRefresh = true)
+                quickPicksViewModel.refresh()
             },
             state = pullRefreshState,
             modifier = Modifier.fillMaxSize()
@@ -168,11 +173,11 @@ fun ExploreScreen(
                         }
                     }
                 } else {
-                    val nonTrendingSections = remember(uiState.homePageSections) {
-                        uiState.homePageSections.filter { !it.title.contains("trending", ignoreCase = true) }
-                    }
-                    val trendingSections = remember(uiState.homePageSections) {
-                        uiState.homePageSections.filter { it.title.contains("trending", ignoreCase = true) }
+                    val homeSectionsFiltered = remember(uiState.homePageSections) {
+                        uiState.homePageSections.filter {
+                            !it.title.contains("quick picks", ignoreCase = true) &&
+                            !it.title.contains("quick", ignoreCase = true)
+                        }
                     }
                     val bottomPadding = if (currentSongId != null) MiniPlayerHeight else 0.dp
                     LazyColumn(
@@ -211,42 +216,11 @@ fun ExploreScreen(
                             }
                         }
 
-                        // 1) "For You" / Homepage content (includes albums, songs, playlists, artists)
-                        if (uiState.selectedFilter == "All" || uiState.selectedFilter == "For You") {
-                            nonTrendingSections.forEachIndexed { index, section ->
-                                item(key = "home_section_nontrending_${section.title}_${index}_header") {
-                                    val isQuickPicks = section.title.contains("quick picks", ignoreCase = true)
-                                    val quickPicksSongs = remember(section.items) {
-                                        section.items.filterIsInstance<SongItem>().map { it.toNativeSong() }
-                                    }
-                                    SectionHeader(
-                                        title = section.title,
-                                        onActionClick = if (isQuickPicks && quickPicksSongs.isNotEmpty()) {
-                                            {
-                                                playerViewModel.playSongs(
-                                                    quickPicksSongs,
-                                                    quickPicksSongs.first(),
-                                                    section.title
-                                                )
-                                            }
-                                        } else null,
-                                        actionLabel = if (isQuickPicks && quickPicksSongs.isNotEmpty()) "Play All" else null
-                                    )
-                                }
-                                item(key = "home_section_nontrending_${section.title}_${index}_carousel") {
-                                    YTItemCarousel(
-                                        items = section.items,
-                                        navController = navController,
-                                        playerViewModel = playerViewModel,
-                                        sectionTitle = section.title
-                                    )
-                                }
-                            }
-
-                            // Render Charts Sections in "All" view before Trending community playlists!
-                            if (uiState.selectedFilter == "All" && uiState.chartsPage != null && uiState.chartsPage!!.sections.isNotEmpty()) {
+                        // 1) Detailed Charts at the very top
+                        if (uiState.selectedFilter == "All" || uiState.selectedFilter == "Charts") {
+                            if (uiState.chartsPage != null && uiState.chartsPage!!.sections.isNotEmpty()) {
                                 uiState.chartsPage!!.sections.forEachIndexed { index, chartSection ->
-                                    item(key = "chart_${chartSection.title}_${index}_header_in_all") {
+                                    item(key = "chart_${chartSection.title}_${index}_header") {
                                         SectionHeader(title = chartSection.title)
                                     }
 
@@ -274,7 +248,7 @@ fun ExploreScreen(
                                             )
                                         }
                                     } else {
-                                        item(key = "chart_${chartSection.title}_${index}_list_in_all") {
+                                        item(key = "chart_${chartSection.title}_${index}_list") {
                                             LazyRow(
                                                 contentPadding = PaddingValues(horizontal = 16.dp),
                                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -313,43 +287,9 @@ fun ExploreScreen(
                                     }
                                 }
                             }
-
-                            // Render Trending homepage sections (e.g. Trending community playlists)
-                            trendingSections.forEachIndexed { index, section ->
-                                item(key = "home_section_trending_${section.title}_${index}_header") {
-                                    SectionHeader(title = section.title)
-                                }
-                                item(key = "home_section_trending_${section.title}_${index}_carousel") {
-                                    YTItemCarousel(
-                                        items = section.items,
-                                        navController = navController,
-                                        playerViewModel = playerViewModel,
-                                        sectionTitle = section.title
-                                    )
-                                }
-                            }
-
-                            // Load More Continuation Trigger
-                            if (uiState.homePageContinuation != null) {
-                                item(key = "load_more_trigger") {
-                                    LaunchedEffect(Unit) {
-                                        exploreViewModel.loadMore()
-                                    }
-                                    if (uiState.isContinuationLoading) {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                        }
-                                    }
-                                }
-                            }
                         }
 
-                        // 2) New Releases Section
+                        // 2) New Releases
                         if ((uiState.selectedFilter == "All" || uiState.selectedFilter == "New Releases") &&
                             uiState.newReleaseAlbums.isNotEmpty()
                         ) {
@@ -373,73 +313,71 @@ fun ExploreScreen(
                             }
                         }
 
-                        // 3) Charts Sections (Only rendered in dedicated Charts view)
-                        if (uiState.selectedFilter == "Charts" &&
-                            uiState.chartsPage != null && uiState.chartsPage!!.sections.isNotEmpty()
+                        // 3) Quick Picks homepage style grid
+                        if ((uiState.selectedFilter == "All" || uiState.selectedFilter == "For You") &&
+                            quickPicks.isNotEmpty()
                         ) {
-                            uiState.chartsPage!!.sections.forEachIndexed { index, chartSection ->
-                                item(key = "chart_${chartSection.title}_${index}_header") {
-                                    SectionHeader(title = chartSection.title)
-                                }
+                            item(key = "quick_picks_section") {
+                                QuickPicksSection(
+                                    songs = quickPicks,
+                                    onSongClick = { song ->
+                                        playerViewModel.showAndPlaySong(song, quickPicks, "Quick Picks")
+                                    },
+                                    onSeeAllClick = {
+                                        navController.navigateSafely(Screen.QuickPicksAll.route)
+                                    },
+                                    currentSongId = currentSongId
+                                )
+                            }
+                        }
 
-                                val songItems = chartSection.items.filterIsInstance<SongItem>()
-                                if (songItems.isNotEmpty()) {
-                                    val songListNative = songItems.map { it.toNativeSong() }
-                                    items(songItems.size) { idx ->
-                                        val songItem = songItems[idx]
-                                        val songNative = songListNative[idx]
-                                        EnhancedSongListItem(
-                                            modifier = Modifier.padding(horizontal = 16.dp),
-                                            song = songNative,
-                                            isPlaying = isPlaying && currentSongId == songNative.id,
-                                            isCurrentSong = currentSongId == songNative.id,
-                                            onClick = {
-                                                playerViewModel.showAndPlaySong(
-                                                    songNative,
-                                                    songListNative,
-                                                    chartSection.title
-                                                )
-                                            },
-                                            onMoreOptionsClick = {
-                                                playerViewModel.selectSongForInfo(songNative)
-                                            }
-                                        )
+                         // 4) Homepage "For You" sections (includes personal playlists like "Your Playlists" or "Community Playlists" as index 0)
+                        if (uiState.selectedFilter == "All" || uiState.selectedFilter == "For You") {
+
+                            homeSectionsFiltered.forEachIndexed { index, section ->
+                                item(key = "home_section_${section.title}_${index}_header") {
+                                    val isSectionQuickPicks = section.title.contains("quick picks", ignoreCase = true)
+                                    val quickPicksSongs = remember(section.items) {
+                                        section.items.filterIsInstance<SongItem>().map { it.toNativeSong() }
                                     }
-                                } else {
-                                    item(key = "chart_${chartSection.title}_${index}_list") {
-                                        LazyRow(
-                                            contentPadding = PaddingValues(horizontal = 16.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                        ) {
-                                            items(chartSection.items) { item ->
-                                                when (item) {
-                                                    is AlbumItem -> {
-                                                        AlbumCarouselItem(
-                                                            album = item,
-                                                            onClick = {
-                                                                navController.navigateSafely(Screen.AlbumDetail.createRoute(item.browseId))
-                                                            }
-                                                        )
-                                                    }
-                                                    is ArtistItem -> {
-                                                        ArtistCardItem(
-                                                            artist = item,
-                                                            onClick = {
-                                                                navController.navigateSafely(Screen.ArtistDetail.createRoute(item.id))
-                                                            }
-                                                        )
-                                                    }
-                                                    is PlaylistItem -> {
-                                                        PlaylistCardItem(
-                                                            playlist = item,
-                                                            onClick = {
-                                                                navController.navigateSafely(Screen.PlaylistDetail.createRoute(item.id))
-                                                            }
-                                                        )
-                                                    }
-                                                    else -> {}
-                                                }
+                                    SectionHeader(
+                                        title = section.title,
+                                        onActionClick = if (isSectionQuickPicks && quickPicksSongs.isNotEmpty()) {
+                                            {
+                                                playerViewModel.playSongs(
+                                                    quickPicksSongs,
+                                                    quickPicksSongs.first(),
+                                                    section.title
+                                                )
                                             }
+                                        } else null,
+                                        actionLabel = if (isSectionQuickPicks && quickPicksSongs.isNotEmpty()) "Play All" else null
+                                    )
+                                }
+                                item(key = "home_section_${section.title}_${index}_carousel") {
+                                    YTItemCarousel(
+                                        items = section.items,
+                                        navController = navController,
+                                        playerViewModel = playerViewModel,
+                                        sectionTitle = section.title
+                                    )
+                                }
+                            }
+
+                            // Load More Continuation Trigger
+                            if (uiState.homePageContinuation != null) {
+                                item(key = "load_more_trigger") {
+                                    LaunchedEffect(Unit) {
+                                        exploreViewModel.loadMore()
+                                    }
+                                    if (uiState.isContinuationLoading) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
                                         }
                                     }
                                 }

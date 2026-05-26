@@ -35,6 +35,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.FlowPreview
 
+import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
+
 /**
  * Pure YouTube Music search — all local library search removed.
  * Queries go directly to YouTube Music API; results are cached in LRU.
@@ -42,6 +45,7 @@ import kotlinx.coroutines.FlowPreview
 @Singleton
 class SearchStateHolder @Inject constructor(
     @param:dagger.hilt.android.qualifiers.ApplicationContext private val appContext: android.content.Context,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
     companion object {
         const val SEARCH_DEBOUNCE_MS = 150L
@@ -132,6 +136,7 @@ class SearchStateHolder @Inject constructor(
     }
 
     private suspend fun searchYouTube(query: String, filter: SearchFilterType): List<SearchResultItem> {
+        val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
         val items = mutableListOf<SearchResultItem>()
         when (filter) {
             SearchFilterType.ALL -> {
@@ -142,7 +147,7 @@ class SearchStateHolder @Inject constructor(
                             is SongItem -> {
                                 val musicVideoType = item.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
                                 val isMusicVideo = musicVideoType == "MUSIC_VIDEO_TYPE_OMV" || musicVideoType == "MUSIC_VIDEO_TYPE_UGC"
-                                if (!isMusicVideo) {
+                                if (!pureYtMusicOnly || !isMusicVideo) {
                                     items.add(SearchResultItem.SongItem(item.toNativeSong()))
                                 }
                             }
@@ -169,7 +174,7 @@ class SearchStateHolder @Inject constructor(
             }
             SearchFilterType.SONGS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_SONG).getOrNull()
-                result?.items?.filterIsInstance<SongItem>()?.filterVideo(true)?.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                result?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly)?.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
             }
             SearchFilterType.ARTISTS -> {
                 val result = YouTube.search(query, YouTube.SearchFilter.FILTER_ARTIST).getOrNull()
@@ -194,8 +199,10 @@ class SearchStateHolder @Inject constructor(
                 }
             }
             SearchFilterType.VIDEOS -> {
-                val result = YouTube.search(query, YouTube.SearchFilter.FILTER_VIDEO).getOrNull()
-                result?.items?.filterIsInstance<SongItem>()?.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                if (!pureYtMusicOnly) {
+                    val result = YouTube.search(query, YouTube.SearchFilter.FILTER_VIDEO).getOrNull()
+                    result?.items?.filterIsInstance<SongItem>()?.forEach { items.add(SearchResultItem.SongItem(it.toNativeSong())) }
+                }
             }
         }
         return items

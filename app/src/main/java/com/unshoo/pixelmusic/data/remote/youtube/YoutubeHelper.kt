@@ -501,7 +501,7 @@ object YoutubeHelper {
             } else {
                 userPreferencesRepository.streamingAudioQualityWifiFlow.first()
             }
-            targetQuality.maxBitrateKbps
+            if (targetQuality == StreamingAudioQuality.HIGH) 0 else targetQuality.maxBitrateKbps
         } catch (e: Exception) {
             0
         }

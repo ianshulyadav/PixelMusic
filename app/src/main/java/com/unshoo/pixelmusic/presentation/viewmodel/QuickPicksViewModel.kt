@@ -17,6 +17,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
+import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
+import unshoo.ianshulyadav.pixelmusic.innertube.models.filterVideo
 import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
 import unshoo.ianshulyadav.pixelmusic.innertube.pages.HomePage
 import javax.inject.Inject
@@ -30,7 +33,8 @@ private const val CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000L
 
 @HiltViewModel
 class QuickPicksViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private val _quickPicks = MutableStateFlow<List<Song>>(emptyList())
@@ -184,6 +188,10 @@ class QuickPicksViewModel @Inject constructor(
     }
 
     private suspend fun fetchYoutubeSongs(category: String): List<Song> {
+        val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
+
+        val accountSongsPool = mutableListOf<SongItem>()
+
         val defaultHome = YouTube.home().getOrNull() ?: return emptyList()
 
         // Update categories flow dynamically from home page chips
@@ -201,7 +209,6 @@ class QuickPicksViewModel @Inject constructor(
             defaultHome
         }
 
-        val accountSongsPool = mutableListOf<SongItem>()
         val quickPicksSection = targetHome.sections.firstOrNull {
             it.title.contains("quick picks", ignoreCase = true) ||
             it.title.contains("quick", ignoreCase = true)
@@ -232,7 +239,8 @@ class QuickPicksViewModel @Inject constructor(
             }
         }
 
-        val uniqueSongs = accountSongsPool.distinctBy { it.id }
+        val filteredSongs = accountSongsPool.filterVideo(pureYtMusicOnly)
+        val uniqueSongs = filteredSongs.distinctBy { it.id }
         return uniqueSongs.map { it.toNativeSong() }
     }
 }

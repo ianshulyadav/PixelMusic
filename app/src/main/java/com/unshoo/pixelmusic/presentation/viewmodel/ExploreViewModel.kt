@@ -120,11 +120,13 @@ class ExploreViewModel @Inject constructor(
                 val exploreDeferred = async(Dispatchers.IO) { YouTube.explore().getOrNull() }
                 val chartsDeferred = async(Dispatchers.IO) { YouTube.getChartsPage().getOrNull() }
                 val historyDeferred = async(Dispatchers.IO) { playbackStatsRepository.loadPlaybackHistory(limit = 15) }
+                val newReleasesDeferred = async(Dispatchers.IO) { YouTube.newReleaseAlbums().getOrNull() }
 
                 val home = homeDeferred.await()
                 val explore = exploreDeferred.await()
                 val charts = chartsDeferred.await()
                 val history = historyDeferred.await()
+                val newReleasesResult = newReleasesDeferred.await()
 
                 if (home == null && explore == null && charts == null) {
                     // Only show error if we also have no cached data
@@ -146,7 +148,7 @@ class ExploreViewModel @Inject constructor(
                         "Bollywood"
                     }
 
-                    // Load community playlists for user's favorite artist
+                    // Load community playlists for user's favorite artist as guest fallback
                     val communityPlaylistsResult = withContext(Dispatchers.IO) {
                         YouTube.search(
                             query = "$userActivityQuery playlist",
@@ -157,38 +159,50 @@ class ExploreViewModel @Inject constructor(
                     val communityPlaylists = communityPlaylistsResult?.items?.filterIsInstance<PlaylistItem>() ?: emptyList()
 
                     val rawSections = home?.sections ?: emptyList()
-                    var replacedTrending = false
-                    var updatedSections = rawSections.map { section ->
-                        if (section.title.contains("trending", ignoreCase = true) && communityPlaylists.isNotEmpty() && !replacedTrending) {
-                            replacedTrending = true
-                            HomePage.Section(
-                                title = "Trending community playlists",
+                    val updatedSections = rawSections.toMutableList()
+
+                    // Check if logged in to fetch user account playlists
+                    val personalPlaylists = if (YouTube.hasLoginCookie()) {
+                        YouTube.library("FEmusic_liked_playlists").getOrNull()?.items?.filterIsInstance<PlaylistItem>() ?: emptyList()
+                    } else {
+                        emptyList()
+                    }
+
+                    if (personalPlaylists.isNotEmpty()) {
+                        // Logged in: Add "Your Playlists" section
+                        // Also remove any generic "Trending community playlists" if present
+                        updatedSections.removeAll { it.title.contains("trending", ignoreCase = true) }
+                        
+                        // Let's insert "Your Playlists" section
+                        updatedSections.add(0, HomePage.Section(
+                            title = "Your Playlists",
+                            label = "From your YouTube Music Account",
+                            thumbnail = null,
+                            endpoint = null,
+                            items = personalPlaylists
+                        ))
+                    } else {
+                        // Guest mode / Fallback: Fetch search-based community playlists
+                        if (communityPlaylists.isNotEmpty()) {
+                            updatedSections.removeAll { it.title.contains("trending", ignoreCase = true) }
+                            updatedSections.add(HomePage.Section(
+                                title = "Community Playlists",
                                 label = "Based on your activity for $userActivityQuery",
                                 thumbnail = null,
                                 endpoint = null,
                                 items = communityPlaylists
-                            )
-                        } else {
-                            section
+                            ))
                         }
                     }
 
-                    if (communityPlaylists.isNotEmpty() && !updatedSections.any { it.title.contains("trending", ignoreCase = true) }) {
-                        updatedSections = updatedSections + HomePage.Section(
-                            title = "Trending community playlists",
-                            label = "Based on your activity for $userActivityQuery",
-                            thumbnail = null,
-                            endpoint = null,
-                            items = communityPlaylists
-                        )
-                    }
+                    val finalNewReleases = if (!newReleasesResult.isNullOrEmpty()) newReleasesResult else explore?.newReleaseAlbums ?: emptyList()
 
                     val newState = ExploreUiState(
                         isLoading = false,
                         isRefreshing = false,
                         homePageSections = updatedSections,
                         homePageContinuation = home?.continuation,
-                        newReleaseAlbums = explore?.newReleaseAlbums ?: emptyList(),
+                        newReleaseAlbums = finalNewReleases,
                         chartsPage = charts,
                         selectedFilter = _uiState.value.selectedFilter
                     )

@@ -970,6 +970,16 @@ fun SettingsCategoryScreen(
                                     leadingIcon = { Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
                             }
+
+                            SettingsSubsection(title = "Recommendations & YouTube Content") {
+                                SwitchSettingItem(
+                                    title = "Pure YouTube Music",
+                                    subtitle = "Filter out non-music video content and show only audio songs.",
+                                    checked = uiState.pureYtMusicOnly,
+                                    onCheckedChange = { settingsViewModel.setPureYtMusicOnly(it) },
+                                    leadingIcon = { Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+                            }
                         }
                         SettingsCategory.BEHAVIOR -> {
                             SettingsSubsection(
