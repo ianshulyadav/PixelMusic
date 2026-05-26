@@ -61,9 +61,11 @@ data class HomePage(
                     thumbnail = renderer.header.musicCarouselShelfBasicHeaderRenderer.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl(),
                     endpoint = renderer.header.musicCarouselShelfBasicHeaderRenderer.moreContentButton?.buttonRenderer?.navigationEndpoint?.browseEndpoint,
                     items = renderer.contents.mapNotNull {
-                        it.musicTwoRowItemRenderer
-                    }.mapNotNull {
-                        fromMusicTwoRowItemRenderer(it)
+                        when {
+                            it.musicTwoRowItemRenderer != null -> fromMusicTwoRowItemRenderer(it.musicTwoRowItemRenderer)
+                            it.musicResponsiveListItemRenderer != null -> SearchPage.toYTItem(it.musicResponsiveListItemRenderer)
+                            else -> null
+                        }
                     }.ifEmpty {
                         return null
                     }

@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -93,6 +94,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import androidx.compose.ui.res.stringResource
+import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
+import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -124,6 +127,30 @@ fun RecentlyPlayedScreen(
     var showPlaylistBottomSheet by remember { mutableStateOf(false) }
     val bottomBarHeightDp = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
+    var ytHistorySongs by remember { mutableStateOf<List<RecentlyPlayedSongUiModel>?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (YouTube.hasLoginCookie()) {
+            val result = YouTube.musicHistory().getOrNull()
+            if (result != null) {
+                val songsList = result.sections?.flatMapIndexed { sectionIndex, section ->
+                    section.songs.mapIndexed { songIndex, songItem ->
+                        val virtualTimestamp = System.currentTimeMillis() - (sectionIndex * 86400000L) - (songIndex * 60000L)
+                        RecentlyPlayedSongUiModel(
+                            song = songItem.toNativeSong(),
+                            lastPlayedTimestamp = virtualTimestamp
+                        )
+                    }
+                }.orEmpty()
+                ytHistorySongs = songsList
+            } else {
+                ytHistorySongs = emptyList()
+            }
+        } else {
+            ytHistorySongs = emptyList()
+        }
+    }
+
     val recentSongIds = remember(playbackHistory, selectedRange) {
         collectRecentlyPlayedSongIds(
             playbackHistory = playbackHistory,
@@ -139,7 +166,7 @@ fun RecentlyPlayedScreen(
             .map<List<Song>, List<Song>?> { it }
     }.collectAsStateWithLifecycle(initialValue = recentSongsInitialValue)
 
-    val recentlyPlayedSongs = remember(playbackHistory, recentlyPlayedSourceSongs, selectedRange) {
+    val localRecentlyPlayedSongs = remember(playbackHistory, recentlyPlayedSourceSongs, selectedRange) {
         val sourceSongs = recentlyPlayedSourceSongs ?: return@remember emptyList()
         mapRecentlyPlayedSongs(
             playbackHistory = playbackHistory,
@@ -148,6 +175,13 @@ fun RecentlyPlayedScreen(
             maxItems = Int.MAX_VALUE
         )
     }
+
+    val recentlyPlayedSongs = if (YouTube.hasLoginCookie()) {
+        ytHistorySongs ?: emptyList()
+    } else {
+        localRecentlyPlayedSongs
+    }
+
     val groupedSongs = remember(recentlyPlayedSongs, selectedRange, context) {
         groupRecentlyPlayedSongs(
             context = context,
@@ -177,7 +211,8 @@ fun RecentlyPlayedScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
-        if (recentlyPlayedSourceSongs == null) {
+        val isLoaded = if (YouTube.hasLoginCookie()) ytHistorySongs != null else recentlyPlayedSourceSongs != null
+        if (!isLoaded) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center

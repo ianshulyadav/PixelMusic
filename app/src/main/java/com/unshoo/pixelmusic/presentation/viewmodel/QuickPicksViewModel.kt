@@ -16,7 +16,9 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube.SearchFilter
+import unshoo.ianshulyadav.pixelmusic.innertube.models.PlaylistItem
 import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
+import unshoo.ianshulyadav.pixelmusic.innertube.pages.HomePage
 import javax.inject.Inject
 
 val QUICK_PICKS_CATEGORIES = listOf(
@@ -73,78 +75,146 @@ class QuickPicksViewModel @Inject constructor(
     }
 
     private suspend fun fetchYoutubeSongs(category: String): List<Song> {
-        val songItems = mutableListOf<SongItem>()
-        if (category == "All") {
-            // Fetch from YouTube home sections
-            val homeResult = YouTube.home().getOrNull()
-            if (homeResult != null) {
-                val songs = homeResult.sections
-                    .flatMap { it.items }
-                    .filterIsInstance<SongItem>()
-                songItems.addAll(songs)
-                
-                var continuation = homeResult.continuation
-                var attempts = 0
-                while (songItems.distinctBy { it.id }.size < 50 && continuation != null && attempts < 5) {
-                    val nextHome = YouTube.home(continuation = continuation).getOrNull()
-                    if (nextHome != null) {
-                        val nextSongs = nextHome.sections.flatMap { it.items }.filterIsInstance<SongItem>()
-                        if (nextSongs.isEmpty()) break
-                        songItems.addAll(nextSongs)
-                        continuation = nextHome.continuation
-                    } else {
-                        break
-                    }
-                    attempts++
-                }
-            }
-
-            val distinctSongs = songItems.distinctBy { it.id }
-            if (distinctSongs.size >= 50) {
-                return distinctSongs.take(50).map { it.toNativeSong() }
-            }
-
-            // Fallback / fill to 50: search "top songs"
-            val searchResult = YouTube.search("top songs 2026", SearchFilter.FILTER_SONG).getOrNull()
-            val fallbackSongs = searchResult?.items?.filterIsInstance<SongItem>().orEmpty()
-            val combined = (distinctSongs + fallbackSongs).distinctBy { it.id }
-            return combined.take(50).map { it.toNativeSong() }
-        } else {
-            // Category-specific YouTube search
-            val query = when (category) {
-                "Romance" -> "romantic songs hindi"
-                "Love" -> "love songs hits"
-                "Pump" -> "pump up gym workout music"
-                "Punjabi" -> "punjabi songs latest hits"
-                "Bollywood" -> "bollywood songs trending"
-                "Chill" -> "chill lofi songs"
-                "Party" -> "party songs hits"
-                "Sad" -> "sad songs hindi"
-                "Dance" -> "dance hits songs"
-                "Hip Hop" -> "hip hop songs"
-                "Pop" -> "pop songs hits"
-                "Indie" -> "indie songs"
-                "Rock" -> "rock songs hits"
-                else -> "$category songs"
-            }
-            val searchResult = YouTube.search(query, SearchFilter.FILTER_SONG).getOrNull()
-            searchResult?.items?.filterIsInstance<SongItem>()?.let { songItems.addAll(it) }
-            
-            var continuation = searchResult?.continuation
-            var attempts = 0
-            while (songItems.distinctBy { it.id }.size < 50 && continuation != null && attempts < 5) {
-                val nextSearch = YouTube.searchContinuation(continuation).getOrNull()
-                if (nextSearch != null) {
-                    val nextSongs = nextSearch.items.filterIsInstance<SongItem>()
-                    if (nextSongs.isEmpty()) break
-                    songItems.addAll(nextSongs)
-                    continuation = nextSearch.continuation
-                } else {
-                    break
-                }
-                attempts++
-            }
-            return songItems.distinctBy { it.id }.take(50).map { it.toNativeSong() }
+        val uniqueAccountSongs = mutableListOf<SongItem>()
+        var defaultHome: HomePage? = null
+        
+        try {
+            defaultHome = YouTube.home().getOrNull()
+        } catch (e: Exception) {
+            Timber.tag("QuickPicks").e(e, "Error loading default home page")
         }
+
+        var targetHome = defaultHome
+        var usingFilteredHome = false
+
+        if (category != "All" && defaultHome?.chips != null) {
+            val mappedTitles = when (category) {
+                "Chill" -> listOf("Relax", "Focus", "Chill")
+                "Pump" -> listOf("Workout", "Energize")
+                "Party" -> listOf("Energize", "Party")
+                "Romance", "Love" -> listOf("Romance", "Feel Good")
+                else -> listOf(category)
+            }
+            val matchingChip = defaultHome.chips.firstOrNull { chip ->
+                mappedTitles.any { title -> chip.title.contains(title, ignoreCase = true) }
+            }
+            if (matchingChip != null && matchingChip.endpoint?.params != null) {
+                try {
+                    val filteredHome = YouTube.home(params = matchingChip.endpoint.params).getOrNull()
+                    if (filteredHome != null) {
+                        targetHome = filteredHome
+                        usingFilteredHome = true
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("QuickPicks").e(e, "Error loading filtered home page for chip: ${matchingChip.title}")
+                }
+            }
+        }
+
+        val accountSongsPool = mutableListOf<SongItem>()
+        if (targetHome != null) {
+            val quickPicksSection = targetHome.sections.firstOrNull {
+                it.title.contains("quick picks", ignoreCase = true) ||
+                it.title.contains("quick", ignoreCase = true)
+            }
+            if (quickPicksSection != null) {
+                accountSongsPool.addAll(quickPicksSection.items.filterIsInstance<SongItem>())
+            }
+
+            val otherSectionsSongs = targetHome.sections
+                .filter { it != quickPicksSection }
+                .flatMap { it.items }
+                .filterIsInstance<SongItem>()
+            accountSongsPool.addAll(otherSectionsSongs)
+
+            val continuation = targetHome.continuation
+            if (continuation != null) {
+                try {
+                    val continuationHome = YouTube.home(continuation = continuation).getOrNull()
+                    if (continuationHome != null) {
+                        val continuationSongs = continuationHome.sections
+                            .flatMap { it.items }
+                            .filterIsInstance<SongItem>()
+                        accountSongsPool.addAll(continuationSongs)
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("QuickPicks").e(e, "Error loading home continuation")
+                }
+            }
+        }
+
+        uniqueAccountSongs.addAll(accountSongsPool.distinctBy { it.id })
+
+        val fallbackSongs = mutableListOf<SongItem>()
+        if (uniqueAccountSongs.size < 50 || (!usingFilteredHome && category != "All")) {
+            val mixQuery = when (category) {
+                "All" -> "My Mix"
+                "Romance" -> "Romance Mix"
+                "Love" -> "Romance Mix"
+                "Pump" -> "Workout Mix"
+                "Chill" -> "Chill Mix"
+                "Party" -> "Energy Mix"
+                "Sad" -> "Sad Mix"
+                "Dance" -> "Dance Mix"
+                "Hip Hop" -> "Hip Hop Mix"
+                "Pop" -> "Pop Mix"
+                "Indie" -> "Indie Mix"
+                "Rock" -> "Rock Mix"
+                "Bollywood" -> "Bollywood Mix"
+                "Punjabi" -> "Punjabi Mix"
+                else -> "$category Mix"
+            }
+            
+            // Try to find personalized Mix playlists first
+            try {
+                val playlistSearchResult = YouTube.search(mixQuery, SearchFilter.FILTER_COMMUNITY_PLAYLIST).getOrNull()
+                    ?: YouTube.search(mixQuery, SearchFilter.FILTER_FEATURED_PLAYLIST).getOrNull()
+                
+                val mixPlaylist = playlistSearchResult?.items?.filterIsInstance<PlaylistItem>()?.firstOrNull {
+                    it.title.contains("Mix", ignoreCase = true) || it.title.contains(category, ignoreCase = true)
+                }
+                
+                if (mixPlaylist != null) {
+                    val playlistPage = YouTube.playlist(mixPlaylist.id).getOrNull()
+                    if (playlistPage != null && playlistPage.songs.isNotEmpty()) {
+                        fallbackSongs.addAll(playlistPage.songs)
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.tag("QuickPicks").e(e, "Error loading personalized Mix playlist for: $mixQuery")
+            }
+            
+            // If Mix playlist fetch did not yield songs, do a personalized song search
+            if (fallbackSongs.isEmpty()) {
+                val songSearchQuery = when (category) {
+                    "All" -> "songs"
+                    "Romance", "Love" -> "romantic songs"
+                    "Pump" -> "workout music"
+                    "Chill" -> "chill music"
+                    "Party" -> "party music"
+                    "Sad" -> "sad songs"
+                    else -> "$category songs"
+                }
+                try {
+                    val searchResult = YouTube.search(songSearchQuery, SearchFilter.FILTER_SONG).getOrNull()
+                    if (searchResult != null) {
+                        fallbackSongs.addAll(searchResult.items.filterIsInstance<SongItem>())
+                        val searchContinuationToken = searchResult.continuation
+                        if (fallbackSongs.distinctBy { it.id }.size < 50 && searchContinuationToken != null) {
+                            val nextSearch = YouTube.searchContinuation(searchContinuationToken).getOrNull()
+                            if (nextSearch != null) {
+                                fallbackSongs.addAll(nextSearch.items.filterIsInstance<SongItem>())
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Timber.tag("QuickPicks").e(e, "Error loading fallback song search for: $songSearchQuery")
+                }
+            }
+        }
+
+        val combinedPool = (uniqueAccountSongs + fallbackSongs).distinctBy { it.id }.toMutableList()
+        combinedPool.shuffle()
+        return combinedPool.take(50).map { it.toNativeSong() }
     }
 }
