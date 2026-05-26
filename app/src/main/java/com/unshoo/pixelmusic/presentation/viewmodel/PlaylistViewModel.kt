@@ -249,7 +249,7 @@ class PlaylistViewModel @Inject constructor(
                     val playlist = playlistPreferencesRepository.userPlaylistsFlow.first()
                         .find { it.id == playlistId }
 
-                    if (playlist != null && playlist.source != "YOUTUBE") {
+                    if (playlist != null) {
                         val orderMode = _uiState.value.playlistOrderModes[playlistId]
                             ?: PlaylistSongsOrderMode.Manual
 
@@ -275,6 +275,98 @@ class PlaylistViewModel @Inject constructor(
                                 isLoading = false,
                                 playlistNotFound = false
                             )
+                        }
+
+                        // Background fetch & sync for synced YouTube playlists
+                        if (playlist.source == "YOUTUBE") {
+                            viewModelScope.launch(Dispatchers.IO) {
+                                val ytPlaylistResult = YouTube.playlist(playlistId)
+                                if (ytPlaylistResult.isSuccess) {
+                                    val ytPlaylistPage = ytPlaylistResult.getOrThrow()
+                                    val ytPlaylist = ytPlaylistPage.playlist
+                                    
+                                    val firstPageSongs = ytPlaylistPage.songs.map { it.toNativeSong() }
+                                    
+                                    // Cache first page online playlist songs in Room DB
+                                    musicRepository.insertYoutubeSongs(firstPageSongs)
+
+                                    val updatedSongIds = firstPageSongs.map { it.id }
+
+                                    val currentExisting = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
+                                    if (currentExisting != null) {
+                                        playlistPreferencesRepository.updatePlaylist(
+                                            currentExisting.copy(
+                                                name = ytPlaylist.title,
+                                                songIds = updatedSongIds,
+                                                coverImageUri = ytPlaylist.thumbnail
+                                            )
+                                        )
+                                    }
+
+                                    currentPlaylistSetVideoIds = ytPlaylistPage.songs.mapNotNull { it.setVideoId }
+
+                                    withContext(Dispatchers.Main) {
+                                        if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
+                                            _uiState.update { state ->
+                                                state.copy(
+                                                    currentPlaylistDetails = state.currentPlaylistDetails?.copy(
+                                                        name = ytPlaylist.title,
+                                                        songIds = updatedSongIds,
+                                                        coverImageUri = ytPlaylist.thumbnail
+                                                    ),
+                                                    currentPlaylistSongs = firstPageSongs
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    // Fetch the remaining pages progressively in the background coroutine
+                                    var continuation = ytPlaylistPage.songsContinuation ?: ytPlaylistPage.continuation
+                                    var pages = 0
+                                    val allYtSongs = ytPlaylistPage.songs.toMutableList()
+                                    while (continuation != null && pages < 10) {
+                                        val contResult = YouTube.playlistContinuation(continuation)
+                                        if (contResult.isSuccess) {
+                                            val contPage = contResult.getOrThrow()
+                                            allYtSongs.addAll(contPage.songs)
+                                            val contNativeSongs = contPage.songs.map { it.toNativeSong() }
+                                            val allNativeSongs = allYtSongs.map { it.toNativeSong() }
+                                            continuation = contPage.continuation
+                                            pages++
+
+                                            musicRepository.insertYoutubeSongs(contNativeSongs)
+                                            
+                                            // Update video ids
+                                            currentPlaylistSetVideoIds = allYtSongs.mapNotNull { it.setVideoId }
+
+                                            // Update preferences
+                                            val currentExistingInner = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
+                                            if (currentExistingInner != null) {
+                                                playlistPreferencesRepository.updatePlaylist(
+                                                    currentExistingInner.copy(
+                                                        songIds = allNativeSongs.map { it.id }
+                                                    )
+                                                )
+                                            }
+
+                                            withContext(Dispatchers.Main) {
+                                                if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
+                                                    _uiState.update { state ->
+                                                        state.copy(
+                                                            currentPlaylistDetails = state.currentPlaylistDetails?.copy(
+                                                                songIds = allNativeSongs.map { it.id }
+                                                            ),
+                                                            currentPlaylistSongs = allNativeSongs
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            break
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else if (playlistId.startsWith("PL") || playlistId.startsWith("VL") || playlistId.toLongOrNull() == null) {
                         val ytPlaylistResult = withContext(Dispatchers.IO) {
@@ -834,6 +926,16 @@ class PlaylistViewModel @Inject constructor(
             }
 
             playlistPreferencesRepository.updatePlaylist(updatedPlaylist)
+
+            if (currentPlaylist.source == "YOUTUBE" && currentPlaylist.name != name) {
+                try {
+                    withContext(Dispatchers.IO) {
+                        YouTube.renamePlaylist(currentPlaylist.id, name)
+                    }
+                } catch (e: Exception) {
+                    Log.e("PlaylistViewModel", "Failed to rename remote YouTube playlist in updatePlaylistParameters", e)
+                }
+            }
         }
     }
 

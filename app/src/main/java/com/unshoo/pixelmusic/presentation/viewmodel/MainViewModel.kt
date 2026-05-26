@@ -20,9 +20,26 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val syncManager: SyncManager,
     private val youTubeLibrarySyncManager: YouTubeLibrarySyncManager,
+    private val datastoreRepository: com.unshoo.pixelmusic.data.remote.youtube.DatastoreRepository,
     musicRepository: MusicRepository,
     userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            datastoreRepository.cookies.collect { cookies ->
+                val rawCookie = cookies.toRawCookie()
+                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.cookie = rawCookie
+                LogUtils.d(this@MainViewModel, "MainViewModel: Syncing cookies to YouTube singleton. Size = ${rawCookie.length}")
+            }
+        }
+        viewModelScope.launch {
+            datastoreRepository.dataSyncId.collect { id ->
+                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.dataSyncId = id
+                LogUtils.d(this@MainViewModel, "MainViewModel: Syncing dataSyncId to YouTube singleton.")
+            }
+        }
+    }
 
     val isSetupComplete: StateFlow<Boolean?> = userPreferencesRepository.initialSetupDoneFlow
         .map { it as Boolean? }
