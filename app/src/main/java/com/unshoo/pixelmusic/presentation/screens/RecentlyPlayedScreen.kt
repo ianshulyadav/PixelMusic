@@ -176,10 +176,20 @@ fun RecentlyPlayedScreen(
         )
     }
 
-    val recentlyPlayedSongs = if (YouTube.hasLoginCookie()) {
-        ytHistorySongs ?: emptyList()
-    } else {
-        localRecentlyPlayedSongs
+    val recentlyPlayedSongs = remember(ytHistorySongs, localRecentlyPlayedSongs) {
+        val yt = ytHistorySongs ?: emptyList()
+        val local = localRecentlyPlayedSongs
+        val combined = (yt + local)
+        val seen = LinkedHashSet<String>()
+        combined
+            .sortedByDescending { it.lastPlayedTimestamp }
+            .filter { model ->
+                val song = model.song
+                val ytId = song.youtubeId
+                    ?: if (song.id.startsWith("youtube_")) song.id.substringAfter("youtube_") else null
+                val key = if (!ytId.isNullOrBlank()) "youtube_$ytId" else song.id
+                seen.add(key)
+            }
     }
 
     val groupedSongs = remember(recentlyPlayedSongs, selectedRange, context) {
@@ -211,7 +221,7 @@ fun RecentlyPlayedScreen(
             .fillMaxSize()
             .background(backgroundBrush)
     ) {
-        val isLoaded = if (YouTube.hasLoginCookie()) ytHistorySongs != null else recentlyPlayedSourceSongs != null
+        val isLoaded = if (YouTube.hasLoginCookie()) ytHistorySongs != null && recentlyPlayedSourceSongs != null else recentlyPlayedSourceSongs != null
         if (!isLoaded) {
             Box(
                 modifier = Modifier.fillMaxSize(),

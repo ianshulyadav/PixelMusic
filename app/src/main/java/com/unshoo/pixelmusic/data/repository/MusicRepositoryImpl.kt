@@ -1113,7 +1113,7 @@ class MusicRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun setFavoriteStatusWithMetadata(song: Song, isFavorite: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun setFavoriteStatusWithMetadata(song: Song, isFavorite: Boolean, awaitRemoteSync: Boolean) = withContext(Dispatchers.IO) {
         val youtubeId = song.youtubeId 
             ?: if (song.id.startsWith("youtube_")) song.id.substringAfter("youtube_")
                else if (song.contentUriString?.startsWith("youtube://") == true) song.contentUriString.substringAfter("youtube://")
@@ -1151,11 +1151,18 @@ class MusicRepositoryImpl @Inject constructor(
         }
 
         if (youtubeId != null) {
-            repositoryScope.launch(Dispatchers.IO) {
+            val syncCall = suspend {
                 try {
                     unshoo.ianshulyadav.pixelmusic.innertube.YouTube.likeVideo(youtubeId, isFavorite)
                 } catch (e: Exception) {
                     Timber.tag("MusicRepository").e(e, "Failed to sync remote favorite to YouTube for $youtubeId")
+                }
+            }
+            if (awaitRemoteSync) {
+                syncCall()
+            } else {
+                repositoryScope.launch(Dispatchers.IO) {
+                    syncCall()
                 }
             }
         }

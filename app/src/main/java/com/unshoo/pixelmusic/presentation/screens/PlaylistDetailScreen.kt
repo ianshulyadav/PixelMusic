@@ -885,8 +885,10 @@ fun PlaylistDetailScreen(
                 song = currentSong,
                 isFavorite = isFavorite,
                 onToggleFavorite = {
-                    // Directly use PlayerViewModel's method to toggle, which should handle UserPreferencesRepository
-                    playerViewModel.toggleFavoriteSpecificSong(currentSong) // Assumes such a method exists or will be added to PlayerViewModel
+                    scope.launch {
+                        playerViewModel.toggleFavoriteSpecificSongSuspending(currentSong)
+                        playlistViewModel.refreshCurrentPlaylist()
+                    }
                 },
                 onDismiss = { showSongInfoBottomSheet = false },
                 onPlaySong = {

@@ -75,12 +75,10 @@ class YouTubeLibrarySyncManager @Inject constructor(
 
         // Fetch continuation pages (YouTube returns them in batches)
         var continuation = firstPage.continuation
-        var page = 0
-        while (continuation != null && page < 5) {
+        while (continuation != null) {
             val next = YouTube.libraryContinuation(continuation).getOrNull() ?: break
             allArtistItems += next.items.filterIsInstance<ArtistItem>()
             continuation = next.continuation
-            page++
         }
 
         if (allArtistItems.isEmpty()) {
@@ -108,31 +106,29 @@ class YouTubeLibrarySyncManager @Inject constructor(
     // Liked songs
     // ---------------------------------------------------------------------------
 
-    private suspend fun syncLikedSongs() {
+    suspend fun syncLikedSongs() = withContext(Dispatchers.IO) {
         Timber.tag(TAG).d("Syncing liked songs from YouTube playlist LM…")
         val allSongItems = mutableListOf<SongItem>()
 
         val firstPage = YouTube.playlist(LIKED_SONGS_PLAYLIST).getOrNull()
         if (firstPage == null) {
             Timber.tag(TAG).d("Could not load liked songs playlist (not logged in?)")
-            return
+            return@withContext
         }
 
         allSongItems += firstPage.songs
 
-        // Fetch up to 5 continuation pages (each has ~100 songs)
+        // Fetch all continuation pages (each has ~100 songs)
         var continuation = firstPage.songsContinuation
-        var page = 0
-        while (continuation != null && page < 5) {
+        while (continuation != null) {
             val next = YouTube.playlistContinuation(continuation).getOrNull() ?: break
             allSongItems += next.songs
             continuation = next.continuation
-            page++
         }
 
         if (allSongItems.isEmpty()) {
             Timber.tag(TAG).d("No liked songs found")
-            return
+            return@withContext
         }
 
         Timber.tag(TAG).d("Found ${allSongItems.size} liked songs, syncing to DB…")

@@ -1084,14 +1084,24 @@ object YouTube {
 
     private fun convertToChartItem(renderer: MusicResponsiveListItemRenderer): YTItem? {
         return try {
-            if (renderer.playlistItemData?.videoId == null) return null
+            // Try primary videoId, fall back to navigationEndpoint on the title run
+            val videoId = renderer.playlistItemData?.videoId
+                ?: renderer.flexColumns.getOrNull(0)
+                    ?.musicResponsiveListItemFlexColumnRenderer
+                    ?.text?.runs?.firstOrNull()
+                    ?.navigationEndpoint?.watchEndpoint?.videoId
+                ?: renderer.overlay?.musicItemThumbnailOverlayRenderer
+                    ?.content?.musicPlayButtonRenderer
+                    ?.playNavigationEndpoint?.watchEndpoint?.videoId
+            if (videoId.isNullOrBlank()) return null
+
             val flexSize = renderer.flexColumns.size
             if (flexSize < 2) return null
 
             val firstColumn = renderer.flexColumns.getOrNull(0)
                 ?.musicResponsiveListItemFlexColumnRenderer
                 ?.text ?: return null
-        
+
             val secondColumn = renderer.flexColumns.getOrNull(1)
                 ?.musicResponsiveListItemFlexColumnRenderer
                 ?.text ?: return null
@@ -1115,12 +1125,12 @@ object YouTube {
             } else null
 
             SongItem(
-                id = renderer.playlistItemData.videoId,
+                id = videoId,
                 title = title,
                 artists = artists,
                 thumbnail = renderer.thumbnail?.musicThumbnailRenderer?.getThumbnailUrl() ?: "",
-                explicit = renderer.badges?.any { 
-                    it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE" 
+                explicit = renderer.badges?.any {
+                    it.musicInlineBadgeRenderer?.icon?.iconType == "MUSIC_EXPLICIT_BADGE"
                 } == true,
                 chartPosition = thirdColumn?.runs?.firstOrNull()?.text?.toIntOrNull(),
                 chartChange = thirdColumn?.runs?.getOrNull(1)?.text

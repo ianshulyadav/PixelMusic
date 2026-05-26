@@ -274,7 +274,7 @@ interface MusicRepository {
     /**
      * Setea explícitamente el estado favorito de una canción, persistiendo metadatos para canciones de YouTube si es necesario.
      */
-    suspend fun setFavoriteStatusWithMetadata(song: Song, isFavorite: Boolean)
+    suspend fun setFavoriteStatusWithMetadata(song: Song, isFavorite: Boolean, awaitRemoteSync: Boolean = false)
 
     /**
      * Obtiene IDs de canciones favoritas directamente desde Room (tabla favorites).

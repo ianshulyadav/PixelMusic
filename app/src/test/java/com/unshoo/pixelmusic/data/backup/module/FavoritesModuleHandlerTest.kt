@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test
 class FavoritesModuleHandlerTest {
 
     private val favoritesDao: FavoritesDao = mockk(relaxed = true)
+    private val musicDao: com.unshoo.pixelmusic.data.database.MusicDao = mockk(relaxed = true)
     private val handler = FavoritesModuleHandler(
         favoritesDao = favoritesDao,
+        musicDao = musicDao,
         gson = GsonBuilder().serializeNulls().create()
     )
 

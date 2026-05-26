@@ -13,11 +13,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 import timber.log.Timber
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
 import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
 import unshoo.ianshulyadav.pixelmusic.innertube.pages.HomePage
 import javax.inject.Inject
+
+private const val PREFS_NAME = "quick_picks_cache"
+private const val KEY_SONGS = "songs_json"
+private const val KEY_CATEGORIES = "categories_json"
+private const val KEY_CACHE_TIMESTAMP = "cache_timestamp"
+// Cache is valid for 6 hours
+private const val CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000L
 
 @HiltViewModel
 class QuickPicksViewModel @Inject constructor(
@@ -36,7 +45,11 @@ class QuickPicksViewModel @Inject constructor(
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
+    private val prefs by lazy { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+
     init {
+        // Immediately populate from cache so the UI shows something on relaunch
+        loadFromCache()
         loadQuickPicks("All")
     }
 
@@ -52,15 +65,113 @@ class QuickPicksViewModel @Inject constructor(
         loadQuickPicks(_selectedCategory.value)
     }
 
+    // -------------------------------------------------------------------------
+    // Cache helpers
+    // -------------------------------------------------------------------------
+
+    private fun loadFromCache() {
+        try {
+            val timestamp = prefs.getLong(KEY_CACHE_TIMESTAMP, 0L)
+            if (System.currentTimeMillis() - timestamp > CACHE_MAX_AGE_MS) return
+
+            val songsJson = prefs.getString(KEY_SONGS, null) ?: return
+            val categoriesJson = prefs.getString(KEY_CATEGORIES, null)
+
+            val songsArray = JSONArray(songsJson)
+            val songs = mutableListOf<Song>()
+            for (i in 0 until songsArray.length()) {
+                val obj = songsArray.getJSONObject(i)
+                songs.add(songFromJson(obj))
+            }
+            if (songs.isNotEmpty()) {
+                _quickPicks.value = songs
+            }
+
+            if (categoriesJson != null) {
+                val catArray = JSONArray(categoriesJson)
+                val cats = mutableListOf<String>()
+                for (i in 0 until catArray.length()) cats.add(catArray.getString(i))
+                if (cats.isNotEmpty()) _categories.value = cats
+            }
+        } catch (e: Exception) {
+            Timber.tag("QuickPicks").w(e, "Failed to load cache")
+        }
+    }
+
+    private fun saveToCache(songs: List<Song>, categories: List<String>) {
+        try {
+            val songsArray = JSONArray()
+            songs.forEach { song -> songsArray.put(songToJson(song)) }
+            val catArray = JSONArray()
+            categories.forEach { catArray.put(it) }
+            prefs.edit()
+                .putString(KEY_SONGS, songsArray.toString())
+                .putString(KEY_CATEGORIES, catArray.toString())
+                .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis())
+                .apply()
+        } catch (e: Exception) {
+            Timber.tag("QuickPicks").w(e, "Failed to save cache")
+        }
+    }
+
+    private fun songToJson(song: Song): JSONObject = JSONObject().apply {
+        put("id", song.id)
+        put("title", song.title)
+        put("artist", song.artist)
+        put("artistId", song.artistId)
+        put("album", song.album)
+        put("albumId", song.albumId)
+        put("albumArtist", song.albumArtist ?: "")
+        put("path", song.path)
+        put("contentUriString", song.contentUriString)
+        put("albumArtUriString", song.albumArtUriString ?: "")
+        put("duration", song.duration)
+        put("genre", song.genre ?: "")
+        put("mimeType", song.mimeType ?: "")
+        put("bitrate", song.bitrate ?: 0)
+        put("sampleRate", song.sampleRate ?: 0)
+        put("youtubeId", song.youtubeId ?: "")
+        put("albumBrowseId", song.albumBrowseId ?: "")
+    }
+
+    private fun songFromJson(obj: JSONObject): Song = Song(
+        id = obj.optString("id"),
+        title = obj.optString("title"),
+        artist = obj.optString("artist", ""),
+        artistId = obj.optLong("artistId", 0L),
+        album = obj.optString("album", ""),
+        albumId = obj.optLong("albumId", 0L),
+        albumArtist = obj.optString("albumArtist").takeIf { it.isNotBlank() },
+        path = obj.optString("path", ""),
+        contentUriString = obj.optString("contentUriString", ""),
+        albumArtUriString = obj.optString("albumArtUriString").takeIf { it.isNotBlank() },
+        duration = obj.optLong("duration", 0L),
+        genre = obj.optString("genre").takeIf { it.isNotBlank() },
+        mimeType = obj.optString("mimeType").takeIf { it.isNotBlank() },
+        bitrate = obj.optInt("bitrate", 0),
+        sampleRate = obj.optInt("sampleRate", 0),
+        youtubeId = obj.optString("youtubeId").takeIf { it.isNotBlank() },
+        albumBrowseId = obj.optString("albumBrowseId").takeIf { it.isNotBlank() }
+    )
+
+    // -------------------------------------------------------------------------
+    // Network fetch
+    // -------------------------------------------------------------------------
+
     private fun loadQuickPicks(category: String) {
         viewModelScope.launch {
             _isLoading.value = true
-            _quickPicks.value = emptyList()
+            // Keep existing cached list visible while fetching
             try {
                 val songs = withContext(Dispatchers.IO) {
                     fetchYoutubeSongs(category)
                 }
-                _quickPicks.value = songs
+                if (songs.isNotEmpty()) {
+                    _quickPicks.value = songs
+                    if (category == "All") {
+                        saveToCache(songs, _categories.value)
+                    }
+                }
                 Timber.tag("QuickPicks").d("Loaded ${songs.size} songs for category: $category")
             } catch (e: Exception) {
                 Timber.tag("QuickPicks").e(e, "Error fetching quick picks for category: $category")
@@ -108,7 +219,7 @@ class QuickPicksViewModel @Inject constructor(
                     it.title.contains("quick picks", ignoreCase = true) ||
                     it.title.contains("quick", ignoreCase = true)
                 } ?: continuationHome.sections.firstOrNull()
-                
+
                 if (nextQuickPicks != null) {
                     accountSongsPool.addAll(nextQuickPicks.items.filterIsInstance<SongItem>())
                 }
@@ -123,4 +234,3 @@ class QuickPicksViewModel @Inject constructor(
         return uniqueSongs.map { it.toNativeSong() }
     }
 }
-

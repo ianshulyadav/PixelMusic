@@ -167,6 +167,9 @@ object LyricsImportSecurity {
         for (normalized in normalizationCandidates(decoded, format)) {
             val validation = validateImportedLrcContent(normalized)
             if (validation is LyricsImportValidationResult.Valid) {
+                if (validation.value.parsedLyrics.synced.isNullOrEmpty()) {
+                    continue
+                }
                 return validation
             }
         }

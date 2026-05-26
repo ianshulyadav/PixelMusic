@@ -50,6 +50,7 @@ import com.unshoo.pixelmusic.MainCoroutineExtension
 import com.unshoo.pixelmusic.data.service.player.DualPlayerEngine
 import com.unshoo.pixelmusic.data.telegram.TelegramCacheManager
 import com.unshoo.pixelmusic.data.worker.SyncManager
+import com.unshoo.pixelmusic.data.worker.YouTubeLibrarySyncManager
 import com.unshoo.pixelmusic.utils.AppShortcutManager
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
 import com.unshoo.pixelmusic.presentation.viewmodel.*
@@ -101,6 +102,7 @@ class PlayerViewModelTest {
     private val mockThemeStateHolder: ThemeStateHolder = mockk(relaxed = true)
     private val mockMultiSelectionStateHolder: MultiSelectionStateHolder = mockk(relaxed = true)
     private val mockPlaylistSelectionStateHolder: PlaylistSelectionStateHolder = mockk(relaxed = true)
+    private val mockYouTubeLibrarySyncManager: YouTubeLibrarySyncManager = mockk(relaxed = true)
     private lateinit var mockMediaControllerFactory: com.unshoo.pixelmusic.data.media.MediaControllerFactory
 
     private val testDispatcher = StandardTestDispatcher()
@@ -251,6 +253,7 @@ class PlayerViewModelTest {
             mockAlbumArtThemeDao,
             mockSyncManager,
             mockMusicDao,
+            mockYouTubeLibrarySyncManager,
             mockDualPlayerEngine,
             mockAppShortcutManager,
             mockTelegramCacheManagerProvider,
@@ -415,7 +418,7 @@ class PlayerViewModelTest {
             playerViewModel.triggerAlbumNavigationFromPlayer(-42L)
             advanceUntilIdle()
 
-            assertEquals(-42L, awaitItem())
+            assertEquals("-42", awaitItem())
             cancelAndConsumeRemainingEvents()
         }
     }

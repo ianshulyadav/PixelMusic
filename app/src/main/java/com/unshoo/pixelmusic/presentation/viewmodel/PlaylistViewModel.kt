@@ -397,17 +397,10 @@ class PlaylistViewModel @Inject constructor(
                                 source = "YOUTUBE"
                             )
 
-                            // Update local cache/preferences to keep them live-synced
+                            // Only update preferences if the playlist already exists locally.
+                            // Do NOT create a new local entry — the user is just browsing from Explore.
                             val existing = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
-                            if (existing == null) {
-                                playlistPreferencesRepository.createPlaylist(
-                                    name = ytPlaylist.title,
-                                    songIds = firstPageSongs.map { it.id },
-                                    coverImageUri = ytPlaylist.thumbnail,
-                                    customId = playlistId,
-                                    source = "YOUTUBE"
-                                )
-                            } else {
+                            if (existing != null) {
                                 playlistPreferencesRepository.updatePlaylist(
                                     existing.copy(
                                         name = ytPlaylist.title,
@@ -448,7 +441,7 @@ class PlaylistViewModel @Inject constructor(
                                         // Update video ids
                                         currentPlaylistSetVideoIds = allYtSongs.mapNotNull { it.setVideoId }
 
-                                        // Update preferences
+                                        // Only update preferences if the playlist exists locally
                                         val currentExisting = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
                                         if (currentExisting != null) {
                                             playlistPreferencesRepository.updatePlaylist(
@@ -1697,6 +1690,20 @@ class PlaylistViewModel @Inject constructor(
                 Log.e("PlaylistViewModel", "Error exporting playlists", e)
                 Toast.makeText(context, context.getString(R.string.playlist_export_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    /**
+     * Re-fetches the currently displayed YouTube playlist from the remote API.
+     * Call this after toggling a song's like/favorite status so the playlist UI
+     * immediately reflects any server-side changes (e.g., a newly liked song
+     * appearing in the user's Liked Music playlist).
+     */
+    fun refreshCurrentPlaylist() {
+        val currentId = _uiState.value.currentPlaylistDetails?.id ?: return
+        val source = _uiState.value.currentPlaylistDetails?.source
+        if (source == "YOUTUBE") {
+            loadPlaylistDetails(currentId)
         }
     }
 }

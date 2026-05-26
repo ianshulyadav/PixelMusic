@@ -94,11 +94,7 @@ open class DatastoreRepository(private val context: Context) {
         )
     }
 
-    open fun getSettings(): UmihiSettings {
-        return runBlocking {
-            settings.first()
-        }
-    }
+
 
     val cookies = context.youtubeDataStore.data.map {
         Cookies(it[PreferenceKeys.COOKIES] ?: "")
