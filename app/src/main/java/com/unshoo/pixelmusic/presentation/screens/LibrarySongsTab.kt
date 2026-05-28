@@ -319,7 +319,7 @@ fun LibrarySongsTab(
 
                             items(
                                 count = songs.itemCount,
-                                key = { index -> songs.peek(index)?.id ?: index },
+                                key = { index -> songs.peek(index)?.id ?: "song_placeholder_$index" },
                                 contentType = { "song" }
                             ) { index ->
                                 val song = songs[index]

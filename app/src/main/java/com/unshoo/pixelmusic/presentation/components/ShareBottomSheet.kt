@@ -1,3 +1,4 @@
+@file:Suppress("EXPERIMENTAL_API_USAGE", "EXPERIMENTAL_API_USAGE_ERROR", "EXPERIMENTAL_IS_NOT_ENABLED")
 package com.unshoo.pixelmusic.presentation.components
 
 import android.content.ClipData
@@ -9,16 +10,17 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +32,10 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +43,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -64,6 +69,33 @@ private const val GITHUB_LINK = "https://github.com/ianshulyadav/PixelMusic"
 private const val SNAPCHAT_PACKAGE = "com.snapchat.android"
 private const val INSTAGRAM_PACKAGE = "com.instagram.android"
 
+/**
+ * Spotify-inspired dynamic background themes for the 9:16 shared card
+ */
+enum class ShareThemeStyle(val displayName: String) {
+    SOOTHING_GRADIENT("Gradient"),
+    BLURRED_ARTWORK("Artwork Blur"),
+    MIDNIGHT_MINIMAL("Midnight"),
+    VIBRANT_GLOW("Vibrant Accent")
+}
+
+/**
+ * Utility to clean raw LRC lyric timestamps and metadata headers
+ */
+object LyricCleaner {
+    fun clean(rawLyrics: String?): List<String> {
+        if (rawLyrics.isNullOrBlank()) return emptyList()
+        // Strip metadata headers like [ti:Title], [ar:Artist], or [offset:0]
+        val noMeta = rawLyrics.replace(Regex("(?m)^\\[[a-zA-Z]+:.*\\]\\r?\\n?"), "")
+        // Strip timestamp tags like [00:12.34], [01:23], [00:12.345] or empty brackets
+        val noTimestamps = noMeta.replace(Regex("\\[\\d{2}:\\d{2}(?:\\.\\d{1,3})?\\]"), "")
+        return noTimestamps.lines()
+            .map { it.trim() }
+            // Filter out blank lines and noise starting with bracket tags
+            .filter { it.isNotEmpty() && !it.startsWith("[") && !it.startsWith("(") }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun ShareBottomSheet(
@@ -73,37 +105,39 @@ fun ShareBottomSheet(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Card mode: 0 = Song Card, 1 = Lyrics Card
     var selectedCardMode by remember { mutableStateOf(0) }
     val hasLyrics = remember(song.lyrics) { !song.lyrics.isNullOrBlank() }
-    // Only show lyrics tab when lyrics available
-    val lyricsExcerpt = remember(song.lyrics) {
-        song.lyrics
-            ?.lines()
-            ?.filter { it.isNotBlank() }
-            ?.take(4)
-            ?.joinToString("\n")
-            ?: ""
+
+    // Lyric state
+    val cleanedLyrics = remember(song.lyrics) { LyricCleaner.clean(song.lyrics) }
+    val selectedLyrics = remember { mutableStateListOf<String>() }
+
+    // Initialize with first 3 lines if available to provide a gorgeous preview immediately
+    LaunchedEffect(cleanedLinesInit@ cleanedLyrics) {
+        if (selectedLyrics.isEmpty() && cleanedLyrics.isNotEmpty()) {
+            selectedLyrics.addAll(cleanedLyrics.take(3))
+        }
     }
+
+    // Active theme style for the background
+    var activeThemeStyle by remember { mutableStateOf(ShareThemeStyle.SOOTHING_GRADIENT) }
 
     var isCapturing by remember { mutableStateOf(false) }
     val captureController = rememberCaptureController()
 
-    val snapchatInstalled = remember {
-        isPackageInstalled(context, SNAPCHAT_PACKAGE)
-    }
-    val instagramInstalled = remember {
-        isPackageInstalled(context, INSTAGRAM_PACKAGE)
-    }
+    val snapchatInstalled = remember { isPackageInstalled(context, SNAPCHAT_PACKAGE) }
+    val instagramInstalled = remember { isPackageInstalled(context, INSTAGRAM_PACKAGE) }
 
-    // Colors matching player theme
+    // Primary player theme colors
     val primaryColor = MaterialTheme.colorScheme.primary
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
     val onPrimaryContainerColor = MaterialTheme.colorScheme.onPrimaryContainer
-    val secondaryContainerColor = MaterialTheme.colorScheme.secondaryContainer
+    val secondaryColor = MaterialTheme.colorScheme.secondary
     val cardShape = AbsoluteSmoothCornerShape(
         cornerRadiusTR = 24.dp, smoothnessAsPercentBR = 60,
         cornerRadiusBR = 24.dp, smoothnessAsPercentTL = 60,
@@ -111,7 +145,7 @@ fun ShareBottomSheet(
         cornerRadiusBL = 24.dp, smoothnessAsPercentTR = 60
     )
 
-    // Helper to capture bitmap and execute action
+    // Capture bitmap and run share operation
     fun captureAndShare(action: suspend (Bitmap) -> Unit) {
         isCapturing = true
         scope.launch {
@@ -126,7 +160,7 @@ fun ShareBottomSheet(
         }
     }
 
-    // Helper to save bitmap to cache and return URI
+    // Save generated bitmap to cache
     suspend fun saveBitmapToCache(bitmap: Bitmap): File = withContext(Dispatchers.IO) {
         val cacheDir = File(context.cacheDir, "share_cards").also { it.mkdirs() }
         val file = File(cacheDir, "pixelmusic_share_${System.currentTimeMillis()}.png")
@@ -186,9 +220,9 @@ fun ShareBottomSheet(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(Modifier.height(20.dp))
+                Spacer(Modifier.height(16.dp))
 
-                // ── Card Mode Toggle (only show Lyrics tab when lyrics available) ──
+                // ── Card Mode Tabs (Song / Lyrics) ──────────────────────────
                 if (hasLyrics) {
                     Row(
                         modifier = Modifier
@@ -214,13 +248,24 @@ fun ShareBottomSheet(
                                 animationSpec = tween(250),
                                 label = "tabTextColor$index"
                             )
+                            val tabScale by animateFloatAsState(
+                                targetValue = if (isSelected) 1.03f else 1f,
+                                label = "tabScale$index"
+                            )
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(40.dp)
+                                    .graphicsLayer {
+                                        scaleX = tabScale
+                                        scaleY = tabScale
+                                    }
                                     .clip(CircleShape)
                                     .background(bgColor)
-                                    .clickable { selectedCardMode = index },
+                                    .clickable {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        selectedCardMode = index
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -233,41 +278,166 @@ fun ShareBottomSheet(
                             }
                         }
                     }
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
 
-                // ── Card Preview (Capturable) ────────────────────────────────
+                // ── 9:16 Card Preview (Capturable) ──────────────────────────
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
+                        .padding(horizontal = 40.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     AnimatedContent(
-                        targetState = selectedCardMode,
+                        targetState = Pair(selectedCardMode, selectedLyrics.toList()),
                         transitionSpec = {
                             fadeIn(tween(200)) togetherWith fadeOut(tween(150))
                         },
                         label = "cardPreview"
-                    ) { mode ->
+                    ) { (mode, lyricsList) ->
                         ShareableCard(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .fillMaxWidth(0.85f)
                                 .capturable(captureController),
                             song = song,
                             isLyricsMode = mode == 1,
-                            lyricsExcerpt = lyricsExcerpt,
+                            selectedLyrics = lyricsList,
+                            themeStyle = activeThemeStyle,
+                            primaryColor = primaryColor,
                             primaryContainerColor = primaryContainerColor,
                             onPrimaryContainerColor = onPrimaryContainerColor,
-                            primaryColor = primaryColor,
                             cardShape = cardShape
                         )
                     }
                 }
+                Spacer(Modifier.height(16.dp))
 
-                Spacer(Modifier.height(24.dp))
+                // ── Dynamic Theme Selector Carousel (Circular Swatches) ─────
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Card Theme",
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ShareThemeStyle.values().forEach { style ->
+                            val isSelected = activeThemeStyle == style
+                            val outlineColor = if (isSelected) primaryColor else Color.Transparent
+                            val borderWidth = if (isSelected) 2.dp else 0.dp
+                            val swatchScale by animateFloatAsState(
+                                targetValue = if (isSelected) 1.15f else 1f,
+                                label = "swatchScale_${style.name}"
+                            )
 
-                // ── Primary Share Actions (Horizontal Scrollable) ────────────
+                            Box(
+                                modifier = Modifier
+                                    .size(46.dp)
+                                    .graphicsLayer {
+                                        scaleX = swatchScale
+                                        scaleY = swatchScale
+                                    }
+                                    .clip(CircleShape)
+                                    .border(borderWidth, outlineColor, CircleShape)
+                                    .padding(if (isSelected) 3.dp else 0.dp)
+                                    .clip(CircleShape)
+                                    .clickable {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        activeThemeStyle = style
+                                    }
+                            ) {
+                                // Draw preview inside swatch circle
+                                when (style) {
+                                    ShareThemeStyle.BLURRED_ARTWORK -> {
+                                        SmartImage(
+                                            model = song.albumArtUriString,
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                    ShareThemeStyle.SOOTHING_GRADIENT -> {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(
+                                                    brush = Brush.verticalGradient(
+                                                        colors = listOf(primaryColor, Color(0xFF1E1E1E))
+                                                    )
+                                                )
+                                        )
+                                    }
+                                    ShareThemeStyle.MIDNIGHT_MINIMAL -> {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color(0xFF0C0C0C))
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(24.dp)
+                                                    .align(Alignment.Center)
+                                                    .background(
+                                                        brush = Brush.radialGradient(
+                                                            colors = listOf(primaryColor.copy(alpha = 0.6f), Color.Transparent)
+                                                        )
+                                                    )
+                                            )
+                                        }
+                                    }
+                                    ShareThemeStyle.VIBRANT_GLOW -> {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(
+                                                    brush = Brush.linearGradient(
+                                                        colors = listOf(
+                                                            primaryColor,
+                                                            MaterialTheme.colorScheme.secondary,
+                                                            MaterialTheme.colorScheme.tertiary
+                                                        )
+                                                    )
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+
+                // ── Interactive Lyric Selector (When Lyric Mode Active) ─────
+                if (selectedCardMode == 1 && cleanedLyrics.isNotEmpty()) {
+                    LyricLineSelector(
+                        lines = cleanedLyrics,
+                        selectedLines = selectedLyrics,
+                        onToggleLine = { line ->
+                            if (selectedLyrics.contains(line)) {
+                                selectedLyrics.remove(line)
+                            } else {
+                                if (selectedLyrics.size < 5) {
+                                    selectedLyrics.add(line)
+                                } else {
+                                    Toast.makeText(context, "Maximum 5 lines allowed", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        primaryColor = primaryColor,
+                        haptic = haptic
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
+
+                // ── Primary Share Actions (Horizontal scroll) ───────────────
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(horizontal = 20.dp),
@@ -318,10 +488,27 @@ fun ShareBottomSheet(
                                         val file = saveBitmapToCache(bitmap)
                                         val uri = FileProvider.getUriForFile(
                                             context,
-                                            "${context.packageName}.provider",
+                                            "${context.packageName}.fileprovider",
                                             file
                                         )
-                                        shareToInstagramStory(context, uri)
+                                        val topColor = when (activeThemeStyle) {
+                                            ShareThemeStyle.SOOTHING_GRADIENT -> primaryColor
+                                            ShareThemeStyle.BLURRED_ARTWORK -> primaryColor.copy(alpha = 0.5f)
+                                            ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
+                                            ShareThemeStyle.VIBRANT_GLOW -> primaryColor
+                                        }
+                                        val bottomColor = when (activeThemeStyle) {
+                                            ShareThemeStyle.SOOTHING_GRADIENT -> Color(0xFF141414)
+                                            ShareThemeStyle.BLURRED_ARTWORK -> Color(0xFF141414)
+                                            ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
+                                            ShareThemeStyle.VIBRANT_GLOW -> secondaryColor
+                                        }
+                                        shareToInstagramStory(
+                                            context = context,
+                                            imageUri = uri,
+                                            topColorHex = topColor.toInstagramHex(),
+                                            bottomColorHex = bottomColor.toInstagramHex()
+                                        )
                                     }
                                 }
                             )
@@ -344,7 +531,6 @@ fun ShareBottomSheet(
                             onClick = {
                                 captureAndShare { bitmap ->
                                     val file = saveBitmapToCache(bitmap)
-                                    // Copy to Downloads
                                     val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
                                         android.os.Environment.DIRECTORY_PICTURES
                                     )
@@ -352,7 +538,6 @@ fun ShareBottomSheet(
                                     withContext(Dispatchers.IO) {
                                         file.copyTo(destFile, overwrite = true)
                                     }
-                                    // Notify media scanner
                                     android.media.MediaScannerConnection.scanFile(
                                         context,
                                         arrayOf(destFile.absolutePath),
@@ -365,7 +550,7 @@ fun ShareBottomSheet(
                         )
                     }
 
-                    // Copy YouTube Link (only for YT songs)
+                    // Copy YT Link (if available)
                     if (!song.youtubeId.isNullOrEmpty()) {
                         item {
                             ShareActionChip(
@@ -389,7 +574,7 @@ fun ShareBottomSheet(
                         }
                     }
 
-                    // Share via more apps
+                    // Standard Android Share
                     item {
                         ShareActionChip(
                             icon = {
@@ -407,7 +592,7 @@ fun ShareBottomSheet(
                                     val file = saveBitmapToCache(bitmap)
                                     val uri = FileProvider.getUriForFile(
                                         context,
-                                        "${context.packageName}.provider",
+                                        "${context.packageName}.fileprovider",
                                         file
                                     )
                                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -465,10 +650,12 @@ fun ShareBottomSheet(
         }
     }
 
-    // Capturing overlay
+    // Capture overlay
     if (isCapturing) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f)),
             contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -477,17 +664,18 @@ fun ShareBottomSheet(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Shareable Card Composable
+// Shareable Card Composable (9:16 captures)
 // ────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun ShareableCard(
     modifier: Modifier = Modifier,
     song: Song,
     isLyricsMode: Boolean,
-    lyricsExcerpt: String,
+    selectedLyrics: List<String>,
+    themeStyle: ShareThemeStyle,
+    primaryColor: Color,
     primaryContainerColor: Color,
     onPrimaryContainerColor: Color,
-    primaryColor: Color,
     cardShape: Shape
 ) {
     val cardRatio = 9f / 16f
@@ -495,200 +683,349 @@ private fun ShareableCard(
     Box(
         modifier = modifier
             .aspectRatio(cardRatio)
-            .shadow(elevation = 12.dp, shape = cardShape, clip = true)
+            .shadow(elevation = 16.dp, shape = cardShape, clip = true)
             .clip(cardShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        primaryContainerColor.copy(alpha = 0.9f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
     ) {
-        // Background subtle pattern
+        // ── 1. Dynamic Background Render ─────────────────────────────────────
+        when (themeStyle) {
+            ShareThemeStyle.SOOTHING_GRADIENT -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    primaryColor.copy(alpha = 0.85f),
+                                    Color(0xFF141414)
+                                )
+                            )
+                        )
+                )
+            }
+            ShareThemeStyle.BLURRED_ARTWORK -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    SmartImage(
+                        model = song.albumArtUriString,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.55f))
+                    )
+                }
+            }
+            ShareThemeStyle.MIDNIGHT_MINIMAL -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFF0A0A0A))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(380.dp)
+                            .align(Alignment.TopStart)
+                            .offset(x = (-100).dp, y = (-50).dp)
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(primaryColor.copy(alpha = 0.15f), Color.Transparent)
+                                )
+                            )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(380.dp)
+                            .align(Alignment.BottomEnd)
+                            .offset(x = 100.dp, y = 50.dp)
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(primaryColor.copy(alpha = 0.12f), Color.Transparent)
+                                )
+                            )
+                    )
+                }
+            }
+            ShareThemeStyle.VIBRANT_GLOW -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    primaryColor,
+                                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.6f)
+                                )
+                            )
+                        )
+                )
+            }
+        }
+
+        // Vignette Overlay for premium depth
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(
-                            primaryColor.copy(alpha = 0.08f),
-                            Color.Transparent
-                        ),
-                        radius = 700f
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.5f)),
+                        radius = 1200f
                     )
                 )
         )
 
+        // ── 2. Content Column ───────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 24.dp, vertical = 32.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // ── App Branding (Top) ──────────────────────────────────────────
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(primaryColor)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.rounded_music_note_24),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .padding(4.dp)
-                            .fillMaxSize()
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.app_name),
-                    fontFamily = GoogleSansRounded,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = onPrimaryContainerColor
-                )
-            }
+            Spacer(Modifier.height(8.dp))
 
-            // ── Center Content ──────────────────────────────────────────────
-            if (!isLyricsMode) {
-                // Song Card: Album Art + Info
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Album Art
-                    Box(
-                        modifier = Modifier
-                            .size(140.dp)
-                            .shadow(elevation = 16.dp, shape = AbsoluteSmoothCornerShape(
-                                cornerRadiusTR = 20.dp, smoothnessAsPercentBR = 60,
-                                cornerRadiusBR = 20.dp, smoothnessAsPercentTL = 60,
-                                cornerRadiusTL = 20.dp, smoothnessAsPercentBL = 60,
-                                cornerRadiusBL = 20.dp, smoothnessAsPercentTR = 60
-                            ), clip = true)
+            // Centerpiece Floating Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .shadow(24.dp, shape = RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF0F0F0F).copy(alpha = 0.72f)
+                ),
+                border = BorderStroke(1.2.dp, Color.White.copy(alpha = 0.15f))
+            ) {
+                if (!isLyricsMode) {
+                    // SONG SHARE CARD
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.Start
                     ) {
-                        SmartImage(
-                            model = song.albumArtUriString,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                    // Song title + artist
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = song.title,
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = onPrimaryContainerColor,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = song.displayArtist,
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.Medium,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = onPrimaryContainerColor.copy(alpha = 0.7f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            } else {
-                // Lyrics Card
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Small album art + song info
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        SmartImage(
-                            model = song.albumArtUriString,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                        // Square Album Art
+                        Box(
                             modifier = Modifier
-                                .size(42.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                        Column {
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .shadow(12.dp, shape = RoundedCornerShape(16.dp), clip = true)
+                                .clip(RoundedCornerShape(16.dp))
+                        ) {
+                            SmartImage(
+                                model = song.albumArtUriString,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        // Song Details
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 text = song.title,
                                 fontFamily = GoogleSansRounded,
-                                fontWeight = FontWeight.SemiBold,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = onPrimaryContainerColor,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = song.displayArtist,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = onPrimaryContainerColor.copy(alpha = 0.6f),
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                color = Color.White.copy(alpha = 0.65f),
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
-                    }
 
-                    // Lyrics excerpt
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(primaryColor.copy(alpha = 0.1f))
-                            .padding(12.dp)
+                        Spacer(Modifier.height(2.dp))
+
+                        // Official Branding Row
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(primaryColor)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.rounded_music_note_24),
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .fillMaxSize()
+                                )
+                            }
+                            Text(
+                                text = "PixelMusic",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
+                } else {
+                    // LYRICS SHARE CARD
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(
-                            text = lyricsExcerpt,
-                            fontFamily = GoogleSansRounded,
-                            fontWeight = FontWeight.Medium,
-                            fontStyle = FontStyle.Italic,
-                            style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 28.sp),
-                            color = onPrimaryContainerColor,
-                            textAlign = TextAlign.Start
-                        )
+                        // Card Header
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            SmartImage(
+                                model = song.albumArtUriString,
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                            Column {
+                                Text(
+                                    text = song.title,
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = song.displayArtist,
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 12.sp,
+                                    color = Color.White.copy(alpha = 0.6f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+
+                        HorizontalDivider(color = Color.White.copy(alpha = 0.12f), thickness = 1.dp)
+
+                        // Verses Quote Block
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            if (selectedLyrics.isEmpty()) {
+                                Text(
+                                    text = "Select lyrics below to share...",
+                                    fontFamily = GoogleSansRounded,
+                                    fontStyle = FontStyle.Italic,
+                                    fontSize = 16.sp,
+                                    color = Color.White.copy(alpha = 0.4f),
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            } else {
+                                val fontSize = when (selectedLyrics.size) {
+                                    1 -> 24.sp
+                                    2, 3 -> 20.sp
+                                    else -> 17.sp
+                                }
+                                val lineHeight = when (selectedLyrics.size) {
+                                    1 -> 32.sp
+                                    2, 3 -> 28.sp
+                                    else -> 24.sp
+                                }
+                                selectedLyrics.forEach { line ->
+                                    Text(
+                                        text = line,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = fontSize,
+                                        lineHeight = lineHeight,
+                                        color = Color.White,
+                                        textAlign = TextAlign.Start
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.weight(1f))
+
+                        // App Branding Row
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(primaryColor)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.rounded_music_note_24),
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .fillMaxSize()
+                                )
+                            }
+                            Text(
+                                text = "PixelMusic",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
 
-            // ── Footer: Link ────────────────────────────────────────────────
+            Spacer(Modifier.height(16.dp))
+
+            // ── 3. Snapchat Replicated Link Clip Pill ────────────────────────
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(primaryColor.copy(alpha = 0.08f))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.Black.copy(alpha = 0.35f))
+                    .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Link,
                     contentDescription = null,
-                    tint = primaryColor,
+                    tint = Color.White,
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = GITHUB_LINK,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = primaryColor,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    text = "PixelMusic",
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = Color.White
+                )
+                Icon(
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -696,7 +1033,89 @@ private fun ShareableCard(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Share action chip (horizontal row)
+// Scrollable Lyric Multi-Selector Composable
+// ────────────────────────────────────────────────────────────────────────────
+@Composable
+private fun LyricLineSelector(
+    lines: List<String>,
+    selectedLines: List<String>,
+    onToggleLine: (String) -> Unit,
+    primaryColor: Color,
+    haptic: androidx.compose.ui.hapticfeedback.HapticFeedback
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        Text(
+            text = "Tap to select lyrics (Max 5 lines)",
+            fontFamily = GoogleSansRounded,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(vertical = 12.dp)
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(lines) { line ->
+                    val isSelected = selectedLines.contains(line)
+                    val bgSelectedColor = if (isSelected) primaryColor.copy(alpha = 0.15f) else Color.Transparent
+                    val borderSelectedColor = if (isSelected) primaryColor else Color.Transparent
+                    val textWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                    val textColor = if (isSelected) primaryColor else MaterialTheme.colorScheme.onSurface
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(bgSelectedColor)
+                            .border(1.dp, borderSelectedColor, RoundedCornerShape(10.dp))
+                            .clickable {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onToggleLine(line)
+                            }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = line,
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = textWeight,
+                            fontSize = 15.sp,
+                            color = textColor,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Rounded.CheckCircle,
+                                contentDescription = "Selected",
+                                tint = primaryColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Share Action Chip Composable
 // ────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun ShareActionChip(
@@ -734,7 +1153,7 @@ private fun ShareActionChip(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Share list item (vertical list)
+// Share List Item Composable
 // ────────────────────────────────────────────────────────────────────────────
 @Composable
 private fun ShareListItem(
@@ -780,7 +1199,7 @@ private fun ShareListItem(
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Platform helpers
+// Platform Helpers
 // ────────────────────────────────────────────────────────────────────────────
 private fun isPackageInstalled(context: Context, packageName: String): Boolean {
     return try {
@@ -805,10 +1224,26 @@ private fun shareToSnapchat(context: Context, imageFile: File) {
     }
 }
 
-private fun shareToInstagramStory(context: Context, imageUri: android.net.Uri) {
+private fun Color.toInstagramHex(): String {
+    return String.format("#%06X", 0xFFFFFF and this.toArgb())
+}
+
+private fun shareToInstagramStory(
+    context: Context,
+    imageUri: android.net.Uri,
+    topColorHex: String? = null,
+    bottomColorHex: String? = null
+) {
     val intent = Intent("com.instagram.share.ADD_TO_STORY").apply {
-        type = "image/png"
+        setDataAndType(imageUri, "image/png")
         putExtra("interactive_asset_uri", imageUri)
+        putExtra("content_url", GITHUB_LINK)
+        if (topColorHex != null) {
+            putExtra("top_background_color", topColorHex)
+        }
+        if (bottomColorHex != null) {
+            putExtra("bottom_background_color", bottomColorHex)
+        }
         `package` = INSTAGRAM_PACKAGE
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }

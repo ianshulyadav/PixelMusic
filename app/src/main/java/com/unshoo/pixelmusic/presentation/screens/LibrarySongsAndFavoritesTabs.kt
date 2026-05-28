@@ -240,7 +240,7 @@ fun LibraryFavoritesTab(
                     ) {
                         items(
                             count = favoriteSongs.itemCount,
-                            key = { index -> favoriteSongs.peek(index)?.id ?: index },
+                            key = { index -> favoriteSongs.peek(index)?.id ?: "fav_placeholder_$index" },
                             contentType = { "song" }
                         ) { index ->
                             val song = favoriteSongs[index]

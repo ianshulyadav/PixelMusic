@@ -104,7 +104,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Share
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Cloud
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ModalBottomSheet
+import android.widget.Toast
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.layout.ContentScale
+import com.unshoo.pixelmusic.presentation.components.SmartImage
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.derivedStateOf
@@ -122,6 +134,8 @@ import com.unshoo.pixelmusic.presentation.components.AutoScrollingTextOnDemand
 import com.unshoo.pixelmusic.presentation.components.LocalMaterialTheme
 import com.unshoo.pixelmusic.presentation.components.LyricsSheet
 import com.unshoo.pixelmusic.presentation.components.ShareBottomSheet
+import com.unshoo.pixelmusic.presentation.viewmodel.SongInfoBottomSheetViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.unshoo.pixelmusic.presentation.components.scoped.rememberSmoothProgress
 import com.unshoo.pixelmusic.presentation.components.subcomps.FetchLyricsDialog
 import com.unshoo.pixelmusic.presentation.viewmodel.LyricsSearchUiState
@@ -583,7 +597,7 @@ fun FullPlayerContent(
             placeholderOnColor = placeholderOnColor,
             isLandscape = false,
             onLyricsClick = onLyricsClick,
-            onShareClick = { showShareSheet = true },
+            onShareClick = { showSongInfoBottomSheet = true },
             playerOnBaseColor = playerOnBaseColor,
             playerViewModel = playerViewModel,
             gradientEdgeColor = LocalMaterialTheme.current.primaryContainer,
@@ -606,7 +620,7 @@ fun FullPlayerContent(
             placeholderOnColor = placeholderOnColor,
             isLandscape = true,
             onLyricsClick = onLyricsClick,
-            onShareClick = { showShareSheet = true },
+            onShareClick = { showSongInfoBottomSheet = true },
             playerOnBaseColor = playerOnBaseColor,
             playerViewModel = playerViewModel,
             gradientEdgeColor = LocalMaterialTheme.current.primaryContainer,
@@ -1009,6 +1023,162 @@ fun FullPlayerContent(
                 onShowQueueClicked()
             }
         )
+    }
+
+    // Player Options Menu Bottom Sheet
+    if (showSongInfoBottomSheet) {
+        val songInfoViewModel: SongInfoBottomSheetViewModel = hiltViewModel()
+        val isDownloaded by songInfoViewModel.isSongDownloaded.collectAsStateWithLifecycle()
+        val isDownloading by songInfoViewModel.isSongDownloading.collectAsStateWithLifecycle()
+
+        LaunchedEffect(song.id) {
+            songInfoViewModel.loadDownloadState(song)
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showSongInfoBottomSheet = false },
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp, bottom = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(40.dp)
+                            .height(4.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                    )
+                }
+            }
+        ) {
+            CompositionLocalProvider(LocalOverscrollFactory provides null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp)
+                ) {
+                    // Header: Cover + Metadata
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SmartImage(
+                            model = song.albumArtUriString,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = song.title,
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = song.displayArtist,
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Medium,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Option 1: Add to Playlist
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            showSongInfoBottomSheet = false
+                            onShowQueueClicked()
+                        },
+                        headlineContent = {
+                            Text(
+                                text = "Add to playlist",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    )
+
+                    // Option 2: Download Song
+                    val downloadText = when {
+                        isDownloaded -> "Downloaded"
+                        isDownloading -> "Downloading..."
+                        else -> "Download Song"
+                    }
+                    val downloadIcon = if (isDownloaded) Icons.Rounded.CheckCircle else Icons.Rounded.Download
+                    val downloadTint = if (isDownloaded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            if (!isDownloaded && !isDownloading) {
+                                songInfoViewModel.downloadYoutubeSong(song)
+                                Toast.makeText(context, "Starting download...", Toast.LENGTH_SHORT).show()
+                            } else if (isDownloaded) {
+                                Toast.makeText(context, "Song already downloaded", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        headlineContent = {
+                            Text(
+                                text = downloadText,
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = downloadIcon,
+                                contentDescription = null,
+                                tint = downloadTint
+                            )
+                        }
+                    )
+
+                    // Option 3: Share Card
+                    ListItem(
+                        modifier = Modifier.clickable {
+                            showSongInfoBottomSheet = false
+                            showShareSheet = true
+                        },
+                        headlineContent = {
+                            Text(
+                                text = "Share to Stories",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -58,7 +58,7 @@ class PlaylistPreferencesRepository @Inject constructor(
                 source = "YOUTUBE"
             )
         }
-        localPlaylists + mappedYtPlaylists
+        (localPlaylists + mappedYtPlaylists).distinctBy { it.id }
     }
 
     val playlistSongOrderModesFlow: Flow<Map<String, String>> =
