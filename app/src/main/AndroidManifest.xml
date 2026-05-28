@@ -266,6 +266,15 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <provider
+            android:name="com.unshoo.pixelmusic.data.provider.SnapFileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <provider
             android:name=".data.provider.SharedArtworkContentProvider"
             android:authorities="${applicationId}.artwork"
             android:exported="false"
