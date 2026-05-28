@@ -31,6 +31,14 @@
 
 **Pixel Music** is not just another music player. It is a unified, privacy-first audio powerhouse engineered for audiophiles, cloud hoarders, and streaming enthusiasts alike. By bridging local offline library indexing, unofficial YouTube Music streaming, Telegram channel integration, Google Drive personal cloud libraries (WIP), and next-generation Generative AI capabilities, Pixel Music creates a flawless hybrid music ecosystem under a single, gorgeous user experience.
 
+**Pixel Music** is the ultimate hybrid local and yt music client built for Android. It represents a gorgeous, open-source Spotify and YT Premium alternative. This application brings all of your music sources under a single, beautiful roof.
+
+You can scan and play high-resolution local files like FLAC, ALAC, WAV, and MP3. At the same time, you can stream the entire YouTube Music catalog without advertisements. Additionally, you can connect your Telegram account to stream audio directly from channels, chats, and saved files.
+
+Beautifully styled on the state-of-the-art **PixelPlayer** UI/UX, the interface adapts dynamically to the colors of your album artwork. The app is loaded with advanced features. You can follow along with synchronized LRC lyrics (complete with manual timing offset adjustments). You can customize your sound with a professional 10-band equalizer. You can also connect to other systems using built-in Chromecast, full Android Auto driving support, and a Wear OS watch companion.
+
+The app even includes custom generative AI playlist creation. You can simply describe a mood or style, and the built-in Gemini assistant will instantly curate the perfect queue for you. Released under the GNU GPL v3.0 license, Pixel Music provides a highly premium, privacy-focused, and completely unrestricted audio experience.
+
 ---
 
 ## ⚡ The Ultimate Comparative Advantage
