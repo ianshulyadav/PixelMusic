@@ -121,6 +121,7 @@ import com.unshoo.pixelmusic.presentation.components.AlbumCarouselSection
 import com.unshoo.pixelmusic.presentation.components.AutoScrollingTextOnDemand
 import com.unshoo.pixelmusic.presentation.components.LocalMaterialTheme
 import com.unshoo.pixelmusic.presentation.components.LyricsSheet
+import com.unshoo.pixelmusic.presentation.components.ShareBottomSheet
 import com.unshoo.pixelmusic.presentation.components.scoped.rememberSmoothProgress
 import com.unshoo.pixelmusic.presentation.components.subcomps.FetchLyricsDialog
 import com.unshoo.pixelmusic.presentation.viewmodel.LyricsSearchUiState
@@ -238,6 +239,7 @@ fun FullPlayerContent(
     val song = currentSong ?: retainedSong ?: return // Keep the player visible while transitioning
     var showSongInfoBottomSheet by remember { mutableStateOf(false) }
     var showLyricsSheet by remember { mutableStateOf(false) }
+    var showShareSheet by remember { mutableStateOf(false) }
     var showArtistPicker by rememberSaveable { mutableStateOf(false) }
     
     val lyricsSearchUiState by playerViewModel.lyricsSearchUiState.collectAsStateWithLifecycle()
@@ -581,6 +583,7 @@ fun FullPlayerContent(
             placeholderOnColor = placeholderOnColor,
             isLandscape = false,
             onLyricsClick = onLyricsClick,
+            onShareClick = { showShareSheet = true },
             playerOnBaseColor = playerOnBaseColor,
             playerViewModel = playerViewModel,
             gradientEdgeColor = LocalMaterialTheme.current.primaryContainer,
@@ -603,6 +606,7 @@ fun FullPlayerContent(
             placeholderOnColor = placeholderOnColor,
             isLandscape = true,
             onLyricsClick = onLyricsClick,
+            onShareClick = { showShareSheet = true },
             playerOnBaseColor = playerOnBaseColor,
             playerViewModel = playerViewModel,
             gradientEdgeColor = LocalMaterialTheme.current.primaryContainer,
@@ -993,6 +997,19 @@ fun FullPlayerContent(
             }
         )
     }
+
+    // Share Bottom Sheet
+    if (showShareSheet) {
+        ShareBottomSheet(
+            song = song,
+            onDismiss = { showShareSheet = false },
+            onAddToPlaylist = {
+                showShareSheet = false
+                showSongInfoBottomSheet = true
+                onShowQueueClicked()
+            }
+        )
+    }
 }
 
 
@@ -1311,6 +1328,7 @@ private fun FullPlayerSongMetadataSection(
     placeholderOnColor: Color,
     isLandscape: Boolean,
     onLyricsClick: () -> Unit,
+    onShareClick: () -> Unit,
     playerOnBaseColor: Color,
     playerViewModel: PlayerViewModel,
     gradientEdgeColor: Color,
@@ -1350,6 +1368,7 @@ private fun FullPlayerSongMetadataSection(
             modifier = Modifier
                 .padding(start = 0.dp),
             onClickLyrics = onLyricsClick,
+            onClickShare = onShareClick,
             song = song,
             currentSongArtists = currentSongArtists,
             expansionFractionProvider = expansionFractionProvider,
@@ -1457,6 +1476,7 @@ private fun SongMetadataDisplaySection(
     chipColor: Color,
     chipContentColor: Color,
     onClickLyrics: () -> Unit,
+    onClickShare: () -> Unit,
     showQueueButton: Boolean,
     onClickQueue: () -> Unit,
     onClickArtist: () -> Unit,
@@ -1536,19 +1556,19 @@ private fun SongMetadataDisplaySection(
         }
 
         if (showQueueButton) {
+            // Landscape mode: [Lyrics] [Theme] [⋮] [Queue]
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Lyrics button
                 Box(
                     modifier = Modifier
-                        .size(height = 42.dp, width = 50.dp)
+                        .size(height = 42.dp, width = 44.dp)
                         .clip(
                             RoundedCornerShape(
-                                topStart = 50.dp,
-                                topEnd = 6.dp,
-                                bottomStart = 50.dp,
-                                bottomEnd = 6.dp
+                                topStart = 50.dp, topEnd = 6.dp,
+                                bottomStart = 50.dp, bottomEnd = 6.dp
                             )
                         )
                         .background(chipColor)
@@ -1561,15 +1581,34 @@ private fun SongMetadataDisplaySection(
                         tint = chipContentColor
                     )
                 }
+                // Share / More options button
                 Box(
                     modifier = Modifier
-                        .size(height = 42.dp, width = 50.dp)
+                        .size(height = 42.dp, width = 44.dp)
                         .clip(
                             RoundedCornerShape(
-                                topStart = 6.dp,
-                                topEnd = 50.dp,
-                                bottomStart = 6.dp,
-                                bottomEnd = 50.dp
+                                topStart = 6.dp, topEnd = 6.dp,
+                                bottomStart = 6.dp, bottomEnd = 6.dp
+                            )
+                        )
+                        .background(chipColor)
+                        .clickable { onClickShare() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rounded_more_vert_24),
+                        contentDescription = stringResource(R.string.cd_player_more_options),
+                        tint = chipContentColor
+                    )
+                }
+                // Queue button
+                Box(
+                    modifier = Modifier
+                        .size(height = 42.dp, width = 44.dp)
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = 6.dp, topEnd = 50.dp,
+                                bottomStart = 6.dp, bottomEnd = 50.dp
                             )
                         )
                         .background(chipColor)
@@ -1584,20 +1623,47 @@ private fun SongMetadataDisplaySection(
                 }
             }
         } else {
-            // Portrait Mode: Just the Lyrics button (Queue is in TopBar)
-            FilledIconButton(
-                modifier = Modifier
-                    .size(width = 48.dp, height = 48.dp),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = chipColor,
-                    contentColor = chipContentColor
-                ),
-                onClick = onClickLyrics,
+            // Portrait Mode: [Lyrics] [⋮]
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.rounded_lyrics_24),
-                    contentDescription = stringResource(R.string.presentation_batch_g_player_cd_lyrics)
-                )
+                // Lyrics button (left pill)
+                FilledIconButton(
+                    modifier = Modifier.size(width = 44.dp, height = 48.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = chipColor,
+                        contentColor = chipContentColor
+                    ),
+                    shape = RoundedCornerShape(
+                        topStart = 50.dp, topEnd = 6.dp,
+                        bottomStart = 50.dp, bottomEnd = 6.dp
+                    ),
+                    onClick = onClickLyrics,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rounded_lyrics_24),
+                        contentDescription = stringResource(R.string.presentation_batch_g_player_cd_lyrics)
+                    )
+                }
+                // More options button (right pill)
+                FilledIconButton(
+                    modifier = Modifier.size(width = 44.dp, height = 48.dp),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = chipColor,
+                        contentColor = chipContentColor
+                    ),
+                    shape = RoundedCornerShape(
+                        topStart = 6.dp, topEnd = 50.dp,
+                        bottomStart = 6.dp, bottomEnd = 50.dp
+                    ),
+                    onClick = onClickShare,
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rounded_more_vert_24),
+                        contentDescription = stringResource(R.string.cd_player_more_options)
+                    )
+                }
             }
         }
     }

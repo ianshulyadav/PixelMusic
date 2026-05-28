@@ -227,4 +227,28 @@
     <string name="ui_format_percent_d">%1$d%%</string>
     <string name="backup_manifest_schema_v">v%1$d</string>
     <string name="backup_manifest_device_line">%1$s %2$s</string>
+
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">Share</string>
+    <string name="share_sheet_chooser_title">Share via</string>
+    <string name="share_card_tab_song">Song Card</string>
+    <string name="share_card_tab_lyrics">Lyrics Card</string>
+    <string name="share_action_snapchat">Snapchat\nStory</string>
+    <string name="share_action_instagram">Instagram\nStory</string>
+    <string name="share_action_download_card">Save\nCard</string>
+    <string name="share_action_copy_yt_link">Copy\nYT Link</string>
+    <string name="share_action_more_apps">Share\nMore</string>
+    <string name="share_action_add_to_playlist">Add to Playlist</string>
+    <string name="share_action_add_to_playlist_sub">Add this song to one of your playlists</string>
+    <string name="share_action_copy_github_link">Copy App Link</string>
+    <string name="share_card_saved">Card saved to Pictures</string>
+    <string name="share_link_copied">Link copied to clipboard</string>
+    <string name="share_text_format">Now listening to \"%1$s\" by %2$s 🎵\n%3$s</string>
+
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">Share Story Card</string>
+    <string name="player_menu_download">Download Song</string>
+    <string name="player_menu_add_to_playlist">Add to Playlist</string>
+    <string name="cd_player_more_options">More options</string>
+    <string name="cd_player_theme">Change theme</string>
 </resources>

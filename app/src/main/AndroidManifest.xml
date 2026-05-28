@@ -2,6 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Allow querying Snapchat and Instagram for story sharing -->
+    <queries>
+        <package android:name="com.snapchat.android" />
+        <package android:name="com.instagram.android" />
+    </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -333,6 +339,10 @@
                 android:name="autoStoreLocales"
                 android:value="true" />
         </service>
+
+        <meta-data
+            android:name="com.snapchat.kit.sdk.clientId"
+            android:value="e1a6f2c0-47e9-47f7-9129-c820b0c96077" />
 
     </application>
 
