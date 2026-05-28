@@ -351,11 +351,11 @@
 
         <meta-data
             android:name="com.snapchat.kit.sdk.clientId"
-            android:value="e1a6f2c0-47e9-47f7-9129-c820b0c96077" />
+            android:value="cb161c07-2ed5-4064-87b0-f8dedf684849" />
 
         <meta-data
             android:name="com.snap.kit.clientId"
-            android:value="e1a6f2c0-47e9-47f7-9129-c820b0c96077" />
+            android:value="cb161c07-2ed5-4064-87b0-f8dedf684849" />
 
     </application>
 
