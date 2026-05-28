@@ -21,7 +21,7 @@
   <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android 11+"></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GNU%20GPL%20v3-blue?style=for-the-badge" alt="GPL v3 License"></a>
-  <a href="https://t.me/PixelMusicAndroid"><img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"></a>
+  <a href="https://t.me/PixelMusicApp"><img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"></a>
   <a href="https://github.com/ianshulyadav/PixelMusic"><img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"></a>
 </p>
 
