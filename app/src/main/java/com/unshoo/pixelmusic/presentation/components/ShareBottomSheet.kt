@@ -73,6 +73,7 @@ private const val INSTAGRAM_PACKAGE = "com.instagram.android"
  * Spotify-inspired dynamic background themes for the 9:16 shared card
  */
 enum class ShareThemeStyle(val displayName: String) {
+    DYNAMIC_PALETTE("Dynamic Player"),
     SOOTHING_GRADIENT("Gradient"),
     BLURRED_ARTWORK("Artwork Blur"),
     MIDNIGHT_MINIMAL("Midnight"),
@@ -125,7 +126,7 @@ fun ShareBottomSheet(
     }
 
     // Active theme style for the background
-    var activeThemeStyle by remember { mutableStateOf(ShareThemeStyle.SOOTHING_GRADIENT) }
+    var activeThemeStyle by remember { mutableStateOf(ShareThemeStyle.DYNAMIC_PALETTE) }
 
     var isCapturing by remember { mutableStateOf(false) }
     val captureController = rememberCaptureController()
@@ -372,6 +373,20 @@ fun ShareBottomSheet(
                             ) {
                                 // Draw preview inside swatch circle
                                 when (style) {
+                                    ShareThemeStyle.DYNAMIC_PALETTE -> {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(
+                                                    brush = Brush.verticalGradient(
+                                                        colors = listOf(
+                                                            colorScheme.primaryContainer,
+                                                            colorScheme.surfaceContainerLow
+                                                        )
+                                                    )
+                                                )
+                                        )
+                                    }
                                     ShareThemeStyle.BLURRED_ARTWORK -> {
                                         SmartImage(
                                             model = song.albumArtUriString,
@@ -386,7 +401,10 @@ fun ShareBottomSheet(
                                                 .fillMaxSize()
                                                 .background(
                                                     brush = Brush.verticalGradient(
-                                                        colors = listOf(primaryColor, Color(0xFF1E1E1E))
+                                                        colors = listOf(
+                                                            primaryColor,
+                                                            colorScheme.surfaceContainerHighest
+                                                        )
                                                     )
                                                 )
                                         )
@@ -508,13 +526,15 @@ fun ShareBottomSheet(
                                             file
                                         )
                                         val topColor = when (activeThemeStyle) {
+                                            ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.primaryContainer
                                             ShareThemeStyle.SOOTHING_GRADIENT -> primaryColor
                                             ShareThemeStyle.BLURRED_ARTWORK -> primaryColor.copy(alpha = 0.5f)
                                             ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
                                             ShareThemeStyle.VIBRANT_GLOW -> primaryColor
                                         }
                                         val bottomColor = when (activeThemeStyle) {
-                                            ShareThemeStyle.SOOTHING_GRADIENT -> Color(0xFF141414)
+                                            ShareThemeStyle.DYNAMIC_PALETTE -> colorScheme.surfaceContainerLow
+                                            ShareThemeStyle.SOOTHING_GRADIENT -> colorScheme.surfaceContainerHighest
                                             ShareThemeStyle.BLURRED_ARTWORK -> Color(0xFF141414)
                                             ShareThemeStyle.MIDNIGHT_MINIMAL -> Color(0xFF0A0A0A)
                                             ShareThemeStyle.VIBRANT_GLOW -> secondaryColor
@@ -709,6 +729,20 @@ private fun ShareableCard(
     ) {
         // ── 1. Dynamic Background Render ─────────────────────────────────────
         when (themeStyle) {
+            ShareThemeStyle.DYNAMIC_PALETTE -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    colorScheme.primaryContainer.copy(alpha = 0.95f),
+                                    colorScheme.surfaceContainerLow
+                                )
+                            )
+                        )
+                )
+            }
             ShareThemeStyle.SOOTHING_GRADIENT -> {
                 Box(
                     modifier = Modifier
@@ -716,8 +750,8 @@ private fun ShareableCard(
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
-                                    primaryColor.copy(alpha = 0.85f),
-                                    Color(0xFF141414)
+                                    primaryColor.copy(alpha = 0.9f),
+                                    colorScheme.surfaceContainerHighest.copy(alpha = 0.95f)
                                 )
                             )
                         )
