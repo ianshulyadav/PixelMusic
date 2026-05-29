@@ -695,6 +695,7 @@ private fun ShareableCard(
 ) {
     val cardRatio = 9f / 16f
     val primaryColor = colorScheme.primary
+    val onPrimaryColor = colorScheme.onPrimary
     val primaryContainerColor = colorScheme.primaryContainer
     val onPrimaryContainerColor = colorScheme.onPrimaryContainer
     val secondaryColor = colorScheme.secondary
@@ -874,14 +875,22 @@ private fun ShareableCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(R.mipmap.ic_launcher),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
+                            Box(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .clip(RoundedCornerShape(4.dp))
-                            )
+                                    .background(primaryColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.pixelmusic_base_monochrome),
+                                    contentDescription = null,
+                                    tint = onPrimaryColor,
+                                    modifier = Modifier
+                                        .padding(3.dp)
+                                        .fillMaxSize()
+                                )
+                            }
                             Text(
                                 text = "PixelMusic",
                                 fontFamily = GoogleSansRounded,
@@ -986,14 +995,22 @@ private fun ShareableCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Icon(
-                                painter = painterResource(R.mipmap.ic_launcher),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
+                            Box(
                                 modifier = Modifier
                                     .size(18.dp)
                                     .clip(RoundedCornerShape(4.dp))
-                            )
+                                    .background(primaryColor),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.pixelmusic_base_monochrome),
+                                    contentDescription = null,
+                                    tint = onPrimaryColor,
+                                    modifier = Modifier
+                                        .padding(3.dp)
+                                        .fillMaxSize()
+                                )
+                            }
                             Text(
                                 text = "PixelMusic",
                                 fontFamily = GoogleSansRounded,
