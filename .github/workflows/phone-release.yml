@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # needed to create GitHub Releases
+  contents: write
 
 jobs:
   build-phone:
@@ -32,8 +32,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Decode release keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > vz-pixelmusic.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > vz-pixelmusic.jks
 
       - name: Create keystore.properties
         run: |
@@ -85,7 +84,7 @@ jobs:
           PREV_SHA: ${{ github.event.before }}
           CURR_SHA: ${{ github.sha }}
         run: |
-          python3 -c "
+          python3 - <<'PYEOF'
           import subprocess, html, os
 
           prev_sha = os.environ.get('PREV_SHA', '')
@@ -112,9 +111,8 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write('changelog_html<<EOF\n' + changelog_html + '\nEOF\n')
               f.write('changelog_md<<EOF\n' + changelog_md + '\nEOF\n')
-          "
+          PYEOF
 
-      # ── GitHub Release ────────────────────────────────────────────────────────
       - name: Create GitHub Release
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: softprops/action-gh-release@v2
@@ -128,10 +126,10 @@ jobs:
             ---
             | APK | Target |
             |-----|--------|
+            | `app-universal-release.apk` | Universal — works on all devices |
             | `app-arm64-v8a-release.apk` | Modern phones (Pixel, Samsung, etc.) |
             | `app-armeabi-v7a-release.apk` | Older / budget ARM phones |
             | `app-x86_64-release.apk` | Emulators & Chromebooks |
-            | `app-universal-release.apk` | Universal — works on all devices ✅ |
 
             **Commit:** ${{ github.sha }}
           files: |
@@ -143,7 +141,6 @@ jobs:
           prerelease: false
           make_latest: true
 
-      # ── Telegram Channel ─────────────────────────────────────────────────────
       - name: Publish all APKs to Telegram Channel
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
@@ -152,6 +149,8 @@ jobs:
           TELEGRAM_THREAD_ID: "2"
           VERSION_NAME: ${{ steps.version.outputs.version_name }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog_html }}
+          COMMIT_SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
         run: |
           if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
             echo "TELEGRAM_BOT_TOKEN not set, skipping."
@@ -163,50 +162,50 @@ jobs:
             THREAD_ARGS="--form-string message_thread_id=${TELEGRAM_THREAD_ID}"
           fi
 
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${VERSION_NAME}"
-          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/v${VERSION_NAME}"
+          COMMIT_URL="https://github.com/${REPO}/commit/${COMMIT_SHA}"
 
-          CAPTION=$(cat <<EOF
-<b>📱 PixelMusic v${VERSION_NAME} — Release</b>
+          python3 - <<PYEOF
+          import os, urllib.request, urllib.parse
 
-<b>Changes:</b>
-${CHANGELOG}
+          bot_token    = os.environ['TELEGRAM_BOT_TOKEN']
+          chat_id      = os.environ['TELEGRAM_CHAT_ID']
+          thread_id    = os.environ.get('TELEGRAM_THREAD_ID', '')
+          version      = os.environ['VERSION_NAME']
+          changelog    = os.environ['CHANGELOG']
+          commit_sha   = os.environ['COMMIT_SHA']
+          release_url  = os.environ['RELEASE_URL']
+          commit_url   = os.environ['COMMIT_URL']
 
-<b>Commit:</b> <a href="${COMMIT_URL}">${{ github.sha }}</a>
-<b>Release:</b> <a href="${RELEASE_URL}">GitHub Release ↗</a>
-
-🚀 All APKs attached below.
-EOF
+          caption = (
+              f"<b>📱 PixelMusic v{version} — Release</b>\n\n"
+              f"<b>Changes:</b>\n{changelog}\n\n"
+              f"<b>Commit:</b> <a href='{commit_url}'>{commit_sha[:7]}</a>\n"
+              f"<b>Release:</b> <a href='{release_url}'>GitHub Release ↗</a>\n\n"
+              f"🚀 All APKs attached below."
           )
 
-          # 1. Universal APK (with full caption)
-          curl -s -F document=@app/build/outputs/apk/release/app-universal-release.apk \
-               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
-               $THREAD_ARGS \
-               --form-string parse_mode="HTML" \
-               --form-string caption="${CAPTION}" \
-               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+          apks = [
+              ("app/build/outputs/apk/release/app-universal-release.apk",   caption),
+              ("app/build/outputs/apk/release/app-arm64-v8a-release.apk",   "<code>arm64-v8a</code> — Modern phones (Pixel, Samsung, OnePlus…)"),
+              ("app/build/outputs/apk/release/app-armeabi-v7a-release.apk", "<code>armeabi-v7a</code> — Older / budget ARM phones"),
+              ("app/build/outputs/apk/release/app-x86_64-release.apk",      "<code>x86_64</code> — Emulators &amp; Chromebooks"),
+          ]
 
-          # 2. arm64-v8a
-          curl -s -F document=@app/build/outputs/apk/release/app-arm64-v8a-release.apk \
-               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
-               $THREAD_ARGS \
-               --form-string parse_mode="HTML" \
-               --form-string caption="<code>arm64-v8a</code> — Modern phones (Pixel, Samsung, OnePlus…)" \
-               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+          url = f"https://api.telegram.org/bot{bot_token}/sendDocument"
 
-          # 3. armeabi-v7a
-          curl -s -F document=@app/build/outputs/apk/release/app-armeabi-v7a-release.apk \
-               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
-               $THREAD_ARGS \
-               --form-string parse_mode="HTML" \
-               --form-string caption="<code>armeabi-v7a</code> — Older / budget ARM phones" \
-               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
-
-          # 4. x86_64
-          curl -s -F document=@app/build/outputs/apk/release/app-x86_64-release.apk \
-               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
-               $THREAD_ARGS \
-               --form-string parse_mode="HTML" \
-               --form-string caption="<code>x86_64</code> — Emulators & Chromebooks" \
-               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+          for apk_path, cap in apks:
+              import subprocess
+              args = [
+                  "curl", "-s",
+                  "-F", f"document=@{apk_path}",
+                  "--form-string", f"chat_id={chat_id}",
+                  "--form-string", "parse_mode=HTML",
+                  "--form-string", f"caption={cap}",
+              ]
+              if thread_id:
+                  args += ["--form-string", f"message_thread_id={thread_id}"]
+              args.append(url)
+              result = subprocess.run(args, capture_output=True, text=True)
+              print(f"Sent {apk_path}: {result.stdout}")
+          PYEOF
