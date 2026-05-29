@@ -342,10 +342,16 @@ fun LyricsSheet(
     }
     val useAnimatedLyrics by useAnimatedLyricsFlow.collectAsStateWithLifecycle(initialValue = false)
 
+    val performanceModeEnabledFlow = remember(context) {
+        context.dataStore.data.map { it[booleanPreferencesKey("performance_mode_enabled")] ?: false }
+    }
+    val performanceModeEnabled by performanceModeEnabledFlow.collectAsStateWithLifecycle(initialValue = false)
+
     val animatedLyricsBlurEnabledFlow = remember(context) {
         context.dataStore.data.map { it[booleanPreferencesKey("animated_lyrics_blur_enabled")] ?: true }
     }
-    val animatedLyricsBlurEnabled by animatedLyricsBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val animatedLyricsBlurEnabledRaw by animatedLyricsBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val animatedLyricsBlurEnabled = animatedLyricsBlurEnabledRaw && !performanceModeEnabled
 
     val animatedLyricsBlurStrengthFlow = remember(context) {
         context.dataStore.data.map { it[androidx.datastore.preferences.core.floatPreferencesKey("animated_lyrics_blur_strength")] ?: 2.5f }

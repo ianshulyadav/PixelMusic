@@ -53,9 +53,13 @@ import coil.size.Size
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.presentation.components.AutoScrollingTextOnDemand
 import com.unshoo.pixelmusic.presentation.components.ShimmerBox
-import androidx.compose.ui.res.stringResource
 import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.presentation.components.SmartImage
+import com.unshoo.pixelmusic.presentation.components.SmartImageEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 
 @Immutable
 private data class EnhancedSongAnimationTarget(
@@ -103,40 +107,56 @@ fun EnhancedSongListItem(
     onMoreOptionsClick: (Song) -> Unit,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val appContext = context.applicationContext
+    val entryPoint = remember(appContext) {
+        EntryPointAccessors.fromApplication(appContext, SmartImageEntryPoint::class.java)
+    }
+    val userPreferencesRepository = entryPoint.userPreferencesRepository()
+    val performanceModeEnabled by userPreferencesRepository.performanceModeEnabledFlow.collectAsState(initial = false)
+
     val albumArtTargetSizePx = with(LocalDensity.current) { albumArtSize.roundToPx() }
     val isHighlighted = isCurrentSong && !isLoading
-    val transition = updateTransition(
-        targetState = EnhancedSongAnimationTarget(
-            isHighlighted = isHighlighted,
-            isSelected = isSelected
-        ),
-        label = "EnhancedSongListItemTransition"
-    )
 
-    // Share one transition across the item and derive the visual properties from a
-    // couple of progress values instead of animating each color/radius independently.
-    val highlightProgress by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 400) },
-        label = "highlightProgress"
-    ) { state ->
-        if (state.isHighlighted) 1f else 0f
-    }
-    val selectionVisualProgress by transition.animateFloat(
-        transitionSpec = { tween(durationMillis = 250) },
-        label = "selectionVisualProgress"
-    ) { state ->
-        if (state.isSelected) 1f else 0f
-    }
-    val selectionScaleProgress by transition.animateFloat(
-        transitionSpec = {
-            spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessLow
-            )
-        },
-        label = "selectionScaleProgress"
-    ) { state ->
-        if (state.isSelected) 1f else 0f
+    val highlightProgress: Float
+    val selectionVisualProgress: Float
+    val selectionScaleProgress: Float
+
+    if (performanceModeEnabled) {
+        highlightProgress = if (isHighlighted) 1f else 0f
+        selectionVisualProgress = if (isSelected) 1f else 0f
+        selectionScaleProgress = if (isSelected) 1f else 0f
+    } else {
+        val transition = updateTransition(
+            targetState = EnhancedSongAnimationTarget(
+                isHighlighted = isHighlighted,
+                isSelected = isSelected
+            ),
+            label = "EnhancedSongListItemTransition"
+        )
+        highlightProgress = transition.animateFloat(
+            transitionSpec = { tween(durationMillis = 400) },
+            label = "highlightProgress"
+        ) { state ->
+            if (state.isHighlighted) 1f else 0f
+        }.value
+        selectionVisualProgress = transition.animateFloat(
+            transitionSpec = { tween(durationMillis = 250) },
+            label = "selectionVisualProgress"
+        ) { state ->
+            if (state.isSelected) 1f else 0f
+        }.value
+        selectionScaleProgress = transition.animateFloat(
+            transitionSpec = {
+                spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )
+            },
+            label = "selectionScaleProgress"
+        ) { state ->
+            if (state.isSelected) 1f else 0f
+        }.value
     }
 
     val animatedCornerRadius = lerpDp(22.dp, 50.dp, highlightProgress)

@@ -49,6 +49,10 @@ import kotlinx.coroutines.isActive
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
+import dagger.hilt.android.EntryPointAccessors
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WavySliderExpressive(
@@ -76,6 +80,14 @@ fun WavySliderExpressive(
     semanticsLabel: String? = null,
     semanticsProgressStep: Float = 0.01f
 ) {
+    val context = LocalContext.current
+    val appContext = context.applicationContext
+    val entryPoint = remember(appContext) {
+        EntryPointAccessors.fromApplication(appContext, SmartImageEntryPoint::class.java)
+    }
+    val userPreferencesRepository = entryPoint.userPreferencesRepository()
+    val performanceModeEnabled by userPreferencesRepository.performanceModeEnabledFlow.collectAsState(initial = false)
+
     val density = LocalDensity.current
     val strokeWidthPx = with(density) { strokeWidth.toPx() }
     val thumbRadiusPx = with(density) { thumbRadius.toPx() }
@@ -199,9 +211,9 @@ fun WavySliderExpressive(
             trackStroke = stroke,
             gapSize = thumbRadius + 4.dp,
             stopSize = 3.dp,
-            amplitude = { progress -> if (progress > 0f) animatedAmplitude else 0f },
+            amplitude = { progress -> if (performanceModeEnabled) 0f else if (progress > 0f) animatedAmplitude else 0f },
             wavelength = wavelength,
-            waveSpeed = waveSpeed
+            waveSpeed = if (performanceModeEnabled) 0.dp else waveSpeed
         )
 
         Canvas(modifier = Modifier.fillMaxSize()) {

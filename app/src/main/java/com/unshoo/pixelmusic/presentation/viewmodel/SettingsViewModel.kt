@@ -140,7 +140,9 @@ data class SettingsUiState(
     val quickPicksDisplayMode: QuickPicksDisplayMode = QuickPicksDisplayMode.CARD,
     val ytUsername: String = "",
     val ytHandle: String = "",
-    val ytAvatarUrl: String = ""
+    val ytAvatarUrl: String = "",
+    val performanceModeEnabled: Boolean = false,
+    val audioOffloadEnabled: Boolean = false
 )
 
 data class FailedSongInfo(
@@ -199,7 +201,9 @@ private sealed interface SettingsUiUpdate {
         val immersiveLyricsEnabled: Boolean,
         val immersiveLyricsTimeout: Long,
         val animatedLyricsBlurEnabled: Boolean,
-        val animatedLyricsBlurStrength: Float
+        val animatedLyricsBlurStrength: Float,
+        val performanceModeEnabled: Boolean,
+        val audioOffloadEnabled: Boolean
     ) : SettingsUiUpdate
 }
 
@@ -608,7 +612,9 @@ class SettingsViewModel @Inject constructor(
                 userPreferencesRepository.immersiveLyricsEnabledFlow,
                 userPreferencesRepository.immersiveLyricsTimeoutFlow,
                 userPreferencesRepository.animatedLyricsBlurEnabledFlow,
-                userPreferencesRepository.animatedLyricsBlurStrengthFlow
+                userPreferencesRepository.animatedLyricsBlurStrengthFlow,
+                userPreferencesRepository.performanceModeEnabledFlow,
+                userPreferencesRepository.audioOffloadEnabledFlow
             ) { values ->
                 SettingsUiUpdate.Group2(
                     keepPlayingInBackground = values[0] as Boolean,
@@ -627,7 +633,9 @@ class SettingsViewModel @Inject constructor(
                     immersiveLyricsEnabled = values[13] as Boolean,
                     immersiveLyricsTimeout = values[14] as Long,
                     animatedLyricsBlurEnabled = values[15] as Boolean,
-                    animatedLyricsBlurStrength = values[16] as Float
+                    animatedLyricsBlurStrength = values[16] as Float,
+                    performanceModeEnabled = values[17] as Boolean,
+                    audioOffloadEnabled = values[18] as Boolean
                 )
             }.collect { update ->
                 _uiState.update { state ->
@@ -648,7 +656,9 @@ class SettingsViewModel @Inject constructor(
                         immersiveLyricsEnabled = update.immersiveLyricsEnabled,
                         immersiveLyricsTimeout = update.immersiveLyricsTimeout,
                         animatedLyricsBlurEnabled = update.animatedLyricsBlurEnabled,
-                        animatedLyricsBlurStrength = update.animatedLyricsBlurStrength
+                        animatedLyricsBlurStrength = update.animatedLyricsBlurStrength,
+                        performanceModeEnabled = update.performanceModeEnabled,
+                        audioOffloadEnabled = update.audioOffloadEnabled
                     )
                 }
             }
@@ -1133,6 +1143,18 @@ class SettingsViewModel @Inject constructor(
     fun setAutoScanLrcFiles(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setAutoScanLrcFiles(enabled)
+        }
+    }
+
+    fun setPerformanceModeEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setPerformanceModeEnabled(enabled)
+        }
+    }
+
+    fun setAudioOffloadEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setAudioOffloadEnabled(enabled)
         }
     }
 

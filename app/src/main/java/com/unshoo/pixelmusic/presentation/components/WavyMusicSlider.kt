@@ -36,6 +36,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.util.lerp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.collectAsState
+import dagger.hilt.android.EntryPointAccessors
 
 /**
  * Un slider personalizado con un efecto de onda que se mueve a lo largo de la pista de progreso.
@@ -88,6 +91,14 @@ fun WavyMusicSlider(
     semanticsLabel: String? = null,
     semanticsProgressStep: Float = 0.01f
 ) {
+    val context = LocalContext.current
+    val appContext = context.applicationContext
+    val entryPoint = remember(appContext) {
+        EntryPointAccessors.fromApplication(appContext, SmartImageEntryPoint::class.java)
+    }
+    val userPreferencesRepository = entryPoint.userPreferencesRepository()
+    val performanceModeEnabled by userPreferencesRepository.performanceModeEnabledFlow.collectAsState(initial = false)
+
     val isDragged by interactionSource.collectIsDraggedAsState()
     val isPressed by interactionSource.collectIsPressedAsState()
     val isInteracting = isDragged || isPressed
@@ -98,8 +109,8 @@ fun WavyMusicSlider(
         label = "ThumbInteractionAnim"
     )
 
-    // La onda sólo si: el track está reproduciendo, no hay interacción y el contexto lo permite
-    val shouldShowWave = isWaveEligible && isPlaying && !isInteracting
+    // La onda sólo si: el track está reproduciendo, no hay interacción, el contexto lo permite y NO está en Performance Mode
+    val shouldShowWave = isWaveEligible && isPlaying && !isInteracting && !performanceModeEnabled
 
     val animatedWaveAmplitude by animateDpAsState(
         targetValue = if (shouldShowWave) waveAmplitudeWhenPlaying else 0.dp,
@@ -109,7 +120,6 @@ fun WavyMusicSlider(
 
     // FASE CONDICIONAL: si la onda no se muestra, no hay transición infinita ni invalidaciones.
     val phaseShiftAnim = remember { Animatable(0f) }
-    val phaseShift = phaseShiftAnim.value
 
     LaunchedEffect(shouldShowWave, waveAnimationDuration) {
         if (shouldShowWave && waveAnimationDuration > 0) {
@@ -262,6 +272,7 @@ fun WavyMusicSlider(
                                 val waveStartDrawX = localTrackStart
                                 val waveEndDrawX = activeTrackVisualEnd.coerceAtLeast(waveStartDrawX)
                                 if (waveEndDrawX > waveStartDrawX) {
+                                    val phaseShift = phaseShiftAnim.value
                                     val periodPx = ((2 * PI) / waveFrequency).toFloat()
                                     val samplesPerCycle = 20f
                                     val waveStep = (periodPx / samplesPerCycle)

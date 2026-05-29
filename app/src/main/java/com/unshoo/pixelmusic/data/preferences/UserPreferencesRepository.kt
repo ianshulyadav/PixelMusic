@@ -310,6 +310,33 @@ constructor(
         val DISCOVER = stringPreferencesKey("discover")
         val QUICK_PICKS_DISPLAY_MODE = stringPreferencesKey("quick_picks_display_mode")
         val SEARCH_SOURCE = stringPreferencesKey("search_source")
+        val PERFORMANCE_MODE_ENABLED = booleanPreferencesKey("performance_mode_enabled")
+        val AUDIO_OFFLOAD_ENABLED = booleanPreferencesKey("audio_offload_enabled")
+    }
+
+    val performanceModeEnabledFlow: Flow<Boolean> =
+            dataStore.data.map { preferences ->
+                preferences[PreferencesKeys.PERFORMANCE_MODE_ENABLED] ?: false
+            }
+
+    suspend fun setPerformanceModeEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PERFORMANCE_MODE_ENABLED] = enabled
+            if (enabled) {
+                preferences[PreferencesKeys.AUDIO_OFFLOAD_ENABLED] = true
+            }
+        }
+    }
+
+    val audioOffloadEnabledFlow: Flow<Boolean> =
+            dataStore.data.map { preferences ->
+                preferences[PreferencesKeys.AUDIO_OFFLOAD_ENABLED] ?: false
+            }
+
+    suspend fun setAudioOffloadEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AUDIO_OFFLOAD_ENABLED] = enabled
+        }
     }
 
     val appRebrandDialogShownFlow: Flow<Boolean> =

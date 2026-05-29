@@ -69,7 +69,7 @@ fun SmartImage(
     crossfadeDurationMillis: Int = 300,
     useDiskCache: Boolean = true,
     useMemoryCache: Boolean = true,
-    allowHardware: Boolean = false,
+    allowHardware: Boolean = true,
     targetSize: Size = DefaultSmartImageSize,
     colorFilter: ColorFilter? = null,
     alpha: Float = 1f,
@@ -88,8 +88,15 @@ fun SmartImage(
     val isMeteredNetwork by connectivityStateHolder.isMeteredNetwork.collectAsState()
     val albumArtQualityWifi by userPreferencesRepository.albumArtQualityFlow.collectAsState(initial = AlbumArtQuality.ORIGINAL)
     val albumArtQualityMobile by userPreferencesRepository.albumArtQualityMobileFlow.collectAsState(initial = AlbumArtQuality.ORIGINAL)
+    val performanceModeEnabled by userPreferencesRepository.performanceModeEnabledFlow.collectAsState(initial = false)
 
-    val effectiveQuality = if (isMeteredNetwork) albumArtQualityMobile else albumArtQualityWifi
+    val effectiveQuality = if (performanceModeEnabled) {
+        AlbumArtQuality.LOW
+    } else if (isMeteredNetwork) {
+        albumArtQualityMobile
+    } else {
+        albumArtQualityWifi
+    }
 
     val clippedModifier = modifier.clip(shape)
     val requestTargetSize = remember(targetSize, effectiveQuality) {

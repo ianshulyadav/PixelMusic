@@ -96,6 +96,8 @@ import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material.icons.outlined.TrendingUp
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.GridView
+import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
@@ -881,6 +883,23 @@ fun SettingsCategoryScreen(
                                     selectedKey = uiState.libraryNavigationMode,
                                     onSelectionChanged = { settingsViewModel.setLibraryNavigationMode(it) },
                                     leadingIcon = { Icon(painterResource(R.drawable.rounded_library_music_24), null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+                            }
+
+                            SettingsSubsection(title = "Performance & Battery") {
+                                SwitchSettingItem(
+                                    title = "Performance Mode (Low-End & Battery Saver)",
+                                    subtitle = "Optimizes animations, blurs, and downsamples images to keep the app smooth and light on budget devices.",
+                                    checked = uiState.performanceModeEnabled,
+                                    onCheckedChange = { settingsViewModel.setPerformanceModeEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.Speed, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
+                                SwitchSettingItem(
+                                    title = "Hardware Audio Offload",
+                                    subtitle = "Delegates audio decoding to hardware DSP to allow the CPU to sleep during playback, saving battery.",
+                                    checked = uiState.audioOffloadEnabled,
+                                    onCheckedChange = { settingsViewModel.setAudioOffloadEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.BatteryChargingFull, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
                             }
                         }

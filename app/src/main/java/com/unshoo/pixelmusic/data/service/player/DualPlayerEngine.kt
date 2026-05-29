@@ -34,6 +34,7 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.mp4.Mp4Extractor
 import com.unshoo.pixelmusic.data.model.TransitionSettings
+import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.data.telegram.TelegramRepository
 import com.unshoo.pixelmusic.utils.envelope
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -80,7 +81,8 @@ class DualPlayerEngine @Inject constructor(
     private val gdriveStreamProxy: com.unshoo.pixelmusic.data.gdrive.GDriveStreamProxy,
     private val telegramCacheManager: com.unshoo.pixelmusic.data.telegram.TelegramCacheManager,
     private val connectivityStateHolder: com.unshoo.pixelmusic.presentation.viewmodel.ConnectivityStateHolder,
-    private val exoCache: com.unshoo.pixelmusic.data.remote.youtube.ExoCache
+    private val exoCache: com.unshoo.pixelmusic.data.remote.youtube.ExoCache,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) {
     private companion object {
         private const val AUDIO_OFFLOAD_BUFFERING_FALLBACK_MS = 4_000L
@@ -370,6 +372,14 @@ class DualPlayerEngine @Inject constructor(
 
     init {
         initialize()
+        scope.launch {
+            userPreferencesRepository.audioOffloadEnabledFlow.collect { enabled ->
+                if (audioOffloadEnabled != enabled) {
+                    audioOffloadEnabled = enabled
+                    rebuildPlayersPreservingMasterState("Audio offload setting changed to $enabled")
+                }
+            }
+        }
     }
 
     fun initialize() {
