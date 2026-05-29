@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # needed to create GitHub Releases
 
 jobs:
   build-phone:
@@ -18,18 +18,18 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Decode release keystore
         run: |
@@ -41,27 +41,41 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> keystore.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> keystore.properties
 
-      - name: Build Phone release APK
-        run: gradle :app:assembleRelease -Ppixelmusic.enableAbiSplits=true
+      - name: Build all split + universal release APKs
+        run: ./gradlew :app:assembleRelease -Ppixelmusic.enableAbiSplits=true
 
-      - name: Verify Phone split APKs
+      - name: Read version name
+        id: version
+        run: |
+          BUILD_TOOLS_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
+          VERSION_NAME=$("$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging \
+            app/build/outputs/apk/release/app-arm64-v8a-release.apk \
+            | grep versionName | sed -E "s/.*versionName='([^']*)'.*/\1/")
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Verify all split APKs
         run: |
           BUILD_TOOLS_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
           for apk in \
             app/build/outputs/apk/release/app-arm64-v8a-release.apk \
-            app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+            app/build/outputs/apk/release/app-armeabi-v7a-release.apk \
+            app/build/outputs/apk/release/app-x86_64-release.apk \
+            app/build/outputs/apk/release/app-universal-release.apk
           do
-            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging "$apk" >/dev/null
+            echo "Verifying $apk..."
+            "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging "$apk" > /dev/null
             "$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/apksigner" verify --verbose "$apk"
           done
 
-      - name: Upload Phone split APK artifacts
-        uses: actions/upload-artifact@v7.0.1
+      - name: Upload split APK artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: PixelMusic-phone-release-split-apks
           path: |
             app/build/outputs/apk/release/app-arm64-v8a-release.apk
             app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+            app/build/outputs/apk/release/app-x86_64-release.apk
+            app/build/outputs/apk/release/app-universal-release.apk
           if-no-files-found: error
           compression-level: 0
 
@@ -72,9 +86,7 @@ jobs:
           CURR_SHA: ${{ github.sha }}
         run: |
           python3 -c "
-          import subprocess
-          import html
-          import os
+          import subprocess, html, os
 
           prev_sha = os.environ.get('PREV_SHA', '')
           curr_sha = os.environ.get('CURR_SHA', '')
@@ -87,59 +99,111 @@ jobs:
           try:
               output = subprocess.check_output(cmd).decode('utf-8', errors='ignore')
               commits = [line.strip() for line in output.split('\n') if line.strip()]
-          except Exception as e:
+          except Exception:
               commits = ['New release build']
 
           if commits:
-              changelog = '<blockquote>' + '\n'.join(html.escape(c) for c in commits) + '</blockquote>'
+              changelog_html = '<blockquote>' + '\n'.join(html.escape(c) for c in commits) + '</blockquote>'
+              changelog_md   = '\n'.join('- ' + c for c in commits)
           else:
-              changelog = '<blockquote>New release build</blockquote>'
+              changelog_html = '<blockquote>New release build</blockquote>'
+              changelog_md   = '- New release build'
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write('changelog<<EOF\n' + changelog + '\nEOF\n')
+              f.write('changelog_html<<EOF\n' + changelog_html + '\nEOF\n')
+              f.write('changelog_md<<EOF\n' + changelog_md + '\nEOF\n')
           "
 
-      - name: Publish Release to Telegram Channel
+      # ── GitHub Release ────────────────────────────────────────────────────────
+      - name: Create GitHub Release
+        if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version_name }}
+          name: "PixelMusic v${{ steps.version.outputs.version_name }}"
+          body: |
+            ## What's new
+            ${{ steps.changelog.outputs.changelog_md }}
+
+            ---
+            | APK | Target |
+            |-----|--------|
+            | `app-arm64-v8a-release.apk` | Modern phones (Pixel, Samsung, etc.) |
+            | `app-armeabi-v7a-release.apk` | Older / budget ARM phones |
+            | `app-x86_64-release.apk` | Emulators & Chromebooks |
+            | `app-universal-release.apk` | Universal — works on all devices ✅ |
+
+            **Commit:** ${{ github.sha }}
+          files: |
+            app/build/outputs/apk/release/app-arm64-v8a-release.apk
+            app/build/outputs/apk/release/app-armeabi-v7a-release.apk
+            app/build/outputs/apk/release/app-x86_64-release.apk
+            app/build/outputs/apk/release/app-universal-release.apk
+          draft: false
+          prerelease: false
+          make_latest: true
+
+      # ── Telegram Channel ─────────────────────────────────────────────────────
+      - name: Publish all APKs to Telegram Channel
         if: success() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: "@PixelMusicApp"
           TELEGRAM_THREAD_ID: "2"
-          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog_html }}
         run: |
-          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
-            echo "Telegram secrets not set, skipping publishing."
+          if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
+            echo "TELEGRAM_BOT_TOKEN not set, skipping."
             exit 0
           fi
-
-          BUILD_TOOLS_VERSION="$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -n 1)"
-          VERSION_NAME=$("$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION/aapt2" dump badging app/build/outputs/apk/release/app-arm64-v8a-release.apk | grep versionName | sed -E "s/.*versionName='([^']*)'.*/\1/")
-
-          CAPTION="<b>📱 PixelMusic Phone Release</b>
-
-          <b>Version:</b> <code>${VERSION_NAME}</code>
-          <b>Commit:</b> <a href=\"https://github.com/${{ github.repository }}/commit/${{ github.sha }}\">${{ github.sha }}</a>
-
-          <b>Changes:</b>
-          ${CHANGELOG}
-
-          🚀 New release build is ready! See attached split APKs below."
 
           THREAD_ARGS=""
           if [ -n "$TELEGRAM_THREAD_ID" ]; then
             THREAD_ARGS="--form-string message_thread_id=${TELEGRAM_THREAD_ID}"
           fi
 
-          curl -F document=@app/build/outputs/apk/release/app-armeabi-v7a-release.apk \
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${VERSION_NAME}"
+          COMMIT_URL="https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+
+          CAPTION="<b>📱 PixelMusic v${VERSION_NAME} — Release</b>
+
+<b>Changes:</b>
+${CHANGELOG}
+
+<b>Commit:</b> <a href=\"${COMMIT_URL}\">${{ github.sha }}</a>
+<b>Release:</b> <a href=\"${RELEASE_URL}\">GitHub Release ↗</a>
+
+🚀 All APKs attached below."
+
+          # 1. Universal APK (with full caption)
+          curl -s -F document=@app/build/outputs/apk/release/app-universal-release.apk \
                --form-string chat_id="${TELEGRAM_CHAT_ID}" \
                $THREAD_ARGS \
                --form-string parse_mode="HTML" \
                --form-string caption="${CAPTION}" \
                "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
 
-          curl -F document=@app/build/outputs/apk/release/app-arm64-v8a-release.apk \
+          # 2. arm64-v8a
+          curl -s -F document=@app/build/outputs/apk/release/app-arm64-v8a-release.apk \
                --form-string chat_id="${TELEGRAM_CHAT_ID}" \
                $THREAD_ARGS \
                --form-string parse_mode="HTML" \
-               --form-string caption="PixelMusic Release Build (arm64-v8a) 🚀" \
+               --form-string caption="<code>arm64-v8a</code> — Modern phones (Pixel, Samsung, OnePlus…)" \
+               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+
+          # 3. armeabi-v7a
+          curl -s -F document=@app/build/outputs/apk/release/app-armeabi-v7a-release.apk \
+               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
+               $THREAD_ARGS \
+               --form-string parse_mode="HTML" \
+               --form-string caption="<code>armeabi-v7a</code> — Older / budget ARM phones" \
+               "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+
+          # 4. x86_64
+          curl -s -F document=@app/build/outputs/apk/release/app-x86_64-release.apk \
+               --form-string chat_id="${TELEGRAM_CHAT_ID}" \
+               $THREAD_ARGS \
+               --form-string parse_mode="HTML" \
+               --form-string caption="<code>x86_64</code> — Emulators & Chromebooks" \
                "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
