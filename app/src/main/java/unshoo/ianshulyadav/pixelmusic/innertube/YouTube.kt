@@ -632,7 +632,8 @@ object YouTube {
 
         val title = header.title.runs?.firstOrNull()?.text ?: throw IllegalStateException("PLAYLIST_PRIVATE")
         val thumbnail = header.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.lastOrNull()?.normalizedUrl
-            ?: throw IllegalStateException("PLAYLIST_PRIVATE")
+            ?: header.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.firstOrNull()?.normalizedUrl
+            ?: ""
 
         val editable = base?.musicEditablePlaylistDetailHeaderRenderer != null
 

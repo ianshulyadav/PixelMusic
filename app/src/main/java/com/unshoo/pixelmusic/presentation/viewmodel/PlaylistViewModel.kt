@@ -283,7 +283,15 @@ class PlaylistViewModel @Inject constructor(
                         // Background fetch & sync for synced YouTube playlists
                         if (playlist.source == "YOUTUBE") {
                             viewModelScope.launch(Dispatchers.IO) {
-                                val ytPlaylistResult = YouTube.playlist(playlistId)
+                                // Retry up to 3 times for mobile data reliability
+                                var ytPlaylistResult = YouTube.playlist(playlistId)
+                                var fetchAttempt = 0
+                                while (ytPlaylistResult.isFailure && fetchAttempt < 2) {
+                                    fetchAttempt++
+                                    kotlinx.coroutines.delay(1000L * fetchAttempt)
+                                    ytPlaylistResult = YouTube.playlist(playlistId)
+                                }
+
                                 if (ytPlaylistResult.isSuccess) {
                                     val ytPlaylistPage = ytPlaylistResult.getOrThrow()
                                     val ytPlaylist = ytPlaylistPage.playlist
@@ -329,7 +337,12 @@ class PlaylistViewModel @Inject constructor(
                                     var pages = 0
                                     val allYtSongs = ytPlaylistPage.songs.toMutableList()
                                     while (continuation != null && pages < 10) {
-                                        val contResult = YouTube.playlistContinuation(continuation)
+                                        var contResult = YouTube.playlistContinuation(continuation)
+                                        // Retry continuation page once on failure
+                                        if (contResult.isFailure) {
+                                            kotlinx.coroutines.delay(1000L)
+                                            contResult = YouTube.playlistContinuation(continuation)
+                                        }
                                         if (contResult.isSuccess) {
                                             val contPage = contResult.getOrThrow()
                                             allYtSongs.addAll(contPage.songs)
@@ -373,9 +386,13 @@ class PlaylistViewModel @Inject constructor(
                                 } else {
                                     withContext(Dispatchers.Main) {
                                         if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
+                                            // If we have cached songs, just clear loading state
+                                            // If we don't have cached songs, show empty with isLoading=false so the user sees the empty state
                                             _uiState.update { it.copy(isLoading = false) }
                                         }
                                     }
+                                    // Log the error for debugging
+                                    Log.e("PlaylistVM", "YouTube fetch failed for $playlistId after retries: ${ytPlaylistResult.exceptionOrNull()?.message}")
                                 }
                             }
                         }
@@ -1741,7 +1758,15 @@ class PlaylistViewModel @Inject constructor(
             try {
                 val playlist = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
                 if (playlist != null && playlist.source == "YOUTUBE") {
-                    val ytPlaylistResult = YouTube.playlist(playlistId)
+                    // Retry up to 3 times for mobile data reliability
+                    var ytPlaylistResult = YouTube.playlist(playlistId)
+                    var fetchAttempt = 0
+                    while (ytPlaylistResult.isFailure && fetchAttempt < 2) {
+                        fetchAttempt++
+                        kotlinx.coroutines.delay(1500L * fetchAttempt)
+                        ytPlaylistResult = YouTube.playlist(playlistId)
+                    }
+
                     if (ytPlaylistResult.isSuccess) {
                         val ytPlaylistPage = ytPlaylistResult.getOrThrow()
                         val ytPlaylist = ytPlaylistPage.playlist
@@ -1749,7 +1774,12 @@ class PlaylistViewModel @Inject constructor(
                         var continuation = ytPlaylistPage.songsContinuation ?: ytPlaylistPage.continuation
                         var pages = 0
                         while (continuation != null && pages < 10) {
-                            val contResult = YouTube.playlistContinuation(continuation)
+                            var contResult = YouTube.playlistContinuation(continuation)
+                            // Retry once on failure
+                            if (contResult.isFailure) {
+                                kotlinx.coroutines.delay(1000L)
+                                contResult = YouTube.playlistContinuation(continuation)
+                            }
                             if (contResult.isSuccess) {
                                 val contPage = contResult.getOrThrow()
                                 allYtSongs.addAll(contPage.songs)

@@ -187,9 +187,9 @@ class InnerTube {
         }
 
         install(HttpTimeout) {
-            requestTimeoutMillis = 15000
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 15000
+            requestTimeoutMillis = 35_000
+            connectTimeoutMillis = 20_000
+            socketTimeoutMillis = 30_000
         }
 
         engine {
@@ -248,28 +248,50 @@ class InnerTube {
     }
 
     /**
-     * Simple retry wrapper for transient IO errors (socket aborts, timeouts).
+     * Simple retry wrapper for transient network errors (socket aborts, timeouts, DNS failures).
      * Retries the given block up to [maxAttempts] times with exponential backoff.
+     * Handles IOException, SocketTimeoutException, and ConnectException which are common on mobile data.
      * Cancellation is respected since [delay] will throw if the coroutine is cancelled.
      */
     private suspend fun <T> withRetry(
-        maxAttempts: Int = 3,
-        initialDelay: Long = 500L,
+        maxAttempts: Int = 4,
+        initialDelay: Long = 800L,
         factor: Double = 2.0,
         block: suspend () -> T,
     ): T {
         var currentDelay = initialDelay
         var attempt = 0
-        while (true) {
+        var lastException: Exception? = null
+        while (attempt < maxAttempts) {
             try {
                 return block()
+            } catch (e: io.ktor.client.plugins.HttpRequestTimeoutException) {
+                lastException = e
+                attempt++
+                if (attempt >= maxAttempts) throw e
+                delay(currentDelay)
+                currentDelay = (currentDelay * factor).toLong()
+            } catch (e: java.net.SocketTimeoutException) {
+                lastException = e
+                attempt++
+                if (attempt >= maxAttempts) throw e
+                delay(currentDelay)
+                currentDelay = (currentDelay * factor).toLong()
+            } catch (e: java.net.ConnectException) {
+                lastException = e
+                attempt++
+                if (attempt >= maxAttempts) throw e
+                delay(currentDelay)
+                currentDelay = (currentDelay * factor).toLong()
             } catch (e: IOException) {
+                lastException = e
                 attempt++
                 if (attempt >= maxAttempts) throw e
                 delay(currentDelay)
                 currentDelay = (currentDelay * factor).toLong()
             }
         }
+        throw lastException ?: IOException("withRetry exhausted all $maxAttempts attempts")
     }
 
     suspend fun search(
