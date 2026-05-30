@@ -3916,7 +3916,10 @@ class PlayerViewModel @Inject constructor(
                         dualPlayerEngine.registerLocalPath(startingUri.toString(), ytSong.audioFilePath)
                     }
                 }
-                dualPlayerEngine.resolveCloudUri(startingUri)
+                // Pre-resolve asynchronously on Dispatchers.IO to not block player preparation
+                viewModelScope.launch(Dispatchers.IO) {
+                    dualPlayerEngine.resolveCloudUri(startingUri)
+                }
             }
 
             val preparedPlaybackQueue = preparePlaybackQueue(

@@ -1167,6 +1167,19 @@ object YoutubeHelper {
 
     private suspend fun isYoutubeUrlValid(url: String): Boolean = withContext(Dispatchers.IO) {
         try {
+            // Fast check: Extract expire timestamp from the URL if present
+            val expireParam = url.substringAfter("expire=", "").substringBefore("&")
+            if (expireParam.isNotEmpty()) {
+                val expireTimeSecs = expireParam.toLongOrNull()
+                if (expireTimeSecs != null) {
+                    val currentTimeSecs = System.currentTimeMillis() / 1000
+                    // If the URL expires in more than 10 minutes, treat it as valid immediately!
+                    if (expireTimeSecs > currentTimeSecs + 600) {
+                        return@withContext true
+                    }
+                }
+            }
+
             val request = Request.Builder()
                 .url(url)
                 .head()

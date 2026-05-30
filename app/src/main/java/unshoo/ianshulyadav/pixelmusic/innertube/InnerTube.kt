@@ -101,7 +101,37 @@ class InnerTube {
             httpClient = createClient()
         }
 
-    var dns: Dns = Dns.SYSTEM
+    private val cloudflareDns by lazy {
+        val bootstrapClient = OkHttpClient.Builder().build()
+        DnsOverHttps.Builder()
+            .client(bootstrapClient)
+            .url("https://1.1.1.1/dns-query".toHttpUrl())
+            .build()
+    }
+
+    private val googleDns by lazy {
+        val bootstrapClient = OkHttpClient.Builder().build()
+        DnsOverHttps.Builder()
+            .client(bootstrapClient)
+            .url("https://8.8.8.8/dns-query".toHttpUrl())
+            .build()
+    }
+
+    var dns: Dns = Dns { hostname ->
+        try {
+            Dns.SYSTEM.lookup(hostname)
+        } catch (e: Exception) {
+            try {
+                cloudflareDns.lookup(hostname)
+            } catch (ex: Exception) {
+                try {
+                    googleDns.lookup(hostname)
+                } catch (ey: Exception) {
+                    throw e
+                }
+            }
+        }
+    }
         set(value) {
             field = value
             httpClient.close()

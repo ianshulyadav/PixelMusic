@@ -46,6 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -365,6 +366,7 @@ class DualPlayerEngine @Inject constructor(
     private val resolvedUriCache = LruCache<String, Uri>(100)
     private val activePlaybackResolvedUris = java.util.concurrent.ConcurrentHashMap<String, Uri>()
     private val localFilePathCache = java.util.concurrent.ConcurrentHashMap<String, String>()
+    private val activeResolutions = java.util.concurrent.ConcurrentHashMap<String, kotlinx.coroutines.Deferred<Uri>>()
 
     fun registerLocalPath(youtubeUri: String, filePath: String) {
         if (filePath.isNotBlank()) {
@@ -766,19 +768,33 @@ class DualPlayerEngine @Inject constructor(
             return@withContext cachedUri
         }
 
-        val resolved: Uri? = when (uri.scheme) {
-            "telegram" -> resolveTelegramUriAsync(uri, uriString)
-            "gdrive" -> resolveGDriveUriAsync(uriString)
-            "youtube" -> resolveYoutubeUriAsync(uriString)
-            else -> null
+        val deferred = activeResolutions.getOrPut(uriString) {
+            scope.async(Dispatchers.IO) {
+                val resolved: Uri? = when (uri.scheme) {
+                    "telegram" -> resolveTelegramUriAsync(uri, uriString)
+                    "gdrive" -> resolveGDriveUriAsync(uriString)
+                    "youtube" -> resolveYoutubeUriAsync(uriString)
+                    else -> null
+                }
+                
+                if (resolved != null) {
+                    resolvedUriCache.put(uriString, resolved)
+                    activePlaybackResolvedUris[uriString] = resolved
+                    resolved
+                } else {
+                    uri
+                }
+            }
         }
 
-        if (resolved != null) {
-            resolvedUriCache.put(uriString, resolved)
-            activePlaybackResolvedUris[uriString] = resolved
-            return@withContext resolved
+        try {
+            deferred.await()
+        } catch (e: Exception) {
+            Timber.tag("DualPlayerEngine").e(e, "Error awaiting resolution for %s", uriString)
+            uri
+        } finally {
+            activeResolutions.remove(uriString)
         }
-        uri
     }
 
     private suspend fun resolveTelegramUriAsync(uri: Uri, uriString: String): Uri? = withContext(Dispatchers.IO) {
