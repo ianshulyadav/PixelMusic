@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runBlocking
 import kotlin.math.absoluteValue
 
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
@@ -49,6 +50,11 @@ object AutoQueueManager {
 
     // Memory cache mapping local/offline song IDs to matched YouTube video IDs
     private val localToYoutubeIdMap = mutableMapOf<String, String>()
+
+    enum class Mood { CHILL, UPBEAT, DEFAULT }
+    private val sessionPlayHistory = mutableListOf<String>()
+    private val CHILL_GENRES = setOf("classical", "lofi", "acoustic", "ambient", "jazz", "piano", "chill", "blues", "slow")
+    private val UPBEAT_GENRES = setOf("rock", "metal", "dance", "electronic", "edm", "pop", "workout", "rap", "hip hop", "house", "techno", "party")
     
     private var scope: CoroutineScope? = null
     private var contextRef: Context? = null
@@ -59,6 +65,41 @@ object AutoQueueManager {
 
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            mediaItem?.let { item ->
+                scope?.launch(Dispatchers.IO) {
+                    val genre = try {
+                        val metadataGenre = item.mediaMetadata.genre?.toString()
+                        if (!metadataGenre.isNullOrBlank()) {
+                            metadataGenre
+                        } else {
+                            val songId = item.mediaId
+                            val dao = musicDaoRef
+                            val longId = songId.toLongOrNull()
+                            if (longId != null) {
+                                dao?.getSongByIdOnce(longId)?.genre
+                            } else if (songId.startsWith("youtube_")) {
+                                val videoId = songId.substringAfter("youtube_")
+                                val dbId = getDatabaseIdForYoutubeId(videoId)
+                                dao?.getSongByIdOnce(dbId)?.genre
+                            } else {
+                                null
+                            }
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                    
+                    if (!genre.isNullOrBlank()) {
+                        synchronized(sessionPlayHistory) {
+                            sessionPlayHistory.add(genre)
+                            if (sessionPlayHistory.size > 5) {
+                                sessionPlayHistory.removeAt(0)
+                            }
+                        }
+                        printd("AutoQueueManager: Active session play history: $sessionPlayHistory (Mood = ${getActiveSessionMood()})")
+                    }
+                }
+            }
             checkAndRefillQueue()
         }
 
@@ -113,6 +154,9 @@ object AutoQueueManager {
         continuationToken = null
         currentWatchEndpoint = null
         addedVideoIds.clear()
+        synchronized(sessionPlayHistory) {
+            sessionPlayHistory.clear()
+        }
         fetchJob?.cancel()
     }
 
@@ -129,8 +173,13 @@ object AutoQueueManager {
         val ctx = contextRef ?: return
         try {
             val sharedPrefs = ctx.getSharedPreferences("auto_queue_skips", Context.MODE_PRIVATE)
-            sharedPrefs.edit().putLong(cleanId, System.currentTimeMillis()).apply()
-            printd("AutoQueueManager: Registered skip for $cleanId")
+            val currentCount = sharedPrefs.getInt(cleanId + "_skip_count", 0)
+            val now = System.currentTimeMillis()
+            sharedPrefs.edit()
+                .putLong(cleanId + "_last_skip_time", now)
+                .putInt(cleanId + "_skip_count", currentCount + 1)
+                .apply()
+            printd("AutoQueueManager: Registered skip for $cleanId (count = ${currentCount + 1})")
         } catch (e: Exception) {
             printe("AutoQueueManager: Error saving skip to SharedPreferences: ${e.message}")
         }
@@ -147,12 +196,41 @@ object AutoQueueManager {
             val editor = sharedPrefs.edit()
             var modified = false
 
-            for ((songId, timestampObj) in allEntries) {
-                val timestamp = (timestampObj as? Long) ?: 0L
-                if (now - timestamp < FOUR_HOURS_MS) {
-                    activeIds.add(songId)
+            // Extract all unique song IDs from keys ending with _last_skip_time
+            val skippedSongs = allEntries.keys
+                .filter { it.endsWith("_last_skip_time") }
+                .map { it.removeSuffix("_last_skip_time") }
+
+            for (songId in skippedSongs) {
+                val lastSkipTime = sharedPrefs.getLong(songId + "_last_skip_time", 0L)
+                if (now - lastSkipTime < FOUR_HOURS_MS) {
+                    val skipCount = sharedPrefs.getInt(songId + "_skip_count", 0)
+                    
+                    // Retrieve database playCount safely in a blocking coroutine flow style
+                    val playCount = runBlocking {
+                        try {
+                            val dbSongId = if (songId.toLongOrNull() == null && !songId.startsWith("youtube_")) {
+                                getDatabaseIdForYoutubeId(songId).toString()
+                            } else {
+                                songId
+                            }
+                            val p1 = engagementDaoRef?.getPlayCount(songId) ?: 0
+                            val p2 = engagementDaoRef?.getPlayCount(dbSongId) ?: 0
+                            kotlin.math.max(p1, p2)
+                        } catch (e: Exception) {
+                            0
+                        }
+                    }
+
+                    if (playCount > 3 && skipCount < 2) {
+                        // High-play favorite bypassed for single skip
+                        printd("AutoQueueManager: Skip bypass triggered for favorite $songId (plays = $playCount, skips = $skipCount)")
+                    } else {
+                        activeIds.add(songId)
+                    }
                 } else {
-                    editor.remove(songId)
+                    editor.remove(songId + "_last_skip_time")
+                    editor.remove(songId + "_skip_count")
                     modified = true
                 }
             }
@@ -163,6 +241,22 @@ object AutoQueueManager {
             printe("AutoQueueManager: Error reading skips from SharedPreferences: ${e.message}")
         }
         return activeIds
+    }
+
+    private fun getActiveSessionMood(): Mood {
+        if (sessionPlayHistory.isEmpty()) return Mood.DEFAULT
+        var chillCount = 0
+        var upbeatCount = 0
+        for (genre in sessionPlayHistory) {
+            val norm = genre.lowercase().trim()
+            if (CHILL_GENRES.any { norm.contains(it) }) chillCount++
+            else if (UPBEAT_GENRES.any { norm.contains(it) }) upbeatCount++
+        }
+        return when {
+            chillCount > upbeatCount && chillCount >= 2 -> Mood.CHILL
+            upbeatCount > chillCount && upbeatCount >= 2 -> Mood.UPBEAT
+            else -> Mood.DEFAULT
+        }
     }
 
 
@@ -537,13 +631,22 @@ object AutoQueueManager {
             val finalSongsToAdd = mutableListOf<Song>()
             val addedArtists = mutableMapOf<String, Int>()
 
-            // Helper to check artist limits to ensure diversity
+            // Helper to check artist limits and session mood to ensure acoustic consistency & diversity
+            val activeMood = getActiveSessionMood()
             fun canAddSong(song: Song): Boolean {
                 val songIdStr = song.id
                 val isInQueue = currentQueueIds.any { isSameSong(it, songIdStr) }
                 val isAvoid = avoidIds.any { isSameSong(it, songIdStr) }
                 val isAlreadyAdded = finalSongsToAdd.any { isSameSong(it.id, songIdStr) }
                 if (isInQueue || isAvoid || isAlreadyAdded) return false
+
+                // Active Mood Protection
+                val songGenre = song.genre?.lowercase()?.trim().orEmpty()
+                if (activeMood == Mood.CHILL) {
+                    if (UPBEAT_GENRES.any { songGenre.contains(it) }) return false
+                } else if (activeMood == Mood.UPBEAT) {
+                    if (CHILL_GENRES.any { songGenre.contains(it) }) return false
+                }
 
                 val artistKey = song.artist.lowercase().trim()
                 val artistCount = addedArtists[artistKey] ?: 0
