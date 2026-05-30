@@ -11,14 +11,20 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import java.util.concurrent.TimeUnit
+import android.content.Context
+import com.unshoo.pixelmusic.data.database.EngagementDao
+import com.unshoo.pixelmusic.data.database.MusicDao
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ListeningStatsTrackerTest {
 
+    private val context: Context = mockk(relaxed = true)
     private val dailyMixManager: DailyMixManager = mockk(relaxed = true)
     private val playbackStatsRepository: PlaybackStatsRepository = mockk(relaxed = true)
+    private val engagementDao: EngagementDao = mockk(relaxed = true)
+    private val musicDao: MusicDao = mockk(relaxed = true)
 
     @BeforeEach
     fun setUp() {
@@ -33,8 +39,11 @@ class ListeningStatsTrackerTest {
     @Test
     fun `finalizeCurrentSession preserves listening longer than track duration`() {
         val tracker = ListeningStatsTracker(
+            context = context,
             dailyMixManager = dailyMixManager,
-            playbackStatsRepository = playbackStatsRepository
+            playbackStatsRepository = playbackStatsRepository,
+            engagementDao = engagementDao,
+            musicDao = musicDao
         )
         val song = song(
             songId = "looped-song",
@@ -73,8 +82,11 @@ class ListeningStatsTrackerTest {
     @Test
     fun `onProgress accumulates incremental listening time`() {
         val tracker = ListeningStatsTracker(
+            context = context,
             dailyMixManager = dailyMixManager,
-            playbackStatsRepository = playbackStatsRepository
+            playbackStatsRepository = playbackStatsRepository,
+            engagementDao = engagementDao,
+            musicDao = musicDao
         )
         val song = song(songId = "song-1")
         val firstChunkMs = 7_000L

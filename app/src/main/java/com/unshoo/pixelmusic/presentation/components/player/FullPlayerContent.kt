@@ -1052,30 +1052,30 @@ fun FullPlayerContent(
 
         ModalBottomSheet(
             onDismissRequest = { showSongInfoBottomSheet = false },
-            dragHandle = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .width(40.dp)
-                            .height(4.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
-                    )
-                }
-            }
+            dragHandle = null
         ) {
             CompositionLocalProvider(LocalOverscrollFactory provides null) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .navigationBarsPadding()
-                        .padding(bottom = 32.dp)
+                        .padding(bottom = 16.dp)
                 ) {
+                    // Custom Drag Handle inside the Column
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp, bottom = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(40.dp)
+                                .height(4.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                        )
+                    }
                     // Header: Cover + Metadata
                     Row(
                         modifier = Modifier
