@@ -295,50 +295,16 @@ class PlaylistViewModel @Inject constructor(
                                 if (ytPlaylistResult.isSuccess) {
                                     val ytPlaylistPage = ytPlaylistResult.getOrThrow()
                                     val ytPlaylist = ytPlaylistPage.playlist
-                                    
-                                    val firstPageSongs = ytPlaylistPage.songs.map { it.toNativeSong() }
-                                    
-                                    // Cache first page online playlist songs in Room DB
-                                    musicRepository.insertYoutubeSongs(firstPageSongs)
 
-                                    val updatedSongIds = firstPageSongs.map { it.id }
+                                    // Accumulate ALL pages before touching the UI or preferences.
+                                    // This prevents the "songs disappear" race where page-1 (25 songs)
+                                    // immediately overwrites the cached full list from the DB.
+                                    val allYtSongs = ytPlaylistPage.songs.toMutableList()
 
-                                    val currentExisting = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
-                                    if (currentExisting != null) {
-                                        playlistPreferencesRepository.updatePlaylist(
-                                            currentExisting.copy(
-                                                name = ytPlaylist.title,
-                                                songIds = updatedSongIds,
-                                                coverImageUri = ytPlaylist.thumbnail
-                                            )
-                                        )
-                                    }
-
-                                    currentPlaylistSetVideoIds = ytPlaylistPage.songs.mapNotNull { it.setVideoId }
-
-                                    withContext(Dispatchers.Main) {
-                                        if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
-                                            _uiState.update { state ->
-                                                state.copy(
-                                                    currentPlaylistDetails = state.currentPlaylistDetails?.copy(
-                                                        name = ytPlaylist.title,
-                                                        songIds = updatedSongIds,
-                                                        coverImageUri = ytPlaylist.thumbnail
-                                                    ),
-                                                    currentPlaylistSongs = firstPageSongs,
-                                                    isLoading = false
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Fetch the remaining pages progressively in the background coroutine
                                     var continuation = ytPlaylistPage.songsContinuation ?: ytPlaylistPage.continuation
                                     var pages = 0
-                                    val allYtSongs = ytPlaylistPage.songs.toMutableList()
-                                    while (continuation != null && pages < 10) {
+                                    while (continuation != null && pages < 20) {
                                         var contResult = YouTube.playlistContinuation(continuation)
-                                        // Retry continuation page once on failure
                                         if (contResult.isFailure) {
                                             kotlinx.coroutines.delay(1000L)
                                             contResult = YouTube.playlistContinuation(continuation)
@@ -346,52 +312,57 @@ class PlaylistViewModel @Inject constructor(
                                         if (contResult.isSuccess) {
                                             val contPage = contResult.getOrThrow()
                                             allYtSongs.addAll(contPage.songs)
-                                            val contNativeSongs = contPage.songs.map { it.toNativeSong() }
-                                            val allNativeSongs = allYtSongs.map { it.toNativeSong() }
                                             continuation = contPage.continuation
                                             pages++
-
-                                            musicRepository.insertYoutubeSongs(contNativeSongs)
-                                            
-                                            // Update video ids
-                                            currentPlaylistSetVideoIds = allYtSongs.mapNotNull { it.setVideoId }
-
-                                            // Update preferences
-                                            val currentExistingInner = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
-                                            if (currentExistingInner != null) {
-                                                playlistPreferencesRepository.updatePlaylist(
-                                                    currentExistingInner.copy(
-                                                        songIds = allNativeSongs.map { it.id }
-                                                    )
-                                                )
-                                            }
-
-                                            withContext(Dispatchers.Main) {
-                                                if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
-                                                    _uiState.update { state ->
-                                                        state.copy(
-                                                            currentPlaylistDetails = state.currentPlaylistDetails?.copy(
-                                                                songIds = allNativeSongs.map { it.id }
-                                                            ),
-                                                            currentPlaylistSongs = allNativeSongs,
-                                                            isLoading = false
-                                                        )
-                                                    }
-                                                }
-                                            }
                                         } else {
                                             break
+                                        }
+                                    }
+
+                                    // Now we have the full list — do one atomic update
+                                    val allNativeSongs = allYtSongs.map { it.toNativeSong() }
+                                    val allSongIds = allNativeSongs.map { it.id }
+
+                                    // Persist all songs to Room DB
+                                    musicRepository.insertYoutubeSongs(allNativeSongs)
+
+                                    // Persist the full songIds list to preferences
+                                    val currentExisting = playlistPreferencesRepository.userPlaylistsFlow.first().find { it.id == playlistId }
+                                    if (currentExisting != null) {
+                                        playlistPreferencesRepository.updatePlaylist(
+                                            currentExisting.copy(
+                                                name = ytPlaylist.title,
+                                                songIds = allSongIds,
+                                                coverImageUri = ytPlaylist.thumbnail
+                                            )
+                                        )
+                                    }
+
+                                    currentPlaylistSetVideoIds = allYtSongs.mapNotNull { it.setVideoId }
+
+                                    // Single UI update with the complete songs list
+                                    withContext(Dispatchers.Main) {
+                                        if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
+                                            _uiState.update { state ->
+                                                state.copy(
+                                                    currentPlaylistDetails = state.currentPlaylistDetails?.copy(
+                                                        name = ytPlaylist.title,
+                                                        songIds = allSongIds,
+                                                        coverImageUri = ytPlaylist.thumbnail
+                                                    ),
+                                                    currentPlaylistSongs = allNativeSongs,
+                                                    isLoading = false
+                                                )
+                                            }
                                         }
                                     }
                                 } else {
                                     withContext(Dispatchers.Main) {
                                         if (_uiState.value.currentPlaylistDetails?.id == playlistId) {
-                                            // If we have cached songs, just clear loading state
-                                            // If we don't have cached songs, show empty with isLoading=false so the user sees the empty state
+                                            // Keep cached songs visible, just stop the loading indicator
                                             _uiState.update { it.copy(isLoading = false) }
                                         }
                                     }
-                                    // Log the error for debugging
                                     Log.e("PlaylistVM", "YouTube fetch failed for $playlistId after retries: ${ytPlaylistResult.exceptionOrNull()?.message}")
                                 }
                             }
