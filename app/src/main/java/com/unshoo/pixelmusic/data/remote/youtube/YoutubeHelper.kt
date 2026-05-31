@@ -533,49 +533,35 @@ object YoutubeHelper {
         try {
             savedSong = localSongRepository.getSong(videoId)
         } catch (ex: Exception) {
-            Toast.makeText(context, "Failed to get song from local repository", Toast.LENGTH_LONG)
-                .show()
             UmihiHelper.printe(ex.toString())
         }
 
-        val maxBitrate = getTargetBitrateCeiling(context)
-        val cacheKey = if (maxBitrate > 0) "${videoId}_q$maxBitrate" else "${videoId}_high"
-
         if (savedSong != null) {
-            // Always prefer local file — not just when allowLocal is true
+            // Always prefer local file
             if (savedSong.audioFilePath != null && File(savedSong.audioFilePath).exists()) {
                 UmihiHelper.printd("$videoId : Was downloaded, playing from local file")
                 // Populate in-memory cache for next time
                 localFilePathCache.put(videoId, savedSong.audioFilePath)
                 return savedSong.audioFilePath
             }
+        }
 
-            // Check quality-specific LRU cache
-            val cachedQuality = streamUrlLruCache.get(cacheKey)
-            if (cachedQuality != null) {
-                UmihiHelper.printd("$videoId : Got quality-specific URL from LRU cache")
-                return cachedQuality
-            }
+        val maxBitrate = getTargetBitrateCeiling(context)
+        val cacheKey = if (maxBitrate > 0) "${videoId}_q$maxBitrate" else "${videoId}_high"
 
-            // Check high-quality LRU cache
-            if (maxBitrate == 0 || maxBitrate >= 256) {
-                val cachedHigh = streamUrlLruCache.get("${videoId}_high")
-                if (cachedHigh != null) {
-                    UmihiHelper.printd("$videoId : Got high-quality URL from LRU cache")
-                    return cachedHigh
-                }
-            }
+        // Check quality-specific LRU cache and validate expiration
+        val cachedQuality = streamUrlLruCache.get(cacheKey)
+        if (cachedQuality != null && isYoutubeUrlValid(cachedQuality)) {
+            UmihiHelper.printd("$videoId : Got quality-specific URL from LRU cache")
+            return cachedQuality
+        }
 
-            if (savedSong.streamUrl != null) {
-                if (isYoutubeUrlValid(savedSong.streamUrl)) {
-                    UmihiHelper.printd("$videoId : Got url from saved")
-                    streamUrlLruCache.put(cacheKey, savedSong.streamUrl)
-                    if (maxBitrate == 0 || maxBitrate >= 256) {
-                        streamUrlLruCache.put("${videoId}_high", savedSong.streamUrl)
-                    }
-                    return savedSong.streamUrl
-                }
-                UmihiHelper.printd("$videoId : Saved url was invalid")
+        // Check high-quality LRU cache only if high quality is currently allowed/requested
+        if (maxBitrate == 0 || maxBitrate >= 256) {
+            val cachedHigh = streamUrlLruCache.get("${videoId}_high")
+            if (cachedHigh != null && isYoutubeUrlValid(cachedHigh)) {
+                UmihiHelper.printd("$videoId : Got high-quality URL from LRU cache")
+                return cachedHigh
             }
         }
 
@@ -584,8 +570,10 @@ object YoutubeHelper {
         if (maxBitrate == 0 || maxBitrate >= 256) {
             streamUrlLruCache.put("${videoId}_high", newUri)
         }
-        localSongRepository.setStreamUrl(songId = videoId, streamUrl = newUri)
-        UmihiHelper.printd("$videoId : Got quality-specific url from YouTube and saved song")
+
+        // We do NOT save transient remote streaming URLs to the Room database anymore.
+        // This guarantees that streaming quality is purely dependent on the user settings and network type at playback time.
+        UmihiHelper.printd("$videoId : Got quality-specific url from YouTube ($maxBitrate kbps)")
         return newUri
     }
 
@@ -613,10 +601,14 @@ object YoutubeHelper {
             return savedSong.audioFilePath
         }
 
-        // LRU cache hit
-        streamUrlLruCache.get("${videoId}_low")?.let { return it }
-        // If high-quality is already cached, use it immediately (better than re-resolving)
-        streamUrlLruCache.get("${videoId}_high")?.let { return it }
+        // LRU cache hit with validation
+        streamUrlLruCache.get("${videoId}_low")?.let { 
+            if (isYoutubeUrlValid(it)) return it 
+        }
+        // If high-quality is already cached and valid, use it immediately (better than re-resolving)
+        streamUrlLruCache.get("${videoId}_high")?.let { 
+            if (isYoutubeUrlValid(it)) return it 
+        }
 
         val lowUrl = getSongUrlFromYoutube(context, song, lowQuality = true)
         streamUrlLruCache.put("${videoId}_low", lowUrl)
@@ -647,7 +639,9 @@ object YoutubeHelper {
 
         val maxBitrate = getTargetBitrateCeiling(context)
         val cacheKey = if (maxBitrate > 0) "${videoId}_q$maxBitrate" else "${videoId}_high"
-        streamUrlLruCache.get(cacheKey)?.let { return it }
+        streamUrlLruCache.get(cacheKey)?.let { 
+            if (isYoutubeUrlValid(it)) return it 
+        }
 
         val highUrl = getSongUrlFromYoutube(context, song, lowQuality = false, maxBitrateKbps = maxBitrate)
         streamUrlLruCache.put(cacheKey, highUrl)
@@ -696,9 +690,11 @@ object YoutubeHelper {
             return savedSong.audioFilePath
         }
 
-        // LRU cache check
+        // LRU cache check with validation
         val cacheKey = if (maxBitrateKbps > 0) "${videoId}_q${maxBitrateKbps}" else "${videoId}_high"
-        streamUrlLruCache.get(cacheKey)?.let { return it }
+        streamUrlLruCache.get(cacheKey)?.let { 
+            if (isYoutubeUrlValid(it)) return it 
+        }
 
         val url = getSongUrlFromYoutube(context, song, lowQuality = false, maxBitrateKbps = maxBitrateKbps)
         streamUrlLruCache.put(cacheKey, url)

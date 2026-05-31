@@ -653,7 +653,8 @@ class DualPlayerEngine @Inject constructor(
             override fun resolveDataSpec(dataSpec: DataSpec): DataSpec {
                 val uri = dataSpec.uri
                 val scheme = uri.scheme
-                if (scheme in REMOTE_MEDIA_SCHEMES) {
+                // Only resolve custom schemes that cannot be loaded natively by ExoPlayer
+                if (scheme == "telegram" || scheme == "gdrive" || scheme == "youtube") {
                     val originalUri = uri.toString()
                     val localPath = localFilePathCache[originalUri]
                     if (localPath != null && java.io.File(localPath).exists()) {
