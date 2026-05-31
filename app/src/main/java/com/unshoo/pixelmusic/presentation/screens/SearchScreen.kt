@@ -778,11 +778,11 @@ fun SearchResultsList(
             ?.let { "Search: $it" }
             ?: "Search Results"
     }
-    val onSongResultClick = remember(playerViewModel, onItemSelected, searchQueueName, songResultsQueue) {
+    val onSongResultClick = remember(playerViewModel, onItemSelected, searchQueueName) {
         { song: Song ->
             // INSTANT PLAYBACK FIX: Always play the song immediately via showAndPlaySong.
             // This gives instant response on tap without waiting for a network call.
-            playerViewModel.showAndPlaySong(song, songResultsQueue, searchQueueName)
+            playerViewModel.showAndPlaySong(song, listOf(song), searchQueueName)
             onItemSelected()
         }
     }
