@@ -220,7 +220,18 @@ class DualPlayerEngine @Inject constructor(
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-            activePlaybackResolvedUris.clear()
+            // Only evict the OUTGOING item's resolved URI from the active-playback lock.
+            // Clearing ALL entries here caused BUG 1: ExoPlayer's data-source re-entered
+            // resolveDataSpec() ~1 second into a new YouTube track, got a fresh (different)
+            // URL, and restarted playback from position 0.
+            // We intentionally keep the INCOMING item's lock alive so subsequent data
+            // reads for the same URI always return the same cached URL.
+            // The lock for any truly stale entries will expire naturally when those
+            // video-IDs are no longer the active item.
+            val incomingUriStr = mediaItem?.localConfiguration?.uri?.toString()
+            activePlaybackResolvedUris.keys
+                .filter { it != incomingUriStr }
+                .forEach { activePlaybackResolvedUris.remove(it) }
             cancelAudioOffloadFallback()
             
             // If the transition was not automatic (e.g. user skip or playlist change),
@@ -276,7 +287,12 @@ class DualPlayerEngine @Inject constructor(
         }
 
         override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-            if (transitionRunning) return
+            // BUG 2 FIX: Do NOT skip snapshot refresh when a transition is running.
+            // AutoQueueManager calls player.addMediaItems() during a crossfade, which
+            // fires PLAYLIST_CHANGED here. The old guard caused queueSnapshot to stay
+            // stale, so getNextTransitionTarget() returned the wrong track.
+            // We still refresh the snapshot but do NOT cancel any running transition —
+            // that is TransitionController's responsibility.
             if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED || queueSnapshot.isEmpty()) {
                 refreshQueueSnapshotFromMaster(windowStartIndex = 0, usesWindowedQueue = false)
             }
@@ -352,6 +368,16 @@ class DualPlayerEngine @Inject constructor(
         lastSeekAtMs = SystemClock.elapsedRealtime()
     }
 
+    /**
+     * Forces an immediate refresh of the internal queue snapshot from the current
+     * master player timeline. Call this after programmatically adding/removing items
+     * to the player queue from outside the engine (e.g. AutoQueueManager) to ensure
+     * [getNextTransitionTarget] returns the correct next track immediately.
+     */
+    fun forceRefreshQueueSnapshot() {
+        refreshQueueSnapshotFromMaster(windowStartIndex = 0, usesWindowedQueue = false)
+    }
+
     fun removeTransitionFinishedListener(listener: () -> Unit) {
         onTransitionFinishedListeners.remove(listener)
     }
@@ -364,7 +390,7 @@ class DualPlayerEngine @Inject constructor(
     fun getAudioSessionId(): Int = playerA.audioSessionId
 
     private var isReleased = false
-    private val resolvedUriCache = LruCache<String, Uri>(100)
+    internal val resolvedUriCache = LruCache<String, Uri>(100)
     private val activePlaybackResolvedUris = java.util.concurrent.ConcurrentHashMap<String, Uri>()
     private val localFilePathCache = java.util.concurrent.ConcurrentHashMap<String, String>()
     private val activeResolutions = java.util.concurrent.ConcurrentHashMap<String, kotlinx.coroutines.Deferred<Uri>>()
@@ -916,6 +942,13 @@ class DualPlayerEngine @Inject constructor(
             resetPreparedWindowState()
             Timber.tag("TransitionDebug").e(e, "Failed to prepare next player")
         }
+    }
+
+    fun getPreparedNextMediaId(): String? {
+        if (::playerB.isInitialized && playerB.mediaItemCount > 0) {
+            return playerB.currentMediaItem?.mediaId
+        }
+        return null
     }
 
     fun cancelNext() {

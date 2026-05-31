@@ -85,13 +85,25 @@ class TransitionController @Inject constructor(
 
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
-                    // The queue has changed (e.g., reordered, item removed).
-                    Timber.tag("TransitionDebug").d("Timeline changed (reason=%d). Cancelling pending transition.", reason)
-                    transitionSchedulerJob?.cancel()
-                    engine.cancelNext()
-
-                    // Try to reschedule for the current item
-                     engine.masterPlayer.currentMediaItem?.let { scheduleTransitionFor(it) }
+                    val currentItem = engine.masterPlayer.currentMediaItem
+                    if (currentItem == null) {
+                        Timber.tag("TransitionDebug").d("Timeline changed: current item is null. Cancelling.")
+                        transitionSchedulerJob?.cancel()
+                        engine.cancelNext()
+                        return
+                    }
+                    val nextTarget = engine.getNextTransitionTarget(currentItem, engine.masterPlayer.repeatMode)
+                    val preparedId = engine.getPreparedNextMediaId()
+                    val targetId = nextTarget?.mediaItem?.mediaId
+                    
+                    if (targetId != preparedId) {
+                        Timber.tag("TransitionDebug").d("Timeline changed. Target next song changed from %s to %s. Cancelling and rescheduling.", preparedId, targetId)
+                        transitionSchedulerJob?.cancel()
+                        engine.cancelNext()
+                        scheduleTransitionFor(currentItem)
+                    } else {
+                        Timber.tag("TransitionDebug").d("Timeline changed, but next target song %s is still prepared. Skipping cancel/reschedule.", targetId)
+                    }
                 }
             }
 

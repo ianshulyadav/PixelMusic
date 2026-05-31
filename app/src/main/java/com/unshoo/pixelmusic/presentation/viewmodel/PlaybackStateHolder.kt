@@ -95,6 +95,11 @@ class PlaybackStateHolder @Inject constructor(
     private val powerManager: PowerManager by lazy(LazyThreadSafetyMode.NONE) {
         appContext.getSystemService(Context.POWER_SERVICE) as PowerManager
     }
+    // BUG 4 FIX: Play-history stack for reliable Previous navigation.
+    // Each entry is the mediaId of a song that actually started playing (not just
+    // queued). Capped at 200 entries so it never grows unbounded.
+    private val playHistoryStack = ArrayDeque<String>(200)
+    private val PLAY_HISTORY_MAX = 200
 
     private fun clearColdStartSnapshot() {
         coldStartSnapshotMediaId = null
@@ -211,6 +216,16 @@ class PlaybackStateHolder @Inject constructor(
 
     fun onPlaybackOccurrenceTransition(mediaId: String?) {
         activatePlaybackOccurrence(mediaId, forceNewOccurrence = true)
+        // Record in play history for Previous navigation.
+        // Avoid adding duplicates for the same song back-to-back (e.g. from repeated
+        // MediaItemTransition events for the same item during buffering).
+        val safeId = mediaId?.takeIf { it.isNotBlank() } ?: return
+        if (playHistoryStack.lastOrNull() != safeId) {
+            if (playHistoryStack.size >= PLAY_HISTORY_MAX) {
+                playHistoryStack.removeFirst()
+            }
+            playHistoryStack.addLast(safeId)
+        }
     }
 
     fun rememberPausedPositionOverride(mediaId: String?, positionMs: Long) {
@@ -418,14 +433,35 @@ class PlaybackStateHolder @Inject constructor(
         val castSession = castStateHolder.castSession.value
         if (castSession != null && castSession.remoteMediaClient != null) {
             castStateHolder.castPlayer?.previous()
-        } else {
-            val controller = mediaController ?: return
-             if (controller.currentPosition > 10000) { // 10 seconds
-                 controller.seekTo(0)
-            } else {
-                 controller.seekToPrevious()
+            return
+        }
+        val controller = mediaController ?: return
+
+        // BUG 4 FIX: Always navigate to the actual previously-played song from the
+        // history stack instead of using ExoPlayer's seekToPrevious() which respects
+        // shuffle order and can jump to completely unrelated tracks.
+        //
+        // History stack protocol:
+        //   - The last entry is the CURRENT song (added when it started playing).
+        //   - The second-to-last is the PREVIOUS song we want to return to.
+        //   - Pop the current song, then seek to the new last entry.
+        if (playHistoryStack.size >= 2) {
+            // Remove the current song from the history tail
+            playHistoryStack.removeLast()
+            val targetMediaId = playHistoryStack.lastOrNull()
+            if (targetMediaId != null) {
+                // Find this song's index in the current player timeline
+                val targetIndex = (0 until controller.mediaItemCount)
+                    .firstOrNull { controller.getMediaItemAt(it).mediaId == targetMediaId }
+                if (targetIndex != null) {
+                    controller.seekTo(targetIndex, 0L)
+                    return
+                }
+                // Song no longer in the queue (was removed) — fall through to seekToPrevious
             }
         }
+        // Fallback when history is too short or target not found in queue
+        controller.seekToPrevious()
     }
 
     fun nextSong() {

@@ -62,6 +62,10 @@ object AutoQueueManager {
     private var playerRef: Player? = null
     private var musicDaoRef: MusicDao? = null
     private var engagementDaoRef: com.unshoo.pixelmusic.data.database.EngagementDao? = null
+    // BUG 5 FIX: Called after items are added to the player so DualPlayerEngine can
+    // refresh its internal queue snapshot immediately (not waiting for TIMELINE_CHANGED
+    // during an active crossfade).
+    private var onQueueItemsAddedCallback: (() -> Unit)? = null
 
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -116,7 +120,8 @@ object AutoQueueManager {
         datastoreRepo: DatastoreRepository,
         coroutineScope: CoroutineScope,
         musicDao: MusicDao,
-        engagementDao: com.unshoo.pixelmusic.data.database.EngagementDao
+        engagementDao: com.unshoo.pixelmusic.data.database.EngagementDao,
+        onQueueItemsAdded: (() -> Unit)? = null
     ) {
         scope = coroutineScope
         contextRef = context.applicationContext
@@ -124,6 +129,7 @@ object AutoQueueManager {
         playerRef = player
         musicDaoRef = musicDao
         engagementDaoRef = engagementDao
+        onQueueItemsAddedCallback = onQueueItemsAdded
         player.addListener(playerListener)
         printd("AutoQueueManager attached")
     }
@@ -766,8 +772,13 @@ object AutoQueueManager {
             val mediaItems = finalSongsToAdd.map { MediaItemBuilder.build(it) }
             withContext(Dispatchers.Main) {
                 player.addMediaItems(mediaItems)
+                // BUG 5 FIX: Notify the engine to refresh its queue snapshot now.
+                // Without this, queueSnapshot stays stale during an active crossfade
+                // because onTimelineChanged was previously gated behind transitionRunning.
+                // Even with that guard removed, a fresh snapshot call here is a cheap
+                // insurance to keep navigation correct immediately after the add.
+                onQueueItemsAddedCallback?.invoke()
             }
-            printd("AutoQueueManager: Appended ${mediaItems.size} songs to queue")
             printd("AutoQueueManager: Appended ${mediaItems.size} songs to queue")
         }
     }

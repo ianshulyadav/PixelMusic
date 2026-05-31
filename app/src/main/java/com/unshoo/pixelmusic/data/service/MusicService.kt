@@ -421,8 +421,8 @@ class MusicService : MediaLibraryService() {
         engine.addTransitionFinishedListener(transitionFinishedListener)
 
         // Attach YouTube radio-mode auto-queue and stream-URL preloader
-        AutoQueueManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, musicDao, engagementDao)
-        QueuePreloadManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, exoCache)
+        AutoQueueManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, musicDao, engagementDao, engine::forceRefreshQueueSnapshot)
+        QueuePreloadManager.attach(engine.masterPlayer, this, youtubeDatastoreRepository, serviceScope, exoCache, engine)
 
         controller.initialize()
         initializeCastWearSync()
@@ -1303,9 +1303,9 @@ class MusicService : MediaLibraryService() {
             if (nextIndex != androidx.media3.common.C.INDEX_UNSET) {
                 runCatching { prefetchReplayGain(player.getMediaItemAt(nextIndex)) }
             }
-            // Optimization: Don't force-update widgets on every rapid skip.
-            // Let the debounced updater handle it to prevent UI freezes.
-            requestWidgetFullUpdate(force = false)
+            // BUG 3 FIX: Force an immediate widget update (not debounced) on track transition
+            // so album art and song info appear without the 300-800ms blank period.
+            requestWidgetFullUpdate(force = true)
             mediaSession?.let { refreshMediaSessionUi(it) }
             schedulePlaybackSnapshotPersist()
         }

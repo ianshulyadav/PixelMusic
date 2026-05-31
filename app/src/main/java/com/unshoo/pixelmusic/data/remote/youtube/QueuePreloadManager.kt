@@ -15,6 +15,7 @@ import androidx.media3.datasource.cache.CacheWriter
 import com.unshoo.pixelmusic.data.model.youtube.Song
 import com.unshoo.pixelmusic.data.remote.youtube.UmihiHelper.printd
 import com.unshoo.pixelmusic.data.remote.youtube.UmihiHelper.printe
+import com.unshoo.pixelmusic.data.service.player.DualPlayerEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,6 +47,8 @@ object QueuePreloadManager {
     private var datastoreRepository: DatastoreRepository? = null
     private var playerRef: Player? = null
     private var exoCache: ExoCache? = null
+    // Reference to the engine so we can check if the active URI is already locked.
+    private var engineRef: DualPlayerEngine? = null
 
     private val playerListener = object : Player.Listener {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -58,13 +61,15 @@ object QueuePreloadManager {
         context: Context,
         datastoreRepo: DatastoreRepository,
         coroutineScope: CoroutineScope,
-        exoCacheInstance: ExoCache
+        exoCacheInstance: ExoCache,
+        engine: DualPlayerEngine? = null
     ) {
         scope = coroutineScope
         appContext = context.applicationContext
         datastoreRepository = datastoreRepo
         playerRef = player
         exoCache = exoCacheInstance
+        engineRef = engine
         player.addListener(playerListener)
         printd("QueuePreloadManager attached")
     }
@@ -98,26 +103,38 @@ object QueuePreloadManager {
         val player = playerRef ?: return
         val ctx = appContext ?: return
 
-        // Proactively cache the current playing song fully in the background
+        // Proactively cache the current playing song fully in the background.
+        // BUG 1 FIX: If the DualPlayerEngine already has a resolved/locked URL for this
+        // youtube:// URI, we MUST NOT call getSongPlayerUrl() again here.
+        // Doing so would trigger isYoutubeUrlValid() (an HTTP probe) which can return a
+        // slightly different URL from the LRU cache, breaking the engine's active lock and
+        // causing ExoPlayer to restart playback from position 0 ~1 second in.
         currentScope.launch(Dispatchers.IO) {
             val currentItem = withContext(Dispatchers.Main) {
                 if (playerRef != null) player.currentMediaItem else null
             }
             if (currentItem != null && currentItem.mediaId.isNotBlank()) {
                 val currentVideoId = currentItem.mediaId
-                val currentSong = Song(
-                    youtubeId = currentVideoId,
-                    title = currentItem.mediaMetadata.title?.toString() ?: "",
-                    artist = currentItem.mediaMetadata.artist?.toString() ?: "",
-                    thumbnailHref = upgradeThumbnailUrlToHighQuality(currentItem.mediaMetadata.artworkUri?.toString()).orEmpty()
-                )
-                try {
-                    val streamUrl = YoutubeHelper.getSongPlayerUrl(ctx, currentSong, allowLocal = false)
-                    if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
-                        cacheCurrentSongFully(ctx, currentVideoId, streamUrl)
+                val youtubeUriStr = "youtube://$currentVideoId"
+                // Skip if engine already has this URI locked — don't cause a double-resolve.
+                val engineAlreadyHasUrl = engineRef?.resolvedUriCache?.get(youtubeUriStr) != null
+                if (!engineAlreadyHasUrl) {
+                    val currentSong = Song(
+                        youtubeId = currentVideoId,
+                        title = currentItem.mediaMetadata.title?.toString() ?: "",
+                        artist = currentItem.mediaMetadata.artist?.toString() ?: "",
+                        thumbnailHref = upgradeThumbnailUrlToHighQuality(currentItem.mediaMetadata.artworkUri?.toString()).orEmpty()
+                    )
+                    try {
+                        val streamUrl = YoutubeHelper.getSongPlayerUrl(ctx, currentSong, allowLocal = false)
+                        if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
+                            cacheCurrentSongFully(ctx, currentVideoId, streamUrl)
+                        }
+                    } catch (e: Exception) {
+                        printe("QueuePreloadManager: failed to fully cache playing song $currentVideoId: ${e.message}")
                     }
-                } catch (e: Exception) {
-                    printe("QueuePreloadManager: failed to fully cache playing song $currentVideoId: ${e.message}")
+                } else {
+                    printd("QueuePreloadManager: skipping current-song re-resolve for $currentVideoId (engine lock active)")
                 }
             }
         }
