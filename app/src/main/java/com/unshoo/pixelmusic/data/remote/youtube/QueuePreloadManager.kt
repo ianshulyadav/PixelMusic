@@ -41,7 +41,6 @@ import java.io.File
 object QueuePreloadManager {
 
     private var preloadJob: Job? = null
-    private var currentCacheJob: Job? = null
     private var scope: CoroutineScope? = null
     private var appContext: Context? = null
     private var datastoreRepository: DatastoreRepository? = null
@@ -103,41 +102,6 @@ object QueuePreloadManager {
         val player = playerRef ?: return
         val ctx = appContext ?: return
 
-        // Proactively cache the current playing song fully in the background.
-        // BUG 1 FIX: If the DualPlayerEngine already has a resolved/locked URL for this
-        // youtube:// URI, we MUST NOT call getSongPlayerUrl() again here.
-        // Doing so would trigger isYoutubeUrlValid() (an HTTP probe) which can return a
-        // slightly different URL from the LRU cache, breaking the engine's active lock and
-        // causing ExoPlayer to restart playback from position 0 ~1 second in.
-        currentScope.launch(Dispatchers.IO) {
-            val currentItem = withContext(Dispatchers.Main) {
-                if (playerRef != null) player.currentMediaItem else null
-            }
-            if (currentItem != null && currentItem.mediaId.isNotBlank()) {
-                val currentVideoId = currentItem.mediaId
-                val youtubeUriStr = "youtube://$currentVideoId"
-                // Skip if engine already has this URI locked — don't cause a double-resolve.
-                val engineAlreadyHasUrl = engineRef?.resolvedUriCache?.get(youtubeUriStr) != null
-                if (!engineAlreadyHasUrl) {
-                    val currentSong = Song(
-                        youtubeId = currentVideoId,
-                        title = currentItem.mediaMetadata.title?.toString() ?: "",
-                        artist = currentItem.mediaMetadata.artist?.toString() ?: "",
-                        thumbnailHref = upgradeThumbnailUrlToHighQuality(currentItem.mediaMetadata.artworkUri?.toString()).orEmpty()
-                    )
-                    try {
-                        val streamUrl = YoutubeHelper.getSongPlayerUrl(ctx, currentSong, allowLocal = false)
-                        if (!streamUrl.isNullOrBlank() && streamUrl.startsWith("http")) {
-                            cacheCurrentSongFully(ctx, currentVideoId, streamUrl)
-                        }
-                    } catch (e: Exception) {
-                        printe("QueuePreloadManager: failed to fully cache playing song $currentVideoId: ${e.message}")
-                    }
-                } else {
-                    printd("QueuePreloadManager: skipping current-song re-resolve for $currentVideoId (engine lock active)")
-                }
-            }
-        }
 
         preloadJob?.cancel()
         preloadJob = currentScope.launch(Dispatchers.IO) {
@@ -243,40 +207,4 @@ object QueuePreloadManager {
         }
     }
 
-    private fun cacheCurrentSongFully(ctx: Context, videoId: String, streamUrl: String) {
-        val currentScope = scope ?: return
-        val cache = exoCache?.cache ?: return
-        currentCacheJob?.cancel()
-        currentCacheJob = currentScope.launch(Dispatchers.IO) {
-            try {
-                val uri = Uri.parse(streamUrl)
-                val baseDataSourceFactory = DefaultDataSource.Factory(ctx)
-                val cacheDataSourceFactory = CacheDataSource.Factory()
-                    .setCache(cache)
-                    .setUpstreamDataSourceFactory(baseDataSourceFactory)
-                    .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-
-                val dataSource = cacheDataSourceFactory.createDataSource()
-                // setLength(-1) caches the entire stream!
-                val dataSpec = DataSpec.Builder()
-                    .setUri(uri)
-                    .setPosition(0)
-                    .setLength(-1)
-                    .build()
-
-                val cacheWriter = CacheWriter(
-                    dataSource,
-                    dataSpec,
-                    null,
-                    null
-                )
-
-                printd("QueuePreloadManager: starting full background cache for currently playing song $videoId")
-                cacheWriter.cache()
-                printd("QueuePreloadManager: completed full background cache for currently playing song $videoId")
-            } catch (e: Exception) {
-                printe("QueuePreloadManager: failed fully caching playing song $videoId: ${e.message}")
-            }
-        }
-    }
 }

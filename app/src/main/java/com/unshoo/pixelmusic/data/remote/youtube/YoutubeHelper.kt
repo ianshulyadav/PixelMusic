@@ -1169,8 +1169,8 @@ object YoutubeHelper {
                 val expireTimeSecs = expireParam.toLongOrNull()
                 if (expireTimeSecs != null) {
                     val currentTimeSecs = System.currentTimeMillis() / 1000
-                    // If the URL expires in more than 10 minutes, treat it as valid immediately!
-                    if (expireTimeSecs > currentTimeSecs + 600) {
+                    // If the URL expires in more than 60 seconds, treat it as valid immediately!
+                    if (expireTimeSecs > currentTimeSecs + 60) {
                         return@withContext true
                     }
                 }
