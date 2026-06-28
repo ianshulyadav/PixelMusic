@@ -1,0 +1,38 @@
+Pixel Music APK Distribution License
+
+Copyright (c) 2026 ianshulyadav. All rights reserved.
+
+This license applies to Pixel Music APK builds, release packaging, branding,
+artwork, documentation, release metadata, and Pixel Music-specific modifications
+distributed through this repository.
+
+The APKs published in this repository are provided for personal, non-commercial
+use only.
+
+You may not, without prior written permission from ianshulyadav:
+
+1. redistribute, mirror, re-upload, sell, sublicense, or commercially exploit
+   the APKs;
+2. modify, repackage, rename, resign, or publish modified APKs;
+3. publish the APKs on app stores, third-party download sites, Telegram channels,
+   websites, or other distribution platforms;
+4. remove or alter copyright, license, attribution, disclaimer, or third-party
+   notice information;
+5. use Pixel Music names, logos, icons, screenshots, branding, or release assets
+   for commercial purposes.
+
+Third-Party Components
+
+Pixel Music may include third-party software components subject to their own
+licenses. Third-party notices are provided in THIRD_PARTY_NOTICES.md.
+
+Nothing in this license removes, limits, or overrides rights granted by applicable
+third-party open-source licenses for third-party components included in the APK.
+
+Disclaimer
+
+The software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to warranties of merchantability, fitness for
+a particular purpose, and non-infringement. In no event shall the authors or
+copyright holders be liable for any claim, damages, or other liability arising
+from the use of the software.
