@@ -2,18 +2,36 @@
 
 <p align="center">
   <img src="assets/LauncherIcon.png" alt="Pixel Music App Icon" width="128"/>
-</p>
+</p>   
+
+
 
 <p align="center">
-  <strong>The Ultimate Hybrid Local, Streaming, and Cloud Music Powerhouse for Android</strong><br>
+  <strong>The Ultimate Hybrid Local, Streaming, and Cloud Music Powerhouse for Android</strong><br> 
   An elegant, feature-rich audio experience built for audiophiles, cloud hoarders, and streaming enthusiasts alike.
 </p>
 
+
+  
+
 <p align="center">
-  <img src="assets/screenshot1.jpg" alt="Pixel Music Library View" width="150" style="border-radius:26px; margin: 4px;"/>
-  <img src="assets/screenshot2.jpg" alt="Pixel Music Player Sheet" width="150" style="border-radius:26px; margin: 4px;"/>
-  <img src="assets/screenshot3.jpg" alt="Pixel Music Equalizer" width="150" style="border-radius:26px; margin: 4px;"/>
-  <img src="assets/screenshot4.jpg" alt="Pixel Music Sync Lyrics" width="150" style="border-radius:26px; margin: 4px;"/>
+  <img src="assets/screenshot1.jpg" alt="Pixel Music Library View" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/screenshot2.jpg" alt="Pixel Music Player Sheet" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/screenshot3.jpg" alt="Pixel Music Equalizer" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/screenshot4.jpg" alt="Pixel Music Sync Lyrics" width="150" style="border-radius:26px; margin:4px;"/>
+</p>
+
+<p align="center">
+
+<p align="center">
+  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
+    <img
+      src="assets/support_me_on_kofi_badge_red.png"
+      alt="Support PixelMusic on Ko-fi"
+      width="280">
+  </a>
+</p>
+
 </p>
 
 <p align="center">
@@ -53,7 +71,14 @@ The interface adapts dynamically to your album artwork colors using Material You
 | **Connectivity** | Android Auto, Chromecast, Wear OS companion, and Quick Settings tiles. |
 | **Sharing** | Spotify-style share cards with glassmorphism and Snapchat story integration. |
 | **Widgets** | Material 3 home-screen widgets with playback controls and artwork. |
-
+<p align="center">
+  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
+    <img
+      src="assets/support_me_on_kofi_badge_red.png"
+      alt="Support PixelMusic on Ko-fi"
+      width="280">
+  </a>
+</p>
 ---
 
 ## 🚀 Installation
@@ -114,10 +139,17 @@ Software (or any derivative work) on the Google Play Store or any other commerci
 is strictly prohibited.
 ```
 
-For the full license text, see the [LICENSE](LICENSE) file.
+For the full license text, see the [LICENSE](LICENSE) file. [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 ---
-
+<p align="center">
+  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
+    <img
+      src="assets/support_me_on_kofi_badge_red.png"
+      alt="Support PixelMusic on Ko-fi"
+      width="280">
+  </a>
+</p>
 <p align="center">
   <a href="https://t.me/PixelMusicApp">Telegram Channel</a> •
   <a href="../../releases">Releases</a> •
