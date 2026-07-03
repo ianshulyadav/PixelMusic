@@ -1,4 +1,4 @@
-# Pixel Music🎶
+# Pixel Music🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
   <img src="assets/LauncherIcon.png" alt="Pixel Music App Icon" width="128"/>
