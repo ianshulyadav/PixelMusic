@@ -1,27 +1,24 @@
-# Pixel Music🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+﻿# Pixel Music 🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
   <img src="assets/LauncherIcon.png" alt="Pixel Music App Icon" width="128"/>
-</p>   
-
-
+</p>
 
 <p align="center">
   <strong>The Ultimate Hybrid Local, Streaming, and Cloud Music Powerhouse for Android</strong><br> 
   An elegant, feature-rich audio experience built for audiophiles, cloud hoarders, and streaming enthusiasts alike.
 </p>
 
-
-  
-
 <p align="center">
-  <img src="assets/screenshot1.jpg" alt="Pixel Music Library View" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/screenshot2.jpg" alt="Pixel Music Player Sheet" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/screenshot3.jpg" alt="Pixel Music Equalizer" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/screenshot4.jpg" alt="Pixel Music Sync Lyrics" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/homepage.jpg" alt="Home Page" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/explorepage.jpg" alt="Explore Page" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/fullplayer.jpg" alt="Full Player" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/fullplayer_alt.jpg" alt="Full Player Alternate Theme" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/library.jpg" alt="Library" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/analytics.jpg" alt="Listening Analytics" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/song_cards.jpg" alt="Song Cards & Sharing" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/streaming_supports.jpg" alt="Streaming & Sources" width="150" style="border-radius:26px; margin:4px;"/>
 </p>
-
-<p align="center">
 
 <p align="center">
   <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
@@ -30,8 +27,6 @@
       alt="Support PixelMusic on Ko-fi"
       width="280">
   </a>
-</p>
-
 </p>
 
 <p align="center">
@@ -52,7 +47,8 @@
 - **Local Library:** Scan and play high-resolution files like FLAC, ALAC, WAV, APE, OPUS, OGG, and MP3.
 - **YouTube Music Streaming:** Stream the entire catalog without advertisements. Sign in securely to sync liked tracks, playlists, and subscribed artists.
 - **Telegram Integration:** Connect your Telegram account to stream audio directly from channels, chats, and saved messages.
-- **Google Drive:** Stream your personal cloud library (work in progress).
+- **Google Drive:** Stream your personal cloud library directly from remote drives.
+- **Deezer Artist Artwork:** High-definition artist covers and backdrop artwork automatically cataloged.
 
 The interface adapts dynamically to your album artwork colors using Material You, and is packed with advanced playback features, lyrics, and cross-device connectivity.
 
@@ -62,28 +58,21 @@ The interface adapts dynamically to your album artwork colors using Material You
 
 | Feature | Description |
 |:---|:---|
-| **Premium Audio Engine** | Media3 ExoPlayer with FFmpeg decoding, 10-band equalizer, bass boost, spatial virtualizer, and EBU R128 loudness normalization. |
-| **Hybrid Streaming** | YouTube Music, Telegram channels, and local files in one unified library. |
-| **Real-Time Lyrics** | Synchronized LRC lyrics with manual offset tuning, offline caching, and translation support. |
-| **Generative AI Playlists** | Describe a mood or style and let the built-in AI assistant curate the perfect queue. |
-| **Smart Mixes** | Last.fm-powered discovery with 8 generation modes and auto-cleanup policies. |
-| **Dynamic Material You** | Interface colors adapt smoothly to album artwork using HSL extraction. |
-| **Connectivity** | Android Auto, Chromecast, Wear OS companion, and Quick Settings tiles. |
-| **Sharing** | Spotify-style share cards with glassmorphism and Snapchat story integration. |
-| **Widgets** | Material 3 home-screen widgets with playback controls and artwork. |
-<p align="center">
-  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
-    <img
-      src="assets/support_me_on_kofi_badge_red.png"
-      alt="Support PixelMusic on Ko-fi"
-      width="280">
-  </a>
-</p>
+| **Premium Audio Engine** | Media3 ExoPlayer with FFmpeg decoding, 10-band hardware equalizer, bass boost, spatial virtualizer, and EBU R128 loudness normalization. |
+| **Hybrid Streaming** | YouTube Music, Telegram channels, Google Drive, and local files in one unified library. |
+| **Real-Time Synchronized Lyrics** | Synchronized LRC lyrics with manual millisecond offset tuning, offline caching, and live translation support. |
+| **Generative AI Playlists** | Feed custom mood/prompt descriptions to AI models (Gemini, DeepSeek, OpenAI) to generate intelligent queues. |
+| **Smart Mixes (Last.fm)** | Last.fm-powered discovery with 8 generation modes and automated retention pruning policies. |
+| **Dynamic Material You** | Adaptive HSL color extraction from album artwork for player sheets, sliders, and navigation surfaces. |
+| **Snapchat & Story Sharing** | Spotify-style shareable cards with glassmorphism, dynamic pastels, and Snapchat Creative Kit integration. |
+| **Connectivity & Ecosystem** | Android Auto, Chromecast, Wear OS companion app, and Quick Settings playback tiles. |
+| **Interactive Widgets** | Material 3 Glance home-screen widgets with playback controls and artwork displays. |
+
 ---
 
-## 🚀 Installation
+## 🚀 Installation & Downloads
 
-This repository contains **official APK releases** for sideloading. No source code is published here.
+This repository contains **official APK releases** for sideloading.
 
 ### Prerequisites
 - Android 11 (API 30) or higher
@@ -93,12 +82,12 @@ This repository contains **official APK releases** for sideloading. No source co
 1. Download the latest APK for your device architecture from the [Releases](../../releases) page:
    - **`arm64-v8a`** — most modern phones (recommended)
    - **`armeabi-v7a`** — older 32-bit devices
-   - **`x86_64`** — emulators and some tablets
-2. Transfer the APK to your Android device.
-3. Open the APK file and tap **Install**.
-4. If prompted, allow installation from your browser or file manager in Settings.
+   - **`x86_64`** — emulators and Chromebooks / tablets
+   - **`universal`** — compatible with all supported devices
+2. Open the downloaded APK file on your device and tap **Install**.
+3. If prompted, allow installation from your browser or file manager in Settings.
 
-> **Tip:** If you are unsure which APK to pick, choose **`arm64-v8a`**. It works on the vast majority of devices released after 2015.
+> **Tip:** If you are unsure which APK to pick, choose **`arm64-v8a`**. It works on the vast majority of modern Android devices.
 
 ---
 
@@ -106,17 +95,31 @@ This repository contains **official APK releases** for sideloading. No source co
 
 - **Minimum OS:** Android 11 (API 30)
 - **Target OS:** Android 15+ (API 37)
-- **Permissions:** Internet, Bluetooth, media read access, notifications, and foreground service (for background playback).
+- **Permissions:** Internet, Bluetooth, media storage read access, notifications, and foreground service (for background playback).
+
+---
+
+## 📚 Documentation & Project Links
+
+- 🔒 **[Security Policy](SECURITY.md)** — Release verification, APK checksums, and reporting vulnerabilities.
+- 🛡️ **[Privacy Policy](PRIVACY_POLICY.md)** — Privacy commitments and on-device data handling.
+- ⚖️ **[Disclaimer & Legal Notice](DISCLAIMER.md)** — Third-party service disclaimers and fair-use terms.
+- 📜 **[Provenance & Attribution](PROVENANCE.md)** — Historical context and upstream acknowledgments.
+- 📦 **[Third-Party Notices](THIRD_PARTY_NOTICES.md)** — Open-source software licenses and dependencies.
+- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Bug reporting and feedback guide.
+- 📝 **[Changelog](CHANGELOG.md)** — Comprehensive version history and updates.
 
 ---
 
 ## ⚖️ Disclaimer & Legal Notice
 
-Pixel Music is an independent, third-party audio player and client. It is **not** associated with Google LLC, YouTube Music, Deezer, Telegram, or any of their parent companies.
+Pixel Music is an independent, third-party audio player and client. It is **not** associated with Google LLC, YouTube Music, Deezer, Telegram, Snapchat, Last.fm, ListenBrainz, or any of their parent companies.
 
 - **No Media Hosting:** This app does not host, upload, or store copyrighted music. It operates strictly as an interface to scan local device storage or stream media directly from public or user-authenticated APIs.
 - **Fair Use:** This software is created for personal research, educational, and fair-use purposes. Users are responsible for ensuring compliance with local copyright laws and platform Terms of Service.
 - **Non-Commercial:** Selling, distributing, or publishing this application on commercial marketplaces is strictly prohibited.
+
+For complete terms, read [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
@@ -139,9 +142,10 @@ Software (or any derivative work) on the Google Play Store or any other commerci
 is strictly prohibited.
 ```
 
-For the full license text, see the [LICENSE](LICENSE) file. [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+For the full license text, see [LICENSE](LICENSE).
 
 ---
+
 <p align="center">
   <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
     <img
@@ -150,8 +154,11 @@ For the full license text, see the [LICENSE](LICENSE) file. [![ko-fi](https://ko
       width="280">
   </a>
 </p>
+
 <p align="center">
   <a href="https://t.me/PixelMusicApp">Telegram Channel</a> •
   <a href="../../releases">Releases</a> •
-  <a href="CHANGELOG.md">Changelog</a>
+  <a href="CHANGELOG.md">Changelog</a> •
+  <a href="PRIVACY_POLICY.md">Privacy Policy</a> •
+  <a href="SECURITY.md">Security</a>
 </p>
