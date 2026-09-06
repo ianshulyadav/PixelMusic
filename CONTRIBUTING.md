@@ -1,4 +1,4 @@
-﻿# Contributing Guidelines
+# Contributing Guidelines
 
 Thank you for your interest in contributing to **Pixel Music**!
 
@@ -31,11 +31,11 @@ Even though direct binary builds are managed through automated release workflows
 ---
 
 ## ⚖️ Legal & Licensing Notice
-
+ 
 By submitting issues, suggestions, documentation, assets, or feedback to Pixel Music, you agree that:
 1. You have the legal right to submit the contribution.
 2. Your contribution does not violate third-party intellectual property or copyright agreements.
-3. Your feedback/suggestions may be incorporated into Pixel Music under the project's licensing model.
+3. Your contributions are licensed under the **GNU General Public License v3.0 (GPL-3.0-or-later)**.
 
 ---
 

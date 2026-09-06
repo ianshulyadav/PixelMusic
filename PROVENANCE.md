@@ -1,31 +1,35 @@
-# Provenance
+# Provenance & Source Compliance
 
-This repository publishes compiled APK builds of Pixel Music.
+This repository contains the complete open-source source code and official APK releases of **Pixel Music**.
 
-Pixel Music includes portions derived from PixelPlayer.
+---
 
-Original project: https://github.com/theovilardo/PixelPlayer  
-Original author/maintainer: Theo Vilardo / theovilardo  
+## 🏛️ Lineage & Upstream Project
 
-Documented MIT base commit: `39030156fb6999b23f69076ae135e55832bb6d81`  
-MIT base source URL: https://github.com/theovilardo/PixelPlayer/tree/39030156fb6999b23f69076ae135e55832bb6d81  
-MIT base license URL: https://github.com/theovilardo/PixelPlayer/blob/39030156fb6999b23f69076ae135e55832bb6d81/LICENSE  
+Pixel Music is derived from and built upon the open-source **PixelPlayerOSS** project and the foundational PixelPlayer codebase:
 
-The original MIT copyright and permission notices are retained in
-THIRD_PARTY_NOTICES.md.
+- **Upstream Open-Source Codebase:** [https://github.com/PixelPlayerHQ/PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS)
+- **Upstream License:** GNU General Public License v3.0 (`GPL-3.0-or-later`)
+- **Foundational Project:** [https://github.com/theovilardo/PixelPlayer](https://github.com/theovilardo/PixelPlayer)
+- **Foundational MIT Base Commit:** `39030156fb6999b23f69076ae135e55832bb6d81`
+- **Foundational MIT License Reference:** [https://github.com/theovilardo/PixelPlayer/blob/39030156fb6999b23f69076ae135e55832bb6d81/LICENSE](https://github.com/theovilardo/PixelPlayer/blob/39030156fb6999b23f69076ae135e55832bb6d81/LICENSE)
 
-Pixel Music-specific modifications, integrations, branding, artwork,
-documentation, release packaging, and compiled APK builds are maintained by
-ianshulyadav.
+All original copyright notices, contributor credits, and third-party notices are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [LICENSE](LICENSE).
 
-## Release Integrity
+---
 
-Official APKs are distributed through this repository's GitHub Releases page.
+## 📦 GPLv3 Section 6 (Source Code Availability)
 
-Users should verify APK integrity using the SHA-256 checksums provided with each
-release.
+Pixel Music is distributed under the terms of the **GNU General Public License v3.0 (GPL-3.0-or-later)**.
 
-## Source Availability
+In full compliance with **GPLv3 Section 6(a)**:
 
-The public release repository is intended for APK distribution and legal notices.
-Source code availability, if any, is governed separately by the project owner.
+1. **Complete Corresponding Source Code:** The full, buildable source code corresponding to all distributed APK releases and binaries is openly hosted and directly accessible in this repository.
+2. **Upstream Source Code:** The upstream source code is accessible at [https://github.com/PixelPlayerHQ/PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
+3. **No Restrictions:** All users possessing binaries or cloning this repository are granted the rights to inspect, build, modify, and redistribute the software in accordance with the GNU General Public License v3.0.
+
+---
+
+## 🔐 Release Integrity
+
+Official releases and pre-compiled APKs are hosted under this repository's [Releases](../../releases) section and verified via SHA-256 checksums. Users should verify checksums before installation.

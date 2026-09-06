@@ -1,0 +1,6 @@
+﻿PixelMusic 0.1.0:
+
+* First public FOSS release of PixelMusic.
+* Local playback, playlists, favorites, lyrics, listening stats, dynamic Material 3 theming, widgets, and backup/restore.
+* Self-hosted Navidrome/Subsonic and Jellyfin library support, plus optional LRCLIB lyrics and Deezer artist artwork lookup.
+* No Firebase, no Google Play Services, no proprietary integrations.

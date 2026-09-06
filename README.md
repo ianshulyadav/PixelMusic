@@ -1,4 +1,4 @@
-﻿# Pixel Music 🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+# Pixel Music 🎶 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
   <img src="assets/LauncherIcon.png" alt="Pixel Music App Icon" width="128"/>
@@ -32,7 +32,7 @@
 <p align="center">
   <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android 11+"></a>
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge" alt="Proprietary License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0--or--later-blue?style=for-the-badge" alt="GPL-3.0-or-later License"></a>
   <a href="https://t.me/PixelMusicApp"><img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel"></a>
 </p>
 
@@ -45,7 +45,7 @@
 **Pixel Music** is a unified, privacy-first audio powerhouse for Android. It bridges your local offline library, streaming catalogs, and cloud sources under a single, gorgeous interface.
 
 - **Local Library:** Scan and play high-resolution files like FLAC, ALAC, WAV, APE, OPUS, OGG, and MP3.
-- **YouTube Music Streaming:** Stream the entire catalog without advertisements. Sign in securely to sync liked tracks, playlists, and subscribed artists.
+- **YouTube Music Streaming:** Browse and stream available online catalog content with seamless library synchronization for liked tracks, playlists, and artists.
 - **Telegram Integration:** Connect your Telegram account to stream audio directly from channels, chats, and saved messages.
 - **Google Drive:** Stream your personal cloud library directly from remote drives.
 - **Deezer Artist Artwork:** High-definition artist covers and backdrop artwork automatically cataloged.
@@ -116,33 +116,49 @@ This repository contains **official APK releases** for sideloading.
 Pixel Music is an independent, third-party audio player and client. It is **not** associated with Google LLC, YouTube Music, Deezer, Telegram, Snapchat, Last.fm, ListenBrainz, or any of their parent companies.
 
 - **No Media Hosting:** This app does not host, upload, or store copyrighted music. It operates strictly as an interface to scan local device storage or stream media directly from public or user-authenticated APIs.
-- **Fair Use:** This software is created for personal research, educational, and fair-use purposes. Users are responsible for ensuring compliance with local copyright laws and platform Terms of Service.
-- **Non-Commercial:** Selling, distributing, or publishing this application on commercial marketplaces is strictly prohibited.
+- **Fair Use & Client Interface:** This software operates strictly as a local media player and client interface to user-accessible APIs and user storage. Users are responsible for ensuring compliance with applicable copyright laws and platform Terms of Service.
 
 For complete terms, read [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
+## 📦 Upstream Source & GPLv3 Compliance
+ 
+This repository contains the complete open-source source code and official APK releases of Pixel Music.
+ 
+Pixel Music is derived from and built upon the open-source [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project (and the foundational PixelPlayer codebase). In accordance with the **GNU General Public License v3.0 (GPL-3.0-or-later)**:
+ 
+- **Upstream Open-Source Codebase:** Complete upstream source code is available at [https://github.com/PixelPlayerHQ/PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
+- **Source Code in this Repository:** In accordance with GPLv3 Section 6(a), the full machine-readable Corresponding Source code for all Pixel Music builds and modifications is openly published directly in this repository.
+- **Third-Party & Runtime Notices:** Full attribution and component licenses (including FFmpeg, TagLib, and fonts) are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+- **Provenance & Lineage:** Upstream history, base commits, and license references are documented in [PROVENANCE.md](PROVENANCE.md).
+- **Disclaimer & Non-Affiliation:** Independent client disclaimers are documented in [DISCLAIMER.md](DISCLAIMER.md).
+
+---
+
 ## 📄 License
 
-This project is licensed under a **Proprietary License** for personal, non-commercial use only.
+Pixel Music is licensed under the **GNU General Public License v3.0** (`GPL-3.0-or-later`).
 
 ```text
-Copyright (c) 2026 Pixel Music Contributors
+Pixel Music
+Copyright (C) 2026 Pixel Music Contributors
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software
-and associated documentation files (the "Software"), to study, review, and use the Software
-for personal, non-commercial purposes only, subject to the following conditions:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-The above copyright notice and this permission notice shall be included in all copies or
-substantial portions of the Software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Commercial use, including but not limited to the sale, redistribution, or publishing of the
-Software (or any derivative work) on the Google Play Store or any other commercial platform,
-is strictly prohibited.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ```
 
-For the full license text, see [LICENSE](LICENSE).
+For the complete license terms and conditions, see [LICENSE](LICENSE).
 
 ---
 

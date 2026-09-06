@@ -72,17 +72,16 @@ Compare the output with the official `SHA256SUMS.txt` provided in the matching G
 
 If the checksum does not match, do not install the APK.
 
-## No Unauthorized Redistribution
+## APK Authenticity & Anti-Tampering Guidelines
 
-Pixel Music APKs, release files, branding, icons, screenshots, release metadata, and release packaging may not be redistributed, mirrored, re-uploaded, modified, re-signed, repackaged, sold, sublicensed, or published on third-party platforms without written permission from the project owner.
+To protect users against malware, phishing, and modified backdoors, users are strongly urged to obtain Pixel Music APKs solely from verified official distribution points (the official GitHub Releases page and verified Telegram release channels).
 
-This restriction is intended to:
+Redistributors and users must ensure that:
 
-1. reduce malware and tampered APK distribution;
-2. prevent impersonation of official Pixel Music releases;
-3. protect users from unsafe modified builds;
-4. preserve license, copyright, attribution, provenance, and disclaimer notices;
-5. prevent unauthorized commercial, misleading, or infringing distribution.
+1. Official APK cryptographic checksums (SHA-256) are retained and shared so recipients can verify build integrity;
+2. All open-source copyright, license ([LICENSE](LICENSE)), [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), and disclaimer notices are kept intact;
+3. No third-party builds misleadingly impersonate the official project or insert unauthorized telemetry/malicious payload while branding it as official Pixel Music;
+4. Upstream source code rights under the GNU GPL v3.0 are respected.
 
 ## Copyright and Licensing Concerns
 

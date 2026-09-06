@@ -1,0 +1,47 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitlab-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    if: github.repository == 'PixelPlayerHQ/PixelPlayerOSS'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure GitLab SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.GITLAB_MIRROR_SSH_PRIVATE_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SSH_PRIVATE_KEY"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/gitlab_mirror
+          chmod 600 ~/.ssh/gitlab_mirror
+          ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+
+      - name: Mirror heads and tags
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/gitlab_mirror -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --bare "https://github.com/${GITHUB_REPOSITORY}.git" repo.git
+          cd repo.git
+          git remote add gitlab git@gitlab.com:lostf1sh1/PixelPlayerOSS.git
+          git push --prune gitlab '+refs/heads/*:refs/heads/*'
+          git push --prune gitlab '+refs/tags/*:refs/tags/*'

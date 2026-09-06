@@ -1,0 +1,7 @@
+﻿PixelMusic 0.2.0:
+
+* Material 3 Expressive pass: new motion scheme, wavy progress indicators, shape-morphing animations.
+* Navidrome library selector; album artist grouping for Artists tab and cloud albums.
+* HTTP allowed for local/VPN Navidrome and Jellyfin servers; user-installed CAs trusted.
+* Smaller app, faster startup, smoother lists and sheets.
+* Fixes: local server connections on Android 17, spurious errors when skipping cloud tracks quickly.

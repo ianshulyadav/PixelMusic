@@ -1,0 +1,1059 @@
+﻿@file:Suppress("DEPRECATION")
+package com.unshoo.pixelmusic.data.navidrome
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.unshoo.pixelmusic.R
+import com.unshoo.pixelmusic.data.database.AlbumEntity
+import com.unshoo.pixelmusic.data.database.ArtistEntity
+import com.unshoo.pixelmusic.data.database.MusicDao
+import com.unshoo.pixelmusic.data.database.NavidromeDao
+import com.unshoo.pixelmusic.data.database.NavidromePlaylistEntity
+import com.unshoo.pixelmusic.data.database.NavidromeSongEntity
+import com.unshoo.pixelmusic.data.database.toEntity
+import com.unshoo.pixelmusic.data.database.SongArtistCrossRef
+import com.unshoo.pixelmusic.data.database.SongEntity
+import com.unshoo.pixelmusic.data.database.SourceType
+import com.unshoo.pixelmusic.data.database.toSong
+import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.data.navidrome.model.NavidromeAuthMethod
+import com.unshoo.pixelmusic.data.navidrome.model.NavidromeCredentials
+import com.unshoo.pixelmusic.data.navidrome.model.NavidromeMusicFolder
+import com.unshoo.pixelmusic.data.navidrome.model.NavidromeSong
+import com.unshoo.pixelmusic.data.network.navidrome.NavidromeApiService
+import com.unshoo.pixelmusic.data.network.navidrome.NavidromeResponseParser
+import com.unshoo.pixelmusic.data.preferences.PlaylistPreferencesRepository
+import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
+import com.unshoo.pixelmusic.data.stream.BulkSyncResult
+import com.unshoo.pixelmusic.data.stream.CloudMusicUtils
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import timber.log.Timber
+import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.math.absoluteValue
+import androidx.core.content.edit
+
+/**
+ * Repository for Navidrome/Subsonic music service.
+ *
+ * Manages authentication, playlist synchronization, and song caching.
+ */
+@Suppress("DEPRECATION")
+@Singleton
+class NavidromeRepository @Inject constructor(
+    private val api: NavidromeApiService,
+    private val dao: NavidromeDao,
+    private val musicDao: MusicDao,
+    private val playlistPreferencesRepository: PlaylistPreferencesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
+    @ApplicationContext private val context: Context
+) {
+    companion object {
+        const val SYNC_THRESHOLD_MS = 24 * 60 * 60 * 1000L
+        private const val TAG = "NavidromeRepo"
+        private const val PREFS_NAME = "navidrome_prefs"
+        private const val KEY_SERVER_URL = "server_url"
+        private const val KEY_USERNAME = "username"
+        private const val KEY_PASSWORD = "password"
+        private const val KEY_AUTH_METHOD = "auth_method"
+        private const val KEY_LAST_FULL_SYNC = "last_full_sync"
+
+        private const val NAVIDROME_SONG_ID_OFFSET = 9_000_000_000_000L
+        private const val NAVIDROME_ALBUM_ID_OFFSET = 10_000_000_000_000L
+        private const val NAVIDROME_ARTIST_ID_OFFSET = 11_000_000_000_000L
+        private const val NAVIDROME_PARENT_DIRECTORY = "/Cloud/Navidrome"
+        private const val NAVIDROME_GENRE = "Navidrome"
+        private const val NAVIDROME_PLAYLIST_PREFIX = "navidrome_playlist:"
+        const val LIBRARY_PLAYLIST_ID = "__library__"
+    }
+
+    private val prefs: SharedPreferences = createCredentialPrefs()
+
+    private fun createEncryptedPrefs(): SharedPreferences {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        return EncryptedSharedPreferences.create(
+            context,
+            PREFS_NAME,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
+
+    private fun createCredentialPrefs(): SharedPreferences = try {
+        createEncryptedPrefs()
+    } catch (e: Exception) {
+        Timber.e(e, "$TAG: EncryptedSharedPreferences unreadable, deleting and recreating")
+        context.deleteSharedPreferences(PREFS_NAME)
+        try {
+            createEncryptedPrefs()
+        } catch (e2: Exception) {
+            Timber.e(e2, "$TAG: Encrypted prefs unavailable, falling back to plain")
+            context.getSharedPreferences("${PREFS_NAME}_plain", Context.MODE_PRIVATE)
+        }
+    }
+
+    private val _isLoggedInFlow = MutableStateFlow(false)
+    val isLoggedInFlow: StateFlow<Boolean> = _isLoggedInFlow.asStateFlow()
+
+    init {
+        api.onAuthMethodChanged = { method ->
+            if (api.getServerUrl() == prefs.getString(KEY_SERVER_URL, null)) {
+                prefs.edit { putString(KEY_AUTH_METHOD, method.name) }
+            }
+        }
+        initFromSavedCredentials()
+    }
+
+    /**
+     * Initialize API from saved credentials.
+     */
+    private fun initFromSavedCredentials() {
+        val serverUrl = prefs.getString(KEY_SERVER_URL, null)
+        val username = prefs.getString(KEY_USERNAME, null)
+        val password = prefs.getString(KEY_PASSWORD, null)
+
+        if (!serverUrl.isNullOrBlank() && !username.isNullOrBlank() && !password.isNullOrBlank()) {
+            val credentials = NavidromeCredentials(serverUrl, username, password)
+            val validationError = credentials.connectionValidationError()
+            if (validationError != null) {
+                Timber.w("$TAG: Ignoring insecure or invalid saved Navidrome server URL: $validationError")
+                api.clearCredentials()
+                _isLoggedInFlow.value = false
+                return
+            }
+            api.setCredentials(
+                credentials,
+                NavidromeAuthMethod.fromStorageKey(prefs.getString(KEY_AUTH_METHOD, null))
+            )
+            _isLoggedInFlow.value = true
+            Timber.d("$TAG: Restored credentials for $username@${credentials.normalizedServerUrl}")
+        }
+    }
+
+    /**
+     * Check if user is logged in.
+     */
+    val isLoggedIn: Boolean
+        get() = _isLoggedInFlow.value
+
+    /**
+     * Get the current server URL.
+     */
+    val serverUrl: String?
+        get() = prefs.getString(KEY_SERVER_URL, null)
+
+    /**
+     * Get the current username.
+     */
+    val username: String?
+        get() = prefs.getString(KEY_USERNAME, null)
+
+    val selectedMusicFolderIdsFlow: Flow<Set<String>> =
+        userPreferencesRepository.navidromeSelectedMusicFolderIdsFlow
+
+    var lastFullSyncTime: Long
+        get() = prefs.getLong(KEY_LAST_FULL_SYNC, 0L)
+        set(value) = prefs.edit { putLong(KEY_LAST_FULL_SYNC, value) }
+
+    /**
+     * Login to Navidrome server with credentials.
+     *
+     * @param serverUrl The server URL (e.g., "https://music.example.com")
+     * @param username The username
+     * @param password The password
+     * @return Result with username on success, error on failure
+     */
+    suspend fun login(serverUrl: String, username: String, password: String): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                Timber.d("$TAG: Attempting login to $serverUrl as $username")
+
+                val credentials = NavidromeCredentials(serverUrl, username, password)
+                val validationError = credentials.connectionValidationError()
+                if (validationError != null) {
+                    api.clearCredentials()
+                    return@withContext Result.failure(IllegalArgumentException(validationError))
+                }
+                api.setCredentials(credentials, NavidromeAuthMethod.TOKEN)
+
+                val pingResult = api.ping()
+                if (pingResult.isFailure) {
+                    api.clearCredentials()
+                    return@withContext Result.failure(
+                        pingResult.exceptionOrNull() ?: Exception("Connection failed")
+                    )
+                }
+
+                prefs.edit {
+                    putString(KEY_SERVER_URL, credentials.normalizedServerUrl)
+                        .putString(KEY_USERNAME, username)
+                        .putString(KEY_PASSWORD, password)
+                        .putString(KEY_AUTH_METHOD, api.activeAuthMethod.name)
+                }
+
+                _isLoggedInFlow.value = true
+                Timber.d("$TAG: Login successful for $username@$serverUrl")
+                Result.success(username)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Login failed")
+                api.clearCredentials()
+                _isLoggedInFlow.value = false
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Logout and clear all cached data.
+     */
+    suspend fun logout() {
+        Timber.d("$TAG: Logging out")
+        api.clearCredentials()
+        prefs.edit { clear() }
+
+        val playlistsToDelete = dao.getAllPlaylistsList()
+        playlistsToDelete.forEach { playlist ->
+            deleteAppPlaylistForNavidromePlaylist(playlist.id)
+        }
+
+        dao.clearAllSongs()
+        musicDao.clearAllNavidromeSongs()
+        dao.clearAllPlaylists()
+        userPreferencesRepository.clearNavidromeSelectedMusicFolderIds()
+        _isLoggedInFlow.value = false
+    }
+
+    suspend fun getMusicFolders(): Result<List<NavidromeMusicFolder>> {
+        if (!isLoggedIn) {
+            return Result.failure(Exception("Not logged in"))
+        }
+
+        return withContext(Dispatchers.IO) {
+            api.getMusicFolders().map { folders ->
+                NavidromeResponseParser.parseMusicFolders(folders)
+                    .filter { it.id.isNotBlank() }
+            }
+        }
+    }
+
+    suspend fun setSelectedMusicFolderIds(folderIds: Set<String>) {
+        userPreferencesRepository.setNavidromeSelectedMusicFolderIds(folderIds.filter { it.isNotBlank() }.toSet())
+    }
+
+    /**
+     * Sync user playlists from server.
+     */
+    suspend fun syncPlaylists(): Result<List<NavidromePlaylistEntity>> {
+        if (!isLoggedIn) {
+            return Result.failure(Exception("Not logged in"))
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                Timber.d("$TAG: Syncing playlists")
+                val result = api.getPlaylists()
+
+                if (result.isFailure) {
+                    return@withContext Result.failure(
+                        result.exceptionOrNull() ?: Exception("Failed to get playlists")
+                    )
+                }
+
+                val jsonObjects = result.getOrThrow()
+                val playlists = NavidromeResponseParser.parsePlaylists(jsonObjects)
+
+                if (playlists.isEmpty() && jsonObjects.isNotEmpty()) {
+                    Timber.w("$TAG: Parser returned empty playlists but JSON response had items. Parsing error suspected. Aborting.")
+                    return@withContext Result.failure(Exception("Playlist parsing error"))
+                }
+
+                if (playlists.isEmpty()) {
+                    val localCount = dao.getPlaylistCount()
+                    if (localCount > 0) {
+                        Timber.w("$TAG: Server returned empty playlists but we have $localCount locally. Aborting sync to prevent data loss.")
+                        return@withContext Result.success(emptyList()) 
+                    }
+                }
+
+                val entities = playlists.map { playlist ->
+                    NavidromePlaylistEntity(
+                        id = playlist.id,
+                        name = playlist.name,
+                        comment = playlist.comment,
+                        owner = playlist.owner,
+                        coverArtId = playlist.coverArt,
+                        songCount = playlist.songCount,
+                        duration = playlist.duration,
+                        public = playlist.public,
+                        lastSyncTime = System.currentTimeMillis()
+                    )
+                }
+
+                val localPlaylists = dao.getAllPlaylistsList()
+                val remoteIds = entities.map { it.id }.toSet()
+                
+                val stalePlaylists = if (entities.isNotEmpty() || jsonObjects.isEmpty()) {
+                    localPlaylists.filter { it.id !in remoteIds }
+                } else {
+                    emptyList()
+                }
+
+                if (stalePlaylists.isNotEmpty()) {
+                    Timber.d("$TAG: Removing ${stalePlaylists.size} stale playlists")
+                    stalePlaylists.forEach { stale ->
+                        dao.deleteSongsByPlaylist(stale.id)
+                        dao.deletePlaylist(stale.id)
+                        deleteAppPlaylistForNavidromePlaylist(stale.id)
+                    }
+                }
+
+                entities.forEach { dao.insertPlaylist(it) }
+
+                if (stalePlaylists.isNotEmpty()) {
+                    syncUnifiedLibrarySongsFromNavidrome()
+                }
+
+                Timber.d("$TAG: Synced ${entities.size} playlists")
+                Result.success(entities)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Failed to sync playlists")
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Sync songs in a specific playlist.
+     */
+    suspend fun syncPlaylistSongs(playlistId: String): Result<Int> {
+        if (playlistId == LIBRARY_PLAYLIST_ID) {
+            return syncLibrarySongs()
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                Timber.d("$TAG: Syncing songs for playlist $playlistId")
+
+                val result = api.getPlaylist(playlistId)
+                if (result.isFailure) {
+                    return@withContext Result.failure(
+                        result.exceptionOrNull() ?: Exception("Failed to get playlist")
+                    )
+                }
+
+                val res: Pair<JSONObject, List<JSONObject>> = result.getOrThrow()
+                val songJsons = res.second
+                val songs = NavidromeResponseParser.parseSongs(songJsons)
+
+                if (songs.isEmpty() && songJsons.isNotEmpty()) {
+                    Timber.w("$TAG: FAILED to parse songs for playlist $playlistId even though JSON has data. Aborting.")
+                    return@withContext Result.failure(Exception("Parsing error"))
+                }
+
+                val entities = songs.map { song: NavidromeSong ->
+                    song.toEntity(playlistId)
+                }
+
+                if (entities.isNotEmpty()) {
+                    Timber.d("$TAG: Playlist $playlistId - Deleting old songs, inserting ${entities.size} new songs")
+                    dao.deleteSongsByPlaylist(playlistId)
+                    dao.insertSongs(entities)
+                    
+                    val playlistName = dao.getPlaylistById(playlistId)?.name ?: "Playlist"
+                    updateAppPlaylistForNavidromePlaylist(playlistId, playlistName, entities)
+                } else if (songJsons.isEmpty()) {
+                    Timber.d("$TAG: Playlist $playlistId is empty on server, clearing local cache")
+                    dao.deleteSongsByPlaylist(playlistId)
+                    val playlistName = dao.getPlaylistById(playlistId)?.name ?: "Playlist"
+                    updateAppPlaylistForNavidromePlaylist(playlistId, playlistName, emptyList())
+                } else {
+                    Timber.w("$TAG: songJsons was not empty (${songJsons.size}) but entities was empty. Parsing issue?")
+                }
+
+                Timber.d("$TAG: Synced ${entities.size} songs for playlist $playlistId")
+                Result.success(entities.size)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Failed to sync playlist songs")
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Sync all songs from the server library by fetching all albums.
+     */
+    suspend fun syncLibrarySongs(
+        onProgress: ((Float, String) -> Unit)? = null
+    ): Result<Int> {
+        if (!isLoggedIn) {
+            return Result.failure(Exception("Not logged in"))
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                Timber.d("$TAG: Syncing library songs from server")
+                val allSongs = mutableListOf<NavidromeSong>()
+                val pageSize = 500
+                
+                onProgress?.invoke(0.1f, context.getString(R.string.dash_status_fetching_albums))
+                val musicFolders = getMusicFolders().getOrElse { error ->
+                    Timber.w(error, "$TAG: Failed to load music folders; falling back to all-library sync")
+                    emptyList()
+                }
+                val selectedFolderIds = selectedNavidromeMusicFolderIds(
+                    availableFolders = musicFolders,
+                    savedFolderIds = userPreferencesRepository.navidromeSelectedMusicFolderIdsFlow.first()
+                )
+                val folderFilterIds = if (
+                    musicFolders.isNotEmpty() &&
+                    selectedFolderIds.isNotEmpty() &&
+                    selectedFolderIds.size < musicFolders.size
+                ) {
+                    selectedFolderIds
+                } else {
+                    emptySet()
+                }
+
+                val fetchedAlbums = if (folderFilterIds.isEmpty()) {
+                    fetchAllAlbums(pageSize).getOrElse { error ->
+                        Timber.w(error, "$TAG: Album fetch failed, keeping cached library")
+                        return@withContext Result.failure(error)
+                    }
+                } else {
+                    val albums = mutableListOf<JSONObject>()
+                    for (folderId in folderFilterIds) {
+                        albums += fetchAllAlbums(pageSize, musicFolderId = folderId)
+                            .getOrElse { error ->
+                                Timber.w(error, "$TAG: Album fetch failed for folder $folderId, keeping cached library")
+                                return@withContext Result.failure(error)
+                            }
+                    }
+                    albums
+                }
+
+                val totalAlbums = fetchedAlbums.size
+                val concurrencyLimit = 5
+                val semaphore = Semaphore(concurrencyLimit)
+                val processedCount = AtomicInteger(0)
+
+                val albumSongLists = coroutineScope {
+                    fetchedAlbums.map { albumJson ->
+                        async {
+                            semaphore.withPermit {
+                                val albumId = albumJson.optString("id", "")
+                                val albumTitle = albumJson.optString("title", "Unknown Album")
+                                if (albumId.isBlank()) return@withPermit emptyList()
+
+                                val songsResult = api.getAlbum(albumId)
+                                val currentProcessed = processedCount.incrementAndGet()
+                                
+                                val progress = 0.1f + (currentProcessed.toFloat() / totalAlbums.coerceAtLeast(1) * 0.8f)
+                                onProgress?.invoke(
+                                    progress, 
+                                    context.getString(R.string.dash_status_fetching_songs_from_format, albumTitle)
+                                )
+
+                                songsResult.fold(
+                                    onSuccess = { songJsons ->
+                                        NavidromeResponseParser.parseSongs(songJsons)
+                                    },
+                                    onFailure = {
+                                        Timber.w(it, "$TAG: Failed to fetch songs for album $albumId")
+                                        emptyList()
+                                    }
+                                )
+                            }
+                        }
+                    }.awaitAll()
+                }
+
+                allSongs.addAll(albumSongLists.flatten())
+
+                if (allSongs.isEmpty()) {
+                    Timber.d("$TAG: No library songs found on server")
+                    onProgress?.invoke(1f, context.getString(R.string.dash_status_no_songs_found))
+                    return@withContext Result.success(0)
+                }
+
+                onProgress?.invoke(
+                    0.95f, 
+                    context.getString(R.string.dash_status_saving_songs_format, allSongs.size)
+                )
+                val uniqueSongs = allSongs.distinctBy { it.id }
+
+                val entities = uniqueSongs.map { song ->
+                    song.toEntity(LIBRARY_PLAYLIST_ID)
+                }
+
+                dao.replaceLibrarySongs(entities)
+
+                Timber.d("$TAG: Synced ${entities.size} library songs from ${fetchedAlbums.size} albums")
+                onProgress?.invoke(1f, context.getString(R.string.dash_status_library_sync_complete))
+                Result.success(entities.size)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Failed to sync library songs")
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Fetch all albums from server with pagination. A failed page request fails the
+     * whole fetch — treating it as end-of-list would silently sync a partial library.
+     */
+    private suspend fun fetchAllAlbums(pageSize: Int, musicFolderId: String? = null): Result<List<JSONObject>> {
+        val allAlbums = mutableListOf<JSONObject>()
+        var offset = 0
+
+        while (true) {
+            val albumsResult = api.getAlbumList(
+                type = "alphabeticalByName",
+                size = pageSize,
+                offset = offset,
+                musicFolderId = musicFolderId
+            )
+
+            val albumJsons = albumsResult.getOrElse { return Result.failure(it) }
+            if (albumJsons.isEmpty()) break
+
+            allAlbums.addAll(albumJsons)
+            offset += albumJsons.size
+            if (albumJsons.size < pageSize) break
+        }
+
+        return Result.success(allAlbums)
+    }
+
+    /**
+     * Sync all playlists and their songs, plus library songs.
+     */
+    suspend fun syncAllPlaylistsAndSongs(
+        onProgress: ((Float, String) -> Unit)? = null
+    ): Result<BulkSyncResult> {
+        return withContext(Dispatchers.IO) {
+            var syncedSongCount = 0
+            var failedPlaylistCount = 0
+
+            onProgress?.invoke(0.05f, context.getString(R.string.dash_status_syncing_library))
+            val libResult = syncLibrarySongs { progress, message ->
+                onProgress?.invoke(0.05f + (progress * 0.35f), message)
+            }
+            libResult.fold(
+                onSuccess = { count -> syncedSongCount += count },
+                onFailure = { Timber.w(it, "$TAG: Failed syncing library songs") }
+            )
+
+            onProgress?.invoke(0.4f, context.getString(R.string.dash_status_fetching_playlists))
+            val playlistResult = syncPlaylists().getOrElse {
+                try {
+                    syncUnifiedLibrarySongsFromNavidrome()
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    Timber.e(e, "$TAG: Failed to sync unified library after playlist fetch failure")
+                }
+                return@withContext Result.success(
+                    BulkSyncResult(
+                        playlistCount = 0,
+                        syncedSongCount = syncedSongCount,
+                        failedPlaylistCount = 0
+                    )
+                )
+            }
+
+            val totalPlaylists = playlistResult.size
+            playlistResult.forEachIndexed { index, playlist ->
+                val progressBase = 0.4f
+                val progressStep = 0.5f / totalPlaylists.coerceAtLeast(1)
+                val currentProgress = progressBase + (index * progressStep)
+                
+                onProgress?.invoke(
+                    currentProgress, 
+                    context.getString(R.string.dash_status_syncing_playlist_format, playlist.name)
+                )
+                
+                val songSyncResult = syncPlaylistSongs(playlist.id)
+                songSyncResult.fold(
+                    onSuccess = { count -> syncedSongCount += count },
+                    onFailure = {
+                        failedPlaylistCount += 1
+                        Timber.w(it, "$TAG: Failed syncing playlist ${playlist.id}")
+                    }
+                )
+            }
+
+            onProgress?.invoke(0.95f, context.getString(R.string.dash_status_updating_local))
+            try {
+                syncUnifiedLibrarySongsFromNavidrome()
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Failed to sync unified library")
+            }
+
+            onProgress?.invoke(1f, context.getString(R.string.dash_status_sync_complete))
+
+            if (failedPlaylistCount == 0) {
+                lastFullSyncTime = System.currentTimeMillis()
+            }
+
+            Result.success(
+                BulkSyncResult(
+                    playlistCount = playlistResult.size,
+                    syncedSongCount = syncedSongCount,
+                    failedPlaylistCount = failedPlaylistCount
+                )
+            )
+        }
+    }
+
+    /**
+     * Get all playlists as Flow.
+     */
+    fun getPlaylists(): Flow<List<NavidromePlaylistEntity>> = dao.getAllPlaylists()
+        .combine(dao.getLibrarySongCount()) { playlists, librarySongCount ->
+            navidromePlaylistsWithLibraryFallback(
+                playlists = playlists,
+                librarySongCount = librarySongCount,
+                libraryName = context.getString(R.string.dash_library_playlist_title)
+            )
+        }
+
+    /**
+     * Get songs in a playlist as Flow of Song.
+     */
+    fun getPlaylistSongs(playlistId: String): Flow<List<Song>> {
+        return dao.getSongsByPlaylist(playlistId).map { entities ->
+            entities.map { it.toSong() }
+        }
+    }
+
+    /**
+     * Get all Navidrome songs as Flow.
+     */
+    fun getAllSongs(): Flow<List<Song>> {
+        return dao.getAllNavidromeSongs().map { entities ->
+            entities.map { it.toSong() }
+        }
+    }
+
+    /**
+     * Search for songs on the server.
+     */
+    suspend fun searchSongs(query: String, limit: Int = 30): Result<List<Song>> {
+        if (!isLoggedIn) {
+            return Result.failure(Exception("Not logged in"))
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val result = api.searchSongs(query, count = limit)
+                if (result.isFailure) {
+                    return@withContext Result.failure(
+                        result.exceptionOrNull() ?: Exception("Search failed")
+                    )
+                }
+
+                val jsonObjects = result.getOrThrow()
+                val navidromeSongs = NavidromeResponseParser.parseSongs(jsonObjects)
+                val songs = navidromeSongs.map { it.toSong() }
+
+                Result.success(songs)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Search failed")
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Search local cached songs.
+     */
+    fun searchLocalSongs(query: String): Flow<List<Song>> {
+        return dao.searchSongs(query).map { entities ->
+            entities.map { it.toSong() }
+        }
+    }
+
+    /**
+     * Get the streaming URL for a song.
+     *
+     * @param songId The Navidrome song ID
+     * @param maxBitRate Maximum bitrate (0 = no limit)
+     * @return The streaming URL
+     */
+    fun getStreamUrl(songId: String, maxBitRate: Int = 0): String {
+        return api.getStreamUrl(songId, maxBitRate)
+    }
+
+    /**
+     * Get the cover art URL for a song/album/artist.
+     *
+     * @param coverArtId The cover art ID
+     * @param size Desired size in pixels
+     * @return The cover art URL
+     */
+    fun getCoverArtUrl(coverArtId: String?, size: Int = 500): String? {
+        if (coverArtId.isNullOrBlank()) return null
+        return api.getCoverArtUrl(coverArtId, size)
+    }
+
+    /**
+     * Get lyrics for a song.
+     */
+    suspend fun getLyrics(songId: String): Result<String> {
+        return withContext(Dispatchers.IO) {
+            try {
+                var result = api.getLyricsBySongId(songId)
+                if (result.isSuccess && !result.getOrNull().isNullOrBlank()) {
+                    return@withContext result
+                }
+
+                val songEntity = dao.getSongByNavidromeId(songId)
+                if (songEntity != null) {
+                    result = api.getLyrics(songEntity.artist, songEntity.title)
+                    if (result.isSuccess && !result.getOrNull().isNullOrBlank()) {
+                        return@withContext result
+                    }
+                }
+
+                Result.failure(Exception("No lyrics found"))
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Timber.e(e, "$TAG: Failed to get lyrics for song $songId")
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Sync Navidrome songs to the unified music library.
+     */
+    suspend fun syncUnifiedLibrarySongsFromNavidrome() {
+        val navidromeSongs = dao.getAllNavidromeSongsList()
+        val existingUnifiedIds = musicDao.getAllNavidromeSongIds()
+
+        if (navidromeSongs.isEmpty()) {
+            if (existingUnifiedIds.isNotEmpty()) {
+                musicDao.clearAllNavidromeSongs()
+            }
+            return
+        }
+
+        val groupByAlbumArtist = userPreferencesRepository.groupByAlbumArtistFlow.first()
+
+        val songs = ArrayList<SongEntity>(navidromeSongs.size)
+        val artists = LinkedHashMap<Long, ArtistEntity>()
+        val albums = LinkedHashMap<Long, AlbumEntity>()
+        val crossRefs = mutableListOf<SongArtistCrossRef>()
+
+        navidromeSongs.forEach { navidromeSong ->
+            val songId = toUnifiedSongId(navidromeSong.navidromeId)
+            val artistNames = parseArtistNames(navidromeSong.artist)
+            val primaryArtistName = artistNames.firstOrNull() ?: "Unknown Artist"
+            val primaryArtistId = toUnifiedArtistId(primaryArtistName)
+
+            val effectiveAlbumArtistName = navidromeSong.albumArtist
+                ?.trim()
+                ?.takeIf { it.isNotBlank() }
+                ?: primaryArtistName
+            val albumArtistId = toUnifiedArtistId(effectiveAlbumArtistName)
+            artists.putIfAbsent(
+                albumArtistId,
+                ArtistEntity(
+                    id = albumArtistId,
+                    name = effectiveAlbumArtistName,
+                    trackCount = 0,
+                    imageUrl = null
+                )
+            )
+            val albumDisplayArtistName = if (groupByAlbumArtist) effectiveAlbumArtistName else primaryArtistName
+            val albumDisplayArtistId = if (groupByAlbumArtist) albumArtistId else primaryArtistId
+
+            artistNames.forEachIndexed { index, artistName ->
+                val artistId = toUnifiedArtistId(artistName)
+                artists.putIfAbsent(
+                    artistId,
+                    ArtistEntity(
+                        id = artistId,
+                        name = artistName,
+                        trackCount = 0,
+                        imageUrl = null
+                    )
+                )
+                crossRefs.add(
+                    SongArtistCrossRef(
+                        songId = songId,
+                        artistId = artistId,
+                        isPrimary = index == 0
+                    )
+                )
+            }
+
+            val albumId = toUnifiedAlbumId(navidromeSong.albumId, navidromeSong.album)
+            val albumName = navidromeSong.album.ifBlank { "Unknown Album" }
+            albums.putIfAbsent(
+                albumId,
+                AlbumEntity(
+                    id = albumId,
+                    title = albumName,
+                    artistName = albumDisplayArtistName,
+                    artistId = albumDisplayArtistId,
+                    songCount = 0,
+                    dateAdded = navidromeSong.dateAdded,
+                    year = navidromeSong.year,
+                    albumArtUriString = navidromeSong.coverArtId?.takeIf { it.isNotBlank() }
+                        ?.let { "navidrome_cover://$it" },
+                    albumArtist = navidromeSong.albumArtist?.takeIf { it.isNotBlank() }
+                )
+            )
+
+            songs.add(
+                SongEntity(
+                    id = songId,
+                    title = navidromeSong.title,
+                    artistName = navidromeSong.artist.ifBlank { primaryArtistName },
+                    artistId = primaryArtistId,
+                    albumArtist = navidromeSong.albumArtist?.takeIf { it.isNotBlank() },
+                    albumArtistId = albumArtistId,
+                    albumName = albumName,
+                    albumId = albumId,
+                    contentUriString = "navidrome://${navidromeSong.navidromeId}",
+                    albumArtUriString = navidromeSong.coverArtId?.takeIf { it.isNotBlank() }
+                        ?.let { "navidrome_cover://$it" },
+                    duration = navidromeSong.duration,
+                    genre = navidromeSong.genre ?: NAVIDROME_GENRE,
+                    filePath = navidromeSong.path,
+                    parentDirectoryPath = NAVIDROME_PARENT_DIRECTORY,
+                    isFavorite = false,
+                    lyrics = null,
+                    trackNumber = navidromeSong.trackNumber,
+                    year = navidromeSong.year,
+                    dateAdded = navidromeSong.dateAdded.takeIf { it > 0 }
+                        ?: System.currentTimeMillis(),
+                    mimeType = navidromeSong.mimeType,
+                    bitrate = navidromeSong.bitRate?.let { it * 1000 },
+                    sampleRate = null,
+                    sourceType = SourceType.NAVIDROME
+                )
+            )
+        }
+
+        val albumCounts = songs.groupingBy { it.albumId }.eachCount()
+        val finalAlbums = albums.values.map { album ->
+            album.copy(songCount = albumCounts[album.id] ?: 0)
+        }
+
+        val currentUnifiedIds = songs.map { it.id }.toSet()
+        val deletedUnifiedIds = existingUnifiedIds.filter { it !in currentUnifiedIds }
+
+        musicDao.incrementalSyncMusicData(
+            songs = songs,
+            albums = finalAlbums,
+            artists = artists.values.toList(),
+            crossRefs = crossRefs,
+            deletedSongIds = deletedUnifiedIds
+        )
+    }
+
+    private fun parseArtistNames(rawArtist: String): List<String> =
+        CloudMusicUtils.parseArtistNames(rawArtist)
+
+    private fun toUnifiedSongId(navidromeId: String): Long {
+        return -(NAVIDROME_SONG_ID_OFFSET + navidromeId.hashCode().toLong().absoluteValue)
+    }
+
+    private fun toUnifiedAlbumId(albumId: String?, albumName: String): Long {
+        val normalized = if (!albumId.isNullOrBlank()) {
+            albumId.hashCode().toLong().absoluteValue
+        } else {
+            albumName.lowercase().hashCode().toLong().absoluteValue
+        }
+        return -(NAVIDROME_ALBUM_ID_OFFSET + normalized)
+    }
+
+    private fun toUnifiedArtistId(artistName: String): Long {
+        return -(NAVIDROME_ARTIST_ID_OFFSET + artistName.lowercase().hashCode().toLong().absoluteValue)
+    }
+
+    private fun getAppPlaylistIdForNavidrome(navidromePlaylistId: String): String {
+        return "$NAVIDROME_PLAYLIST_PREFIX$navidromePlaylistId"
+    }
+
+    private suspend fun updateAppPlaylistForNavidromePlaylist(
+        navidromePlaylistId: String,
+        playlistName: String,
+        navidromeEntities: List<NavidromeSongEntity>
+    ) {
+        try {
+            val unifiedSongIds = navidromeEntities.map { entity ->
+                toUnifiedSongId(entity.navidromeId).toString()
+            }
+
+            val appPlaylistId = getAppPlaylistIdForNavidrome(navidromePlaylistId)
+            val allPlaylists = playlistPreferencesRepository.userPlaylistsFlow
+            val existingPlaylist = withContext(Dispatchers.IO) {
+                allPlaylists.map { playlists ->
+                    playlists.find { it.id == appPlaylistId }
+                }.first()
+            }
+
+            if (existingPlaylist != null) {
+                playlistPreferencesRepository.updatePlaylist(
+                    existingPlaylist.copy(
+                        name = playlistName,
+                        songIds = unifiedSongIds,
+                        lastModified = System.currentTimeMillis(),
+                        source = "NAVIDROME"
+                    )
+                )
+                Timber.d("$TAG: Updated app playlist for Navidrome playlist $navidromePlaylistId")
+            } else {
+                playlistPreferencesRepository.createPlaylist(
+                    name = playlistName,
+                    songIds = unifiedSongIds,
+                    customId = appPlaylistId,
+                    source = "NAVIDROME"
+                )
+                Timber.d("$TAG: Created app playlist for Navidrome playlist $navidromePlaylistId")
+            }
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Timber.e(e, "$TAG: Failed to update app playlist for Navidrome playlist $navidromePlaylistId")
+        }
+    }
+
+    private suspend fun deleteAppPlaylistForNavidromePlaylist(navidromePlaylistId: String) {
+        try {
+            val appPlaylistId = getAppPlaylistIdForNavidrome(navidromePlaylistId)
+            playlistPreferencesRepository.deletePlaylist(appPlaylistId)
+            Timber.d("$TAG: Deleted app playlist for Navidrome playlist $navidromePlaylistId")
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            Timber.w(e, "$TAG: Failed to delete app playlist for Navidrome playlist $navidromePlaylistId")
+        }
+    }
+
+    suspend fun reportPlayback(
+        navidromeId: String,
+        positionMs: Long,
+        state: String,
+        playbackRate: Float = 1.0f,
+        ignoreScrobble: Boolean = false
+    ): Result<Unit> {
+        if (!isLoggedIn) return Result.failure(Exception("Not logged in"))
+        val result = api.reportPlayback(
+            mediaId = navidromeId,
+            positionMs = positionMs,
+            state = state,
+            playbackRate = playbackRate,
+            ignoreScrobble = ignoreScrobble
+        )
+        if (result.isFailure && result.exceptionOrNull()?.message?.contains("404") == true) {
+            if (state == "playing" || state == "starting") {
+                return api.scrobble(id = navidromeId, submission = false)
+            }
+        }
+        return result
+    }
+
+    suspend fun scrobble(navidromeId: String, submission: Boolean = true): Result<Unit> {
+        if (!isLoggedIn) return Result.failure(Exception("Not logged in"))
+        return api.scrobble(id = navidromeId, submission = submission)
+    }
+
+    suspend fun deletePlaylist(playlistId: String) {
+        if (playlistId == LIBRARY_PLAYLIST_ID) return
+
+        dao.deleteSongsByPlaylist(playlistId)
+        dao.deletePlaylist(playlistId)
+        deleteAppPlaylistForNavidromePlaylist(playlistId)
+        syncUnifiedLibrarySongsFromNavidrome()
+    }
+}
+
+internal fun navidromePlaylistsWithLibraryFallback(
+    playlists: List<NavidromePlaylistEntity>,
+    librarySongCount: Int,
+    libraryName: String,
+    nowMs: Long = System.currentTimeMillis()
+): List<NavidromePlaylistEntity> {
+    if (playlists.isNotEmpty() || librarySongCount <= 0) return playlists
+
+    return listOf(
+        NavidromePlaylistEntity(
+            id = NavidromeRepository.LIBRARY_PLAYLIST_ID,
+            name = libraryName,
+            comment = null,
+            owner = null,
+            coverArtId = null,
+            songCount = librarySongCount,
+            duration = 0L,
+            public = false,
+            lastSyncTime = nowMs
+        )
+    )
+}
+
+internal fun selectedNavidromeMusicFolderIds(
+    availableFolders: List<NavidromeMusicFolder>,
+    savedFolderIds: Set<String>
+): Set<String> {
+    val availableIds = availableFolders.map { it.id }.filter { it.isNotBlank() }.toSet()
+    if (availableIds.isEmpty()) return emptySet()
+
+    val validSavedIds = savedFolderIds.intersect(availableIds)
+    return validSavedIds.ifEmpty { availableIds }
+}
+
+/**
+ * Convert a NavidromeSong to a Song model.
+ */
+fun NavidromeSong.toSong(): Song {
+    return Song(
+        id = "navidrome_$id",
+        title = title,
+        artist = artist,
+        artistId = -1L,
+        album = album,
+        albumId = -1L,
+        path = path,
+        contentUriString = "navidrome://$id",
+        albumArtUriString = coverArt?.let { "navidrome_cover://$it" },
+        duration = duration,
+        genre = genre,
+        mimeType = resolvedMimeType,
+        bitrate = bitRate?.let { it * 1000 },
+        sampleRate = null,
+        year = year,
+        trackNumber = trackNumber,
+        dateAdded = System.currentTimeMillis(),
+        isFavorite = false,
+        navidromeId = id
+    )
+}
