@@ -1,65 +1,12 @@
-# PixelMusic Official APK Download — Android Music Player & Streaming App 🎵 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+# PixelMusic Official APK Download [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
   <img src="assets/LauncherIcon.png" alt="PixelMusic Official App Icon" width="128"/>
 </p>
 
-**PixelMusic is an Android music player** engineered from the ground up for seamless audio playback, dynamic visual elegance, and total library freedom. Whether you listen to local high-resolution audio files or stream from online cloud sources, PixelMusic organizes everything into one unified library without ads, telemetry, or bloat.
-
-### 🌟 Core Capabilities
-- **Local Hi-Res Audio Player:** Full native indexing and playback for **FLAC, ALAC (Apple Lossless), WAV, OPUS, OGG, APE, MP3, and .caf** formats with gapless playback.
-- **YouTube Music Streaming:** Stream songs, albums, and playlists from YouTube Music with search discovery, personalized recommendations, and artist discographies.
-- **Telegram Cloud Music:** Connect your Telegram account to stream and cache tracks directly from music channels, group chats, and saved messages.
-- **Google Drive Integration:** Stream audio stored on your personal Google Drive accounts on demand without taking up local storage.
-- **Hi-Fi Lossless Audio:** High-resolution stream playback and caching with format badges and audio chain inspection *(bring-your-own-API / account)*.
-- **Quick Playlist Import:** Instant one-tap import for public Spotify and YouTube playlist links.
-- **Material 3 Expressive UI:** Fluid animations, floating pill navigation, customizable home collage, and dynamic HSL color adaptation based on the currently playing album artwork.
-- **Real-Time Synchronized Lyrics:** Rich LRC synchronized karaoke-style lyrics with millisecond manual offset tuning, offline caching, and instant translation.
-
----
-
-## ⚡ Feature Highlights Matrix
-
-| Feature | Capabilities & Architecture |
-|:---|:---|
-| **Audio Engine** | AndroidX Media3 ExoPlayer with native FFmpeg audio decoders, 10-band graphic equalizer, bass boost, spatial virtualizer, and EBU R128 loudness normalization. |
-| **Hybrid Library** | Unifies local device storage, YouTube Music, Telegram channels, and Google Drive files under a single search index and favorites manager. |
-| **Hi-Fi Lossless Streaming** | High-fidelity studio master streaming & downloads *(BYO API / account)*. |
-| **Synchronized Lyrics** | Real-time synchronized LRC lyrics, offline lyric storage, custom millisecond delay calibration, and live translations. |
-| **Playlist Importer** | Instant link import for Spotify and YouTube playlists with automated track matching and metadata hydration. |
-| **Material 3 Expressive** | Floating pill navigation bar, header pill badges, expressive wavy sliders, customizable home collage, and 10 dynamic color theme presets. |
-| **Explore & Discovery** | Daily Discover carousel, mood filter chips (Chill, Focus, Workout, Party), personalized New Releases, and Last.fm smart recommendations. |
-| **Snapchat & Social Sharing** | Glassmorphic song cards, lyric story cards, dynamic pastel gradients, and direct Snapchat Creative Kit export. |
-| **Android Ecosystem** | Android Auto support, Wear OS companion compatibility, Android 12+ Quick Settings playback tiles, and Glance home screen widgets. |
-| **Full Localization** | Complete translation across 11 languages (English, German, Spanish, French, Indonesian, Italian, Korean, Norwegian, Portuguese, Russian, Simplified Chinese). |
-
----
-
-## 🎨 Material 3 Expressive & Monet Themes
-
-PixelMusic embraces Google's latest **Material 3 Expressive** design guidelines:
-- **Dynamic Monet Adaptation:** Automatically extracts primary, secondary, and tertiary HSL palettes from album art to tint sliders, sheets, backgrounds, and player controls.
-- **Curated Color Themes:** Choose from built-in theme presets including *Default Blue Purple, Baby Pink Purple, Graphite Gray, Pure Monochrome, Dark & Grey, Lime Green, and Dynamic Pastel*.
-- **Opaque App Store Icons:** 6 hand-crafted launcher icons with 512×512 store variants matching system aesthetics.
-
----
-
-## 📋 System Requirements & Permissions
-
-- **Minimum Operating System:** Android 11 (API level 30)
-- **Target Operating System:** Android 15+ (API level 37)
-- **Supported Architectures:** `arm64-v8a`, `armeabi-v7a`, `x86_64`, `universal`
-- **Key Permissions:**
-  - `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` (local music playback)
-  - `INTERNET` (streaming, album artwork, lyrics)
-  - `FOREGROUND_SERVICE` & `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (uninterrupted background music)
-  - `POST_NOTIFICATIONS` (media notification playback controls)
-
----
-
 <p align="center">
-  <strong>PixelMusic is an Android music player and modern streaming powerhouse built with Material 3 Expressive and dynamic Material You theming.</strong><br> 
-  Designed for audiophiles, everyday listeners, and cloud collectors — seamlessly unifying your offline local audio library, YouTube Music streaming catalog, Telegram audio channels, and Google Drive personal cloud into one fluid, privacy-focused experience.
+  <strong>PixelMusic is an Android music player</strong> built with Material 3 Expressive and dynamic Material You theming.<br>
+  It plays your offline local audio files and supports streaming from YouTube Music, Telegram audio channels, and Google Drive in a clean, privacy-focused interface.
 </p>
 
 <p align="center">
@@ -94,57 +41,105 @@ PixelMusic embraces Google's latest **Material 3 Expressive** design guidelines:
 
 ---
 
-## 📥 PixelMusic Official APK Download
+## 📥 Direct APK Downloads
 
-Download the official signed release APKs directly from the [Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) section or the [Telegram Channel](https://t.me/PixelMusicApp):
+Official signed APK builds from the [Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) page and the [Telegram Channel](https://t.me/PixelMusicApp):
 
-| Package / Architecture | Target Devices | Direct Download |
+| Package | Target | Link |
 |:---|:---|:---:|
-| **`app-arm64-v8a-release.apk`** | **Recommended:** Most modern smartphones (Google Pixel, Samsung, OnePlus, Xiaomi, Nothing Phone) | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-arm64-v8a-release.apk) |
-| **`app-universal-release.apk`** | Universal bundle — runs on all supported Android hardware | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-universal-release.apk) |
-| **`app-armeabi-v7a-release.apk`** | Legacy or 32-bit Android phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-armeabi-v7a-release.apk) |
-| **`app-x86_64-release.apk`** | Android emulators, ChromeOS devices, and x86 tablets | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-x86_64-release.apk) |
+| **`app-arm64-v8a-release.apk`** | **Recommended:** Most Android phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-arm64-v8a-release.apk) |
+| **`app-universal-release.apk`** | Universal build for all devices | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-universal-release.apk) |
+| **`app-armeabi-v7a-release.apk`** | Older 32-bit phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-armeabi-v7a-release.apk) |
+| **`app-x86_64-release.apk`** | Emulators and ChromeOS tablets | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-x86_64-release.apk) |
 
-### Quick Installation Guide
-1. Download the `arm64-v8a` APK (or `universal` if unsure) above.
-2. Open the downloaded file in your browser or file manager and select **Install**.
-3. If prompted by Android, enable **Allow from this source** in Settings.
-4. Launch PixelMusic, grant audio storage permission, and enjoy your music!
+### Installation
+1. Download the `arm64-v8a` APK (or `universal` if unsure).
+2. Tap the file in your browser or file manager to install.
+3. If requested by Android, enable **Allow from this source** in Settings.
+4. Open PixelMusic and grant storage permission to load your local music.
 
 ---
 
-## 📖 What is PixelMusic?
+## 🌟 Core Features
 
+- **Local Audio Playback:** Native playback for FLAC, ALAC (Apple Lossless), WAV, OPUS, OGG, APE, MP3, and .caf with gapless playback.
+- **YouTube Music Streaming:** Browse, search, and play songs, albums, and playlists from YouTube Music without ads.
+- **Telegram Audio:** Connect your Telegram account to play audio files directly from your channels, chats, and saved messages.
+- **Google Drive Playback:** Stream audio files directly from your Google Drive without downloading them to your phone first.
+- **Hi-Fi Lossless Streaming:** High-resolution playback and downloads with audio format tags *(bring your own API / account)*.
+- **Playlist Importer:** Paste public Spotify and YouTube playlist links to import them directly into your library.
+- **Real-Time Synced Lyrics:** Synchronized LRC lyrics with millisecond offset adjustments, offline caching, and translation.
+- **Material 3 Expressive UI:** Fluid animations, floating bottom navigation, home screen collage, and dynamic themes derived from album art.
+
+---
+
+## ⚡ Feature Matrix
+
+| Feature | Details |
+|:---|:---|
+| **Audio Engine** | ExoPlayer Media3 with FFmpeg decoders, 10-band equalizer, bass boost, and EBU R128 loudness normalization. |
+| **Unified Library** | Combines local storage, YouTube Music, Telegram channels, and Google Drive into one searchable library. |
+| **Lossless Streaming** | High-fidelity audio streaming and caching *(BYO API / account)*. |
+| **Lyrics** | Synchronized LRC lyrics with time offset calibration and translation support. |
+| **Playlist Import** | One-tap import for Spotify and YouTube playlist links. |
+| **Material 3 UI** | Expressive wavy sliders, pill navigation, and 10 dynamic color themes. |
+| **Explore & Discovery** | Daily discover carousel, mood tags (Chill, Focus, Workout, Party), and personalized new releases. |
+| **Social Sharing** | Song cards and lyric stories for Snapchat and social media sharing. |
+| **Ecosystem** | Android Auto support, Wear OS companion, and Glance home screen widgets. |
+| **Languages** | Full localization in 11 languages (English, German, Spanish, French, Indonesian, Italian, Korean, Norwegian, Portuguese, Russian, Simplified Chinese). |
+
+---
+
+## 🎨 Themes & Customization
+
+- **Dynamic Material You:** Automatically extracts colors from current album art for player controls, sliders, and background sheets.
+- **Color Presets:** Blue Purple, Baby Pink Purple, Graphite Gray, Pure Monochrome, Dark & Grey, Lime Green, and Dynamic Pastel.
+- **Store Icons:** 6 matching launcher icons with 512×512 store variants.
+
+---
+
+## 📋 System Requirements & Permissions
+
+- **Minimum Version:** Android 11 (API 30)
+- **Target Version:** Android 15+ (API 37)
+- **Architectures:** `arm64-v8a`, `armeabi-v7a`, `x86_64`, `universal`
+- **Permissions:**
+  - `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` (local audio files)
+  - `INTERNET` (streaming, album artwork, lyrics)
+  - `FOREGROUND_SERVICE` & `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (background playback)
+  - `POST_NOTIFICATIONS` (playback notification controls)
+
+---
 
 ## 📚 Documentation & Project Links
 
-- 🔒 **[Security Policy](SECURITY.md)** — APK checksum verification and vulnerability reporting.
-- 🛡️ **[Privacy Policy](PRIVACY_POLICY.md)** — Commitments to privacy and on-device storage.
-- ⚖️ **[Disclaimer & Legal Notice](DISCLAIMER.md)** — Third-party service terms and fair-use policy.
-- 📜 **[Provenance & Lineage](PROVENANCE.md)** — Heritage attribution and upstream open-source history.
-- 📦 **[Third-Party Notices](THIRD_PARTY_NOTICES.md)** — Open-source dependencies and license credits.
-- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Guidelines for bug reports and contributions.
-- 📝 **[Changelog](CHANGELOG.md)** — Detailed version history, fixes, and release notes.
+- 🔒 **[Security Policy](SECURITY.md)** — Release verification and vulnerability reporting.
+- 🛡️ **[Privacy Policy](PRIVACY_POLICY.md)** — Privacy details and on-device data handling.
+- ⚖️ **[Disclaimer & Legal Notice](DISCLAIMER.md)** — Third-party service terms and fair use policy.
+- 📜 **[Provenance & Lineage](PROVENANCE.md)** — Attribution and project history.
+- 📦 **[Third-Party Notices](THIRD_PARTY_NOTICES.md)** — Open source libraries and dependencies.
+- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Bug reporting and contribution guide.
+- 📝 **[Changelog](CHANGELOG.md)** — Full version history and release notes.
 
 ---
 
 ## ⚖️ Disclaimer & Fair Use Notice
 
-PixelMusic is an independent open-source media player client and is **not** affiliated with Google LLC, YouTube, Deezer, Telegram, Spotify, Snapchat, Last.fm, or ListenBrainz.
+PixelMusic is an independent open-source media player and is not affiliated with Google, YouTube, Deezer, Telegram, Spotify, Snapchat, Last.fm, or ListenBrainz.
 
-- **No Media Hosting:** PixelMusic does not host, upload, or index copyrighted audio files on external servers. All playback functions purely as a local player or direct client interface using user credentials and public APIs.
-- **User Responsibility:** Users are responsible for their own media playback and adherence to the Terms of Service of connected external services.
+- **No Media Hosting:** PixelMusic does not host or store copyrighted audio on external servers. It acts as an audio player for local storage and an interface for public and user-authenticated APIs.
+- **User Responsibility:** Users are responsible for their own use and compliance with the terms of service of any third-party platforms they access.
 
-For full terms and conditions, refer to [DISCLAIMER.md](DISCLAIMER.md).
+For full legal details, see [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
-## 📦 Upstream Source & GPLv3 License
+## 📦 License & Open Source Attribution
 
-PixelMusic is free and open-source software licensed under the **GNU General Public License v3.0** (`GPL-3.0-or-later`).
+PixelMusic is free software released under the **GNU General Public License v3.0** (`GPL-3.0-or-later`).
 
-- Built upon and inspired by the foundational work of the [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project.
-- Complete machine-readable notices and third-party attributions are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Portions of this project are based on the open-source [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project. Upstream notices and credits are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [PROVENANCE.md](PROVENANCE.md).
+
 > Gratitude to the foundational open-source authors and community contributors whose work inspired and empowered this project.
 
 ```text
