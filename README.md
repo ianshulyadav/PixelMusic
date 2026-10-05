@@ -1,13 +1,23 @@
 # PixelMusic Official APK Download [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
-  <img src="assets/LauncherIcon.png" alt="PixelMusic Official App Icon" width="128"/>
+  <img src="assets/LauncherIcon.png" alt="PixelMusic Official App Icon" width="160"/>
 </p>
 
 <p align="center">
   <strong>PixelMusic is an Android music player</strong> built with Material 3 Expressive and dynamic Material You theming.<br>
   It plays your offline local audio files and supports streaming from YouTube Music, Telegram audio channels, and Google Drive in a clean, privacy-focused interface.
 </p>
+
+<p align="center">
+  <img src="icons/blue_purple.png" alt="Blue Purple" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/baby_pink_purple.png" alt="Baby Pink Purple" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/graphite.png" alt="Graphite" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/lime_green.png" alt="Lime Green" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/lime_lemon.png" alt="Lime Lemon" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/orange_yellow.png" alt="Orange Yellow" width="72" style="border-radius:16px; margin:4px;"/>
+</p>
+<p align="center"><em>6 themed launcher icons — pick your favorite color</em></p>
 
 <p align="center">
   <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
