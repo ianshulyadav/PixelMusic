@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- QueueBottomSheet -->
     <string name="presentation_batch_e_queue_empty">Queue is empty.</string>
     <string name="presentation_batch_e_cd_queue_actions">Queue actions</string>
     <string name="presentation_batch_e_action_clear_queue">Clear queue</string>
@@ -11,6 +12,7 @@
     <string name="presentation_batch_e_clear_queue_dialog_title">Clear queue</string>
     <string name="presentation_batch_e_clear_queue_dialog_message">Are you sure you want to clear all songs from the queue except the current one?</string>
     <string name="presentation_batch_e_next_up">Next up</string>
+    <string name="autoplay">Autoplay</string>
     <string name="presentation_batch_e_queue_subtitle_empty">Queue is empty for now.</string>
     <string name="presentation_batch_e_queue_source_fallback">Queue</string>
     <string name="presentation_batch_e_cd_toggle_shuffle">Toggle shuffle</string>
@@ -36,27 +38,103 @@
         <item quantity="other">%d songs selected</item>
     </plurals>
 
+    <!-- PlaylistContainer -->
     <string name="presentation_batch_e_no_playlist_created">No playlist has been created.</string>
     <string name="presentation_batch_e_new_playlist_hint">Touch the \'New Playlist\' button to start.</string>
 
+    <!-- PlaylistCreationDialogs: create flow -->
     <string name="presentation_batch_e_create_playlist_title">Create playlist</string>
     <string name="presentation_batch_e_create_playlist_subtitle">Choose the creation flow.</string>
     <string name="presentation_batch_e_creation_mode_manual">Manual</string>
     <string name="presentation_batch_e_creation_mode_manual_subtitle">Design artwork, icon, shape and pick songs yourself.</string>
-    <string name="presentation_batch_e_creation_mode_describe">Describe it</string>
-    <string name="presentation_batch_e_creation_mode_describe_subtitle">Type what you want to hear and let the app pick the songs, fully offline.</string>
-    <string name="presentation_batch_e_describe_playlist_title">Describe your playlist</string>
-    <string name="presentation_batch_e_describe_playlist_subtitle">Matched against your library on this device — nothing leaves it.</string>
-    <string name="presentation_batch_e_describe_playlist_hint">e.g. songs to lift weights to</string>
-    <string name="presentation_batch_e_describe_generate">Generate</string>
-    <string name="presentation_batch_e_describe_regenerate">Regenerate</string>
-    <string name="presentation_batch_e_describe_no_matches">No songs in your library match that description.</string>
-    <string name="presentation_batch_e_describe_save">Save playlist</string>
-    <plurals name="presentation_batch_e_describe_result_count">
-        <item quantity="one">%d song matched</item>
-        <item quantity="other">%d songs matched</item>
-    </plurals>
+    <string name="presentation_batch_e_creation_mode_ai">With AI</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_enabled">Generate a curated playlist with advanced controls.</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_disabled">Requires a Gemini API key configured in settings.</string>
+    <string name="presentation_batch_e_setup_api_key">Set up API key</string>
 
+    <!-- AI playlist lab -->
+    <string name="presentation_batch_e_ai_playlist_lab_title">AI Playlist Lab</string>
+    <string name="presentation_batch_e_ai_reset">Reset</string>
+    <string name="presentation_batch_e_ai_generating">Generating…</string>
+    <string name="presentation_batch_e_ai_generate">Generate</string>
+    <string name="presentation_batch_e_ai_section_intent">Intent</string>
+    <string name="presentation_batch_e_ai_playlist_name_optional">Playlist name (optional)</string>
+    <string name="presentation_batch_e_ai_feel_label">What should this playlist feel like?</string>
+    <string name="presentation_batch_e_ai_feel_placeholder">Example: sunset drive with warm synths</string>
+    <string name="presentation_batch_e_ai_section_direction">Direction</string>
+    <string name="presentation_batch_e_ai_mood_label">Mood</string>
+    <string name="presentation_batch_e_ai_activity_label">Activity</string>
+    <string name="presentation_batch_e_ai_era_label">Era</string>
+    <string name="presentation_batch_e_ai_section_curation">Curation engine</string>
+    <string name="presentation_batch_e_ai_energy_label">Energy</string>
+    <string name="presentation_batch_e_ai_energy_description">Controls the intensity and tempo of songs. 1 = calm/slow, 5 = high-energy/fast.</string>
+    <string name="presentation_batch_e_ai_discovery_label">Discovery</string>
+    <string name="presentation_batch_e_ai_discovery_description">Controls how familiar the selections are. 1 = your most played favorites, 5 = rarely played deep cuts.</string>
+    <string name="presentation_batch_e_ai_min_songs">Min songs</string>
+    <string name="presentation_batch_e_ai_max_songs">Max songs</string>
+    <string name="presentation_batch_e_ai_section_filters">Filters</string>
+    <string name="presentation_batch_e_ai_prioritize_genres">Prioritize genres (optional)</string>
+    <string name="presentation_batch_e_ai_prioritize_genres_placeholder">e.g. synthwave, indie pop</string>
+    <string name="presentation_batch_e_ai_avoid_genres">Avoid genres (optional)</string>
+    <string name="presentation_batch_e_ai_avoid_genres_placeholder">e.g. metal, hard trap</string>
+    <string name="presentation_batch_e_ai_preferred_language">Preferred language (optional)</string>
+    <string name="presentation_batch_e_ai_preferred_language_placeholder">e.g. English, Spanish, instrumental</string>
+    <string name="presentation_batch_e_ai_prioritize_favorites">Prioritize favorites</string>
+    <string name="presentation_batch_e_ai_avoid_explicit">Avoid explicit lyrics</string>
+    <string name="presentation_batch_e_ai_section_prompt_preview">Prompt preview</string>
+    <string name="presentation_batch_e_ai_prompt_preview_empty">Your final prompt will appear here once you add preferences.</string>
+    <string name="presentation_batch_e_ai_hero_title">Curate with precision</string>
+    <string name="presentation_batch_e_ai_hero_subtitle">Define mood, activity, constraints and depth.</string>
+    <string name="presentation_batch_e_ai_hero_library_note">The AI will only use songs from your local library.</string>
+    <string name="presentation_batch_e_ai_error_add_instruction">Add at least one instruction for AI.</string>
+    <string name="presentation_batch_e_ai_error_song_range">Set a valid song range.</string>
+    <string name="presentation_batch_e_ai_level_out_of_five">%1$d/5</string>
+    <string name="presentation_batch_e_ai_custom_chip">Custom…</string>
+    <string name="presentation_batch_e_ai_enter_custom_title">Enter custom value</string>
+    <string name="presentation_batch_e_ai_enter_custom_label">Enter your custom value</string>
+
+    <!-- AI prompt assembly (sent to model; localized for consistency with UI) -->
+    <string name="presentation_batch_e_ai_era_any">Any era</string>
+    <string name="presentation_batch_e_ai_prompt_core_request">Core request: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_mood">Mood target: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_activity">Activity context: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_era">Era focus: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_genres">Prioritize genres: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_genres">Avoid genres: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_preferred_language">Preferred language: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_energy">Energy level target: %1$d/5.</string>
+    <string name="presentation_batch_e_ai_prompt_discovery">Discovery target: %1$d/5 where 1 is familiar and 5 is deep cuts.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_favorites">Prioritize songs closer to listener favorites when possible.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_explicit">Avoid explicit lyrics whenever alternatives exist.</string>
+    <string name="presentation_batch_e_ai_prompt_smooth_transitions">Keep transitions smooth and avoid repetitive artist clustering.</string>
+
+    <string-array name="presentation_batch_e_ai_mood_options">
+        <item>Chill</item>
+        <item>Energetic</item>
+        <item>Happy</item>
+        <item>Dark</item>
+        <item>Romantic</item>
+        <item>Melancholic</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_activity_options">
+        <item>Workout</item>
+        <item>Focus</item>
+        <item>Road trip</item>
+        <item>Party</item>
+        <item>Study</item>
+        <item>Late night</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_era_options">
+        <item>@string/presentation_batch_e_ai_era_any</item>
+        <item>70s</item>
+        <item>80s</item>
+        <item>90s</item>
+        <item>2000s</item>
+        <item>2010s</item>
+        <item>2020s</item>
+    </string-array>
+
+    <!-- ReorderPresetsSheet -->
     <string name="presentation_batch_e_reset_presets_title">Reset presets</string>
     <string name="presentation_batch_e_reset_presets_message">This will restore the default preset order and visibility. Continue?</string>
     <string name="presentation_batch_e_manage_presets_title">Manage presets</string>
@@ -65,4 +143,11 @@
     <string name="presentation_batch_e_cd_visible">Visible</string>
     <string name="presentation_batch_e_cd_hidden">Hidden</string>
 
+    <!-- DailyMixMenu -->
+    <string name="presentation_batch_e_daily_mix_how_title">How your Daily Mix is built</string>
+    <string name="presentation_batch_e_daily_mix_how_body">Your Daily Mix is built from your favorite and most-played songs. We also add tracks from artists and genres you like so you can discover new music.</string>
+    <string name="presentation_batch_e_daily_mix_prompt_label">Tell the AI what you want to listen to today</string>
+    <string name="presentation_batch_e_daily_mix_cost_hint">We use a small sample to keep costs low</string>
+    <string name="presentation_batch_e_daily_mix_updating">Updating…</string>
+    <string name="presentation_batch_e_daily_mix_update">Update Daily Mix</string>
 </resources>

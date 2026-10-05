@@ -1,63 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="presentation_batch_e_action_clear_queue">Limpiar cola</string>
-    <string name="presentation_batch_e_action_locate_current_song">Localizar canción actual</string>
-    <string name="presentation_batch_e_action_save_as_playlist">Guardar como lista de reproducción</string>
-    <string name="presentation_batch_e_cd_dismiss_song">Descartar canción</string>
-    <string name="presentation_batch_e_cd_hidden">Oculto</string>
+    <!-- QueueBottomSheet -->
+    <string name="presentation_batch_e_queue_empty">La cola está vacía.</string>
     <string name="presentation_batch_e_cd_queue_actions">Acciones de la cola</string>
-    <string name="presentation_batch_e_cd_remove_from_playlist">Eliminar de la lista de reproducción</string>
-    <string name="presentation_batch_e_cd_reset_presets_default">Restablecer valores por defecto</string>
+    <string name="presentation_batch_e_action_clear_queue">Vaciar cola</string>
+    <string name="presentation_batch_e_action_save_as_playlist">Guardar como lista</string>
+    <string name="presentation_batch_e_queue_named_suffix">Cola de %1$s</string>
+    <string name="presentation_batch_e_queue_current">Cola actual</string>
+    <string name="presentation_batch_e_removed">quitado</string>
+    <string name="presentation_batch_e_clear_queue_dialog_title">Vaciar cola</string>
+    <string name="presentation_batch_e_clear_queue_dialog_message">¿Seguro que quieres quitar todas las canciones de la cola excepto la actual?</string>
+    <string name="presentation_batch_e_next_up">A continuación</string>
+    <string name="presentation_batch_e_queue_subtitle_empty">La cola está vacía por ahora.</string>
+    <string name="presentation_batch_e_queue_source_fallback">Cola</string>
+    <string name="presentation_batch_e_cd_toggle_shuffle">Activar o desactivar aleatorio</string>
+    <string name="presentation_batch_e_cd_toggle_repeat">Activar o desactivar repetición</string>
     <string name="presentation_batch_e_cd_sleep_timer">Temporizador de apagado</string>
-    <string name="presentation_batch_e_cd_toggle_repeat">Alternar repetición</string>
-    <string name="presentation_batch_e_cd_toggle_shuffle">Alternar modo aleatorio</string>
-    <string name="presentation_batch_e_cd_visible">Visible</string>
-    <string name="presentation_batch_e_clear_queue_dialog_message">¿Estás seguro de que quieres eliminar todas las canciones de la cola excepto la actual?</string>
-    <string name="presentation_batch_e_clear_queue_dialog_title">Limpiar cola</string>
-    <string name="presentation_batch_e_create_playlist_subtitle">Elige el flujo de creación.</string>
-    <string name="presentation_batch_e_create_playlist_title">Crear lista de reproducción</string>
-    <string name="presentation_batch_e_creation_mode_describe">Descríbela</string>
-    <string name="presentation_batch_e_creation_mode_describe_subtitle">Escribe lo que quieres escuchar y deja que la app elija las canciones, todo sin conexión.</string>
-    <string name="presentation_batch_e_creation_mode_manual">Manual</string>
-    <string name="presentation_batch_e_creation_mode_manual_subtitle">Diseña la portada, el icono, la forma y selecciona las canciones tú mismo.</string>
-    <string name="presentation_batch_e_describe_generate">Generar</string>
-    <string name="presentation_batch_e_describe_no_matches">Ninguna canción de tu biblioteca coincide con esa descripción.</string>
-    <string name="presentation_batch_e_describe_playlist_hint">p. ej. canciones para levantar pesas</string>
-    <string name="presentation_batch_e_describe_playlist_subtitle">Se compara con tu biblioteca en este dispositivo; nada sale de él.</string>
-    <string name="presentation_batch_e_describe_playlist_title">Describe tu lista de reproducción</string>
-    <string name="presentation_batch_e_describe_regenerate">Regenerar</string>
-    <plurals name="presentation_batch_e_describe_result_count">
-        <item quantity="one">%d canción coincide</item>
-        <item quantity="other">%d canciones coinciden</item>
-    </plurals>
-    <string name="presentation_batch_e_describe_save">Guardar lista</string>
-    <string name="presentation_batch_e_deselect_all">Deseleccionar todo</string>
-    <string name="presentation_batch_e_enter_playlist_name">Introduce un nombre para la lista</string>
-    <string name="presentation_batch_e_manage_presets_title">Gestionar preajustes</string>
+    <string name="presentation_batch_e_save_as_playlist_sheet_title">Guardar como lista</string>
+    <string name="presentation_batch_e_deselect_all">Quitar selección</string>
+    <string name="presentation_batch_e_playlist_name_label">Nombre de la lista</string>
+    <string name="presentation_batch_e_search_songs_to_include_placeholder">Buscar canciones para incluir…</string>
+    <string name="presentation_batch_e_save_as_format">Guardar como: %1$s</string>
+    <string name="presentation_batch_e_enter_playlist_name">Escribe un nombre de lista</string>
+    <string name="presentation_batch_e_no_songs_match_query">Ninguna canción coincide con \"%1$s\"</string>
+    <string name="presentation_batch_e_cd_dismiss_song">Descartar canción</string>
+    <string name="presentation_batch_e_cd_remove_from_playlist">Quitar de la lista</string>
     <string name="presentation_batch_e_more_options_for_song">Más opciones para %1$s</string>
+
+    <plurals name="presentation_batch_e_queue_tracks_lined_up">
+        <item quantity="one">1 tema en cola.</item>
+        <item quantity="other">%d temas en cola.</item>
+    </plurals>
     <plurals name="presentation_batch_e_n_songs_selected">
         <item quantity="one">%d canción seleccionada</item>
         <item quantity="other">%d canciones seleccionadas</item>
     </plurals>
-    <string name="presentation_batch_e_new_playlist_hint">Toca el botón \'Nueva lista\' para comenzar.</string>
-    <string name="presentation_batch_e_next_up">A continuación</string>
+
+    <!-- PlaylistContainer -->
     <string name="presentation_batch_e_no_playlist_created">No se ha creado ninguna lista de reproducción.</string>
-    <string name="presentation_batch_e_no_songs_match_query">Ninguna canción coincide con \"%1$s\"</string>
-    <string name="presentation_batch_e_playlist_name_label">Nombre de la lista</string>
-    <string name="presentation_batch_e_presets_drag_hint">Arrastra para reordenar • Toca el ojo para mostrar u ocultar</string>
-    <string name="presentation_batch_e_queue_current">Cola actual</string>
-    <string name="presentation_batch_e_queue_empty">La cola está vacía.</string>
-    <string name="presentation_batch_e_queue_named_suffix">Cola de %1$s</string>
-    <string name="presentation_batch_e_queue_source_fallback">Cola</string>
-    <string name="presentation_batch_e_queue_subtitle_empty">La cola está vacía por ahora.</string>
-    <plurals name="presentation_batch_e_queue_tracks_lined_up">
-        <item quantity="one">1 pista en cola.</item>
-        <item quantity="other">%d pistas en cola.</item>
-    </plurals>
-    <string name="presentation_batch_e_removed">eliminada</string>
-    <string name="presentation_batch_e_reset_presets_message">Se restaurará el orden y la visibilidad predeterminados de los preajustes. ¿Continuar?</string>
+    <string name="presentation_batch_e_new_playlist_hint">Toca el botón \'Nueva lista\' para empezar.</string>
+
+    <!-- PlaylistCreationDialogs -->
+    <string name="presentation_batch_e_create_playlist_title">Crear lista</string>
+    <string name="presentation_batch_e_create_playlist_subtitle">Elige cómo quieres crearla.</string>
+    <string name="presentation_batch_e_creation_mode_manual">Manual</string>
+    <string name="presentation_batch_e_creation_mode_manual_subtitle">Diseña portada, icono, forma y elige canciones tú mismo.</string>
+    <string name="presentation_batch_e_creation_mode_ai">Con IA</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_enabled">Genera una lista seleccionada con controles avanzados.</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_disabled">Requiere una clave API de Gemini configurada en ajustes.</string>
+    <string name="presentation_batch_e_setup_api_key">Configurar clave API</string>
+
+    <string name="presentation_batch_e_ai_playlist_lab_title">Laboratorio de listas IA</string>
+    <string name="presentation_batch_e_ai_reset">Restablecer</string>
+    <string name="presentation_batch_e_ai_generating">Generando…</string>
+    <string name="presentation_batch_e_ai_generate">Generar</string>
+    <string name="presentation_batch_e_ai_section_intent">Intención</string>
+    <string name="presentation_batch_e_ai_playlist_name_optional">Nombre de la lista (opcional)</string>
+    <string name="presentation_batch_e_ai_feel_label">¿Qué sensación debe tener esta lista?</string>
+    <string name="presentation_batch_e_ai_feel_placeholder">Ej.: atardecer en coche con sintes cálidos</string>
+    <string name="presentation_batch_e_ai_section_direction">Dirección</string>
+    <string name="presentation_batch_e_ai_mood_label">Estado de ánimo</string>
+    <string name="presentation_batch_e_ai_activity_label">Actividad</string>
+    <string name="presentation_batch_e_ai_era_label">Época</string>
+    <string name="presentation_batch_e_ai_section_curation">Motor de selección</string>
+    <string name="presentation_batch_e_ai_energy_label">Energía</string>
+    <string name="presentation_batch_e_ai_energy_description">Controla la intensidad y el tempo. 1 = calmado/lento, 5 = muy enérgico/rápido.</string>
+    <string name="presentation_batch_e_ai_discovery_label">Descubrimiento</string>
+    <string name="presentation_batch_e_ai_discovery_description">Controla lo familiar que son las canciones. 1 = tus favoritas más reproducidas, 5 = joyas poco escuchadas.</string>
+    <string name="presentation_batch_e_ai_min_songs">Mín. canciones</string>
+    <string name="presentation_batch_e_ai_max_songs">Máx. canciones</string>
+    <string name="presentation_batch_e_ai_section_filters">Filtros</string>
+    <string name="presentation_batch_e_ai_prioritize_genres">Priorizar géneros (opcional)</string>
+    <string name="presentation_batch_e_ai_prioritize_genres_placeholder">p. ej. synthwave, indie pop</string>
+    <string name="presentation_batch_e_ai_avoid_genres">Evitar géneros (opcional)</string>
+    <string name="presentation_batch_e_ai_avoid_genres_placeholder">p. ej. metal, trap duro</string>
+    <string name="presentation_batch_e_ai_preferred_language">Idioma preferido (opcional)</string>
+    <string name="presentation_batch_e_ai_preferred_language_placeholder">p. ej. inglés, español, instrumental</string>
+    <string name="presentation_batch_e_ai_prioritize_favorites">Priorizar favoritas</string>
+    <string name="presentation_batch_e_ai_avoid_explicit">Evitar letras explícitas</string>
+    <string name="presentation_batch_e_ai_section_prompt_preview">Vista previa del prompt</string>
+    <string name="presentation_batch_e_ai_prompt_preview_empty">El prompt final aparecerá aquí cuando añadas preferencias.</string>
+    <string name="presentation_batch_e_ai_hero_title">Selecciona con precisión</string>
+    <string name="presentation_batch_e_ai_hero_subtitle">Define estado de ánimo, actividad, límites y profundidad.</string>
+    <string name="presentation_batch_e_ai_hero_library_note">La IA solo usará canciones de tu biblioteca local.</string>
+    <string name="presentation_batch_e_ai_error_add_instruction">Añade al menos una instrucción para la IA.</string>
+    <string name="presentation_batch_e_ai_error_song_range">Indica un rango de canciones válido.</string>
+    <string name="presentation_batch_e_ai_level_out_of_five">%1$d/5</string>
+    <string name="presentation_batch_e_ai_custom_chip">Personalizado…</string>
+    <string name="presentation_batch_e_ai_enter_custom_title">Valor personalizado</string>
+    <string name="presentation_batch_e_ai_enter_custom_label">Escribe tu valor</string>
+
+    <string name="presentation_batch_e_ai_era_any">Cualquier época</string>
+    <string name="presentation_batch_e_ai_prompt_core_request">Petición principal: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_mood">Objetivo de ánimo: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_activity">Contexto de actividad: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_era">Enfoque de época: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_genres">Priorizar géneros: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_genres">Evitar géneros: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_preferred_language">Idioma preferido: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_energy">Objetivo de energía: %1$d/5.</string>
+    <string name="presentation_batch_e_ai_prompt_discovery">Objetivo de descubrimiento: %1$d/5 (1 = familiar, 5 = joyas ocultas).</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_favorites">Prioriza canciones cercanas a las favoritas del oyente cuando sea posible.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_explicit">Evita letras explícitas siempre que existan alternativas.</string>
+    <string name="presentation_batch_e_ai_prompt_smooth_transitions">Mantén transiciones suaves y evita agrupar demasiado al mismo artista.</string>
+
+    <string-array name="presentation_batch_e_ai_mood_options">
+        <item>Relajado</item>
+        <item>Energético</item>
+        <item>Alegre</item>
+        <item>Oscuro</item>
+        <item>Romántico</item>
+        <item>Melancólico</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_activity_options">
+        <item>Entrenamiento</item>
+        <item>Concentración</item>
+        <item>Viaje en coche</item>
+        <item>Fiesta</item>
+        <item>Estudio</item>
+        <item>Madrugada</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_era_options">
+        <item>@string/presentation_batch_e_ai_era_any</item>
+        <item>70s</item>
+        <item>80s</item>
+        <item>90s</item>
+        <item>2000s</item>
+        <item>2010s</item>
+        <item>2020s</item>
+    </string-array>
+
+    <!-- ReorderPresetsSheet -->
     <string name="presentation_batch_e_reset_presets_title">Restablecer preajustes</string>
-    <string name="presentation_batch_e_save_as_format">Guardar como: %1$s</string>
-    <string name="presentation_batch_e_save_as_playlist_sheet_title">Guardar como lista de reproducción</string>
-    <string name="presentation_batch_e_search_songs_to_include_placeholder">Buscar canciones para incluir…</string>
+    <string name="presentation_batch_e_reset_presets_message">Se restaurará el orden y la visibilidad predeterminados de los preajustes. ¿Continuar?</string>
+    <string name="presentation_batch_e_manage_presets_title">Gestionar preajustes</string>
+    <string name="presentation_batch_e_presets_drag_hint">Arrastra para reordenar • Toca el ojo para mostrar u ocultar</string>
+    <string name="presentation_batch_e_cd_reset_presets_default">Restablecer valores por defecto</string>
+    <string name="presentation_batch_e_cd_visible">Visible</string>
+    <string name="presentation_batch_e_cd_hidden">Oculto</string>
+
+    <!-- DailyMixMenu -->
+    <string name="presentation_batch_e_daily_mix_how_title">Cómo se crea tu Daily Mix</string>
+    <string name="presentation_batch_e_daily_mix_how_body">Tu Daily Mix se crea a partir de tus canciones favoritas y las que más escuchas. También añadimos temas de artistas y géneros que te gustan para que descubras música nueva.</string>
+    <string name="presentation_batch_e_daily_mix_prompt_label">Dile a la IA qué quieres escuchar hoy</string>
+    <string name="presentation_batch_e_daily_mix_cost_hint">Usamos una muestra pequeña para mantener los costes bajos</string>
+    <string name="presentation_batch_e_daily_mix_updating">Actualizando…</string>
+    <string name="presentation_batch_e_daily_mix_update">Actualizar Daily Mix</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_e_action_locate_current_song">Localizar la canción actual</string>
+    <string name="autoplay">Reproducción automática</string>
 </resources>

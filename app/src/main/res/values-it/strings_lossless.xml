@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">Fonti senza perdite</string>
+    <string name="settings_category_lossless_subtitle">Tidal, Qobuz, Deezer e Apple Music tramite il pool di fonti</string>
+    <string name="lossless_tidal_login">Accedi a Tidal</string>
+    <string name="lossless_auth_webview_tidal_subtitle">Accedi a Tidal qui sotto. PixelMusic salva la sessione automaticamente.</string>
+    <string name="lossless_tidal_login_success">Accesso a Tidal</string>
+    <string name="lossless_tidal_account_free_warning">Questo account Tidal non è HiFi/Premium. La riproduzione senza perdite tramite Tidal potrebbe non riuscire; l\'app tornerà ad altre fonti.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">Impossibile completare l\'accesso standard; aprendo invece il web player Tidal. Basta accedere e la riproduzione si connetterà automaticamente.</string>
+    <string name="lossless_deezer_login">Accedi a Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">Accedi a Deezer di seguito. Il cookie di sessione viene salvato automaticamente.</string>
+    <string name="lossless_deezer_login_success">Accesso a Deezer come %1$s</string>
+    <string name="lossless_deezer_manual_arl">Accedi manualmente con il cookie ARL</string>
+    <string name="lossless_deezer_manual_arl_hint">Deezer non è disponibile nella tua regione? Accedi da qualsiasi browser (funziona una VPN), copia il valore del cookie arl e incollalo qui.</string>
+    <string name="lossless_deezer_manual_arl_apply">Verifica e accedi</string>
+    <string name="lossless_deezer_arl_invalid">L\'ARL non ha funzionato: copia il valore completo del cookie arl e riprova.</string>
+    <string name="lossless_qobuz_login">Accedi a Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">Accedi a Qobuz qui sotto. Le tue credenziali vengono acquisite automaticamente.</string>
+    <string name="lossless_qobuz_login_success">Aggiunto account Qobuz</string>
+    <string name="lossless_qobuz_app_secret_title">Inserisci il segreto dell\'app Qobuz</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (dall\'origine del token)</string>
+    <string name="lossless_applemusic_login">Accedi ad Apple Music</string>
+    <string name="lossless_applemusic_login_subtitle">Accedi con il tuo ID Apple: il tuo token utente musicale verrà recuperato automaticamente.</string>
+    <string name="lossless_applemusic_login_failed">Impossibile recuperare il token Apple Music: prova a incollare i token manualmente</string>
+    <string name="lossless_applemusic_login_success">Accedi ad Apple Music</string>
+</resources>

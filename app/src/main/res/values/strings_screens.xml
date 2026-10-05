@@ -1,15 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Navigation / misc -->
     <string name="nav_error_genre_id_missing">Error: Genre ID missing</string>
-
-    <string name="audio_bookmarks_back_to_top">Back to top</string>
-    <string name="audio_bookmarks_clear_filter">Clear filter</string>
-    <string name="audio_bookmarks_name_label">Bookmark name</string>
-    <string name="audio_bookmarks_title">Bookmarks</string>
-    <string name="audio_bookmarks_cd_open">Audio bookmarks</string>
-    <string name="audio_bookmarks_cd_add">Save bookmark</string>
     <string name="easter_egg_thank_you">Thank you for using PixelMusic!</string>
 
+    <!-- Word delimiter config -->
     <string name="word_delimiter_section_title">Current Word Delimiters</string>
     <string name="word_delimiter_section_subtitle">These keywords split artist names when surrounded by spaces. Matched case-insensitively. Tap to remove.</string>
     <string name="word_delimiter_empty">No word delimiters configured</string>
@@ -25,6 +20,7 @@
     <string name="word_delimiter_toast_reset">Word delimiters reset to defaults</string>
     <string name="action_reset">Reset</string>
 
+    <!-- Delimiter config (path separators) -->
     <string name="delimiter_section_title">Current Delimiters</string>
     <string name="delimiter_section_subtitle">Tap a delimiter to remove it. At least one delimiter is required.</string>
     <string name="delimiter_add_title">Add New Delimiter</string>
@@ -40,8 +36,11 @@
     <string name="delimiter_label_space">Space</string>
     <string name="cd_add_path_delimiter">Add delimiter</string>
 
+    <!-- Accounts -->
+    <string name="accounts_google_drive_soon">Google Drive is coming soon.</string>
     <string name="accounts_unable_open_screen">Unable to open this screen right now.</string>
 
+    <!-- Setup (subset; more keys follow in same file) -->
     <string name="setup_welcome_prefix">Welcome to </string>
     <string name="setup_beta_symbol">β</string>
     <string name="setup_beta_label">Beta</string>
@@ -51,13 +50,6 @@
     <string name="setup_theme_subtitle">Pick the look you want before you start exploring your library.</string>
     <string name="setup_theme_footer">You can change this later in Settings &gt; Appearance &gt; App Theme.</string>
     <string name="setup_recommended">Recommended</string>
-    <string name="setup_external_services_title">Optional Online Services</string>
-    <string name="setup_external_services_subtitle">PixelMusic works offline by default. Enable only the lookups you want.</string>
-    <string name="setup_external_lyrics_title">Online lyrics from LRCLIB</string>
-    <string name="setup_external_lyrics_description">Search lrclib.net when local or embedded lyrics are missing.</string>
-    <string name="setup_external_artist_images_title">Artist artwork from Deezer</string>
-    <string name="setup_external_artist_images_description">Fetch missing artist photos from Deezer and cache them locally.</string>
-    <string name="setup_external_services_footer">You can change these later in Settings &gt; Music Management &gt; Optional online services.</string>
     <string name="setup_library_layout_title">Library Layout</string>
     <string name="setup_library_layout_subtitle">Choose your preferred way to navigate your library.</string>
     <string name="setup_compact_mode">Compact Mode</string>
@@ -88,7 +80,9 @@
     <string name="toast_grant_permission_first">Please grant the required permission first.</string>
     <string name="toast_grant_all_permissions">Please grant all required permissions.</string>
     <string name="toast_grant_storage_first">Grant storage permissions first</string>
+    <string name="toast_battery_settings_unavailable">Could not open battery settings</string>
 
+    <!-- Content descriptions -->
     <string name="cd_expand_menu">Expand menu</string>
     <string name="cd_next_step">Next</string>
     <string name="cd_finish">Finish</string>
@@ -97,8 +91,9 @@
     <string name="cd_add_word_delimiter">Add word delimiter</string>
     <string name="cd_reset_defaults">Reset defaults</string>
 
+    <!-- Setup (additional literals) -->
     <string name="setup_excluded_folders_title">Excluded folders</string>
-    <string name="setup_excluded_folders_description">All folders are scanned by default. Pick any locations you want to ignore when building your library.</string>
+    <string name="setup_excluded_folders_description">Pick folders to ignore when scanning your music library.</string>
     <string name="setup_choose_folders_ignore">Choose folders to ignore</string>
     <string name="setup_permission_media_title">Media Permission</string>
     <string name="setup_permission_media_description">PixelMusic needs access to your audio files to build your music library.</string>
@@ -108,10 +103,10 @@
     <string name="setup_permission_notifications_description">Enable notifications to control your music from the lock screen and notification shade.</string>
     <string name="setup_enable_notifications">Enable Notifications</string>
     <string name="setup_permission_alarms_title">Alarms &amp; Reminders</string>
-    <string name="setup_permission_alarms_description">Optional, but recommended if you use Sleep Timer and want PixelMusic to stop playback exactly on time.</string>
+    <string name="setup_permission_alarms_description">Allows Sleep Timer to stop playback accurately on time.</string>
     <string name="setup_grant_permission_generic">Grant Permission</string>
     <string name="setup_backup_have_title">Do you have a backup?</string>
-    <string name="setup_backup_have_description">If you already have a PixelMusic backup, restore it now and skip most of the remaining setup on this device.</string>
+    <string name="setup_backup_have_description">Restore an existing PixelMusic backup to skip setup on this device.</string>
     <string name="setup_inspecting_backup">Inspecting backup</string>
     <string name="setup_restoring_backup">Restoring backup</string>
     <string name="setup_import_backup">Import backup</string>
@@ -124,12 +119,17 @@
     <string name="setup_compact_mode_pill_hint">Using minimal pill navigation</string>
     <string name="setup_compact_mode_tab_hint">Using standard tab row</string>
     <string name="setup_preview_songs_label">Songs</string>
+    <string name="setup_battery_optimization_title">Battery Optimization</string>
+    <string name="setup_battery_optimization_description">Disable battery optimization to prevent playback interruptions in background.</string>
+    <string name="setup_disable_battery_optimization">Disable Optimization</string>
     <string name="setup_nav_floating_pill_description">Floating pill with rounded corners</string>
     <string name="setup_nav_full_width_description">Standard full-width bar</string>
 
+    <!-- Delete song (Material dialog from ViewModel) -->
     <string name="dialog_delete_song_title">Delete song?</string>
     <string name="dialog_delete_song_message">\"%1$s\" by %2$s\n\nThis song will be permanently deleted from your device and cannot be recovered.</string>
 
+    <!-- Home / detail shared -->
     <string name="home_your_mix_title">Your\nMix</string>
     <string name="home_empty_placeholder_title">No data to show yet</string>
     <string name="home_empty_placeholder_subtitle">Your mix will appear here when PixelMusic finds songs or syncs a source.</string>
@@ -146,6 +146,7 @@
     <string name="mashup_cd_play_pause">Play/Pause</string>
     <string name="cd_song_cover">Song cover</string>
 
+    <!-- Crash report dialog -->
     <string name="crash_report_title">Oops! Something went wrong</string>
     <string name="crash_report_subtitle">The app crashed during your last session. Help us fix this by sharing the crash report.</string>
     <string name="crash_report_date_line">Date: %1$s</string>
@@ -158,6 +159,7 @@
     <string name="action_copy">Copy</string>
     <string name="action_share">Share</string>
 
+    <!-- Search screen -->
     <string name="search_placeholder">Search…</string>
     <string name="cd_search_icon">Search</string>
     <string name="cd_clear_search_query">Clear search</string>
@@ -171,60 +173,46 @@
     <string name="search_try_different_or_filters">Try a different search term or check your filters.</string>
     <string name="search_no_results_found">No results found.</string>
 
+    <!-- Genre browse -->
     <string name="browse_by_genre">Browse by genre</string>
     <string name="no_genres_available">No genres available.</string>
 
+    <!-- About -->
+    <string name="about_no_contributors">No contributors found right now. Please try again later.</string>
     <string name="about_app_name">PixelMusic</string>
-    <string name="about_tagline">Local-first music, self-hosted streaming, and Material 3 craft in one FOSS player.</string>
+    <string name="about_tagline">Open source music player built with its community.</string>
     <string name="about_version_format">Version v%1$s</string>
     <string name="about_contributions_format">%1$d contrib.</string>
     <string name="screen_about">About</string>
-    <string name="about_maintainer_title">Maintainers</string>
-    <string name="about_maintainer_subtitle">FOSS and original/non-FOSS maintainership.</string>
-    <string name="about_project_title">Project</string>
-    <string name="about_project_subtitle">Source, releases, and community entry points.</string>
-    <string name="about_link_source_title">Source code</string>
-    <string name="about_link_source_subtitle">github.com/lostf1sh/PixelMusic</string>
-    <string name="about_link_fdroid_title">F-Droid</string>
-    <string name="about_link_fdroid_subtitle">Available on the F-Droid catalog</string>
-    <string name="cd_about_open_link">Open %1$s</string>
+    <string name="about_maintainer_title">Maintainer</string>
+    <string name="about_maintainer_subtitle">The person behind PixelMusic.</string>
+    <string name="about_spotlight_title">Community spotlight</string>
+    <string name="about_spotlight_subtitle">Recognition for collaborators with major impact.</string>
+    <string name="about_contributors_section_title">Open source contributors</string>
+    <string name="about_contributors_section_subtitle">Live contributor list from GitHub.</string>
     <string name="about_signal_open_source">Open source</string>
     <string name="about_signal_community_first">Community-first</string>
     <string name="about_signal_material3">Material 3 expressive</string>
-    <string name="about_support_eyebrow">GitHub Sponsors</string>
-    <string name="about_support_title">Support PixelMusic</string>
-    <string name="about_support_body">Help keep the FOSS edition maintained, reviewed, and tested for real Android devices.</string>
-    <string name="about_support_chip_foss">FOSS maintenance</string>
-    <string name="about_support_chip_ci">CI and releases</string>
-    <string name="about_support_chip_streaming">Self-hosted music</string>
-    <string name="about_support_cta">Sponsor on GitHub</string>
     <string name="cd_open_github_profile">Open GitHub profile</string>
-    <string name="cd_open_telegram_profile">Open Telegram profile</string>
+    <string name="cd_open_telegram">Open Telegram</string>
     <string name="cd_contributor_avatar">Avatar of %1$s</string>
     <string name="cd_contributor_icon">Icon of %1$s</string>
 
+    <!-- Streaming / cloud dashboards -->
     <string name="screen_subsonic_dashboard_title">Subsonic</string>
     <string name="dash_playlists_synced_count">%1$d playlists synced</string>
+    <string name="dash_folders_synced_count">%1$d folders synced</string>
     <string name="dash_title_playlists">Playlists</string>
-    <string name="dash_library_playlist_title">Library</string>
+    <string name="dash_music_folders">Music folders</string>
     <string name="dash_action_sync">Sync</string>
     <string name="dash_playlists_empty_title">No playlists synced yet</string>
     <string name="dash_playlists_empty_hint_subsonic">Tap sync to fetch your playlists</string>
     <string name="dash_playlists_empty_hint_jellyfin">Tap sync to fetch your Jellyfin playlists</string>
+    <string name="dash_no_folders_yet">No folders added yet</string>
+    <string name="dash_tap_plus_add_drive_folder">Tap + to add a Drive folder</string>
     <string name="dash_quick_actions">Quick actions</string>
     <string name="dash_quick_actions_subsonic_subtitle">Manage Navidrome, Airsonic and other Subsonic-compatible servers.</string>
     <string name="dash_quick_actions_jellyfin_subtitle">Manage your Jellyfin server connection.</string>
-    <string name="dash_libraries_title">Libraries</string>
-    <string name="dash_libraries_all">All libraries</string>
-    <string name="dash_libraries_selected_count">%1$d of %2$d selected</string>
-    <string name="dash_libraries_more_count">+%1$d more</string>
-    <string name="dash_libraries_change">Change</string>
-    <string name="dash_libraries_load_failed">Could not load libraries; sync uses all</string>
-    <string name="dash_libraries_sheet_subtitle">Choose which server libraries are included when syncing the main library.</string>
-    <string name="dash_libraries_all_subtitle">Include every library exposed by this server</string>
-    <string name="dash_libraries_folder_subtitle">Include this library in the next library sync</string>
-    <string name="dash_libraries_sync_needed">Sync library to apply changes</string>
-    <string name="dash_libraries_not_music">Not a music library</string>
     <string name="dash_status_syncing">Syncing</string>
     <string name="dash_action_sync_library">Sync library</string>
     <string name="dash_action_disconnect">Disconnect</string>
@@ -240,15 +228,258 @@
     <string name="dash_status_library_sync_complete">Library sync complete</string>
     <string name="dash_song_count">%1$d songs</string>
     <string name="cd_sync">Sync</string>
+    <string name="cd_sync_all">Sync all</string>
+    <string name="cd_add_drive_folder">Add folder</string>
     <string name="cd_logout">Log out</string>
+    <string name="screen_netease_dashboard_title">NetEase Music</string>
+    <string name="screen_qq_music_dashboard_title">QQ Music</string>
+    <string name="cd_sync_all_playlists">Sync all playlists</string>
+    <string name="error_with_message_format">Error: %1$s</string>
+    <string name="sync_status_syncing_ellipsis">Syncing…</string>
+    <string name="qq_select_playlist_type_title">Select playlist type</string>
+    <string name="qq_choose_playlists_to_sync">Choose which playlists to sync:</string>
+    <string name="qq_all_playlists">All playlists</string>
+    <string name="qq_created_and_collected">Created &amp; collected</string>
+    <string name="qq_created_playlists">Created playlists</string>
+    <string name="qq_collected_playlists">Collected playlists</string>
+    <string name="cd_user_avatar">User avatar</string>
     <string name="toast_playlist_created">Playlist created successfully</string>
+    <string name="toast_set_ai_provider_api_key_first">Set your AI provider API key first</string>
+    <string name="toast_set_gemini_api_key_first">Set your Gemini API key first</string>
     <string name="toast_added_to_queue">Added to queue</string>
     <string name="toast_playing_next">Playing next</string>
     <string name="error_share_song_format">Could not share song: %1$s</string>
-    <string name="cd_artist_format">Artist: %1$s</string>
-    <string name="cd_play_artist">Play artist</string>
-    <string name="cd_play_playlist">Play playlist</string>
-    <string name="cd_toggle_grid_list">Toggle grid/list view</string>
-    <string name="cd_genre_illustration">Genre illustration</string>
-    <string name="dash_last_synced_format">Last synced: %1$s</string>
+    <string name="settings_download_directory_title">Download Directory</string>
+    <string name="settings_download_directory_desc">Configure storage location for downloaded songs</string>
+    <string name="settings_download_audio_quality_title">Download Audio Quality</string>
+    <string name="settings_download_audio_quality_desc">Quality for downloaded songs</string>
+    <string name="settings_pitch_black_title">Pitch Black</string>
+    <string name="settings_pitch_black_desc">Pure black theme to save battery on OLED screens</string>
+    <string name="settings_kanji_dict_title">Japanese Kanji Dictionary</string>
+    <string name="settings_kanji_dict_installed">Installed (~13 MB) • High accuracy offline Kanji parsing active</string>
+    <string name="settings_kanji_dict_downloading">Downloading dictionary: %1$d%%</string>
+    <string name="settings_kanji_dict_error">Download failed: %1$s</string>
+    <string name="settings_kanji_dict_default_desc">Built-in 0-MB Kana transliteration active. Download full Kanji dictionary on-demand (~13 MB)</string>
+    <string name="settings_perf_battery_section">Performance &amp; Battery</string>
+    <string name="settings_perf_mode_title">Performance Mode (Low-End &amp; Battery Saver)</string>
+    <string name="settings_perf_mode_desc">Reduces animations and blurs to keep the app smooth and save battery.</string>
+    <string name="settings_hardware_audio_offload_title">Hardware Audio Offload</string>
+    <string name="settings_hardware_audio_offload_desc">Use hardware DSP for audio decoding to save battery during playback.</string>
+    <string name="settings_saavn_hq_title">JioSaavn HQ Streaming</string>
+    <string name="settings_saavn_hq_desc">Stream up to 320 kbps AAC via JioSaavn. When off, uses Lossless or YouTube Opus.</string>
+    <string name="settings_cache_liked_songs_title">Cache liked songs manually</string>
+    <string name="settings_cache_liked_songs_desc">Download YouTube songs when liked for offline playback.</string>
+    <string name="settings_cache_most_played_title">Cache most played songs</string>
+    <string name="settings_cache_most_played_desc">Automatically download frequently played YouTube songs.</string>
+    <string name="settings_yt_link_integration_section">YouTube Link Integration</string>
+    <string name="settings_yt_link_intercept_title">YouTube Link Intercept</string>
+    <string name="settings_yt_link_intercept_desc">Allow Pixel Music to automatically open music.youtube.com links.</string>
+    <string name="settings_open_system_settings">Open System Settings</string>
+    <string name="settings_pure_yt_music_title">Pure YouTube Music</string>
+    <string name="settings_pure_yt_music_desc">Filter out non-music video content and show only audio songs.</string>
+    <string name="settings_recommendations_section">Recommendations &amp; YouTube Content</string>
+    <string name="settings_content_customization_section">Content Customization</string>
+    <string name="settings_filter_cover_lofi_title">Hide cover and lo-fi tracks</string>
+    <string name="settings_filter_cover_lofi_desc">Hide covers and lo-fi tracks from recommendations and queues.</string>
+    <string name="settings_lossless_audio_sources_title">Lossless Audio Sources (ArchiveTune)</string>
+    <string name="settings_lossless_streaming_sources_title">Lossless Streaming Sources</string>
+    <string name="settings_lossless_streaming_sources_desc">Tidal, Qobuz, Deezer, Apple Music via Archive pool &amp; accounts</string>
+    <string name="settings_options_section">Options</string>
+    <string name="settings_explore_lastfm_title">Explore recommendations with Last.fm</string>
+    <string name="settings_explore_lastfm_desc">Use your Last.fm listening history, top albums, and friends to personalize the Explore page.</string>
+    <string name="settings_smart_mix_playlists_section">Smart Mix Playlists</string>
+    <string name="settings_lastfm_smart_mix_title">Last.fm Smart Mix</string>
+    <string name="settings_lastfm_smart_mix_desc">Use Last.fm recommendations for Smart Mixes instead of YouTube Music.</string>
+    <string name="settings_show_smart_mix_in_library_title">Show Smart Mix playlists in Library</string>
+    <string name="settings_show_smart_mix_in_library_desc">Display or hide Last.fm/AI-generated Smart Mix playlists on the Library playlists page.</string>
+    <string name="settings_sync_local_playlists_yt_title">Sync local playlists to YouTube Music</string>
+    <string name="settings_sync_local_playlists_yt_desc">Sync local playlist edits back to your YouTube Music account.</string>
+    <string name="settings_generated_retention_label">Generated Playlists Retention</string>
+    <string name="settings_generated_retention_desc">Choose how long to keep generated Last.fm mix playlists in your library.</string>
+    <string name="accounts_sync_personalization">Synchronization &amp; Personalization</string>
+    <string name="accounts_sync_playlists_likes_title">Sync Playlists &amp; Liked Songs</string>
+    <string name="accounts_sync_playlists_likes_desc">Sync YouTube Music playlists and likes with your library.</string>
+    <string name="accounts_sync_listening_activity_title">Sync Listening Activity</string>
+    <string name="accounts_sync_listening_activity_desc">Share played tracks to your YouTube Music account history.</string>
+    <string name="accounts_personalized_explore_title">Personalized Explore Feed</string>
+    <string name="accounts_personalized_explore_desc">When off, loads the explore page anonymously without account history.</string>
+    <string name="accounts_personalized_queue_title">Personalized Queue &amp; Radios</string>
+    <string name="accounts_personalized_queue_desc">When off, builds auto-play recommendations purely based on current song.</string>
+    <string name="accounts_sync_library_now">Sync Library Now</string>
+    <string name="accounts_syncing_library">Syncing Library...</string>
+    <string name="accounts_sign_in_youtube">Sign in to YouTube Music</string>
+    <string name="accounts_available_services">Available Services</string>
+    <string name="player_play_next">Play next</string>
+    <string name="player_save_to_playlist">Save to playlist</string>
+    <string name="player_start_mix_from_this">Start Mix from this</string>
+    <string name="player_go_to_album">Go to album</string>
+    <string name="player_go_to_artist">Go to artist</string>
+    <string name="player_clear_queue">Clear queue</string>
+    <string name="song_info_available_offline">Available Offline</string>
+    <string name="song_info_downloading">Downloading...</string>
+    <string name="song_info_download_for_offline">Download for Offline</string>
+    <string name="setup_nav_floating_pill_m3_title">Expressive Pill</string>
+    <string name="setup_nav_floating_pill_m3_desc">Floating capsule with detached search button.</string>
+    <string name="setup_nav_floating_pill_bar_title">Classic Pill</string>
+    <string name="setup_nav_floating_pill_bar_desc">Floating capsule with custom corner radius.</string>
+    <string name="setup_nav_full_width_bar_title">Full Width Bar</string>
+    <string name="setup_nav_full_width_bar_desc">Edge-to-edge navigation bar across the bottom.</string>
+    <string name="exp_floating_header_title">Floating Pill Header Bar</string>
+    <string name="exp_floating_header_desc">Enable floating capsule-style headers with top edge blur fade</string>
+    <string name="exp_advanced_explore_title">Advanced Explore Page</string>
+    <string name="exp_advanced_explore_desc">Load personalized recommendations and mixes from YouTube Music.</string>
+    <string name="explore_section_artists_for_you">Artists for you</string>
+    <string name="explore_section_fresh_finds">Fresh finds</string>
+    <string name="explore_section_fresh_finds_desc">New tracks matched to your listening vibe</string>
+    <string name="explore_section_jump_back_in">Jump back in</string>
+    <string name="explore_section_mixes_to_explore">Mixes to explore</string>
+    <string name="explore_section_mixes_to_explore_desc">Familiar favorites &amp; fresh combinations</string>
+    <string name="explore_section_favorites_to_revisit">Favorites to revisit</string>
+    <string name="explore_section_your_library">Your Library</string>
+    <string name="explore_section_your_library_desc">Your saved playlists &amp; albums</string>
+    <string name="explore_section_trending_now">Trending now</string>
+    <string name="explore_section_trending_now_desc">Top chart hits in your region</string>
+    <string name="explore_section_new_releases">New releases</string>
+    <string name="explore_section_new_releases_desc">Fresh drops &amp; latest albums</string>
+    <string name="artist_popular_songs_title">Popular Songs</string>
+    <string name="artist_albums_title">Albums</string>
+    <string name="artist_singles_eps_title">Singles &amp; EPs</string>
+    <string name="action_see_all">See all</string>
+    <string name="action_shuffle">Shuffle</string>
+    <string name="action_shuffle_play">Shuffle Play</string>
+    <string name="visibility_label">Visibility</string>
+    <string name="visibility_local">Local</string>
+    <string name="visibility_sign_in_yt_sync">Sign in to YT for Cloud sync</string>
+    <string name="filter_words_title">Filtered Words</string>
+    <string name="filter_words_covers_lofi_title">Filtered Words (Covers &amp; Lo-Fi)</string>
+    <string name="filter_words_none_configured">No filter words configured.</string>
+    <string name="filter_words_add_title">Add Filter Word</string>
+    <string name="filter_words_placeholder">e.g., cover, lofi, acoustic, remix</string>
+    <string name="filter_words_how_it_works_title">How Filter Words Work</string>
+    <string name="filter_words_reset_action">Reset Filter Words</string>
+    <string name="quick_picks_title">Quick Picks</string>
+    <string name="quick_picks_fetching_from_yt">Fetching from YouTube...</string>
+    <string name="quick_picks_songs_from_yt">%1$d songs from YouTube</string>
+    <string name="playlist_confirm_name">Confirm playlist name:</string>
+    <string name="playlist_action_import">Import</string>
+    <string name="playlist_already_exists_title">Playlist Already Exists</string>
+    <string name="playlist_already_exists_body">A playlist named "%1$s" already exists in your library. What would you like to do?</string>
+    <string name="playlist_update_existing">Update Existing</string>
+    <string name="playlist_create_new">Create New</string>
+    <string name="quick_import_title">Quick Import</string>
+    <string name="quick_import_desc">Sync playlists &amp; songs instantly</string>
+    <string name="provider_yt_music_subtitle">Stream and import playlists</string>
+    <string name="provider_telegram_subtitle">Stream from channels &amp; chats</string>
+    <string name="provider_coming_soon">Coming soon</string>
+    <string name="share_card_style">Card Style:</string>
+    <string name="share_glass">Glass</string>
+    <string name="share_solid">Solid</string>
+    <string name="share_card_theme">Card Theme</string>
+    <string name="share_select_lyrics_hint">Select lyrics below to share...</string>
+    <string name="share_select_lyrics_title">Select Lyrics</string>
+    <string name="recap_failed_to_calculate">Failed to calculate Recap stats</string>
+    <string name="recap_is_building_title">Your Recap is Building!</string>
+    <string name="recap_is_building_desc">Listen to a few more tracks and playlists to unlock your personalized listening habits, top charts, and music persona.</string>
+    <string name="recap_explore_music_now">Explore Music Now</string>
+    <string name="recap_listening_in_numbers">Your Listening in Numbers</string>
+    <string name="recap_summary_journeys">Summary of your musical journeys.</string>
+    <string name="recap_listening_time">Listening Time</string>
+    <string name="recap_discovered_artists">Discovered Artists</string>
+    <string name="recap_play_top_tracks_now">Play Top Tracks Now</string>
+    <string name="recap_save_playlist">Save Playlist</string>
+    <string name="recap_share_recap">Share Recap</string>
+    <string name="about_donate_support_title">Donate for Support</string>
+    <string name="about_donate_support_desc">UPI (India) &amp; Ko-fi (Global)</string>
+    <string name="about_rate_app_title">Rate PixelMusic</string>
+    <string name="about_rate_app_desc">Star us on GitHub</string>
+    <string name="about_share_app_title">Share App</string>
+    <string name="about_share_app_desc">Recommend PixelMusic to others</string>
+    <string name="about_privacy_policy_title">Privacy Policy</string>
+    <string name="about_privacy_policy_desc">Read our privacy commitment</string>
+    <string name="about_i_understand">I Understand</string>
+    <string name="artist_singular">Artist</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_search">Search</string>
+    <string name="search_results">Search results</string>
+    <string name="song_info_resolving_format">Resolving %1$s • %2$s kbps • %3$s</string>
+
+    <!-- Automated Comprehensive Translations -->
+    <string name="tab_playlists">PLAYLISTS</string>
+    <string name="tab_folders">FOLDERS</string>
+    <string name="tab_liked">LIKED</string>
+    <string name="home_todays_mix_subtitle">Today\'s Mix for you</string>
+    <string name="home_greeting_morning_1">Good morning, %1$s! ☀️</string>
+    <string name="home_greeting_morning_2">Glad you\'re awake, %1$s. 🌅</string>
+    <string name="home_greeting_morning_3">Welcome back, %1$s! 🌅</string>
+    <string name="home_greeting_morning_4">Ready today, %1$s? ☀️</string>
+    <string name="home_greeting_morning_anon_1">Good morning! ☀️</string>
+    <string name="home_greeting_morning_anon_2">Glad you\'re awake. 🌅</string>
+    <string name="home_greeting_morning_anon_3">Welcome back! 🌅</string>
+    <string name="home_greeting_morning_anon_4">Ready today? ☀️</string>
+    <string name="home_greeting_afternoon_1">Good afternoon, %1$s! ☀️</string>
+    <string name="home_greeting_afternoon_2">Need a break, %1$s? 💆</string>
+    <string name="home_greeting_afternoon_3">Glad to see you, %1$s. 🍕</string>
+    <string name="home_greeting_afternoon_4">Hope it\'s going well, %1$s. 🌟</string>
+    <string name="home_greeting_afternoon_anon_1">Good afternoon! ☀️</string>
+    <string name="home_greeting_afternoon_anon_2">Need a break? 💆</string>
+    <string name="home_greeting_afternoon_anon_3">Glad to see you. 🍕</string>
+    <string name="home_greeting_afternoon_anon_4">Hope it\'s going well. 🌟</string>
+    <string name="home_greeting_evening_1">Welcome home, %1$s! 🏡</string>
+    <string name="home_greeting_evening_2">Time to chill, %1$s. 🌃</string>
+    <string name="home_greeting_evening_3">Sunset listening, %1$s. 🌇</string>
+    <string name="home_greeting_evening_4">Hope it was good, %1$s! 💛</string>
+    <string name="home_greeting_evening_anon_1">Welcome home! 🏡</string>
+    <string name="home_greeting_evening_anon_2">Time to chill. 🌃</string>
+    <string name="home_greeting_evening_anon_3">Sunset listening. 🌇</string>
+    <string name="home_greeting_evening_anon_4">Hope it was good! 💛</string>
+    <string name="home_greeting_night_1">Under the stars, %1$s 🌌</string>
+    <string name="home_greeting_night_2">Up late, %1$s? 🌙</string>
+    <string name="home_greeting_night_3">Quiet hours, %1$s. 🕯️</string>
+    <string name="home_greeting_night_4">Rest easy, %1$s. 💤</string>
+    <string name="home_greeting_night_anon_1">Under the stars 🌌</string>
+    <string name="home_greeting_night_anon_2">Up late? 🌙</string>
+    <string name="home_greeting_night_anon_3">Quiet hours. 🕯️</string>
+    <string name="home_greeting_night_anon_4">Rest easy. 💤</string>
+    <string name="home_header_pill_title">PixelMusic</string>
+    <string name="explore_chip_all">All</string>
+    <string name="explore_chip_local">Local</string>
+    <string name="explore_chip_podcasts">Podcasts</string>
+    <string name="explore_chip_feel_good">Feel good</string>
+    <string name="explore_chip_energize">Energize</string>
+    <string name="explore_chip_relax">Relax</string>
+    <string name="explore_chip_workout">Workout</string>
+    <string name="explore_chip_commute">Commute</string>
+    <string name="explore_chip_focus">Focus</string>
+    <string name="explore_artist_spotlight_badge">ARTIST SPOTLIGHT</string>
+    <string name="explore_top_track_prefix">Top track: %1$s</string>
+    <string name="explore_btn_artist_radio">Artist radio</string>
+    <string name="explore_btn_view_artist">View artist</string>
+    <string name="explore_subtitle_most_replayed_musicians">Your most replayed musicians</string>
+    <string name="explore_subtitle_most_played_artists">Most played artists from your library</string>
+    <string name="explore_subtitle_recent_history">From your recent history</string>
+    <string name="explore_subtitle_rotatory_history">From your highly rotatory history</string>
+    <string name="explore_subtitle_artist_radio_station">Artist radio station</string>
+    <string name="explore_subtitle_high_affinity_rotation">From your high-affinity rotation</string>
+    <string name="explore_section_albums_for_you">Albums for you</string>
+    <string name="explore_subtitle_verified_records">Verified records from your top artists</string>
+    <string name="explore_subtitle_local_albums">From your local album collection</string>
+    <string name="explore_section_recently_added">Recently added</string>
+    <string name="explore_subtitle_recently_added_desc">Latest tracks from your library &amp; downloads</string>
+    <string name="badge_new">NEW</string>
+    <string name="badge_recent">RECENT</string>
+    <string name="see_all_quick_picks_cd">See all quick picks</string>
+    <string name="download_album">Download album</string>
+    <string name="add_songs_to_playlist">Add songs to playlist</string>
+    <string name="like_album">Like album</string>
+    <string name="unlike_album">Unlike album</string>
+    <string name="add_all_to_queue">Add all to queue</string>
+    <string name="play_next_in_queue">Play next in queue</string>
+    <string name="toast_downloading_album_songs">Downloading album songs...</string>
+    <string name="toast_tuned_out_added">Tuned out: Will recommend this song less</string>
+    <string name="toast_tuned_out_removed">Removed from tuned out</string>
+
+    <string name="toast_deleted_from_offline_cache">Deleted from offline cache</string>
+    <string name="toast_download_cancelled">Download cancelled</string>
+    <string name="toast_download_started">Download started</string>
+    <string name="toast_removed_dislike">Removed dislike</string>
 </resources>

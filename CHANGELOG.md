@@ -5,7 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.7.10] - 2026-10-05
+
+### ✨ What's New
+- **Lossless Audio & Downloads:** Support for Hi-Fi Lossless streaming & downloading with format badges and audio chain info (requires bringing your own API or logging into paid streaming accounts).
+- **Quick Playlist Import:** Import Spotify and YouTube playlists directly by pasting a link.
+- **Material 3 Expressive UI:** Floating navigation pill bar, home header pill, and customizable home collage.
+- **Redesigned Explore Tab:** Horizontal Daily Discover carousel, mood filter chips, and personalized New Releases.
+- **Enhanced Audio Sharing:** Share stylized song cards and lyric stories directly to Snapchat and social media.
+- **Color Themes & Presets:** Added new Material 3 palettes (Purple Pink, Dark & Grey, Pure Monochrome, and Dynamic Pastel).
+- **Expanded Local Audio Support:** Native playback and indexing for Apple Lossless (ALAC) and `.caf` audio files.
+- **Smart Auto-Queue & Radios:** Start an instant radio mix from any song with seamless crossfade transitions.
+- **In-App Update Checker:** Automatically check for new releases and install updates directly within the app.
+- **Full Localization:** 100% complete translation coverage across 11 languages (including Portuguese).
+
+### ⚡ Fixes & Improvements
+- **Shuffle & Queue Controls:** Rewrote player and queue shuffle to reorder tracks in-place seamlessly without dropping or resetting playback.
+- **Personalized Feed & Explore:** Connected user account authentication to load real YouTube Music home shelves with unified single-pass refreshing.
+- **Predictive Back Stability:** Safeguarded against system gesture dispatcher races during sheet dismissal.
+- **Changelog & Update Popup:** Formatted markdown bold text and deduplicated repeated titles in update bottom sheet.
+- **Playback & Cold Start:** Discarding the player cleanly clears playback without unexpected auto-play on restart.
+- **Smoother Queueing:** Tapping songs in search results plays only the selected track instead of replacing the entire queue.
+- **Mobile Data & Offline Sync:** Fast track loading and reliable background playlist caching on cellular networks.
+- **Faster Startup:** Instant tab switching and reduced memory footprint across all screens.
+
+## [1.6.09] - 2026-08-28
+
+### Features & Enhancements
+- **Massive APK Size Reduction**: Reduced APK download footprint by ~18 MB.
+- **Built-in 0-MB Japanese Romanization**: Migrated to native Android ICU transliterator engine with zero APK overhead.
+- **On-Demand Japanese Kanji Pack**: Optional offline high-accuracy Kanji dictionary downloadable dynamically on-demand.
+- **Daily Mix Regeneration**: Resolved force update race condition for immediate mix refresh.
+- **Background Database Optimization**: Non-blocking asynchronous queue writes and stale Quick Picks auto-refresh on app resume.
 
 ## [1.6.08] - 2026-07-31
 

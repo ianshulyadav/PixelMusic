@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">无损源</string>
+    <string name="settings_category_lossless_subtitle">Tidal、Qobuz、Deezer 和 Apple Music 通过源池</string>
+    <string name="lossless_tidal_login">登录潮汐</string>
+    <string name="lossless_auth_webview_tidal_subtitle">请在下方登录 Tidal。 PixelMusic 会自动保存会话。</string>
+    <string name="lossless_tidal_login_success">登录潮汐</string>
+    <string name="lossless_tidal_account_free_warning">此 Tidal 帐户不是 HiFi/Premium。通过Tidal无损播放可能会失败；该应用程序将回退到其他来源。</string>
+    <string name="lossless_tidal_login_webplayer_fallback">无法完成标准登录；打开 Tidal 网络播放器。只需登录，播放就会自动连接。</string>
+    <string name="lossless_deezer_login">登录 Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">在下方登录 Deezer。会话 cookie 会自动保存。</string>
+    <string name="lossless_deezer_login_success">以 %1$s</string>
+    <string name="lossless_deezer_manual_arl">身份登录 Deezer使用 ARL cookie 手动登录</string>
+    <string name="lossless_deezer_manual_arl_hint">Deezer 在您所在地区不可用？从任何浏览器登录（VPN 可以），复制 arl cookie 值并将其粘贴到此处。</string>
+    <string name="lossless_deezer_manual_arl_apply">验证并登录</string>
+    <string name="lossless_deezer_arl_invalid">该 ARL 不起作用 — 复制完整的 arl cookie 值并重试。</string>
+    <string name="lossless_qobuz_login">登录 Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">请在下方登录 Qobuz。您的凭据将被自动捕获。</string>
+    <string name="lossless_qobuz_login_success">添加了 Qobuz 帐户</string>
+    <string name="lossless_qobuz_app_secret_title">输入 Qobuz 应用程序密码</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret（来自您的令牌源）</string>
+    <string name="lossless_applemusic_login">登录 Apple Music</string>
+    <string name="lossless_applemusic_login_subtitle">使用您的 Apple ID 登录 — 您的音乐用户令牌会自动获取。</string>
+    <string name="lossless_applemusic_login_failed">无法获取您的 Apple Music 令牌 - 尝试手动粘贴令牌</string>
+    <string name="lossless_applemusic_login_success">登录 Apple Music</string>
+</resources>

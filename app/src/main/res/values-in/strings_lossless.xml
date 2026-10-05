@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">Sumber Lossless</string>
+    <string name="settings_category_lossless_subtitle">Tidal, Qobuz, Deezer &amp; Apple Music melalui Kumpulan Sumber</string>
+    <string name="lossless_tidal_login">Masuk ke Tidal</string>
+    <string name="lossless_auth_webview_tidal_subtitle">Masuk ke Tidal di bawah. PixelMusic menyimpan sesi secara otomatis.</string>
+    <string name="lossless_tidal_login_success">Masuk ke Tidal</string>
+    <string name="lossless_tidal_account_free_warning">Akun Tidal ini bukan HiFi/Premium. Pemutaran lossless melalui Tidal mungkin gagal; aplikasi akan kembali ke sumber lain.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">Tidak dapat menyelesaikan proses masuk standar; membuka pemutar web Tidal sebagai gantinya. Cukup masuk dan pemutaran akan terhubung secara otomatis.</string>
+    <string name="lossless_deezer_login">Masuk ke Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">Masuk ke Deezer di bawah. Cookie sesi disimpan secara otomatis.</string>
+    <string name="lossless_deezer_login_success">Masuk ke Deezer sebagai %1$s</string>
+    <string name="lossless_deezer_manual_arl">Masuk secara manual dengan cookie ARL</string>
+    <string name="lossless_deezer_manual_arl_hint">Deezer tidak tersedia di wilayah Anda? Masuk dari browser apa pun (VPN berfungsi), salin nilai cookie arl dan tempel di sini.</string>
+    <string name="lossless_deezer_manual_arl_apply">Verifikasi dan masuk</string>
+    <string name="lossless_deezer_arl_invalid">ARL tersebut tidak berfungsi — salin nilai cookie arl lengkap dan coba lagi.</string>
+    <string name="lossless_qobuz_login">Masuk ke Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">Masuk ke Qobuz di bawah. Kredensial Anda diambil secara otomatis.</string>
+    <string name="lossless_qobuz_login_success">Menambahkan akun Qobuz</string>
+    <string name="lossless_qobuz_app_secret_title">Masukkan rahasia aplikasi Qobuz</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (dari sumber token Anda)</string>
+    <string name="lossless_applemusic_login">Masuk ke Apple Musik</string>
+    <string name="lossless_applemusic_login_subtitle">Masuk dengan ID Apple Anda — Token Pengguna Musik Anda diambil secara otomatis.</string>
+    <string name="lossless_applemusic_login_failed">Tidak dapat mengambil token Apple Music Anda — coba tempelkan token secara manual</string>
+    <string name="lossless_applemusic_login_success">Masuk ke Apple Music</string>
+</resources>

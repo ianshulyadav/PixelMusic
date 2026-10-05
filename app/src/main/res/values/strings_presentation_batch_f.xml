@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- SettingsComponents -->
     <string name="presentation_batch_f_cd_selected">Selected</string>
     <string name="presentation_batch_f_refresh_library_title">Refresh Library</string>
     <string name="presentation_batch_f_refresh_library_subtitle">Scan entire library for new and modified files.</string>
@@ -19,8 +20,26 @@
     <string name="presentation_batch_f_refresh_lyrics_subtitle">Automatically fetch lyrics for all songs using lrclib.</string>
     <string name="presentation_batch_f_cd_refresh_lyrics">Refresh lyrics</string>
     <string name="presentation_batch_f_refresh_lyrics_processing">Processing %1$d of %2$d songs</string>
+    <string name="presentation_batch_f_enter_api_key">Enter API Key</string>
     <string name="presentation_batch_f_save">Save</string>
+    <string name="presentation_batch_f_saved">Saved!</string>
+    <string name="presentation_batch_f_preset_prompts">Preset Prompts</string>
+    <string name="presentation_batch_f_enter_system_prompt_placeholder">Enter system prompt…</string>
+    <string name="presentation_batch_f_reset">Reset</string>
+    <string name="presentation_batch_f_ai_preset_professional_curator_name">Professional Curator</string>
+    <string name="presentation_batch_f_ai_preset_professional_curator_prompt">You are \'Vibe-Engine\', a world-class music curator and master of sonic flow. Your goal is to construct seamless, high-fidelity listening experiences. Prioritize harmonic compatibility, logical BPM transitions, and a sophisticated balance between familiar favorites and tasteful, logic-driven discovery.</string>
+    <string name="presentation_batch_f_ai_preset_creative_maverick_name">Creative Maverick</string>
+    <string name="presentation_batch_f_ai_preset_creative_maverick_prompt">You are an avant-garde music explorer specializing in \'unexpected cohesion\'. Your mission is to break conventional genre boundaries by identifying non-obvious sonic parallels. Prioritize rare deep cuts, experimental textures, and artistic novelty while maintaining a surprising but undeniable transition logic.</string>
+    <string name="presentation_batch_f_ai_preset_strict_librarian_name">Strict Librarian</string>
+    <string name="presentation_batch_f_ai_preset_strict_librarian_prompt">You are a surgical music database architect. Your logic is driven by absolute metadata precision and rigid categorical adherence. Minimize algorithmic discovery in favor of strict genre consistency, energy-level matching, and maximizing the retrieval of highly specific user-defined preferences.</string>
+    <string name="presentation_batch_f_ai_preset_atmospheric_guide_name">Atmospheric Guide</string>
+    <string name="presentation_batch_f_ai_preset_atmospheric_guide_prompt">You are a master of ambient textures and low-energy flow. Focus exclusively on tracks that facilitate a \'deep focus\' or \'tranquility\' state. Prioritize acoustic warmth, minimalist arrangements, and gentle transitions, while strictly avoiding high-transient sounds or sudden shifts in dynamic range.</string>
+    <string name="presentation_batch_f_ai_preset_sonic_enthusiast_name">Sonic Enthusiast</string>
+    <string name="presentation_batch_f_ai_preset_sonic_enthusiast_prompt">You are an audiophile analyst focused on production complexity and instrumentation. Prioritize tracks characterized by high dynamic range, intricate polyrhythms, and superior soundstage quality. Favor active-listening pieces that reward the listener for paying attention to technical fidelity and arrangement detail.</string>
+    <string name="presentation_batch_f_ai_preset_energy_catalyst_name">Energy Catalyst</string>
+    <string name="presentation_batch_f_ai_preset_energy_catalyst_prompt">You are a high-momentum rhythm generator. Your philosophy centers on driving basslines, percussive intensity, and infectious grooves. Prioritize high-BPM club compatibility, syncopated energy, and continuous rhythmic tension to keep the listener\'s heart rate and motivation peak-level.</string>
 
+    <!-- Create playlist -->
     <string name="presentation_batch_f_new_smart_playlist">New smart playlist</string>
     <string name="presentation_batch_f_new_playlist">New playlist</string>
     <string name="presentation_batch_f_add_songs">Add Songs</string>
@@ -29,18 +48,15 @@
     <string name="presentation_batch_f_create">Create</string>
     <string name="presentation_batch_f_edit_playlist">Edit Playlist</string>
     <string name="presentation_batch_f_cd_close">Close</string>
+    <string name="presentation_batch_f_cd_confirm_crop">Confirm Crop</string>
     <string name="presentation_batch_f_auto_generated_collage">Auto-generated collage</string>
     <string name="presentation_batch_f_cd_add_photo">Add Photo</string>
     <string name="presentation_batch_f_pick_image">Pick Image</string>
-    <string name="presentation_batch_f_change">Change</string>
-    <string name="presentation_batch_f_remove">Remove</string>
     <string name="presentation_batch_f_playlist_name_label">Playlist Name</string>
     <string name="presentation_batch_f_playlist_name_placeholder">My awesome mix</string>
-    <string name="presentation_batch_f_edit_cover_title">Edit Cover</string>
-    <string name="presentation_batch_f_adjust_cover_title">Adjust your cover art</string>
-    <string name="presentation_batch_f_adjust_cover_hint">Use pinch and drag gestures to find the perfect framing</string>
     <string name="presentation_batch_f_creation_mode_manual">Manual</string>
     <string name="presentation_batch_f_creation_mode_smart">Smart</string>
+    <string name="presentation_batch_f_generate_with_ai">Generate with AI</string>
     <string name="presentation_batch_f_smart_rule">Smart Rule</string>
     <string name="presentation_batch_f_tab_default">Default</string>
     <string name="presentation_batch_f_tab_image">Image</string>
@@ -64,6 +80,7 @@
     <string name="presentation_batch_f_smart_rule_new_gems_title">New Gems</string>
     <string name="presentation_batch_f_smart_rule_new_gems_subtitle">Recently added tracks with low play counts.</string>
 
+    <!-- Palette style -->
     <string name="presentation_batch_f_palette_style_heading">Palette style</string>
     <string name="presentation_batch_f_palette_style_subtitle">Choose the album colors for the player UI.</string>
     <string name="presentation_batch_f_colors_title">Colors</string>
@@ -85,6 +102,7 @@
     <string name="presentation_batch_f_accuracy_summary_balanced">%1$d • Balanced</string>
     <string name="presentation_batch_f_accuracy_summary_precise">%1$d • Precise</string>
 
+    <!-- Experimental settings -->
     <string name="presentation_batch_f_exp_player_ui_tweaks_section">PlayerUI loading tweaks</string>
     <string name="presentation_batch_f_exp_animated_lyrics_title">Animated Lyrics (High-end devices)</string>
     <string name="presentation_batch_f_exp_animated_lyrics_subtitle">Uses spring animations and visual effects for lyrics. May cause frame drops on low-end devices.</string>
@@ -134,10 +152,83 @@
     <string name="presentation_batch_f_album_art_quality_high_line">High (800px) - Best quality</string>
     <string name="presentation_batch_f_album_art_quality_original_line">Original - Maximum quality</string>
 
+    <!-- Settings category screen (composables) -->
     <string name="presentation_batch_f_percent">%1$d%%</string>
     <string name="presentation_batch_f_status_bullet_step">%1$s • %2$s</string>
     <string name="presentation_batch_f_dot_space_suffix"> · %1$s</string>
     <string name="presentation_batch_f_unknown_short">\?</string>
 
+    <!-- Telegram login -->
+    <string name="presentation_batch_f_telegram_login_title">Telegram Login</string>
+    <string name="presentation_batch_f_telegram_edit_number_chip">You are editing your number. Sending code again will replace the previous one.</string>
+    <string name="presentation_batch_f_working">Working…</string>
+    <string name="presentation_batch_f_telegram_status_initializing">Initializing Telegram…</string>
+    <string name="presentation_batch_f_telegram_status_logging_out">Logging out…</string>
+    <string name="presentation_batch_f_telegram_status_closing">Closing session…</string>
+    <string name="presentation_batch_f_telegram_status_closed">Session closed. Re-open login to continue.</string>
+    <string name="presentation_batch_f_telegram_status_preparing">Preparing secure Telegram session…</string>
+    <string name="presentation_batch_f_telegram_status_waiting">Waiting for Telegram response…</string>
+    <string name="presentation_batch_f_connect_telegram">Connect Telegram</string>
+    <string name="presentation_batch_f_connect_telegram_subtitle">Connect Telegram to stream music from your channels and chats.</string>
+    <string name="presentation_batch_f_phone_number_title">Phone Number</string>
+    <string name="presentation_batch_f_phone_number_subtitle">Enter your Telegram number. You can come back and edit it later.</string>
+    <string name="presentation_batch_f_phone_number_hint">Phone number</string>
+    <string name="presentation_batch_f_phone_country_placeholder">1</string>
+    <string name="presentation_batch_f_phone_local_placeholder">5551234567</string>
+    <string name="presentation_batch_f_send_code">Send Code</string>
+    <string name="presentation_batch_f_verification_code_title">Verification Code</string>
+    <string name="presentation_batch_f_verification_code_subtitle">Enter the code from Telegram. If the number is wrong, go back and edit it.</string>
+    <string name="presentation_batch_f_code_field_label">Code</string>
+    <string name="presentation_batch_f_code_placeholder">12345</string>
+    <string name="presentation_batch_f_edit_phone">Edit phone</string>
+    <string name="presentation_batch_f_resend_code">Resend code</string>
+    <string name="presentation_batch_f_verify_code">Verify Code</string>
+    <string name="presentation_batch_f_two_step_password_title">Two-Step Password</string>
+    <string name="presentation_batch_f_two_step_password_subtitle">Enter your Telegram password. You can still go back to fix your number.</string>
+    <string name="presentation_batch_f_password_label">Password</string>
+    <string name="presentation_batch_f_verify_password">Verify Password</string>
+    <string name="presentation_batch_f_please_wait">Please wait…</string>
+
+    <!-- Telegram dashboard -->
+    <string name="presentation_batch_f_telegram_channels_title">Telegram Channels</string>
+    <string name="presentation_batch_f_add_channel_fab">Add Channel</string>
+    <string name="presentation_batch_f_public_channel_fallback">Public Telegram channel</string>
+    <string name="presentation_batch_f_syncing">Syncing</string>
+    <string name="presentation_batch_f_sync_now">Sync now</string>
+    <string name="presentation_batch_f_cd_collapse_topics">Collapse topics</string>
+    <string name="presentation_batch_f_cd_show_topics">Show topics</string>
+    <string name="presentation_batch_f_cd_channel_options">Channel options</string>
+    <string name="presentation_batch_f_topics_heading">Topics</string>
+    <string name="presentation_batch_f_syncing_channel">Syncing channel</string>
+    <string name="presentation_batch_f_updating_songs_from_telegram">Updating songs from Telegram</string>
+    <string name="presentation_batch_f_fetch_latest_songs">Fetch latest songs from this channel</string>
+    <string name="presentation_batch_f_remove_channel">Remove channel</string>
+    <string name="presentation_batch_f_remove_channel_subtitle">Stop syncing and remove cached songs</string>
+    <string name="presentation_batch_f_remove_channel_confirm_title">Remove channel?</string>
+    <string name="presentation_batch_f_remove_channel_confirm_body">%1$s will stop syncing and all cached songs from this channel will be removed.</string>
+    <string name="presentation_batch_f_remove_channel_confirm_action">Remove</string>
+    <string name="presentation_batch_f_no_channels_synced">No Channels Synced</string>
+    <string name="presentation_batch_f_no_channels_body">Add public Telegram channels to sync\nyour music library</string>
+    <string name="presentation_batch_f_add_channel_button">Add channel</string>
+    <string name="presentation_batch_f_never_synced">Never synced</string>
+    <string name="presentation_batch_f_synced_relative">Synced %1$s</string>
+
+    <!-- Telegram channel search -->
+    <string name="presentation_batch_f_add_channel_sheet_title">Add Channel</string>
+    <string name="presentation_batch_f_add_channel_sheet_subtitle">Search for a public Telegram channel to sync its music</string>
+    <string name="presentation_batch_f_channel_search_placeholder">\@channelname or link</string>
+    <string name="presentation_batch_f_cd_search">Search</string>
+    <string name="presentation_batch_f_searching">Searching…</string>
+    <string name="presentation_batch_f_search_channel_title">Search for a channel</string>
+    <string name="presentation_batch_f_search_channel_body">Enter a public channel username or link\nto sync its audio files</string>
     <string name="presentation_batch_f_done">Done</string>
+
+    <plurals name="presentation_batch_f_n_songs">
+        <item quantity="one">%d song</item>
+        <item quantity="other">%d songs</item>
+    </plurals>
+    <plurals name="presentation_batch_f_n_topics">
+        <item quantity="one">%d topic</item>
+        <item quantity="other">%d topics</item>
+    </plurals>
 </resources>

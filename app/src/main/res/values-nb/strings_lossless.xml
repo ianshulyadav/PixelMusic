@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">Tapsfrie kilder</string>
+    <string name="settings_category_lossless_subtitle">Tidal, Qobuz, Deezer og Apple Music via kildepoolen</string>
+    <string name="lossless_tidal_login">Logg på Tidal</string>
+    <string name="lossless_auth_webview_tidal_subtitle">Logg på Tidal nedenfor. PixelMusic lagrer økten automatisk.</string>
+    <string name="lossless_tidal_login_success">Logget på Tidal</string>
+    <string name="lossless_tidal_account_free_warning">Denne Tidal-kontoen er ikke HiFi/Premium. Tapsfri avspilling gjennom Tidal kan mislykkes; appen vil falle tilbake til andre kilder.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">Kunne ikke fullføre standard pålogging; åpner Tidal-webspilleren i stedet. Bare logg inn og avspilling kobles til automatisk.</string>
+    <string name="lossless_deezer_login">Logg på Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">Logg på Deezer nedenfor. Sesjonsinformasjonskapselen lagres automatisk.</string>
+    <string name="lossless_deezer_login_success">Logget på Deezer som %1$s</string>
+    <string name="lossless_deezer_manual_arl">Logg på manuelt med ARL-informasjonskapsel</string>
+    <string name="lossless_deezer_manual_arl_hint">Er Deezer utilgjengelig i din region? Logg på fra hvilken som helst nettleser (en VPN fungerer), kopier arl-informasjonskapselverdien og lim den inn her.</string>
+    <string name="lossless_deezer_manual_arl_apply">Bekreft og logg på</string>
+    <string name="lossless_deezer_arl_invalid">Den ARL-en fungerte ikke – kopier hele arl-informasjonskapselverdien og prøv igjen.</string>
+    <string name="lossless_qobuz_login">Logg på Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">Logg på Qobuz nedenfor. Påloggingsinformasjonen din registreres automatisk.</string>
+    <string name="lossless_qobuz_login_success">Lagt til Qobuz-konto</string>
+    <string name="lossless_qobuz_app_secret_title">Skriv inn Qobuz-apphemmeligheten</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (fra din token-kilde)</string>
+    <string name="lossless_applemusic_login">Logg på Apple Music</string>
+    <string name="lossless_applemusic_login_subtitle">Logg på med Apple-ID-en din – musikkbrukertokenet ditt hentes automatisk.</string>
+    <string name="lossless_applemusic_login_failed">Kunne ikke hente Apple Music-tokenet ditt – prøv å lime inn tokenene manuelt</string>
+    <string name="lossless_applemusic_login_success">Logget på Apple Music</string>
+</resources>

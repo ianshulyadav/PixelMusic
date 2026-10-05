@@ -1,30 +1,43 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="setcat_m3u_sync_section" tools:ignore="MissingTranslation">Playlist synchronization</string>
-    <string name="setcat_m3u_sync_title" tools:ignore="MissingTranslation">Automatic M3U sync</string>
-    <string name="setcat_m3u_sync_disabled_subtitle" tools:ignore="MissingTranslation">Choose an external folder to keep local playlists in sync both ways</string>
-    <string name="setcat_m3u_sync_enabled_subtitle" tools:ignore="MissingTranslation">Synchronizing with %1$s</string>
-    <string name="setcat_m3u_sync_selected_folder" tools:ignore="MissingTranslation">selected folder</string>
-    <string name="setcat_m3u_sync_now_title" tools:ignore="MissingTranslation">Sync playlists now</string>
-    <string name="setcat_m3u_sync_now_subtitle" tools:ignore="MissingTranslation">Import and export changes without overwriting conflicts</string>
-    <string name="setcat_m3u_sync_result" tools:ignore="MissingTranslation">%1$d changed · %2$d conflicts · %3$d unresolved entries</string>
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main settings screen -->
     <string name="settings_top_bar_title">Settings</string>
     <string name="settings_accounts_row_title">Accounts</string>
-    <string name="settings_accounts_row_subtitle">Manage Navidrome and Jellyfin services</string>
+    <string name="settings_accounts_row_subtitle">Manage Telegram, Google Drive, NetEase, and more services</string>
 
-    <string name="settings_search_hint">Search settings</string>
-    <string name="settings_search_no_results">No results for \"%1$s\"</string>
-    <string name="settings_search_section_top_matches">Top matches</string>
-    <string name="settings_search_section_related">Related settings</string>
-
+    <!-- SettingsCategory enum (grid) -->
     <string name="settings_category_library_title">Music Management</string>
     <string name="settings_category_library_subtitle">Manage folders, refresh library, parsing options</string>
+    <string name="settings_category_content_title">Content</string>
+    <string name="settings_category_content_subtitle">Content country, language, filters and suggestion sources</string>
+    <string name="settings_content_language_title">Content Language</string>
+    <string name="settings_content_language_desc">Set preferred YouTube Music content language</string>
+    <string name="settings_content_country_title">Content Country</string>
+    <string name="settings_content_country_desc">Set preferred YouTube Music content country</string>
+    <string name="settings_playlist_suggestion_title">Playlist Suggestion Source</string>
+    <string name="settings_playlist_suggestion_desc">Source for playlist song suggestions</string>
+    <string name="settings_hide_explicit_title">Hide Explicit Content</string>
+    <string name="settings_hide_explicit_desc">Do not show songs marked as explicit</string>
+    <string name="settings_hide_video_title">Hide Videos</string>
+    <string name="settings_hide_video_desc">Do not show video results in search and feeds</string>
+    <string name="settings_my_top_size_title">My Top Size</string>
+    <string name="settings_my_top_size_desc">Number of songs to include in Top Stats list</string>
+    <string name="settings_set_quick_picks_title">Set Quick Picks</string>
+    <string name="settings_set_quick_picks_desc">Choose content source mode for Quick Picks section</string>
+    <string name="settings_quick_picks_mode_title">Quick Picks Display Mode</string>
+    <string name="settings_quick_picks_mode_desc">Configure Quick Picks visual display layout style</string>
+    <string name="settings_quick_picks_mode_square">Square Carousel</string>
+    <string name="settings_quick_picks_mode_classic">Classic Carousel</string>
+    <string name="settings_quick_picks_mode_list">List Grid</string>
+    <string name="settings_quick_picks_mode_uncontained">Uncontained Carousel</string>
     <string name="settings_category_appearance_title">Appearance</string>
     <string name="settings_category_appearance_subtitle">Themes, layout, and visual styles</string>
     <string name="settings_category_playback_title">Playback</string>
     <string name="settings_category_playback_subtitle">Audio behavior, crossfade, and background play</string>
     <string name="settings_category_behavior_title">Behavior</string>
     <string name="settings_category_behavior_subtitle">Gestures, haptics, and navigation behavior</string>
+    <string name="settings_category_ai_title">AI Integration (β)</string>
+    <string name="settings_category_ai_subtitle">AI providers, API keys, and model settings</string>
     <string name="settings_category_backup_title">Backup &amp; Restore</string>
     <string name="settings_category_backup_subtitle">Export and recover your personal app data</string>
     <string name="settings_category_developer_title">Developer Options</string>
@@ -36,6 +49,7 @@
     <string name="settings_category_about_title">About</string>
     <string name="settings_category_about_subtitle">App info, version, and credits</string>
 
+    <!-- Common toggles / labels used in ThemeSelectorItem maps -->
     <string name="label_on">On</string>
     <string name="label_off">Off</string>
     <string name="label_enabled">Enabled</string>
@@ -45,6 +59,7 @@
     <string name="cd_clear_selection">Clear selection</string>
     <string name="cd_close_notice">Close notice</string>
 
+    <!-- Library category -->
     <string name="setcat_library_structure">Library Structure</string>
     <string name="setcat_excluded_directories_title">Excluded Directories</string>
     <string name="setcat_excluded_directories_subtitle">Folders here will be skipped when scanning your library.</string>
@@ -54,17 +69,13 @@
     <string name="setcat_min_song_duration">Minimum Song Duration</string>
     <string name="setcat_min_tracks_per_album">Minimum Tracks per Album</string>
     <string name="setcat_album_art_cache_limit">Album Art Cache Limit</string>
+    <string name="setcat_album_art_cache_limit_desc">Max cache size before oldest images are auto-deleted</string>
     <string name="setcat_sync_scanning">Sync and Scanning</string>
     <string name="setcat_sync_full_rescan_label">Running full rescan</string>
     <string name="toast_library_sync_finished">Library sync finished</string>
     <string name="toast_full_rescan_started">Full rescan started…</string>
     <string name="setcat_auto_scan_lrc_title">Auto-scan .lrc files</string>
     <string name="setcat_auto_scan_lrc_subtitle">Automatically scan and assign .lrc files in the same folder during library sync.</string>
-    <string name="setcat_online_services">Optional online services</string>
-    <string name="setcat_external_lyrics_title">Online lyrics from LRCLIB</string>
-    <string name="setcat_external_lyrics_subtitle">Allow searches and manual fetches from lrclib.net when lyrics are missing locally.</string>
-    <string name="setcat_external_artist_images_title">Artist artwork from Deezer</string>
-    <string name="setcat_external_artist_images_subtitle">Allow missing artist images to be fetched from Deezer and cached locally.</string>
     <string name="setcat_lyrics_management">Lyrics Management</string>
     <string name="setcat_lyrics_source_priority_label">Lyrics Source Priority</string>
     <string name="setcat_lyrics_source_priority_desc">Choose which source to try first when fetching lyrics.</string>
@@ -74,35 +85,71 @@
     <string name="setcat_reset_imported_lyrics_title">Reset Imported Lyrics</string>
     <string name="setcat_reset_imported_lyrics_subtitle">Remove all imported lyrics from the database.</string>
 
+    <!-- Appearance -->
+    <string name="setcat_app_icon_title">App Icon</string>
+    <string name="setcat_app_icon_subtitle">Select your preferred app icon</string>
+    <string name="app_icon_blue_purple_title">Aurora</string>
+    <string name="app_icon_blue_purple_desc">Iconic cobalt &amp; violet</string>
+    <string name="app_icon_graphite_title">Obsidian</string>
+    <string name="app_icon_graphite_desc">Matte stealth graphite</string>
+    <string name="app_icon_orange_yellow_title">Amber</string>
+    <string name="app_icon_orange_yellow_desc">Radiant sunset gold</string>
+    <string name="app_icon_lime_green_title">Emerald</string>
+    <string name="app_icon_lime_green_desc">Vivid electric lime</string>
+    <string name="app_icon_baby_pink_purple_title">Lilac</string>
+    <string name="app_icon_baby_pink_purple_desc">Soft pastel blush</string>
+    <string name="app_icon_lime_lemon_title">Citron</string>
+    <string name="app_icon_lime_lemon_desc">Crisp electric zest</string>
+
     <string name="setcat_global_theme">Global Theme</string>
-    <string name="setcat_app_language_label">App Language</string>
-    <string name="setcat_app_language_desc">Choose the language used across the app interface.</string>
+    <string name="setcat_language_label">App Language</string>
+    <string name="setcat_language_desc">Choose the language used across the app interface.</string>
     <string name="setcat_language_system">System default</string>
-    <string name="setcat_language_english" translatable="false">English</string>
-    <string name="setcat_language_arabic" translatable="false">العربية</string>
-    <string name="setcat_language_german" translatable="false">Deutsch</string>
-    <string name="setcat_language_spanish" translatable="false">Español</string>
-    <string name="setcat_language_french" translatable="false">Français</string>
-    <string name="setcat_language_indonesian" translatable="false">Bahasa Indonesia</string>
-    <string name="setcat_language_italian" translatable="false">Italiano</string>
-    <string name="setcat_language_korean" translatable="false">한국어</string>
-    <string name="setcat_language_norwegian_bokmal" translatable="false">Norsk bokmål</string>
-    <string name="setcat_language_russian" translatable="false">Русский</string>
-    <string name="setcat_language_turkish" translatable="false">Türkçe</string>
-    <string name="language_zh_rCN" translatable="false">简体中文</string>
+    <string name="setcat_language_english">English</string>
+    <string name="setcat_language_spanish">Español</string>
+    <string name="setcat_language_german">Deutsch</string>
+    <string name="setcat_language_french">Français</string>
+    <string name="setcat_language_russian">Русский</string>
+    <string name="setcat_language_chinese">简体中文</string>
+    <string name="setcat_language_indonesian">Bahasa Indonesia</string>
+    <string name="setcat_language_italian">Italiano</string>
+    <string name="setcat_language_portuguese">Português</string>
+    <string name="setcat_language_korean">한국어</string>
+    <string name="setcat_language_norwegian">Norsk bokmål</string>
     <string name="setcat_app_theme_label">App Theme</string>
     <string name="setcat_app_theme_desc">Switch between light, dark, or follow system appearance.</string>
-    <string name="setcat_global_now_playing_theme_title" tools:ignore="MissingTranslation">Use now playing colors across the app</string>
-    <string name="setcat_global_now_playing_theme_subtitle" tools:ignore="MissingTranslation">Colors the whole app from the current song\'s album art. Light and dark mode are still respected.</string>
+    <string name="setcat_app_font_label">App Font</string>
+    <string name="setcat_app_font_desc">Choose between PixelMusic font and System default font.</string>
+    <string name="setcat_font_pixelmusic">PixelMusic Default</string>
+    <string name="setcat_font_system">System Default</string>
     <string name="setcat_theme_light">Light Theme</string>
     <string name="setcat_theme_dark">Dark Theme</string>
     <string name="setcat_theme_follow_system">Follow System</string>
+    <string name="setcat_app_color_palette_label">Theme Preset</string>
+    <string name="setcat_app_color_palette_desc">Select a custom color palette preset</string>
+    <string name="setcat_theme_preset_title">Theme Preset</string>
+    <string name="setcat_theme_preset_desc">Select a custom color palette preset</string>
+    <string name="setcat_color_palette_dynamic">Default (Dynamic)</string>
+    <string name="setcat_color_palette_dynamic_desc">System wallpaper colors</string>
+    <string name="setcat_color_palette_sage">Sage Green</string>
+    <string name="setcat_color_palette_sage_desc">Soft mint and sage tones</string>
+    <string name="setcat_color_palette_purple">Purple Pink</string>
+    <string name="setcat_color_palette_purple_desc">Soft orchid and blush pink</string>
+    <string name="setcat_color_palette_blue">Ocean Blue</string>
+    <string name="setcat_color_palette_blue_desc">Calm ocean and sky tones</string>
+    <string name="setcat_color_palette_orange">Sunset Orange</string>
+    <string name="setcat_color_palette_orange_desc">Warm amber and peach tones</string>
+    <string name="setcat_color_palette_yellow">Sunny Yellow</string>
+    <string name="setcat_color_palette_yellow_desc">Warm honey and gold tones</string>
+    <string name="setcat_color_palette_grey">Dark &amp; Grey</string>
+    <string name="setcat_color_palette_grey_desc">Monochrome and gray tones</string>
     <string name="setcat_smooth_corners_title">Use Smooth Corners</string>
-    <string name="setcat_smooth_corners_subtitle">Use complex shaped corners effectively improving aesthetics but may affect performance on low-end devices</string>
+    <string name="setcat_smooth_corners_subtitle">Smooth corner curvature. May affect performance on low-end devices.</string>
     <string name="setcat_now_playing">Now Playing</string>
     <string name="setcat_player_theme_label">Player Theme</string>
     <string name="setcat_player_theme_desc">Choose the appearance for the floating player.</string>
     <string name="setcat_player_theme_album_art">Album Art</string>
+    <string name="setcat_player_theme_global">App Palette</string>
     <string name="setcat_player_theme_dynamic">System Dynamic</string>
     <string name="setcat_show_player_file_info_title">Show player file info</string>
     <string name="setcat_show_player_file_info_subtitle">Show codec, bitrate, and sample rate in the player progress section.</string>
@@ -113,6 +160,8 @@
     <string name="setcat_carousel_no_peek">No Peek</string>
     <string name="setcat_carousel_one_peek">One Peek</string>
     <string name="setcat_home_collage">Home Collage</string>
+    <string name="setcat_show_collage_title">Show Collage</string>
+    <string name="setcat_show_collage_subtitle">Display the shape collage in Your Mix on the Home screen.</string>
     <string name="setcat_collage_pattern_label">Collage Pattern</string>
     <string name="setcat_collage_pattern_desc">Choose the shape arrangement for the Your Mix collage.</string>
     <string name="setcat_auto_rotate_patterns_title">Auto-Rotate Patterns</string>
@@ -122,10 +171,12 @@
     <string name="setcat_navbar_style_desc">Choose the appearance for the navigation bar.</string>
     <string name="setcat_navbar_style_default">Default</string>
     <string name="setcat_navbar_style_full_width">Full Width</string>
+    <string name="setcat_navbar_style_floating_pill">Expressive Pill</string>
     <string name="setcat_compact_mode_title">Compact mode</string>
     <string name="setcat_compact_mode_subtitle">Show only icons and reduce the navbar height.</string>
     <string name="setcat_navbar_corner_title">NavBar Corner Radius</string>
     <string name="setcat_navbar_corner_subtitle">Adjust the corner radius of the navigation bar.</string>
+    <string name="setcat_navbar_height_adjustment">NavBar Height Adjustment</string>
     <string name="setcat_lyrics_screen">Lyrics Screen</string>
     <string name="setcat_immersive_lyrics_title">Immersive Lyrics</string>
     <string name="setcat_immersive_lyrics_subtitle">Auto-hide controls and enlarge text.</string>
@@ -139,16 +190,19 @@
     <string name="setcat_default_tab_label">Default Tab</string>
     <string name="setcat_default_tab_desc">Choose the Default launch tab.</string>
     <string name="tab_home">Home</string>
+    <string name="tab_explore">Explore</string>
     <string name="setcat_library_navigation_label">Library Navigation</string>
     <string name="setcat_library_navigation_desc">Choose how to move between Library tabs.</string>
     <string name="setcat_library_nav_tab_row">Tab row (default)</string>
     <string name="setcat_library_nav_compact_pill">Compact pill &amp; grid</string>
 
+    <!-- Playback -->
     <string name="setcat_background_playback">Background Playback</string>
     <string name="setcat_keep_playing_label">Keep playing after closing</string>
     <string name="setcat_keep_playing_desc">If off, removing the app from recents will stop playback.</string>
-    <string name="setcat_keep_screen_awake_title" tools:ignore="MissingTranslation">Keep screen awake while playing</string>
-    <string name="setcat_keep_screen_awake_subtitle" tools:ignore="MissingTranslation">Prevents the screen from sleeping while music is actively playing and the app is visible.</string>
+    <string name="setcat_battery_optimization_title">Battery Optimization</string>
+    <string name="setcat_battery_optimization_subtitle">Disable battery optimization to prevent playback interruptions.</string>
+    <string name="toast_battery_already_disabled">Battery optimization is already disabled</string>
     <string name="setcat_replaygain_section">Volume Normalization (ReplayGain)</string>
     <string name="setcat_replaygain_enable_title">Enable ReplayGain</string>
     <string name="setcat_replaygain_enable_subtitle">Normalize volume levels using ReplayGain metadata from audio files.</string>
@@ -156,29 +210,25 @@
     <string name="setcat_gain_mode_desc">Track: normalize each song. Album: normalize per album.</string>
     <string name="setcat_gain_mode_track">Track</string>
     <string name="setcat_gain_mode_album">Album</string>
+    <string name="setcat_cast">Cast</string>
+    <string name="setcat_cast_autoplay_label">Auto-play on cast connect/disconnect</string>
+    <string name="setcat_cast_autoplay_desc">Start playing immediately after switching cast connections.</string>
     <string name="setcat_headphones">Headphones</string>
     <string name="setcat_headphones_resume_title">Resume when headphones reconnect</string>
-    <string name="setcat_headphones_resume_subtitle">If playback paused because headphones were removed, resume automatically when they connect again.</string>
+    <string name="setcat_headphones_resume_subtitle">Resume playback automatically when headphones reconnect.</string>
     <string name="setcat_queue_transitions">Queue and Transitions</string>
     <string name="setcat_crossfade_label">Crossfade</string>
     <string name="setcat_crossfade_desc">Enable smooth transition between songs.</string>
     <string name="setcat_crossfade_duration">Crossfade Duration</string>
-    <string name="setcat_smart_crossfade_title">Smart crossfade</string>
-    <string name="setcat_smart_crossfade_subtitle">Match the crossfade length to the songs\' tempo when their BPM tags are compatible.</string>
-    <string name="setcat_audio_output_mode_title">Audio output mode</string>
-    <string name="setcat_audio_output_mode_description">Choose how decoded PCM is sent to Android. Changing mode briefly restarts the audio output.</string>
-    <string name="setcat_audio_output_mode_system_default">System default</string>
-    <string name="setcat_audio_output_mode_system_default_description">Best compatibility. Android may mix or resample audio.</string>
-    <string name="setcat_audio_output_mode_direct">Direct output (experimental)</string>
-    <string name="setcat_audio_output_mode_direct_description">Attempts to use the same sample rate as the audio on most devices to avoid unnecessary resampling.</string>
-    <string name="setcat_audio_output_mode_pcm_float">32-bit float PCM</string>
-    <string name="setcat_audio_output_mode_pcm_float_description">More processing headroom for high-resolution PCM. Android may still resample it; this is not bit-perfect.</string>
-    <string name="setcat_audio_output_mode_pcm_float_unsupported">Unavailable because this device could not initialize a PCM_FLOAT AudioTrack.</string>
+    <string name="setcat_hifi_mode_title">Hi-Fi Mode</string>
+    <string name="setcat_hifi_mode_subtitle_supported">Float 32-bit audio output. Disable if playback stutters on your device.</string>
+    <string name="setcat_hifi_mode_subtitle_unsupported">Not supported on this device (PCM_FLOAT AudioTrack unavailable).</string>
     <string name="setcat_persistent_shuffle_title">Persistent Shuffle</string>
     <string name="setcat_persistent_shuffle_subtitle">Remember shuffle setting even after closing the app.</string>
     <string name="setcat_show_queue_history_title">Show queue history</string>
     <string name="setcat_show_queue_history_subtitle">Show previously played songs in the queue.</string>
 
+    <!-- Behavior -->
     <string name="setcat_folders">Folders</string>
     <string name="setcat_folder_back_gesture_title">Back gesture controls folders</string>
     <string name="setcat_folder_back_gesture_subtitle">In Folders tab, system back navigates folder stack before leaving Library.</string>
@@ -189,7 +239,36 @@
     <string name="setcat_haptic_feedback_title">Haptic feedback</string>
     <string name="setcat_haptic_feedback_subtitle">Enable vibration feedback across the app.</string>
 
+    <!-- AI -->
+    <string name="setcat_ai_provider_section">AI Provider</string>
+    <string name="setcat_ai_provider_label">Provider</string>
+    <string name="setcat_ai_provider_desc">Choose your AI provider</string>
+    <string name="setcat_safe_token_title">Safe Token Mode</string>
+    <string name="setcat_safe_token_on">ON — Fast &amp; cheap. Sends minimal data (~1K tokens) to AI.</string>
+    <string name="setcat_safe_token_off">OFF — Deep context. Sends full listening profile (~8K tokens) for richer results.</string>
+    <string name="setcat_credentials">Credentials</string>
+    <string name="setcat_ai_api_key_title">%1$s API Key</string>
+    <string name="setcat_ai_api_key_subtitle">Get from %1$s</string>
+    <string name="setcat_ai_source_gemini">Google AI Studio (aistudio.google.com)</string>
+    <string name="setcat_ai_source_deepseek">DeepSeek Platform (api.deepseek.com)</string>
+    <string name="setcat_ai_source_groq">Groq Console (console.groq.com)</string>
+    <string name="setcat_ai_source_mistral">Mistral AI Platform (console.mistral.ai)</string>
+    <string name="setcat_ai_source_nvidia">NVIDIA Build (build.nvidia.com)</string>
+    <string name="setcat_ai_source_kimi">Moonshot AI Platform (platform.moonshot.cn)</string>
+    <string name="setcat_ai_source_glm">Zhipu AI Open Platform (bigmodel.cn)</string>
+    <string name="setcat_ai_source_openai">OpenAI Platform (platform.openai.com)</string>
+    <string name="setcat_model_selection">Model Selection</string>
+    <string name="setcat_loading_models">Loading available models…</string>
+    <string name="setcat_ai_model_label">AI Model</string>
+    <string name="setcat_ai_model_desc">Select a model.</string>
+    <string name="setcat_prompt_behavior">Prompt Behavior</string>
+    <string name="setcat_system_prompt_title">System Prompt</string>
+    <string name="setcat_system_prompt_subtitle">Customize how the AI behaves.</string>
+    <string name="setcat_ai_usage_report">AI Usage Report</string>
+    <string name="setcat_total_consumption_title">Total Consumption</string>
+    <string name="setcat_ai_usage_tokens_subtitle">%1$s tokens tracking\nPrompt: %2$s | Output: %3$s | Thought: %4$s</string>
 
+    <!-- Backup / developer / dialogs -->
     <string name="setcat_create_backup">Create Backup</string>
     <string name="setcat_export_backup_title">Export Backup</string>
     <string name="setcat_export_backup_subtitle">%1$s Creates a .pxpl backup file.</string>
@@ -211,8 +290,8 @@
     <string name="setcat_trigger_crash_title">Trigger Test Crash</string>
     <string name="setcat_trigger_crash_subtitle">Simulate a crash to test the crash reporting system.</string>
     <string name="setcat_application">Application</string>
-    <string name="setcat_about_pixelplayer_title">About PixelMusic</string>
-    <string name="setcat_about_pixelplayer_subtitle">App version, credits, and more.</string>
+    <string name="setcat_about_pixelmusicer_title">About PixelMusic</string>
+    <string name="setcat_about_pixelmusicer_subtitle">App version, credits, and more.</string>
 
     <string name="backup_summary_none">No sections selected.</string>
     <string name="backup_summary_all">All sections selected.</string>
@@ -229,16 +308,6 @@
     <string name="backup_dialog_restoring">Restoring Backup</string>
     <string name="backup_step_format">Step %1$d of %2$d</string>
     <string name="backup_entries_will_replace">%1$d entries · Will replace current data</string>
-    <string name="backup_encrypt_title">Encrypt backup</string>
-    <string name="backup_encrypt_subtitle">Protect the file with a password (AES-256). You\'ll need it to restore.</string>
-    <string name="backup_password_hint">Backup password</string>
-    <string name="backup_password_confirm_hint">Confirm password</string>
-    <string name="backup_password_mismatch">Passwords don\'t match.</string>
-    <string name="backup_password_too_short">Use at least 4 characters.</string>
-    <string name="backup_encrypted_prompt_title">Encrypted backup</string>
-    <string name="backup_encrypted_prompt_body">This backup is protected with a password. Enter it to continue.</string>
-    <string name="backup_wrong_password">Incorrect password. Try again.</string>
-    <string name="backup_unlock">Unlock</string>
 
     <string name="dialog_palette_regenerated">Palette regenerated for %1$s</string>
     <string name="dialog_palette_regenerate_failed">Could not regenerate palette for %1$s</string>
@@ -256,7 +325,7 @@
     <string name="dialog_cannot_undo">This action cannot be undone.</string>
     <string name="confirm">Confirm</string>
     <string name="dialog_rebuild_database_title">Rebuild database?</string>
-    <string name="dialog_rebuild_database_message">This will rebuild local files from MediaStore and remove local imported lyrics, favorites, and custom metadata for those songs. Navidrome and Jellyfin songs are preserved. This action cannot be undone.</string>
+    <string name="dialog_rebuild_database_message">This will completely rebuild your music library from scratch. All imported lyrics, favorites, and custom metadata will be lost. This action cannot be undone.</string>
     <string name="rebuild">Rebuild</string>
     <string name="sync_indicator_rebuilding">Rebuilding database</string>
     <string name="toast_rebuilding_database">Rebuilding database…</string>
@@ -276,9 +345,14 @@
     <string name="setcat_regenerating">Regenerating…</string>
     <string name="setcat_choose_song">Choose Song</string>
 
+    <string name="setcat_ai_clear_logs">Clear Logs</string>
+    <string name="setcat_ai_activity_log_title">AI Activity Log (%1$d)</string>
+    <string name="cd_show">Show</string>
+    <string name="cd_hide">Hide</string>
     <string name="setcat_select_export">Select &amp; Export</string>
     <string name="setcat_select_restore">Select &amp; Restore</string>
 
+    <!-- Import backup flow (SettingsCategoryScreen) -->
     <string name="import_backup_toolbar_title">Import Backup</string>
     <string name="import_inspecting">Inspecting…</string>
     <string name="import_browse_file">Browse for file</string>
@@ -294,4 +368,63 @@
     <string name="cd_remove_from_history">Remove from history</string>
     <string name="cd_clear_search">Clear search</string>
     <string name="backup_history_modules_line">%1$d modules · v%2$s · schema v%3$d</string>
+
+    <!-- Playback Streaming & Optimization -->
+    <string name="setcat_streaming_title">Streaming &amp; Data Saving</string>
+    <string name="setcat_streaming_audio_quality_wifi_title">WiFi Streaming Quality</string>
+    <string name="setcat_streaming_audio_quality_wifi_desc">Select audio quality when streaming on WiFi networks.</string>
+    <string name="setcat_streaming_audio_quality_mobile_title">Mobile Data Streaming Quality</string>
+    <string name="setcat_streaming_audio_quality_mobile_desc">Select audio quality when streaming on mobile or metered networks.</string>
+    <string name="setcat_force_high_quality_mobile_title">Force high quality on mobile data</string>
+    <string name="setcat_force_high_quality_mobile_desc">Stream in high quality even when connected to mobile or metered networks.</string>
+    <string name="setcat_cache_liked_songs_title">Cache liked songs offline</string>
+    <string name="setcat_cache_liked_songs_desc">Automatically download audio of liked YouTube songs for offline playback.</string>
+    <string name="setcat_album_art_quality_wifi_title">WiFi Album Art Quality</string>
+    <string name="setcat_album_art_quality_wifi_desc">Resolution for downloading and displaying album covers on WiFi.</string>
+    <string name="setcat_album_art_quality_mobile_title">Mobile Album Art Quality</string>
+    <string name="setcat_album_art_quality_mobile_desc">Resolution for downloading and displaying album covers on metered networks.</string>
+    <string name="setcat_music_storage_limit_title">Music Storage Limit</string>
+    <string name="setcat_music_storage_limit_desc">Maximum local storage allocated for downloaded YouTube music.</string>
+    <string name="genre_local_music">Local Music</string>
+    <string name="setcat_preload_queue_enabled_title">Queue Preloading</string>
+    <string name="setcat_preload_queue_enabled_desc">Preload stream URLs and artwork for upcoming songs in queue.</string>
+    <string name="setcat_preload_queue_size_title">Queue Preload Size</string>
+    <string name="setcat_preload_queue_size_desc">Number of upcoming songs to resolve and cache in the queue.</string>
+    <string name="setcat_auto_queue_enabled_title">Dynamic Queue (Autoplay)</string>
+    <string name="setcat_auto_queue_enabled_desc">Automatically refill queue with related tracks when remaining count is low.</string>
+    <string name="setcat_avoid_repetitive_songs_title">Avoid Repetitive Songs</string>
+    <string name="setcat_avoid_repetitive_songs_desc">Filter out recently played or highly rotated tracks from the dynamic queue.</string>
+    <string name="setcat_deduplicate_queue_title">Deduplicate Queue Entries</string>
+    <string name="setcat_deduplicate_queue_desc">Remove duplicate songs in queue across local, Telegram, and YouTube.</string>
+    <string name="setcat_prefer_telegram_alternative_title">Prefer Alternatives (Local &amp; Telegram)</string>
+    <string name="setcat_prefer_telegram_alternative_desc">Play matching local audio first, then Telegram, falling back to YouTube.</string>
+
+    <!-- Last.fm Integration -->
+    <string name="lastfm_integration">Last.fm Integration</string>
+    <string name="lastfm_integration_desc">Configure Last.fm scrobbling, now playing updates, and threshold parameters</string>
+    <string name="lastfm_not_logged_in">Not logged in</string>
+    <string name="lastfm_action_login">Log In</string>
+    <string name="lastfm_action_logout">Log Out</string>
+    <string name="lastfm_enable_scrobbling">Enable Scrobbling</string>
+    <string name="lastfm_enable_scrobbling_desc">Scrobble played songs to your Last.fm profile</string>
+    <string name="lastfm_now_playing">Update Now Playing</string>
+    <string name="lastfm_now_playing_desc">Update your Last.fm status with the current track</string>
+    <string name="lastfm_scrobbling_configuration">Scrobbling Configuration</string>
+    <string name="lastfm_scrobble_min_track_duration">Minimum Track Duration: %1$ds</string>
+    <string name="lastfm_scrobble_delay_percent">Scrobble Threshold Percentage: %1$d%%</string>
+    <string name="lastfm_scrobble_delay_seconds">Max Scrobble Threshold Duration: %1$ds</string>
+    <string name="lastfm_username">Username</string>
+    <string name="lastfm_password">Password</string>
+    <string name="lastfm_logging_in">Logging in…</string>
+    <string name="lastfm_login_failed">Login failed: %1$s</string>
+    <string name="lastfm_login_success">Logged in successfully!</string>
+    <string name="lastfm_logged_in_as">Logged in as %1$s</string>
+    <string name="lastfm_login_dialog_title">Link Last.fm Account</string>
+    <string name="lastfm_login_dialog_desc">Enter your Last.fm account credentials to authorize scrobbling.</string>
+    <string name="setcat_telegram_artwork_title">Use online artwork for Telegram songs</string>
+    <string name="setcat_telegram_artwork_desc">Match Telegram tracks with YouTube Music to use high-quality cover art.</string>
+    <string name="setcat_playback_client_title">Playback Client</string>
+    <string name="setcat_playback_client_desc">Select stream client. Android VR is faster; Web Client uses YouTube Music.</string>
+    <string name="setcat_playback_client_android_vr">Android VR (Default)</string>
+    <string name="setcat_playback_client_web_remix">Web Client</string>
 </resources>

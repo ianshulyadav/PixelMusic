@@ -1,63 +1,155 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="presentation_batch_e_action_clear_queue">Tøm kø</string>
-    <string name="presentation_batch_e_action_locate_current_song">Finn gjeldende sang</string>
-    <string name="presentation_batch_e_action_save_as_playlist">Lagre som spilleliste</string>
-    <string name="presentation_batch_e_cd_dismiss_song">Fjern sang</string>
-    <string name="presentation_batch_e_cd_hidden">Skjult</string>
-    <string name="presentation_batch_e_cd_queue_actions">Kø-handlinger</string>
-    <string name="presentation_batch_e_cd_remove_from_playlist">Fjern fra spilleliste</string>
-    <string name="presentation_batch_e_cd_reset_presets_default">Nullstill til standard</string>
-    <string name="presentation_batch_e_cd_sleep_timer">Sleep timer</string>
-    <string name="presentation_batch_e_cd_toggle_repeat">Gjenta sanger</string>
-    <string name="presentation_batch_e_cd_toggle_shuffle">Bland sanger</string>
-    <string name="presentation_batch_e_cd_visible">Synlig</string>
-    <string name="presentation_batch_e_clear_queue_dialog_message">Er du sikker på at du vil tømme alle sanger fra køen, bortsett fra den gjeldende?</string>
-    <string name="presentation_batch_e_clear_queue_dialog_title">Tøm kø</string>
-    <string name="presentation_batch_e_create_playlist_subtitle">Velg opprettelsesmetode.</string>
-    <string name="presentation_batch_e_create_playlist_title">Opprett spilleliste</string>
-    <string name="presentation_batch_e_creation_mode_describe">Beskriv den</string>
-    <string name="presentation_batch_e_creation_mode_describe_subtitle">Skriv hva du vil høre, så velger appen sangene – helt offline.</string>
-    <string name="presentation_batch_e_creation_mode_manual">Manuelt</string>
-    <string name="presentation_batch_e_creation_mode_manual_subtitle">Design grafikk, ikon og form, og velg sanger selv.</string>
-    <string name="presentation_batch_e_describe_generate">Generer</string>
-    <string name="presentation_batch_e_describe_no_matches">Ingen sanger i biblioteket ditt samsvarer med den beskrivelsen.</string>
-    <string name="presentation_batch_e_describe_playlist_hint">f.eks. sanger å trene styrke til</string>
-    <string name="presentation_batch_e_describe_playlist_subtitle">Matches mot biblioteket på denne enheten – ingenting forlater den.</string>
-    <string name="presentation_batch_e_describe_playlist_title">Beskriv spillelisten din</string>
-    <string name="presentation_batch_e_describe_regenerate">Regenerer</string>
-    <plurals name="presentation_batch_e_describe_result_count">
-        <item quantity="one">%d sang samsvarer</item>
-        <item quantity="other">%d sanger samsvarer</item>
-    </plurals>
-    <string name="presentation_batch_e_describe_save">Lagre spilleliste</string>
-    <string name="presentation_batch_e_deselect_all">Velg bort alle</string>
-    <string name="presentation_batch_e_enter_playlist_name">Skriv inn et navn</string>
-    <string name="presentation_batch_e_manage_presets_title">Administrer forhåndsinnstillinger</string>
-    <string name="presentation_batch_e_more_options_for_song">Flere alternativer for %1$s</string>
-    <plurals name="presentation_batch_e_n_songs_selected">
-        <item quantity="one">%d sang valgt</item>
-        <item quantity="other">%d sanger valgt</item>
-    </plurals>
-    <string name="presentation_batch_e_new_playlist_hint">Trykk på «Ny spilleliste»-knappen for å starte.</string>
-    <string name="presentation_batch_e_next_up">Neste</string>
-    <string name="presentation_batch_e_no_playlist_created">Ingen spillelister er opprettet ennå.</string>
-    <string name="presentation_batch_e_no_songs_match_query">Ingen sanger samsvarer med \"%1$s\"</string>
-    <string name="presentation_batch_e_playlist_name_label">Navn på spilleliste</string>
-    <string name="presentation_batch_e_presets_drag_hint">Dra for å endre rekkefølge • Trykk på øyet for å vise/skjule</string>
-    <string name="presentation_batch_e_queue_current">Gjeldende kø</string>
+    <!-- QueueBottomSheet -->
     <string name="presentation_batch_e_queue_empty">Køen er tom.</string>
+    <string name="presentation_batch_e_cd_queue_actions">Kø-handlinger</string>
+    <string name="presentation_batch_e_action_clear_queue">Tøm kø</string>
+    <string name="presentation_batch_e_action_save_as_playlist">Lagre som spilleliste</string>
     <string name="presentation_batch_e_queue_named_suffix">%1$s-kø</string>
-    <string name="presentation_batch_e_queue_source_fallback">Kø</string>
+    <string name="presentation_batch_e_queue_current">Gjeldende kø</string>
+    <string name="presentation_batch_e_removed">fjernet</string>
+    <string name="presentation_batch_e_clear_queue_dialog_title">Tøm kø</string>
+    <string name="presentation_batch_e_clear_queue_dialog_message">Er du sikker på at du vil tømme alle sanger fra køen, bortsett fra den gjeldende?</string>
+    <string name="presentation_batch_e_next_up">Neste</string>
     <string name="presentation_batch_e_queue_subtitle_empty">Køen er tom for øyeblikket.</string>
+    <string name="presentation_batch_e_queue_source_fallback">Kø</string>
+    <string name="presentation_batch_e_cd_toggle_shuffle">Bland sanger</string>
+    <string name="presentation_batch_e_cd_toggle_repeat">Gjenta sanger</string>
+    <string name="presentation_batch_e_cd_sleep_timer">Sleep timer</string>
+    <string name="presentation_batch_e_save_as_playlist_sheet_title">Lagre som spilleliste</string>
+    <string name="presentation_batch_e_deselect_all">Velg bort alle</string>
+    <string name="presentation_batch_e_playlist_name_label">Navn på spilleliste</string>
+    <string name="presentation_batch_e_search_songs_to_include_placeholder">Søk etter sanger…</string>
+    <string name="presentation_batch_e_save_as_format">Lagre som: %1$s</string>
+    <string name="presentation_batch_e_enter_playlist_name">Skriv inn et navn</string>
+    <string name="presentation_batch_e_no_songs_match_query">Ingen sanger samsvarer med \"%1$s\"</string>
+    <string name="presentation_batch_e_cd_dismiss_song">Fjern sang</string>
+    <string name="presentation_batch_e_cd_remove_from_playlist">Fjern fra spilleliste</string>
+    <string name="presentation_batch_e_more_options_for_song">Flere alternativer for %1$s</string>
+
     <plurals name="presentation_batch_e_queue_tracks_lined_up">
         <item quantity="one">1 spor i kø.</item>
         <item quantity="other">%d spor i kø.</item>
     </plurals>
-    <string name="presentation_batch_e_removed">fjernet</string>
-    <string name="presentation_batch_e_reset_presets_message">Dette vil gjenopprette standard rekkefølge og synlighet. Fortsette?</string>
+    <plurals name="presentation_batch_e_n_songs_selected">
+        <item quantity="one">%d sang valgt</item>
+        <item quantity="other">%d sanger valgt</item>
+    </plurals>
+
+    <!-- PlaylistContainer -->
+    <string name="presentation_batch_e_no_playlist_created">Ingen spillelister er opprettet ennå.</string>
+    <string name="presentation_batch_e_new_playlist_hint">Trykk på \'Ny spilleliste\' for å starte.</string>
+
+    <!-- PlaylistCreationDialogs: create flow -->
+    <string name="presentation_batch_e_create_playlist_title">Opprett spilleliste</string>
+    <string name="presentation_batch_e_create_playlist_subtitle">Velg metode.</string>
+    <string name="presentation_batch_e_creation_mode_manual">Manuell</string>
+    <string name="presentation_batch_e_creation_mode_manual_subtitle">Design bilde, ikon, form og velg sanger selv.</string>
+    <string name="presentation_batch_e_creation_mode_ai">Med AI</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_enabled">Generer en kuratert spilleliste med avanserte kontroller.</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_disabled">Krever en Gemini API-nøkkel i innstillingene.</string>
+    <string name="presentation_batch_e_setup_api_key">Sett opp API-nøkkel</string>
+
+    <!-- AI playlist lab -->
+    <string name="presentation_batch_e_ai_playlist_lab_title">AI Playlist Lab</string>
+    <string name="presentation_batch_e_ai_reset">Nullstill</string>
+    <string name="presentation_batch_e_ai_generating">Genererer…</string>
+    <string name="presentation_batch_e_ai_generate">Generer</string>
+    <string name="presentation_batch_e_ai_section_intent">Hensikt</string>
+    <string name="presentation_batch_e_ai_playlist_name_optional">Navn på spilleliste (valgfritt)</string>
+    <string name="presentation_batch_e_ai_feel_label">Hvordan skal denne spillelisten føles?</string>
+    <string name="presentation_batch_e_ai_feel_placeholder">f.eks. biltur i solnedgang med varme synther</string>
+    <string name="presentation_batch_e_ai_section_direction">Retning</string>
+    <string name="presentation_batch_e_ai_mood_label">Humør</string>
+    <string name="presentation_batch_e_ai_activity_label">Aktivitet</string>
+    <string name="presentation_batch_e_ai_era_label">Era</string>
+    <string name="presentation_batch_e_ai_section_curation">Kuratator-motor</string>
+    <string name="presentation_batch_e_ai_energy_label">Energi</string>
+    <string name="presentation_batch_e_ai_energy_description">Styrer intensiteten og tempoet på sanger. 1 = rolig/sakte, 5 = høy energi/rask.</string>
+    <string name="presentation_batch_e_ai_discovery_label">Oppdagelse</string>
+    <string name="presentation_batch_e_ai_discovery_description">Styrer hvor kjente sangene er. 1 = mest spilte favoritter, 5 = sjeldne dypdykk.</string>
+    <string name="presentation_batch_e_ai_min_songs">Min. antall sanger</string>
+    <string name="presentation_batch_e_ai_max_songs">Maks. antall sanger</string>
+    <string name="presentation_batch_e_ai_section_filters">Filtre</string>
+    <string name="presentation_batch_e_ai_prioritize_genres">Prioriter sjangere (valgfritt)</string>
+    <string name="presentation_batch_e_ai_prioritize_genres_placeholder">f.eks. synthwave, indie pop</string>
+    <string name="presentation_batch_e_ai_avoid_genres">Unngå sjangere (valgfritt)</string>
+    <string name="presentation_batch_e_ai_avoid_genres_placeholder">f.eks. metal, hard trap</string>
+    <string name="presentation_batch_e_ai_preferred_language">Foretrukket språk (valgfritt)</string>
+    <string name="presentation_batch_e_ai_preferred_language_placeholder">f.eks. engelsk, norsk, instrumentalt</string>
+    <string name="presentation_batch_e_ai_prioritize_favorites">Prioriter favoritter</string>
+    <string name="presentation_batch_e_ai_avoid_explicit">Unngå eksplisitt tekst</string>
+    <string name="presentation_batch_e_ai_section_prompt_preview">Forhåndsvisning av prompt</string>
+    <string name="presentation_batch_e_ai_prompt_preview_empty">Den endelige prompten vil vises her når du har lagt til preferanser.</string>
+    <string name="presentation_batch_e_ai_hero_title">Kurer med presisjon</string>
+    <string name="presentation_batch_e_ai_hero_subtitle">Definer stemning, aktivitet, begrensninger og dybde.</string>
+    <string name="presentation_batch_e_ai_hero_library_note">AI-en vil kun bruke sanger fra ditt lokale bibliotek.</string>
+    <string name="presentation_batch_e_ai_error_add_instruction">Legg til minst én instruksjon for AI-en.</string>
+    <string name="presentation_batch_e_ai_error_song_range">Angi et gyldig område for antall sanger.</string>
+    <string name="presentation_batch_e_ai_level_out_of_five">%1$d/5</string>
+    <string name="presentation_batch_e_ai_custom_chip">Egendefinert…</string>
+    <string name="presentation_batch_e_ai_enter_custom_title">Skriv inn verdi</string>
+    <string name="presentation_batch_e_ai_enter_custom_label">Skriv inn din egendefinerte verdi</string>
+
+    <!-- AI prompt assembly (sent to model; localized for consistency with UI) -->
+    <string name="presentation_batch_e_ai_era_any">Enhver era</string>
+    <string name="presentation_batch_e_ai_prompt_core_request">Kjerneforespørsel: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_mood">Mål for stemning: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_activity">Aktivitetskontekst: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_era">Fokus på era: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_genres">Prioriter sjangere: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_genres">Unngå sjangere: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_preferred_language">Foretrukket språk: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_energy">Mål for energinivå: %1$d/5.</string>
+    <string name="presentation_batch_e_ai_prompt_discovery">Mål for oppdagelse: %1$d/5 der 1 er kjent og 5 er ukjent.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_favorites">Prioriter sanger som ligger nært brukerens favoritter når det er mulig.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_explicit">Unngå eksplisitt tekst der alternativer finnes.</string>
+    <string name="presentation_batch_e_ai_prompt_smooth_transitions">Hold overgangene glatte og unngå repeterende artistklynger.</string>
+
+    <string-array name="presentation_batch_e_ai_mood_options">
+        <item>Rolig</item>
+        <item>Energisk</item>
+        <item>Glad</item>
+        <item>Mørk</item>
+        <item>Romantisk</item>
+        <item>Melankolsk</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_activity_options">
+        <item>Trening</item>
+        <item>Fokus</item>
+        <item>Biltur</item>
+        <item>Fest</item>
+        <item>Studere</item>
+        <item>Sen kveld</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_era_options">
+        <item>@string/presentation_batch_e_ai_era_any</item>
+        <item>70-tallet</item>
+        <item>80-tallet</item>
+        <item>90-tallet</item>
+        <item>2000-tallet</item>
+        <item>2010-tallet</item>
+        <item>2020-tallet</item>
+    </string-array>
+
+    <!-- ReorderPresetsSheet -->
     <string name="presentation_batch_e_reset_presets_title">Nullstill forhåndsinnstillinger</string>
-    <string name="presentation_batch_e_save_as_format">Lagre som: %1$s</string>
-    <string name="presentation_batch_e_save_as_playlist_sheet_title">Lagre som spilleliste</string>
-    <string name="presentation_batch_e_search_songs_to_include_placeholder">Søk etter sanger…</string>
+    <string name="presentation_batch_e_reset_presets_message">Dette vil gjenopprette standard rekkefølge og synlighet. Fortsette?</string>
+    <string name="presentation_batch_e_manage_presets_title">Administrer forhåndsinnstillinger</string>
+    <string name="presentation_batch_e_presets_drag_hint">Dra for å endre rekkefølge • Trykk på øyet for å vise/skjule</string>
+    <string name="presentation_batch_e_cd_reset_presets_default">Nullstill til standard</string>
+    <string name="presentation_batch_e_cd_visible">Synlig</string>
+    <string name="presentation_batch_e_cd_hidden">Skjult</string>
+
+    <!-- DailyMixMenu -->
+    <string name="presentation_batch_e_daily_mix_how_title">Hvordan din Daily Mix bygges</string>
+    <string name="presentation_batch_e_daily_mix_how_body">Din Daily Mix bygges fra dine favoritter og mest spilte sanger. Vi legger også til spor fra artister og sjangere du liker, slik at du kan oppdage ny musikk.</string>
+    <string name="presentation_batch_e_daily_mix_prompt_label">Fortell AI-en hva du vil høre på i dag</string>
+    <string name="presentation_batch_e_daily_mix_cost_hint">Vi bruker et lite utvalg for å holde kostnadene lave</string>
+    <string name="presentation_batch_e_daily_mix_updating">Oppdaterer…</string>
+    <string name="presentation_batch_e_daily_mix_update">Oppdater Daily Mix</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_e_action_locate_current_song">Finn gjeldende sang</string>
+    <string name="autoplay">Automatisk avspilling</string>
 </resources>

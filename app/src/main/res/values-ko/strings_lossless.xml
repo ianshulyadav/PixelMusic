@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">무손실 소스</string>
+    <string name="settings_category_lossless_subtitle">소스 풀을 통한 Tidal, Qobuz, Deezer 및 Apple Music</string>
+    <string name="lossless_tidal_login">Tidal에 로그인</string>
+    <string name="lossless_auth_webview_tidal_subtitle">아래에서 Tidal에 로그인하세요. PixelMusic은 세션을 자동으로 저장합니다.</string>
+    <string name="lossless_tidal_login_success">Tidal에 로그인됨</string>
+    <string name="lossless_tidal_account_free_warning">이 Tidal 계정은 HiFi/프리미엄이 아닙니다. Tidal을 통한 무손실 재생이 실패할 수 있습니다. 앱은 다른 소스로 대체됩니다.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">표준 로그인을 완료할 수 없습니다. 대신 Tidal 웹 플레이어를 여세요. 로그인만 하면 자동으로 재생이 연결됩니다.</string>
+    <string name="lossless_deezer_login">Deezer에 로그인</string>
+    <string name="lossless_auth_webview_deezer_subtitle">아래에서 Deezer에 로그인하세요. 세션 쿠키는 자동으로 저장됩니다.</string>
+    <string name="lossless_deezer_login_success">%1$s로 Deezer에 로그인됨</string>
+    <string name="lossless_deezer_manual_arl">ARL 쿠키를 사용하여 수동으로 로그인</string>
+    <string name="lossless_deezer_manual_arl_hint">해당 지역에서 Deezer를 사용할 수 없나요? VPN이 작동하는 브라우저에서 로그인하고 arl 쿠키 값을 복사하여 여기에 붙여넣으세요.</string>
+    <string name="lossless_deezer_manual_arl_apply">확인하고 로그인하세요</string>
+    <string name="lossless_deezer_arl_invalid">ARL이 작동하지 않았습니다. 전체 arl 쿠키 값을 복사하고 다시 시도하세요.</string>
+    <string name="lossless_qobuz_login">Qobuz에 로그인</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">아래에서 Qobuz에 로그인하세요. 귀하의 자격 증명은 자동으로 캡처됩니다.</string>
+    <string name="lossless_qobuz_login_success">Qobuz 계정을 추가했습니다</string>
+    <string name="lossless_qobuz_app_secret_title">Qobuz 앱 비밀번호를 입력하세요</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (토큰 소스에서)</string>
+    <string name="lossless_applemusic_login">Apple Music에 로그인</string>
+    <string name="lossless_applemusic_login_subtitle">Apple ID로 로그인하세요. Music 사용자 토큰이 자동으로 가져옵니다.</string>
+    <string name="lossless_applemusic_login_failed">Apple Music 토큰을 가져올 수 없습니다. 토큰을 수동으로 붙여넣어 보세요</string>
+    <string name="lossless_applemusic_login_success">Apple Music에 로그인됨</string>
+</resources>

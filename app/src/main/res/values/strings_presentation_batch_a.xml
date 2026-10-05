@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Web login security notes (QQ / NetEase) -->
+    <string name="auth_web_login_security_note_qq">Security note: your password is entered only in QQ Music web pages. PixelMusic stores session cookies to sync your library.</string>
+    <string name="auth_web_login_security_note_netease">Security note: your password is entered only in NetEase web pages. PixelMusic stores session cookies (MUSIC_U) to sync your library.</string>
+    <string name="auth_error_read_qq_cookies_failed">Failed to read QQ Music cookies: %1$s</string>
+    <string name="auth_error_read_netease_cookies_failed">Failed to read NetEase cookies: %1$s</string>
+
+    <!-- Google Drive folder setup -->
+    <string name="auth_gdrive_setting_up">Setting up Google Drive…</string>
+    <string name="auth_gdrive_connect_title">Connect Google Drive</string>
+    <string name="auth_gdrive_connect_subtitle">Stream music files directly from your Google Drive</string>
+    <string name="auth_gdrive_sign_in_with_google">Sign in with Google</string>
+    <string name="auth_gdrive_select_music_folder_title">Select a music folder</string>
+    <string name="auth_gdrive_select_music_folder_subtitle">Choose or create a folder to use as your music source</string>
+    <string name="auth_gdrive_create_pixelmusic_music_title">Create \"PixelMusic Music\"</string>
+    <string name="auth_gdrive_create_folder_here_hint">Create a new folder here for your music</string>
+    <string name="auth_gdrive_no_folders_here">No folders here</string>
+    <string name="auth_gdrive_use_this_folder">Use</string>
+    <string name="auth_gdrive_cd_open_folder">Open folder</string>
+</resources>

@@ -1,377 +1,598 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="device_capabilities_advanced_diagnostics_description">По умолчанию отключено. Записывает короткую историю лагов для отладки бета-версии.</string>
-    <string name="device_capabilities_advanced_diagnostics_expires">Активно до %1$s</string>
-    <string name="device_capabilities_advanced_diagnostics_mark_lag">Отметить лаг сейчас</string>
-    <string name="device_capabilities_advanced_diagnostics_marked">Момент лага отмечен</string>
-    <string name="device_capabilities_advanced_diagnostics_title">Расширенная диагностика производительности</string>
-    <string name="device_capabilities_buffer_frames">%1$d кадров в буфере</string>
-    <string name="device_capabilities_finding_clear_body">Треки в вашей медиатеке соответствуют декодерам, доступным на этом устройстве Android.</string>
-    <string name="device_capabilities_finding_clear_title">Серьёзных проблем совместимости не обнаружено</string>
-    <string name="device_capabilities_finding_resample_body">В медиатеке есть треки с частотой до %1$d Гц, что выше текущей частоты вывода.</string>
-    <string name="device_capabilities_finding_resample_title">%1$d локальных треков могут подвергаться ресемплингу</string>
-    <string name="device_capabilities_finding_unknown_body">Полное повторное сканирование медиатеки может заполнить отсутствующие данные MIME-типа, битрейта и частоты дискретизации.</string>
-    <string name="device_capabilities_finding_unknown_title">%1$d треков имеют неизвестные метаданные</string>
-    <string name="device_capabilities_finding_unsupported_body">Форматы для проверки: %1$s.</string>
-    <string name="device_capabilities_finding_unsupported_title">%1$d треков могут не декодироваться штатно</string>
-    <string name="device_capabilities_findings_title">Результаты проверки совместимости</string>
-    <string name="device_capabilities_format_hardware">Аппаратный декодер</string>
-    <string name="device_capabilities_format_library_count">%1$d в медиатеке</string>
-    <string name="device_capabilities_format_offload">Offload</string>
-    <string name="device_capabilities_format_software">Программный декодер</string>
-    <string name="device_capabilities_format_unsupported">Декодер не найден</string>
-    <string name="device_capabilities_formats_supported_count">%1$d поддерживаемых треков</string>
-    <string name="device_capabilities_formats_title">Совместимость форматов</string>
-    <string name="device_capabilities_formats_unknown_count">%1$d неизвестных форматов</string>
-    <string name="device_capabilities_hifi_pcm_float">Hi-Fi PCM Float</string>
-    <string name="device_capabilities_hifi_pcm_float_supporting">32-битный тракт вывода с плавающей точкой</string>
-    <string name="device_capabilities_memory_available_of">доступно из %1$s</string>
-    <string name="device_capabilities_memory_title">Память</string>
-    <string name="device_capabilities_metric_formats">Форматы</string>
-    <string name="device_capabilities_metric_hw_decoders">Аппаратные декодеры</string>
-    <string name="device_capabilities_metric_local_music">Локальные треки</string>
-    <string name="device_capabilities_more_count">ещё %1$d</string>
-    <string name="device_capabilities_offload_empty">Ни один сжатый формат не сообщил о поддержке аппаратного offload.</string>
-    <string name="device_capabilities_offload_title">Форматы с поддержкой offload</string>
-    <string name="device_capabilities_output_bluetooth">Bluetooth-аудио</string>
-    <string name="device_capabilities_output_builtin">Встроенный вывод</string>
-    <string name="device_capabilities_output_digital">Цифровой вывод</string>
-    <string name="device_capabilities_output_other">Другой вывод</string>
-    <string name="device_capabilities_output_usb">USB-аудио</string>
-    <string name="device_capabilities_output_wired">Проводное аудио</string>
-    <string name="device_capabilities_outputs_empty">Android не сообщил ни одного маршрута вывода.</string>
-    <string name="device_capabilities_outputs_title">Обнаруженные устройства вывода</string>
-    <string name="device_capabilities_playback_path_title">Путь воспроизведения</string>
-    <string name="device_capabilities_ready_title">Готово к воспроизведению</string>
-    <string name="device_capabilities_renderers_count">%1$s рендереров</string>
-    <string name="device_capabilities_report_copied">Отчёт скопирован в буфер обмена</string>
-    <string name="device_capabilities_report_copy">Копировать</string>
-    <string name="device_capabilities_report_description">Создайте диагностический отчёт для отправки, чтобы помочь нам выявить проблемы с воспроизведением или медленным сканированием. Отчёт содержит только данные об устройстве, медиатеке и времени выполнения — без путей к файлам, названий треков и исполнителей.</string>
-    <string name="device_capabilities_report_generate">Создать отчёт</string>
-    <string name="device_capabilities_report_regenerate">Пересоздать</string>
-    <string name="device_capabilities_report_share">Поделиться</string>
-    <string name="device_capabilities_report_share_title">Отчёт о производительности PixelPlayer</string>
-    <string name="device_capabilities_report_title">Отчёт о производительности</string>
-    <string name="device_capabilities_review_title">Требуется проверка воспроизведения</string>
-    <string name="device_capabilities_storage_available">Доступно</string>
-    <string name="device_capabilities_storage_cloud_count">%1$d облачных треков</string>
-    <string name="device_capabilities_storage_device_used">Использовано на устройстве</string>
-    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
-    <string name="device_capabilities_storage_music_count">%1$d локальных треков</string>
-    <string name="device_capabilities_storage_music_footprint">Занято музыкой</string>
-    <string name="device_capabilities_storage_music_size">Размер музыки</string>
-    <string name="device_capabilities_storage_percent">%1$d%%</string>
-    <string name="device_capabilities_storage_title">Локальное хранилище музыки</string>
-    <string name="device_capabilities_storage_total">Всего %1$s</string>
-    <string name="device_capabilities_storage_unavailable_count">%1$d файлов недоступно для чтения</string>
-    <string name="device_capabilities_unknown_short">--</string>
-    <string name="presentation_batch_g_album_sel_count">%1$d АЛЬБОМОВ</string>
-    <string name="presentation_batch_g_album_sel_limit">Лимит: %1$d альбомов за одно выделение.</string>
-    <string name="presentation_batch_g_album_sel_queue_hint">Очередь + воспроизведение сохраняют порядок вашего выбора.</string>
-    <string name="presentation_batch_g_album_sel_selected">выбрано</string>
-    <string name="presentation_batch_g_app_tagline">Музыкальный плеер</string>
-    <string name="presentation_batch_g_artist_cd_configure">Настроить</string>
-    <string name="presentation_batch_g_artist_ex_1_in">"Artist1/Artist2"</string>
-    <string name="presentation_batch_g_artist_ex_1_out">Artist1, Artist2</string>
-    <string name="presentation_batch_g_artist_ex_2_in">"Drake feat. Rihanna"</string>
-    <string name="presentation_batch_g_artist_ex_2_out">Drake, Rihanna</string>
-    <string name="presentation_batch_g_artist_ex_3_in">"Marshmello x Bastille"</string>
-    <string name="presentation_batch_g_artist_ex_3_out">Marshmello, Bastille</string>
-    <string name="presentation_batch_g_artist_ex_4_in">"Song (ft. B)" by A</string>
-    <string name="presentation_batch_g_artist_ex_4_out">A, B</string>
-    <string name="presentation_batch_g_artist_ex_5_in">"AC\\DC"</string>
-    <string name="presentation_batch_g_artist_ex_5_out">AC/DC (экранировано)</string>
-    <string name="presentation_batch_g_artist_example_arrow"> → </string>
-    <string name="presentation_batch_g_artist_examples_title">Примеры</string>
-    <string name="presentation_batch_g_artist_extract_from_title">Извлекать исполнителей из названия</string>
-    <string name="presentation_batch_g_artist_extract_from_title_sub">Определять feat., ft., with в названиях песен</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist">Группировать по исполнителю альбома</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist_sub">Группировать вкладку «Исполнители» и альбомы по исполнителю альбома, чтобы приглашённые исполнители и сборники не засоряли список</string>
-    <string name="presentation_batch_g_artist_info_title">О поддержке нескольких исполнителей</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters">Символьные разделители</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters_current">Текущие: %1$s</string>
-    <string name="presentation_batch_g_artist_item_word_delimiters">Словесные разделители</string>
-    <string name="presentation_batch_g_artist_rescan">Пересканировать</string>
-    <string name="presentation_batch_g_artist_rescan_banner_body">Настройки исполнителей изменены. Пересканируйте медиатеку для применения изменений.</string>
-    <string name="presentation_batch_g_artist_rescan_banner_title">Требуется повторное сканирование</string>
-    <string name="presentation_batch_g_artist_rescan_scanning">Сканирование…</string>
-    <string name="presentation_batch_g_artist_section_library_org">Организация медиатеки</string>
-    <string name="presentation_batch_g_artist_section_multi_parsing">Обработка нескольких исполнителей</string>
-    <string name="presentation_batch_g_artist_word_current_prefix">Текущие: %1$s</string>
-    <string name="presentation_batch_g_artist_word_none">Нет</string>
-    <string name="presentation_batch_g_backup_app_version">Версия приложения</string>
-    <string name="presentation_batch_g_backup_cd_clear_selection">Сбросить выбор</string>
-    <string name="presentation_batch_g_backup_cd_select_all">Выбрать всё</string>
-    <string name="presentation_batch_g_backup_created">Создано</string>
-    <string name="presentation_batch_g_backup_details">Сведения о резервной копии</string>
-    <string name="presentation_batch_g_backup_device">Устройство</string>
-    <string name="presentation_batch_g_backup_entries_will_replace">%1$d записей · Текущие данные будут заменены</string>
-    <string name="presentation_batch_g_backup_modules_selected">Выбрано модулей: %1$d из %2$d</string>
-    <string name="presentation_batch_g_backup_restore_modules">Модули восстановления</string>
-    <string name="presentation_batch_g_backup_restore_selected">Восстановить выбранное</string>
-    <string name="presentation_batch_g_backup_restoring">Восстановление</string>
-    <string name="presentation_batch_g_backup_schema">Схема</string>
-    <string name="presentation_batch_g_backup_transfer_progress">Выполняется передача…</string>
-    <string name="presentation_batch_g_backup_unknown">Неизвестно</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_1">Общих отчётов вроде «Не работает».</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_2">Нескольких несвязанных проблем в одной задаче.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_3">Логов или скриншотов с личными данными без скрытия информации.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_title">Пожалуйста, избегайте</string>
-    <string name="presentation_batch_g_beta_sheet_before_1">Проверьте открытые и закрытые задачи, чтобы избежать дубликатов.</string>
-    <string name="presentation_batch_g_beta_sheet_before_3">Перезапустите приложение и проверьте, сохраняется ли проблема.</string>
-    <string name="presentation_batch_g_beta_sheet_before_4">Попробуйте воспроизвести проблему и запишите точные шаги.</string>
-    <string name="presentation_batch_g_beta_sheet_before_title">Перед созданием задачи</string>
-    <string name="presentation_batch_g_beta_sheet_bug_actual">Текущее поведение:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_expected">Ожидаемое поведение:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_frequency">Как часто это происходит? Всегда / Иногда / Редко.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_logs">Логи / стек вызовов: если доступны.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_screenshot">Скриншот / видео: если доступно.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_steps">Шаги для воспроизведения: 1. 2. 3.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary">Краткое описание:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary_text">Скопируйте эти поля, если что-то работает неправильно или приложение падает.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_template_title">Отчёт об ошибке</string>
-    <string name="presentation_batch_g_beta_sheet_bug_title">Отчёт об ошибке</string>
-    <string name="presentation_batch_g_beta_sheet_env_android">Версия Android:</string>
-    <string name="presentation_batch_g_beta_sheet_env_device">Модель устройства:</string>
-    <string name="presentation_batch_g_beta_sheet_env_extra">Дополнительная информация: использование SD-карты, особые настройки, разрешения и т.д.</string>
-    <string name="presentation_batch_g_beta_sheet_env_source">Источник установки: GitHub Release, отладочная сборка, nightly и т.д.</string>
-    <string name="presentation_batch_g_beta_sheet_env_title">Окружение</string>
-    <string name="presentation_batch_g_beta_sheet_expect_1">Ошибки, сбои или незавершённые функции могут возникать неожиданно.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_2">Некоторые функции могут измениться или быть удалены без предварительного уведомления.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_3">Бета-версии могут быть менее стабильны, чем релизные сборки.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_4">Всегда проверяйте наличие обновлений перед сообщением об известной проблеме.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_summary">Что может изменяться, ломаться или улучшаться во время тестирования бета-версии.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_title">Чего ожидать</string>
-    <string name="presentation_batch_g_beta_sheet_feature_alternatives">Рассмотренные альтернативы: есть ли другие варианты?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_mockup">Макет или референсное изображение, если имеется.</string>
-    <string name="presentation_batch_g_beta_sheet_feature_problem">Описание проблемы: какую задачу вы пытаетесь решить?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_scope">Область действия: какие экраны или процессы затрагиваются?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_solution">Предлагаемое решение: как это должно работать?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_summary">Скопируйте эти поля, если хотите предложить новую функцию или улучшение.</string>
-    <string name="presentation_batch_g_beta_sheet_feature_title">Запрос функции</string>
-    <string name="presentation_batch_g_beta_sheet_github_body">Сначала выполните поиск, затем создайте чёткий отчёт об ошибке, сбое, предложении или вопросе.</string>
-    <string name="presentation_batch_g_beta_sheet_github_title">Быстрый переход к GitHub Issues</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_bug">Отчёт об ошибке: что-то работает неправильно.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_feature">Запрос функции: добавить новую возможность или улучшение.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_question">Вопрос: используйте Discussions, если они включены, либо создайте задачу с меткой вопроса.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_title">Какой тип задачи?</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_access">Получить их можно через артефакты GitHub Actions репозитория, если они доступны.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_body">Nightly-сборки создаются из последнего коммита и могут содержать незавершённые изменения, временные ошибки или регрессии. Они более экспериментальны, чем официальные релизы.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_body">При сообщении о проблеме в nightly-сборке обязательно укажите, что она возникла именно в nightly, а не в официальном релизе. По возможности приложите дату сборки, название или номер workflow, либо SHA коммита. Также проверьте, возникает ли проблема в последнем официальном релизе.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_title">Сообщение о проблемах в nightly</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_summary">Чем nightly отличаются от релизов и что указывать при сообщении о проблемах.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_title">Nightly-сборки</string>
-    <string name="presentation_batch_g_beta_sheet_open_issues">Открыть существующие задачи</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_body">Перед публикацией логов, скриншотов или видео удалите личную и конфиденциальную информацию.</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_title">Примечание о конфиденциальности</string>
-    <string name="presentation_batch_g_beta_sheet_quality_summary">Сделайте отчёт понятным для обработки и безопасным для публикации.</string>
-    <string name="presentation_batch_g_beta_sheet_quality_title">Заголовки, конфиденциальность и область задачи</string>
-    <string name="presentation_batch_g_beta_sheet_report_bug">Сообщить об ошибке или сбое</string>
-    <string name="presentation_batch_g_beta_sheet_report_summary">Краткий чек-лист перед созданием новой задачи.</string>
-    <string name="presentation_batch_g_beta_sheet_report_title">Как сообщать о проблемах</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_1">Эквалайзер: индикатор смещается при переключении вкладок пресетов</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_2">Поиск: список истории не отображается при пустом запросе</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_3">Функция: добавить сортировку плейлиста «Недавно добавленные»</string>
-    <string name="presentation_batch_g_beta_sheet_title_examples_title">Примеры хороших заголовков</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body">Вы используете бета-версию, которая может содержать ошибки, сбои или экспериментальные функции. Помогите нам улучшить приложение, сообщая о проблемах.</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body_stable">Вы используете стабильную сборку. Загляните в список изменений, чтобы узнать о новом, и сообщайте о любых неполадках.</string>
-    <string name="presentation_batch_g_brick_cd_close">Закрыть</string>
-    <string name="presentation_batch_g_brick_drag_paddle">Перетаскивайте платформу</string>
-    <string name="presentation_batch_g_brick_game_over">ИГРА ОКОНЧЕНА</string>
-    <string name="presentation_batch_g_brick_high">РЕК %1$d</string>
-    <string name="presentation_batch_g_brick_high_score">РЕКОРД %1$d</string>
-    <string name="presentation_batch_g_brick_level_complete">УРОВЕНЬ ПРОЙДЕН!</string>
-    <string name="presentation_batch_g_brick_next_level">Следующий уровень</string>
-    <string name="presentation_batch_g_brick_play">Воспроизвести</string>
-    <string name="presentation_batch_g_brick_play_random">Случайная музыка</string>
-    <string name="presentation_batch_g_brick_restart">Начать заново</string>
-    <string name="presentation_batch_g_brick_score_line">Очки: %1$d</string>
-    <string name="presentation_batch_g_brick_stat_lives">ЖИЗНИ</string>
-    <string name="presentation_batch_g_brick_stat_lvl">УР. %1$d</string>
-    <string name="presentation_batch_g_brick_stat_score">ОЧКИ</string>
-    <string name="presentation_batch_g_brick_tap_relaunch">НАЖМИТЕ ДЛЯ ПЕРЕЗАПУСКА</string>
-    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
-    <string name="presentation_batch_g_brick_try_again">Попробовать снова?</string>
-    <string name="presentation_batch_g_cd_selected">Выбрано</string>
-    <string name="presentation_batch_g_cd_switch_on">Переключатель включён</string>
-    <string name="presentation_batch_g_changelog_sec_improvements">Улучшения</string>
-    <string name="presentation_batch_g_changelog_sec_initial_release">Первый выпуск</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Готовность к выпуску</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Удалено в FOSS-версии</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Безопасность и конфиденциальность</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Под капотом</string>
-    <string name="presentation_batch_g_changelog_sec_whats_new">Что нового</string>
-    <string name="presentation_batch_g_changelog_title">Список изменений</string>
-    <string name="presentation_batch_g_changelog_view_github">На GitHub</string>
-    <string name="presentation_batch_g_daily_mix_based_on_history">На основе истории</string>
-    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
-    <string name="presentation_batch_g_daily_mix_queue_name">Daily Mix</string>
-    <string name="presentation_batch_g_daily_mix_see_all">Посмотреть весь Daily Mix</string>
-    <string name="presentation_batch_g_device_info_title">Информация об устройстве</string>
-    <string name="presentation_batch_g_device_key_android_version">Версия Android</string>
-    <string name="presentation_batch_g_device_key_brand">Бренд</string>
-    <string name="presentation_batch_g_device_key_device">Устройство</string>
-    <string name="presentation_batch_g_device_key_hardware">Аппаратная платформа</string>
+    <string name="presentation_batch_g_stats_range_today">Сегодня</string>
+    <string name="presentation_batch_g_stats_range_week_to_date">Неделя</string>
+    <string name="presentation_batch_g_stats_range_month_to_date">Месяц</string>
+    <string name="presentation_batch_g_stats_range_year_to_date">Год</string>
+    <string name="presentation_batch_g_stats_range_all_time">Все время</string>
+    <string name="presentation_batch_g_stats_title">Статистика</string>
+    <string name="presentation_batch_g_stats_cd_refresh">Обновить статистику</string>
+    <string name="presentation_batch_g_stats_hero_listening">Время</string>
+    <string name="presentation_batch_g_stats_hero_plays">Проигрывания</string>
+    <string name="presentation_batch_g_stats_em_dash">—</string>
+    <string name="presentation_batch_g_stats_section_listening_habits">Привычки</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_title">Привычек пока нет</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">Мы покажем ваши привычки, когда узнаем вас получше.</string>
+    <string name="presentation_batch_g_stats_habit_total_sessions">Всего сессий</string>
+    <string name="presentation_batch_g_stats_habit_avg_session">Средняя сессия</string>
+    <string name="presentation_batch_g_stats_habit_longest_session">Долгая сессия</string>
+    <string name="presentation_batch_g_stats_habit_sessions_per_day">Сессий в день</string>
+    <string name="presentation_batch_g_stats_habit_most_active_day">Активный день</string>
+    <string name="presentation_batch_g_stats_habit_no_playback_yet">Пока нет данных</string>
+    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">Пиковое время</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time">Время прослушивания</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">Общее время в выбранном диапазоне.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count">Кол-во проигрываний</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">Количество завершенных сессий за период.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session">Ср. сессия</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">Средняя длительность прослушивания.</string>
+    <string name="presentation_batch_g_stats_n_plays">%1$d проигрываний</string>
+    <string name="presentation_batch_g_stats_section_listening_timeline">История прослушивания</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_title">Данных пока нет</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">Начните слушать музыку, чтобы построить таймлайн</string>
+    <string name="presentation_batch_g_stats_rhythm_daily">Дневной ритм</string>
+    <string name="presentation_batch_g_stats_rhythm_weekly">Недельный ритм</string>
+    <string name="presentation_batch_g_stats_rhythm_monthly">Месячный ритм</string>
+    <string name="presentation_batch_g_stats_rhythm_year">Годовой обзор</string>
+    <string name="presentation_batch_g_stats_rhythm_all_time">Прогресс за все время</string>
+    <string name="presentation_batch_g_stats_grouped_4h">Группировка по 4 часа</string>
+    <string name="presentation_batch_g_stats_grouped_dow">По дням недели</string>
+    <string name="presentation_batch_g_stats_grouped_week_of_month">По неделям месяца</string>
+    <string name="presentation_batch_g_stats_grouped_by_month">По месяцам</string>
+    <string name="presentation_batch_g_stats_grouped_by_year">По годам</string>
+    <string name="presentation_batch_g_stats_peak_segment">Пиковый сегмент</string>
+    <string name="presentation_batch_g_stats_timeline_support_day">Разбивка по 4-часовым окнам показывает ваш дневной ритм.</string>
+    <string name="presentation_batch_g_stats_timeline_support_week">Дневные графики позволяют легко сравнивать недели.</string>
+    <string name="presentation_batch_g_stats_timeline_support_month">Недельные графики показывают тренд месяца.</string>
+    <string name="presentation_batch_g_stats_timeline_support_year">Месячные графики показывают сезонность в течение года.</string>
+    <string name="presentation_batch_g_stats_timeline_support_all">Годовые графики суммируют всю вашу историю.</string>
+    <string name="presentation_batch_g_stats_section_top_categories">Топ категорий</string>
+    <string name="presentation_batch_g_stats_top_categories_subtitle">Сравните прослушивания по жанрам, артистам, альбомам и песням.</string>
+    <string name="presentation_batch_g_stats_plays_artists">%1$d проигр. • %2$d артистов</string>
+    <string name="presentation_batch_g_stats_plays_tracks">%1$d проигр. • %2$d треков</string>
+    <string name="presentation_batch_g_stats_dim_genre">Жанр</string>
+    <string name="presentation_batch_g_stats_dim_artist">Артист</string>
+    <string name="presentation_batch_g_stats_dim_album">Альбом</string>
+    <string name="presentation_batch_g_stats_dim_song">Песня</string>
+    <string name="presentation_batch_g_stats_card_listening_by_genre">Прослушивания по жанрам</string>
+    <string name="presentation_batch_g_stats_card_listening_by_artist">Прослушивания по артистам</string>
+    <string name="presentation_batch_g_stats_card_listening_by_album">Прослушивания по альбомам</string>
+    <string name="presentation_batch_g_stats_card_listening_by_song">Прослушивания по песням</string>
+    <string name="presentation_batch_g_stats_empty_no_category_title">Данных по категориям нет</string>
+    <string name="presentation_batch_g_stats_empty_no_category_subtitle">Слушайте больше, чтобы увидеть здесь свои хайлайты</string>
+    <string name="presentation_batch_g_stats_section_top_artists">Топ артистов</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_title">Нет топ артистов</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">Ваши любимые артисты появятся здесь со временем.</string>
+    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_section_top_albums">Топ альбомов</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_title">Нет топ альбомов</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">Альбомы, которые вы часто слушаете, будут здесь.</string>
+    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_title">Треки в диапазоне</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">Самые прослушиваемые треки за период.</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_title">Нет топ треков</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">Слушайте любимое, чтобы увидеть треки здесь.</string>
+    <string name="presentation_batch_g_stats_collapse_tracks">Свернуть треки</string>
+    <string name="presentation_batch_g_stats_show_all_tracks">Показать все треки</string>
+    <string name="presentation_batch_g_stats_track_concentration_title">Концентрация треков</string>
+    <string name="presentation_batch_g_stats_track_concentration_subtitle">Как ваше время распределено между топовыми треками.</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_title">Данных нет</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">Слушайте больше треков, чтобы увидеть концентрацию.</string>
+    <string name="presentation_batch_g_stats_slice_top_1">Топ 1</string>
+    <string name="presentation_batch_g_stats_slice_top_2_3">Топ 2-3</string>
+    <string name="presentation_batch_g_stats_slice_others">Другие</string>
+    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
+    <string name="presentation_batch_g_stats_listening_concentration_title">Концентрация прослушивания</string>
+    <string name="presentation_batch_g_stats_top_three_share_line">Топ 3 трека занимают %1$d%% вашего времени.</string>
+    <string name="presentation_batch_g_stats_avg_plays_per_track">Ср. проигр./трек</string>
+    <string name="presentation_batch_g_stats_unique_tracks">Уникальных треков</string>
+    <string name="presentation_batch_g_stats_top_three_share_label">Доля топ-3</string>
+    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
+    <string name="presentation_batch_g_device_info_title">Инфо об устройстве</string>
+    <string name="presentation_batch_g_device_supported_codecs_title">Поддерживаемые кодеки</string>
+    <string name="presentation_batch_g_device_section_audio_output">Аудиовыход</string>
+    <string name="presentation_batch_g_device_section_exoplayer">Движок ExoPlayer</string>
+    <string name="presentation_batch_g_device_label_sample_rate">Частота диско.</string>
+    <string name="presentation_batch_g_device_label_frames_per_buffer">Кадров на буфер</string>
+    <string name="presentation_batch_g_device_label_low_latency">Низкая задержка</string>
+    <string name="presentation_batch_g_device_label_pro_audio">Pro Audio</string>
+    <string name="presentation_batch_g_device_label_version">Версия</string>
+    <string name="presentation_batch_g_device_label_active_renderers">Активные рендереры</string>
+    <string name="presentation_batch_g_device_label_decoder_counters">Счетчики декодера</string>
+    <string name="presentation_batch_g_device_value_hz">%1$d Гц</string>
+    <string name="presentation_batch_g_yes">Да</string>
+    <string name="presentation_batch_g_no">Нет</string>
+    <string name="presentation_batch_g_device_cd_hw_accelerated">Аппаратное ускорение</string>
     <string name="presentation_batch_g_device_key_manufacturer">Производитель</string>
     <string name="presentation_batch_g_device_key_model">Модель</string>
+    <string name="presentation_batch_g_device_key_brand">Бренд</string>
+    <string name="presentation_batch_g_device_key_device">Устройство</string>
+    <string name="presentation_batch_g_device_key_android_version">Версия Android</string>
     <string name="presentation_batch_g_device_key_sdk_version">Версия SDK</string>
-    <string name="presentation_batch_g_device_label_low_latency">Поддержка низкой задержки</string>
-    <string name="presentation_batch_g_device_label_pro_audio">Поддержка Pro Audio</string>
-    <string name="presentation_batch_g_device_label_sample_rate">Частота дискретизации</string>
-    <string name="presentation_batch_g_device_section_exoplayer">Движок ExoPlayer</string>
-    <string name="presentation_batch_g_device_value_hz">%1$d Гц</string>
+    <string name="presentation_batch_g_device_key_hardware">Железо</string>
+    <string name="device_capabilities_unknown_device">Это устройство</string>
+    <string name="device_capabilities_unknown_short">--</string>
+    <string name="device_capabilities_ready_title">Готов к воспроизведению</string>
+    <string name="device_capabilities_review_title">Проверьте настройки</string>
+    <string name="device_capabilities_metric_formats">Форматы</string>
+    <string name="device_capabilities_metric_hw_decoders">HW декодеры</string>
+    <string name="device_capabilities_metric_local_music">Локальные треки</string>
+    <string name="device_capabilities_storage_title">Хранилище музыки</string>
+    <string name="device_capabilities_storage_music_size">Размер музыки</string>
+    <string name="device_capabilities_storage_music_count">%1$d локальных треков</string>
+    <string name="device_capabilities_storage_available">Доступно</string>
+    <string name="device_capabilities_storage_total">%1$s всего</string>
+    <string name="device_capabilities_storage_music_footprint">Занимаемое место</string>
+    <string name="device_capabilities_storage_device_used">Занято на устр.</string>
+    <string name="device_capabilities_storage_percent">%1$d%%</string>
+    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
+    <string name="device_capabilities_storage_cloud_count">%1$d облачных песен</string>
+    <string name="device_capabilities_storage_unavailable_count">%1$d файлов не читается</string>
+    <string name="device_capabilities_playback_path_title">Путь воспроизведения</string>
+    <string name="device_capabilities_buffer_frames">%1$d кадров на буфер</string>
+    <string name="device_capabilities_hifi_pcm_float">Hi-Fi PCM Float</string>
+    <string name="device_capabilities_hifi_pcm_float_supporting">32-bit float путь</string>
+    <string name="device_capabilities_memory_title">Память</string>
+    <string name="device_capabilities_memory_available_of">доступно из %1$s</string>
+    <string name="device_capabilities_offload_title">Форматы Offload</string>
+    <string name="device_capabilities_offload_empty">Аппаратный offload не заявлен.</string>
+    <string name="device_capabilities_outputs_title">Выходы</string>
+    <string name="device_capabilities_outputs_empty">Маршруты вывода не найдены.</string>
+    <string name="device_capabilities_renderers_count">Рендереров: %1$s</string>
+    <string name="device_capabilities_formats_title">Совместимость форматов</string>
+    <string name="device_capabilities_formats_supported_count">Поддерживается треков: %1$d</string>
+    <string name="device_capabilities_formats_unknown_count">Неизвестных форматов: %1$d</string>
+    <string name="device_capabilities_format_unsupported">Декодер не найден</string>
+    <string name="device_capabilities_format_hardware">HW декодер</string>
+    <string name="device_capabilities_format_software">SW декодер</string>
+    <string name="device_capabilities_format_offload">Offload</string>
+    <string name="device_capabilities_format_library_count">%1$d в фонотеке</string>
+    <string name="device_capabilities_findings_title">Результаты проверки</string>
+    <string name="device_capabilities_finding_clear_title">Нет серьезных проблем</string>
+    <string name="device_capabilities_finding_clear_body">Ваши треки соответствуют декодерам устройства.</string>
+    <string name="device_capabilities_finding_unsupported_title">%1$d треков могут не проиграться</string>
+    <string name="device_capabilities_finding_unsupported_body">Проверьте форматы: %1$s.</string>
+    <string name="device_capabilities_finding_resample_title">Ресемплинг для %1$d треков</string>
+    <string name="device_capabilities_finding_resample_body">Фонотека достигает %1$d Гц, что выше текущего выхода.</string>
+    <string name="device_capabilities_finding_unknown_title">%1$d треков без метаданных</string>
+    <string name="device_capabilities_finding_unknown_body">Пересканирование может заполнить MIME, битрейт и частоту.</string>
+    <string name="device_capabilities_more_count">+ еще %1$d</string>
+    <string name="device_capabilities_output_builtin">Динамик</string>
+    <string name="device_capabilities_output_bluetooth">Bluetooth аудио</string>
+    <string name="device_capabilities_output_usb">USB аудио</string>
+    <string name="device_capabilities_output_wired">Проводное аудио</string>
+    <string name="device_capabilities_output_digital">Цифровой выход</string>
+    <string name="device_capabilities_output_other">Другой выход</string>
+    <string name="presentation_batch_g_ai_token_input">Вход</string>
+    <string name="presentation_batch_g_ai_token_output">Выход</string>
+    <string name="presentation_batch_g_ai_token_thought">Мысли</string>
+    <string name="presentation_batch_g_ai_token_count">%1$s: %2$s</string>
+    <string name="presentation_batch_g_ai_usage_date_pattern">dd MMM, HH:mm</string>
+    <string name="presentation_batch_g_artist_section_multi_parsing">Парсинг нескольких артистов</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters">Символы-разделители</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters_current">Текущие: %1$s</string>
+    <string name="presentation_batch_g_artist_item_word_delimiters">Слова-разделители</string>
+    <string name="presentation_batch_g_artist_word_none">Нет</string>
+    <string name="presentation_batch_g_artist_word_current_prefix">Текущие: %1$s</string>
+    <string name="presentation_batch_g_artist_word_ellipsis">…</string>
+    <string name="presentation_batch_g_artist_cd_configure">Настроить</string>
+    <string name="presentation_batch_g_artist_extract_from_title">Брать артистов из названия</string>
+    <string name="presentation_batch_g_artist_extract_from_title_sub">Искать feat., ft., with в названиях</string>
+    <string name="presentation_batch_g_artist_section_library_org">Организация фонотеки</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist">Группировать по Album Artist</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist_sub">Показывать совместные альбомы у основного артиста</string>
+    <string name="presentation_batch_g_artist_info_title">О парсинге артистов</string>
+    <string name="presentation_batch_g_artist_info_body">PixelMusic разделяет теги артистов, используя символы (/, ;, &amp;) и слова (feat., ft., vs., x). Слова ищутся без учета регистра.
+
+«Брать артистов из названия» ищет шаблоны типа (feat. Артист).
+
+Обратный слеш (\) можно использовать для экранирования разделителей.</string>
+    <string name="presentation_batch_g_artist_example_arrow"> → </string>
+    <string name="presentation_batch_g_artist_examples_title">Примеры</string>
+    <string name="presentation_batch_g_artist_ex_1_in">\"Artist1/Artist2\"</string>
+    <string name="presentation_batch_g_artist_ex_1_out">Artist1, Artist2</string>
+    <string name="presentation_batch_g_artist_ex_2_in">\"Drake feat. Rihanna\"</string>
+    <string name="presentation_batch_g_artist_ex_2_out">Drake, Rihanna</string>
+    <string name="presentation_batch_g_artist_ex_3_in">\"Marshmello x Bastille\"</string>
+    <string name="presentation_batch_g_artist_ex_3_out">Marshmello, Bastille</string>
+    <string name="presentation_batch_g_artist_ex_4_in">\"Song (ft. B)\" by A</string>
+    <string name="presentation_batch_g_artist_ex_4_out">A, B</string>
+    <string name="presentation_batch_g_artist_ex_5_in">\"AC\\DC\"</string>
+    <string name="presentation_batch_g_artist_ex_5_out">AC/DC (экранировано)</string>
+    <string name="presentation_batch_g_artist_topbar_title">Артисты</string>
+    <string name="presentation_batch_g_artist_rescan_banner_title">Нужен перескан</string>
+    <string name="presentation_batch_g_artist_rescan_banner_body">Настройки артистов изменились. Пересканируйте фонотеку.</string>
+    <string name="presentation_batch_g_artist_rescan_scanning">Сканирование…</string>
+    <string name="presentation_batch_g_artist_rescan">Пересканировать</string>
+    <string name="presentation_batch_g_topbar_beta_letter">β</string>
+    <string name="presentation_batch_g_topbar_beta">Бета</string>
+    <string name="presentation_batch_g_topbar_cd_telegram">Telegram</string>
+    <string name="presentation_batch_g_topbar_cd_changelog">Список изменений</string>
+    <string name="presentation_batch_g_topbar_cd_settings">Настройки</string>
+    <string name="presentation_batch_g_lyrics_mode_synced">Синхронно</string>
+    <string name="presentation_batch_g_lyrics_mode_static">Текст</string>
+    <string name="presentation_batch_g_lyrics_cd_options">Опции текста</string>
+    <string name="presentation_batch_g_streaming_title">Облачный стриминг</string>
+    <string name="presentation_batch_g_streaming_subtitle">Музыка из ваших облачных аккаунтов</string>
+    <string name="presentation_batch_g_sort_source">Источник</string>
+    <string name="presentation_batch_g_sort_order">Порядок</string>
+    <string name="presentation_batch_g_sort_descending">По убыванию</string>
+    <string name="presentation_batch_g_sort_ascending">По возрастанию</string>
+    <string name="presentation_batch_g_sort_original_order">Исходный порядок</string>
+    <string name="presentation_batch_g_sort_tap_ascending">Нажмите для возр. порядка</string>
+    <string name="presentation_batch_g_sort_tap_descending">Нажмите для убыв. порядка</string>
+    <string name="presentation_batch_g_sort_keeps_order">Эта сортировка сохраняет исходный порядок</string>
+    <string name="presentation_batch_g_cd_switch_on">Включено</string>
     <string name="presentation_batch_g_file_explorer_cd_close">Закрыть</string>
-    <string name="presentation_batch_g_file_explorer_cd_done">Готово</string>
-    <string name="presentation_batch_g_file_explorer_cd_go_root">Перейти в корень</string>
-    <string name="presentation_batch_g_file_explorer_cd_navigate_up">Перейти вверх</string>
     <string name="presentation_batch_g_file_explorer_cd_refresh">Обновить</string>
+    <string name="presentation_batch_g_file_explorer_cd_done">Готово</string>
     <string name="presentation_batch_g_file_explorer_done">Готово</string>
-    <string name="presentation_batch_g_file_explorer_empty_folders">Подпапок нет</string>
     <string name="presentation_batch_g_file_explorer_hint">Все разрешено по умолчанию. Нажмите на папку, чтобы исключить её из сканирования.</string>
-    <string name="presentation_batch_g_genre_sort_album">Альбом</string>
-    <string name="presentation_batch_g_genre_sort_artist">Исполнитель</string>
-    <string name="presentation_batch_g_genre_sort_by">Сортировать по</string>
-    <string name="presentation_batch_g_genre_sort_shuffle">Перемешать</string>
-    <string name="presentation_batch_g_genre_sort_title">Сортировка и воспроизведение</string>
-    <string name="presentation_batch_g_genre_sort_title_opt">Название</string>
-    <string name="presentation_batch_g_list_cd_album_art_for">Обложка альбома: %1$s</string>
-    <string name="presentation_batch_g_list_cd_more_for_title">Дополнительные параметры: %1$s</string>
-    <string name="presentation_batch_g_list_cd_playing">Воспроизведение</string>
-    <string name="presentation_batch_g_list_cd_selected">Выбрано</string>
+    <string name="presentation_batch_g_file_explorer_empty_folders">Здесь нет подпапок</string>
+    <string name="presentation_batch_g_file_explorer_cd_navigate_up">Наверх</string>
+    <string name="presentation_batch_g_file_explorer_cd_go_root">В корень</string>
+    <string name="presentation_batch_g_daily_mix_queue_name">Daily Mix</string>
+    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
+    <string name="presentation_batch_g_daily_mix_based_on_history">На основе истории</string>
+    <string name="presentation_batch_g_daily_mix_see_all">Посмотреть весь Daily Mix</string>
+    <string name="presentation_batch_g_selection_one_song">песня выбрана</string>
+    <string name="presentation_batch_g_selection_n_songs">песен выбрано</string>
+    <string name="presentation_batch_g_selection_cd_share">Поделиться</string>
+    <string name="presentation_batch_g_selection_cd_like">Лайкнуть</string>
+    <string name="presentation_batch_g_selection_play">Играть</string>
+    <string name="presentation_batch_g_selection_all">Все</string>
+    <string name="presentation_batch_g_selection_deselect">Снять</string>
+    <string name="presentation_batch_g_selection_cd_more">Опции</string>
+    <string name="presentation_batch_g_selection_options">Опции</string>
+    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
     <string name="presentation_batch_g_list_song_artist_album">%1$s • %2$s</string>
-    <string name="presentation_batch_g_lyrics_cd_options">Параметры текста песни</string>
-    <string name="presentation_batch_g_lyrics_mode_static">Статический</string>
-    <string name="presentation_batch_g_lyrics_mode_synced">Синхронизированный</string>
+    <string name="presentation_batch_g_list_cd_selected">Выбрано</string>
+    <string name="presentation_batch_g_list_cd_more_for_title">Опции для %1$s</string>
+    <string name="presentation_batch_g_list_cd_album_art_for">Обложка для %1$s</string>
+    <string name="presentation_batch_g_list_cd_playing">Играет</string>
+    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
+    <string name="presentation_batch_g_stats_overview_title">Статистика</string>
+    <string name="presentation_batch_g_stats_overview_total_plays">Всего проигр.</string>
+    <string name="presentation_batch_g_stats_overview_avg_per_day">Среднее в день</string>
+    <string name="presentation_batch_g_stats_overview_top_track">Топ трек</string>
+    <string name="presentation_batch_g_stats_overview_top_track_line">%1$s • %2$d проигр.</string>
+    <string name="presentation_batch_g_recently_played_title">Недавно прослушано</string>
     <string name="presentation_batch_g_lyrics_offset_minus_half">−.5</string>
     <string name="presentation_batch_g_lyrics_offset_minus_point_one">−.1</string>
-    <string name="presentation_batch_g_lyrics_offset_plus_half">+.5</string>
     <string name="presentation_batch_g_lyrics_offset_plus_point_one">+.1</string>
-    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1fс</string>
+    <string name="presentation_batch_g_lyrics_offset_plus_half">+.5</string>
     <string name="presentation_batch_g_lyrics_offset_zero">0с</string>
-    <string name="presentation_batch_g_no">Нет</string>
-    <string name="presentation_batch_g_player_cd_cloud_stream">Облачный поток</string>
-    <string name="presentation_batch_g_player_cd_collapse">Свернуть плеер</string>
-    <string name="presentation_batch_g_player_cd_lyrics">Текст</string>
-    <string name="presentation_batch_g_player_cd_queue">Очередь</string>
-    <string name="presentation_batch_g_presets_cd_delete">Удалить</string>
+    <!-- Formatted with getString(..., floatSeconds) -->
+    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1fс</string>
+    <string name="presentation_batch_g_playstore_open">Открыть Play Store</string>
+    <string name="presentation_batch_g_playstore_continue_beta">Продолжить бету</string>
+    <string name="presentation_batch_g_playstore_link_pending">Ссылка на Play Store будет доступна из конфига GitHub.</string>
+    <string name="presentation_batch_g_playstore_title">PixelMusic теперь в Google Play</string>
+    <string name="presentation_batch_g_playstore_body">Используйте стабильный канал в Google Play для обновлений релиза, пока бета-версии остаются активными.</string>
+    <string name="presentation_batch_g_playstore_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_playstore_release_announcement">Анонс релиза</string>
+    <string name="presentation_batch_g_playstore_coming_soon">Скоро</string>
+    <string name="presentation_batch_g_genre_sort_title">Сортировка и игра</string>
+    <string name="presentation_batch_g_genre_sort_shuffle">Перемешать</string>
+    <string name="presentation_batch_g_genre_sort_by">Сорт. по</string>
+    <string name="presentation_batch_g_genre_sort_artist">Артисту</string>
+    <string name="presentation_batch_g_genre_sort_album">Альбому</string>
+    <string name="presentation_batch_g_genre_sort_title_opt">Названию</string>
+    <string name="presentation_batch_g_cd_selected">Выбрано</string>
+    <string name="presentation_batch_g_changelog_title">Список изменений</string>
+    <string name="presentation_batch_g_changelog_view_github">На GitHub</string>
+    <string name="presentation_batch_g_presets_saved_title">Сохраненные пресеты</string>
+    <string name="presentation_batch_g_presets_empty">Своих пресетов пока нет.</string>
+    <string name="presentation_batch_g_presets_cd_unpin">Открепить</string>
     <string name="presentation_batch_g_presets_cd_pin">Закрепить</string>
     <string name="presentation_batch_g_presets_cd_rename">Переименовать</string>
-    <string name="presentation_batch_g_presets_cd_unpin">Открепить</string>
-    <string name="presentation_batch_g_presets_empty">Пользовательские пресеты ещё не сохранены.</string>
-    <string name="presentation_batch_g_presets_saved_title">Сохранённые пресеты</string>
-    <string name="presentation_batch_g_recently_played_title">Недавно прослушанные</string>
-    <string name="presentation_batch_g_selection_all">Все</string>
-    <string name="presentation_batch_g_selection_cd_like">Лайкнуть</string>
-    <string name="presentation_batch_g_selection_cd_more">Дополнительные параметры</string>
-    <string name="presentation_batch_g_selection_cd_share">Поделиться</string>
-    <string name="presentation_batch_g_selection_deselect">Снять выбор</string>
-    <string name="presentation_batch_g_selection_n_songs">песен выбрано</string>
-    <string name="presentation_batch_g_selection_one_song">песня выбрана</string>
-    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
-    <string name="presentation_batch_g_selection_play">Воспроизвести</string>
-    <string name="presentation_batch_g_sort_ascending">По возрастанию</string>
-    <string name="presentation_batch_g_sort_descending">По убыванию</string>
-    <string name="presentation_batch_g_sort_order">Порядок</string>
-    <string name="presentation_batch_g_sort_original_order">Исходный порядок</string>
-    <string name="presentation_batch_g_sort_source">Источник</string>
-    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
-    <string name="presentation_batch_g_stats_avg_plays_per_track">Среднее воспроизведений на трек</string>
-    <string name="presentation_batch_g_stats_card_listening_by_album">Прослушивание по альбомам</string>
-    <string name="presentation_batch_g_stats_card_listening_by_artist">Прослушивание по исполнителям</string>
-    <string name="presentation_batch_g_stats_card_listening_by_genre">Прослушивание по жанрам</string>
-    <string name="presentation_batch_g_stats_card_listening_by_song">Прослушивание по трекам</string>
-    <string name="presentation_batch_g_stats_cd_refresh">Обновить статистику прослушивания</string>
-    <string name="presentation_batch_g_stats_collapse_tracks">Свернуть треки</string>
-    <string name="presentation_batch_g_stats_dim_album">Альбом</string>
-    <string name="presentation_batch_g_stats_dim_artist">Исполнитель</string>
-    <string name="presentation_batch_g_stats_dim_genre">Жанр</string>
-    <string name="presentation_batch_g_stats_dim_song">Трек</string>
-    <string name="presentation_batch_g_stats_em_dash">—</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">Альбомы, к которым вы часто возвращаетесь, появятся здесь.</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_title">Нет популярных альбомов</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">Продолжайте слушать музыку, и ваши любимые исполнители появятся здесь.</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_title">Нет популярных исполнителей</string>
-    <string name="presentation_batch_g_stats_empty_no_category_subtitle">Начните слушать музыку, чтобы увидеть свои музыкальные предпочтения</string>
-    <string name="presentation_batch_g_stats_empty_no_category_title">Пока нет данных по категориям</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">Слушайте больше музыки, чтобы увидеть уровень концентрации.</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_title">Пока нет данных о концентрации</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">Мы покажем ваши привычки прослушивания, когда узнаем вас лучше.</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_title">Пока нет данных о привычках</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">Нажмите «Воспроизвести», чтобы начать формировать историю прослушивания</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_title">Пока нет данных о прослушивании</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">Слушайте любимые треки, чтобы они появились здесь.</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_title">Нет популярных треков</string>
-    <string name="presentation_batch_g_stats_grouped_4h">Сгруппировано по 4-часовым интервалам</string>
-    <string name="presentation_batch_g_stats_grouped_by_month">Сгруппировано по месяцам</string>
-    <string name="presentation_batch_g_stats_grouped_by_year">Сгруппировано по годам</string>
-    <string name="presentation_batch_g_stats_grouped_dow">Сгруппировано по дням недели</string>
-    <string name="presentation_batch_g_stats_grouped_week_of_month">Сгруппировано по неделям месяца</string>
-    <string name="presentation_batch_g_stats_habit_avg_session">Средняя сессия</string>
-    <string name="presentation_batch_g_stats_habit_longest_session">Самая длинная сессия</string>
-    <string name="presentation_batch_g_stats_habit_most_active_day">Самый активный день</string>
-    <string name="presentation_batch_g_stats_habit_no_playback_yet">Пока нет прослушиваний</string>
-    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">Пиковый временной интервал</string>
-    <string name="presentation_batch_g_stats_habit_sessions_per_day">Сессий в день</string>
-    <string name="presentation_batch_g_stats_habit_total_sessions">Всего сессий</string>
-    <string name="presentation_batch_g_stats_hero_listening">Прослушивание</string>
-    <string name="presentation_batch_g_stats_hero_plays">Воспроизведения</string>
-    <string name="presentation_batch_g_stats_listening_concentration_title">Концентрация прослушивания</string>
-    <string name="presentation_batch_g_stats_n_plays">%1$d воспроизведений</string>
-    <string name="presentation_batch_g_stats_overview_avg_per_day">Среднее в день</string>
-    <string name="presentation_batch_g_stats_overview_title">Статистика прослушивания</string>
-    <string name="presentation_batch_g_stats_overview_top_track">Топ-трек</string>
-    <string name="presentation_batch_g_stats_overview_top_track_line">%1$s • %2$d прослушиваний</string>
-    <string name="presentation_batch_g_stats_overview_total_plays">Всего воспроизведений</string>
-    <string name="presentation_batch_g_stats_peak_segment">Пиковый период</string>
-    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
-    <string name="presentation_batch_g_stats_plays_artists">%1$d воспроизведений • %2$d исполнителей</string>
-    <string name="presentation_batch_g_stats_plays_tracks">%1$d воспроизведений • %2$d треков</string>
-    <string name="presentation_batch_g_stats_range_all_time">За всё время</string>
-    <string name="presentation_batch_g_stats_range_month_to_date">Текущий месяц</string>
-    <string name="presentation_batch_g_stats_range_today">Сегодня</string>
-    <string name="presentation_batch_g_stats_range_week_to_date">Текущая неделя</string>
-    <string name="presentation_batch_g_stats_range_year_to_date">Текущий год</string>
-    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_rhythm_all_time">Прогресс за всё время</string>
-    <string name="presentation_batch_g_stats_rhythm_daily">Ежедневный ритм</string>
-    <string name="presentation_batch_g_stats_rhythm_monthly">Месячный ритм</string>
-    <string name="presentation_batch_g_stats_rhythm_weekly">Недельный ритм</string>
-    <string name="presentation_batch_g_stats_rhythm_year">Год одним взглядом</string>
-    <string name="presentation_batch_g_stats_section_listening_habits">Привычки прослушивания</string>
-    <string name="presentation_batch_g_stats_section_listening_timeline">Хронология прослушивания</string>
-    <string name="presentation_batch_g_stats_section_top_albums">Лучшие альбомы</string>
-    <string name="presentation_batch_g_stats_section_top_artists">Лучшие исполнители</string>
-    <string name="presentation_batch_g_stats_section_top_categories">Лучшие категории</string>
-    <string name="presentation_batch_g_stats_show_all_tracks">Показать все треки</string>
-    <string name="presentation_batch_g_stats_slice_others">Остальные</string>
-    <string name="presentation_batch_g_stats_slice_top_1">Топ 1</string>
-    <string name="presentation_batch_g_stats_slice_top_2_3">Топ 2–3</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session">Средняя сессия</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">Средняя длительность прослушивания для каждого периода.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time">Время прослушивания</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">Общее время прослушивания за выбранный период.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count">Количество воспроизведений</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">Сколько сессий прослушивания было завершено за каждый период.</string>
-    <string name="presentation_batch_g_stats_timeline_support_all">Годовые столбцы суммируют всю историю прослушивания.</string>
-    <string name="presentation_batch_g_stats_timeline_support_day">Разделено на 4-часовые интервалы, чтобы показать ваш ежедневный ритм.</string>
-    <string name="presentation_batch_g_stats_timeline_support_month">Еженедельные столбцы показывают тенденции месяца.</string>
-    <string name="presentation_batch_g_stats_timeline_support_week">Ежедневные столбцы позволяют легко сравнивать привычки по неделям.</string>
-    <string name="presentation_batch_g_stats_timeline_support_year">Ежемесячные столбцы показывают сезонность в течение года.</string>
-    <string name="presentation_batch_g_stats_title">Статистика прослушивания</string>
-    <string name="presentation_batch_g_stats_top_categories_subtitle">Сравните, как вы слушаете музыку по жанрам, исполнителям, альбомам и трекам.</string>
-    <string name="presentation_batch_g_stats_top_three_share_label">Доля топ-3</string>
-    <string name="presentation_batch_g_stats_top_three_share_line">На 3 самых популярных трека приходится %1$d%% времени прослушивания.</string>
-    <string name="presentation_batch_g_stats_track_concentration_subtitle">Как распределяется время прослушивания между вашими самыми популярными треками.</string>
-    <string name="presentation_batch_g_stats_track_concentration_title">Концентрация на треках</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">Самые популярные треки за выбранный период времени.</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_title">Треки за этот период</string>
-    <string name="presentation_batch_g_stats_unique_tracks">Уникальные треки</string>
-    <string name="presentation_batch_g_streaming_subtitle">Слушайте музыку из своих облачных аккаунтов</string>
-    <string name="presentation_batch_g_streaming_title">Облачный стриминг</string>
-    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
-    <string name="presentation_batch_g_topbar_build_debug">Отладочная</string>
-    <string name="presentation_batch_g_topbar_build_stable">Стабильная</string>
-    <string name="presentation_batch_g_topbar_cd_changelog">Список изменений</string>
-    <string name="presentation_batch_g_yes">Да</string>
+    <string name="presentation_batch_g_presets_cd_delete">Удалить</string>
+    <string name="presentation_batch_g_beta_sheet_version">Бета 0.6.0</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Добро пожаловать в PixelMusic 0.6.0-beta</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_body">Эта бета сфокусирована на стабильности, скорости и кросс-девайс воспроизведении.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_title">Что нового</string>
+    <string name="presentation_batch_g_beta_sheet_expect_1">Быстрая работа: плавный запуск, навигация и работа плеера.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_2">Поддержка устройств: Android Auto, обновления Wear OS и надежный Cast.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_3">Облака: Telegram, NetEase, QQ Music и стриминг Google Drive.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_4">Стабильность: логика очереди и перемешивания, фоновая работа и фиксы UI.</string>
+    <string name="presentation_batch_g_beta_sheet_report_title">Сообщить о проблеме</string>
+    <string name="presentation_batch_g_beta_sheet_report_body">Опишите шаги, результат и детали вашего устройства. Запись экрана очень поможет.</string>
+    <string name="presentation_batch_g_beta_sheet_open_issues">Список проблем на GitHub</string>
+    <string name="presentation_batch_g_beta_sheet_report_bug">Сообщить о баге</string>
+    <string name="presentation_batch_g_beta05_dont_show">Больше не показывать</string>
+    <string name="presentation_batch_g_beta05_got_it">Понятно</string>
+    <string name="presentation_batch_g_album_sel_count">АЛЬБОМОВ: %1$d</string>
+    <string name="presentation_batch_g_album_sel_selected">выбрано</string>
+    <string name="presentation_batch_g_album_sel_queue_hint">Очередь соблюдает порядок выбора.</string>
+    <string name="presentation_batch_g_album_sel_limit">Лимит: %1$d альбомов за раз.</string>
+    <string name="presentation_batch_g_album_sel_add_queue_play">В очередь и играть</string>
+    <string name="presentation_batch_g_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_app_tagline">Музыкальный плеер</string>
+    <string name="presentation_batch_g_brick_high">РЕКОРД %1$d</string>
+    <string name="presentation_batch_g_brick_cd_close">Закрыть</string>
+    <string name="presentation_batch_g_brick_stat_score">СЧЕТ</string>
+    <string name="presentation_batch_g_brick_stat_lvl">УР %1$d</string>
+    <string name="presentation_batch_g_brick_stat_lives">ЖИЗНИ</string>
+    <string name="presentation_batch_g_brick_level_complete">УРОВЕНЬ ПРОЙДЕН!</string>
+    <string name="presentation_batch_g_brick_game_over">ИГРА ОКОНЧЕНА</string>
+    <string name="presentation_batch_g_brick_score_line">Счет: %1$d</string>
+    <string name="presentation_batch_g_brick_try_again">Еще раз?</string>
+    <string name="presentation_batch_g_brick_next_level">Далее</string>
+    <string name="presentation_batch_g_brick_restart">Сначала</string>
+    <string name="presentation_batch_g_brick_tap_relaunch">НАЖМИТЕ ДЛЯ ПОВТОРА</string>
+    <string name="presentation_batch_g_brick_play_random">Случайная музыка</string>
+    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
+    <string name="presentation_batch_g_brick_high_score">РЕКОРД  %1$d</string>
+    <string name="presentation_batch_g_brick_play">Играть</string>
+    <string name="presentation_batch_g_brick_drag_paddle">Тяните, чтобы двигать платформу</string>
+    <string name="presentation_batch_g_backup_restore_modules">Восстановить модули</string>
+    <string name="presentation_batch_g_backup_restoring">Восстановление</string>
+    <string name="presentation_batch_g_backup_restore_selected">Восстановить выбранное</string>
+    <string name="presentation_batch_g_backup_details">Детали бэкапа</string>
+    <string name="presentation_batch_g_backup_created">Создан</string>
+    <string name="presentation_batch_g_backup_app_version">Версия прил.</string>
+    <string name="presentation_batch_g_backup_schema">Схема</string>
+    <string name="presentation_batch_g_backup_device">Устройство</string>
+    <string name="presentation_batch_g_backup_unknown">Неизвестно</string>
+    <string name="presentation_batch_g_backup_modules_selected">Выбрано модулей: %1$d из %2$d</string>
+    <string name="presentation_batch_g_backup_transfer_progress">Перенос данных…</string>
+    <string name="presentation_batch_g_backup_cd_select_all">Выбрать все</string>
+    <string name="presentation_batch_g_backup_cd_clear_selection">Сбросить выбор</string>
+    <string name="presentation_batch_g_backup_entries_will_replace">Записей: %1$d · заменят текущие</string>
+    <string name="presentation_batch_g_player_cd_cloud_stream">Облачный стрим</string>
+    <string name="presentation_batch_g_player_cd_collapse">Свернуть плеер</string>
+    <string name="presentation_batch_g_player_cd_cast">Трансляция</string>
+    <string name="presentation_batch_g_player_cd_bluetooth">Bluetooth</string>
+    <string name="presentation_batch_g_player_cd_local_playback">Местное воспроизв.</string>
+    <string name="presentation_batch_g_player_connecting">Подключение…</string>
+    <string name="presentation_batch_g_player_cd_queue">Очередь</string>
+    <string name="presentation_batch_g_player_cd_lyrics">Текст</string>
+    <string name="presentation_batch_g_cast_subtitle_session">Сессия трансляции</string>
+    <string name="presentation_batch_g_cast_connecting">Подключение</string>
+    <string name="presentation_batch_g_cast_connected">Подключено</string>
+    <string name="presentation_batch_g_cast_this_phone">Этот телефон</string>
+    <string name="presentation_batch_g_cast_bluetooth_audio">Bluetooth аудио</string>
+    <string name="presentation_batch_g_cast_local_playback">Местное воспроизв.</string>
+    <string name="presentation_batch_g_cast_playing">Играет</string>
+    <string name="presentation_batch_g_cast_paused">Пауза</string>
+    <string name="presentation_batch_g_cast_perm_title">Приготовьтесь к подключению</string>
+    <string name="presentation_batch_g_cast_perm_body">Разрешите PixelMusic видеть устройства рядом и Wi‑Fi, чтобы синхронизировать трансляции и колонки.</string>
+    <string name="presentation_batch_g_cast_perm_nearby_title">Устройства поблизости</string>
+    <string name="presentation_batch_g_cast_perm_nearby_desc">Нужно для управления Bluetooth аудио-устройствами.</string>
+    <string name="presentation_batch_g_cast_perm_location_title">Геопозиция для Wi‑Fi</string>
+    <string name="presentation_batch_g_cast_perm_location_desc">Android требует доступ к локации для получения имени Wi‑Fi сети (SSID), чтобы найти устройства Cast.</string>
+    <string name="presentation_batch_g_cast_allow_access">Разрешить доступ</string>
+    <string name="presentation_batch_g_cast_perm_footer">Мы используем эти разрешения только для связи между устройствами.</string>
+    <string name="presentation_batch_g_cast_title_connect">Подключить устройство</string>
+    <string name="presentation_batch_g_cast_scanning_nearby">Поиск поблизости</string>
+    <string name="presentation_batch_g_cast_tab_controls">Управление</string>
+    <string name="presentation_batch_g_cast_tab_devices">Устройства</string>
+    <string name="presentation_batch_g_cast_connectivity">Связь</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi_bt">Включите Wi-Fi или Bluetooth</string>
+    <string name="presentation_batch_g_cast_manage_radios">Управление и пересканирование</string>
+    <string name="presentation_batch_g_cast_cd_refresh_connections">Обновить соединения</string>
+    <string name="presentation_batch_g_cast_cd_refresh_devices">Обновить устройства</string>
+    <string name="presentation_batch_g_cast_nearby_devices">Устройства поблизости</string>
+    <string name="presentation_batch_g_cast_tap_to_connect">Нажмите для подкл.</string>
+    <string name="presentation_batch_g_cast_no_devices_yet">Устройств пока нет</string>
+    <string name="presentation_batch_g_cast_disconnect">Отключить</string>
+    <string name="presentation_batch_g_cast_volume_device">Громкость устр.</string>
+    <string name="presentation_batch_g_cast_volume_phone">Громкость тел.</string>
+    <string name="presentation_batch_g_cast_searching">Поиск устройств…</string>
+    <string name="presentation_batch_g_cast_searching_hint">Убедитесь, что ТВ или колонка включены и находятся в той же Wi‑Fi сети.</string>
+    <string name="presentation_batch_g_cast_status_connected">Подключено</string>
+    <string name="presentation_batch_g_cast_status_available_connect">Можно подключить</string>
+    <string name="presentation_batch_g_cast_status_connecting">Подключение</string>
+    <string name="presentation_batch_g_cast_status_available">Доступно</string>
+    <string name="presentation_batch_g_cast_cd_battery">Уровень заряда</string>
+    <string name="presentation_batch_g_cast_cd_volume_level">Уровень громкости</string>
+    <string name="presentation_batch_g_cast_wifi">Wi-Fi</string>
+    <string name="presentation_batch_g_cast_wifi_off">Выкл</string>
+    <string name="presentation_batch_g_cast_wifi_connected">Подключено</string>
+    <string name="presentation_batch_g_cast_wifi_on">Вкл</string>
+    <string name="presentation_batch_g_cast_bluetooth">Bluetooth</string>
+    <string name="presentation_batch_g_cast_bt_connected">Подключено</string>
+    <string name="presentation_batch_g_cast_bt_on">Вкл</string>
+    <string name="presentation_batch_g_cast_bt_off">Выкл</string>
+    <string name="presentation_batch_g_cast_connections_off_title">Соединения выключены</string>
+    <string name="presentation_batch_g_cast_connections_off_body">Включите Wi‑Fi или Bluetooth для поиска устройств</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi">Включить Wi‑Fi</string>
+    <string name="presentation_batch_g_cast_open_bluetooth">Открыть Bluetooth</string>
+    <string name="presentation_batch_g_cast_cd_disconnect_icon">Отключить</string>
+    <string name="presentation_batch_g_cast_connecting_ellipsis">Подключение...</string>
+
+    <string name="presentation_batch_g_changelog_sec_whats_new">Что нового</string>
+    <string name="presentation_batch_g_changelog_sec_improvements">Улучшения</string>
+    <string name="presentation_batch_g_changelog_sec_fixes">Исправления</string>
+    <string name="presentation_batch_g_changelog_sec_highlights">Главное</string>
+    <string name="presentation_batch_g_changelog_sec_whats_new_lower">Что нового</string>
+    <string name="presentation_batch_g_changelog_sec_added">Добавлено</string>
+    <string name="presentation_batch_g_changelog_sec_changed">Изменено</string>
+    <string name="presentation_batch_g_changelog_sec_fixed">Исправлено</string>
+    <string-array name="presentation_batch_g_changelog_060_whats_new">
+        <item>Поддержка Android Auto для прослушивания в машине.</item>
+        <item>Поддержка Wear OS с улучшенным управлением с часов.</item>
+        <item>Расширение облаков: Telegram, NetEase, QQ Music и Google Drive.</item>
+        <item>История прослушивания и восстановление очереди.</item>
+        <item>Бэкап и восстановление v3 и управление аккаунтами.</item>
+        <item>Умные тексты с ручным поиском и улучшениями хранения.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_improvements">
+        <item>Оптимизация запуска, фонотеки, очереди и плеера.</item>
+        <item>Редизайн экранов плеера, Cast, текстов, артистов и жанров.</item>
+        <item>Надежная навигация и поиск.</item>
+        <item>Улучшена совместимость форматов аудио.</item>
+        <item>Расширен мульти-выбор для песен, альбомов и плейлистов.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_fixes">
+        <item>Стабильная работа очереди и перемешивания.</item>
+        <item>Исправлены ошибки фонового воспроизведения и Cast.</item>
+        <item>Поправлен таймер сна, навигация по папкам и вылеты альбомов.</item>
+        <item>Улучшена стабильность виджетов и сервисов.</item>
+        <item>Общие исправления и полировка UI.</item>
+    </string-array>
+
+    <string name="presentation_batch_g_cast_nearby_title">Устройства поблизости</string>
+    <string name="presentation_batch_g_cast_nearby_desc">Необходимо для обнаружения Bluetooth-аудиоустройств и управления ими.</string>
+
+    <!-- Beta sheet: issue guide -->
+    <string name="presentation_batch_g_beta_sheet_expect_summary">Что может меняться, ломаться или улучшаться в бета-сборках в процессе тестирования.</string>
+    <string name="presentation_batch_g_beta_sheet_github_title">Быстрый переход к GitHub Issues</string>
+    <string name="presentation_batch_g_beta_sheet_github_body">Сначала поищите существующие задачи, затем создайте чёткий отчёт об ошибке, краше, запросе или вопросе.</string>
+    <string name="presentation_batch_g_beta_sheet_report_summary">Краткий чеклист перед созданием нового issue.</string>
+    <string name="presentation_batch_g_beta_sheet_before_title">Перед созданием issue</string>
+    <string name="presentation_batch_g_beta_sheet_before_1">Поищите среди открытых и закрытых задач, чтобы не создавать дубликаты.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Обновитесь до последней версии PixelMusic и убедитесь, что проблема воспроизводится.</string>
+    <string name="presentation_batch_g_beta_sheet_before_3">Перезапустите приложение и убедитесь, что проблема сохраняется.</string>
+    <string name="presentation_batch_g_beta_sheet_before_4">Попробуйте воспроизвести ошибку и запишите точные шаги.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_title">Какой тип issue?</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_bug">Отчёт об ошибке: что-то работает некорректно.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_feature">Запрос функции: добавить новую возможность или улучшение.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_question">Вопрос: используйте Discussions или создайте issue с меткой «question».</string>
+    <string name="presentation_batch_g_beta_sheet_bug_title">Отчёт об ошибке</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary_text">Скопируйте эти поля, если что-то работает неверно или приложение падает.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_template_title">Шаблон отчёта об ошибке</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary">Краткое описание:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_expected">Ожидаемое поведение:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_actual">Фактическое поведение:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_steps">Шаги для воспроизведения: 1. 2. 3.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_frequency">Как часто происходит? Всегда / Иногда / Редко.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_screenshot">Скриншот / видео: если есть.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_logs">Логи / трассировка стека: если есть.</string>
+    <string name="presentation_batch_g_beta_sheet_env_title">Окружение</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Версия PixelMusic:</string>
+    <string name="presentation_batch_g_beta_sheet_env_source">Источник установки: GitHub Release, debug-сборка, nightly-сборка и т.д.</string>
+    <string name="presentation_batch_g_beta_sheet_env_android">Версия Android:</string>
+    <string name="presentation_batch_g_beta_sheet_env_device">Модель устройства:</string>
+    <string name="presentation_batch_g_beta_sheet_env_extra">Дополнительный контекст: SD-карта, особые настройки, разрешения и т.д.</string>
+    <string name="presentation_batch_g_beta_sheet_feature_title">Запрос функции</string>
+    <string name="presentation_batch_g_beta_sheet_feature_summary">Скопируйте эти поля, если хотите предложить новую функцию или улучшение.</string>
+    <string name="presentation_batch_g_beta_sheet_feature_problem">Описание проблемы: какую задачу вы пытаетесь решить?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_solution">Предлагаемое решение: как это должно работать?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_alternatives">Рассмотренные альтернативы: другие подходы?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_scope">Область: какие экраны или сценарии затронуты?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_mockup">Макет или референс, если есть.</string>
+    <string name="presentation_batch_g_beta_sheet_quality_title">Заголовки, приватность и объём</string>
+    <string name="presentation_batch_g_beta_sheet_quality_summary">Сделайте отчёт удобным для разбора и безопасным для публичного просмотра.</string>
+    <string name="presentation_batch_g_beta_sheet_title_examples_title">Примеры хороших заголовков</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_1">Эквалайзер: индикатор смещается при переключении вкладок пресетов</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_2">Поиск: история не появляется при пустом запросе</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_3">Функция: добавить сортировку «Недавно добавленные» в плейлисты</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_title">Пожалуйста, избегайте</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_1">Расплывчатых отчётов вроде «Не работает».</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_2">Нескольких несвязанных проблем в одном issue.</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_3">Логов и скриншотов с незамазанными личными данными.</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_title">Примечание о приватности</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_body">Перед публикацией логов, скриншотов или видео удалите личную и конфиденциальную информацию.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_title">Nightly-сборки</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_summary">Чем nightly отличается от релиза, и что включать в отчёт при проблеме с ней.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_body">Nightly-сборки создаются из последнего коммита и могут содержать незавершённые изменения, временные баги или регрессии. Они более экспериментальны, чем официальные релизы.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_access">Доступны через артефакты GitHub Actions в репозитории, если опубликованы.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_title">Отчёт о проблемах в nightly</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_body">При отчёте о проблеме из nightly всегда указывайте, что она в nightly, а не в официальном релизе. Укажите дату сборки, имя или номер запуска workflow или commit SHA — если возможно. Также проверьте, есть ли эта проблема в последнем официальном релизе.</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_g_beta05_title">v1.6.08 Обновление</string>
+    <string name="presentation_batch_g_beta05_clean_install_title">Что нового в версии 1.6.08</string>
+    <string name="presentation_batch_g_beta05_clean_install_body">•</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_title">Исследуйте Обновить</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_body">Наслаждайтесь новым элегантным макетом Material 3 Expressive на вкладке «Обзор»!</string>
+    <string-array name="presentation_batch_g_changelog_050_highlights">
+        <item>Обновление интерфейса Material 3 Expressive</item>
+        <item>10-полосный эквалайзер и эффекты</item>
+        <item>Новый процесс синхронизации библиотеки</item>
+        <item>Интеграция ИИ (модели Gemini)</item>
+        <item>Импорт и экспорт плейлистов M3U</item>
+        <item>Интеграция обложек исполнителей Deezer</item>
+        <item>Пользовательские обложки плейлистов</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_improvements">
+        <item>Рефакторинг архитектуры настроек</item>
+        <item>Анимации очереди и плеера</item>
+        <item>Профили Baseline и оптимизация производительности</item>
+        <item>Улучшенная система текстов со смещением синхронизации</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_fixes">
+        <item>Улучшения стабильности трансляции</item>
+        <item>Стабильность экрана плеера</item>
+        <item>Общие исправления ошибок и оптимизация</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_040_highlights">
+        <item>Крупный редизайн навигации</item>
+        <item>Новый проводник файлов для выбора исходных папок</item>
+        <item>Новые функции подключения и трансляции</item>
+        <item>Бесшовное переключение между удаленными устройствами</item>
+        <item>Бесшовный переход между песнями (Gapless)</item>
+        <item>Настройка плавного затухания (Crossfade)</item>
+        <item>Пользовательские переходы (только для плейлистов)</item>
+        <item>Фоновое воспроизведение после закрытия приложения</item>
+        <item>Оптимизация интерфейса</item>
+        <item>Улучшенная статистика</item>
+        <item>Переработанное управление очередью</item>
+        <item>Поддержка новых аудиоформатов и редактирования тегов</item>
+        <item>Улучшенное управление разрешениями</item>
+        <item>Мелкие исправления ошибок</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_whats_new">
+        <item>Улучшенный центр статистики прослушивания с подробными данными.</item>
+        <item>Плавающий мини-плеер для быстрого предпросмотра локальных файлов.</item>
+        <item>Вкладка папок с древовидным навигатором.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_improvements">
+        <item>Улучшенный интерфейс Material 3 для целостного внешнего вида.</item>
+        <item>Редактор метаданных теперь поддерживает смену обложки.</item>
+        <item>Плавные анимации и переходы по всему приложению.</item>
+        <item>Экран исполнителя с расширенными деталями.</item>
+        <item>Улучшенная генерация DailyMix и YourMix.</item>
+        <item>Усиленная генерация плейлистов с помощью ИИ.</item>
+        <item>Повышенная релевантность поиска.</item>
+        <item>Расширенная поддержка аудиоформатов.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_fixes">
+        <item>Устранены неточности метаданных треков.</item>
+        <item>Восстановлена надежная работа ярлыков в уведомлениях.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_added">
+        <item>Поддержка Chromecast для трансляции аудио.</item>
+        <item>Встроенный список изменений.</item>
+        <item>Поддержка файлов .LRC (встроенных и внешних).</item>
+        <item>Офлайн-тексты песен.</item>
+        <item>Синхронизированные тексты песен.</item>
+        <item>Новый экран для просмотра полной очереди.</item>
+        <item>Изменение порядка и удаление треков из очереди.</item>
+        <item>Жесты в мини-плеере (смахивание вниз для закрытия).</item>
+        <item>Дополнительные анимации Material.</item>
+        <item>Новые настройки внешнего вида.</item>
+        <item>Новые настройки очистки кэша.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_changed">
+        <item>Полный редизайн интерфейса пользователя.</item>
+        <item>Полный редизайн плеера.</item>
+        <item>Улучшения производительности медиатеки.</item>
+        <item>Ускорен запуск приложения.</item>
+        <item>ИИ теперь дает более качественные результаты.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixed">
+        <item>Исправлены различные ошибки в редакторе тегов.</item>
+        <item>Исправлена ошибка, из-за которой уведомление воспроизведения не закрывалось.</item>
+        <item>Исправлены ошибки, приводившие к аварийному завершению работы.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_highlights">
+        <item>Улучшения интеграции с ИИ и более умная генерация плейлистов.</item>
+        <item>Расширенная статистика прослушивания с новыми визуализациями.</item>
+        <item>Улучшенный процесс синхронизации медиатеки со всеми облачными провайдерами.</item>
+        <item>Улучшенное редактирование метаданных с поддержкой обложек альбомов.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_improvements">
+        <item>Оптимизация производительности при запуске, работе с библиотекой, очередью и плеером.</item>
+        <item>Улучшенный интерфейс Material 3 для более чистого и целостного восприятия.</item>
+        <item>Более плавные анимации и переходы по всему приложению.</item>
+        <item>Повышенная релевантность поиска и более быстрое обнаружение музыки.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_fixes">
+        <item>Исправлено поведение очереди и случайного воспроизведения.</item>
+        <item>Решены проблемы с фоновым воспроизведением и уведомлениями.</item>
+        <item>Общие исправления ошибок и полировка интерфейса.</item>
+    </string-array>
+
 </resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="sharing_playlists_message">
+        <item quantity="one">Compartilhando a playlist %d</item>
+        <item quantity="other">Compartilhando listas de reprodução %d</item>
+    </plurals>
+    <plurals name="exported_playlists_message">
+        <item quantity="one">Lista de reprodução %1$d exportada para %2$s</item>
+        <item quantity="other">Listas de reprodução %1$d exportadas para %2$s</item>
+    </plurals>
+    <plurals name="n_songs_added_to_queue">
+        <item quantity="one">Música %d adicionada à fila</item>
+        <item quantity="other">Músicas %d adicionadas à fila</item>
+    </plurals>
+    <plurals name="n_songs_will_play_next">
+        <item quantity="one">A próxima música do %d será tocada</item>
+        <item quantity="other">As músicas do %d serão reproduzidas a seguir</item>
+    </plurals>
+    <plurals name="n_songs_added_to_favorites">
+        <item quantity="one">Música de %d adicionada aos favoritos</item>
+        <item quantity="other">Músicas %d adicionadas aos favoritos</item>
+    </plurals>
+    <plurals name="n_songs_removed_from_favorites">
+        <item quantity="one">Música do %d removida dos favoritos</item>
+        <item quantity="other">Músicas %d removidas dos favoritos</item>
+    </plurals>
+    <plurals name="n_files_deleted">
+        <item quantity="one">Arquivo %d excluído</item>
+        <item quantity="other">Arquivos %d excluídos</item>
+    </plurals>
+    <plurals name="delete_songs_confirmation_title">
+        <item quantity="one">Excluir música do %d?</item>
+        <item quantity="other">Excluir músicas do %d?</item>
+    </plurals>
+    <plurals name="sleep_timer_play_count_times">
+        <item quantity="one">Hora %d</item>
+        <item quantity="other">%d vezes</item>
+    </plurals>
+</resources>

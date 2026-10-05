@@ -1,376 +1,595 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="device_capabilities_advanced_diagnostics_description">기본적으로 꺼져 있음. 베타 문제 해결을 위해 짧은 랙 타임라인을 기록합니다.</string>
-    <string name="device_capabilities_advanced_diagnostics_expires">%1$s까지 활성화</string>
-    <string name="device_capabilities_advanced_diagnostics_mark_lag">지금 랙 표시</string>
-    <string name="device_capabilities_advanced_diagnostics_marked">랙 순간이 표시됨</string>
-    <string name="device_capabilities_advanced_diagnostics_title">고급 성능 진단</string>
-    <string name="device_capabilities_buffer_frames">버퍼당 %1$d 프레임</string>
-    <string name="device_capabilities_finding_clear_body">인덱싱된 트랙이 이 기기의 Android 디코더 보고와 일치합니다.</string>
-    <string name="device_capabilities_finding_clear_title">주요 호환성 문제 없음</string>
-    <string name="device_capabilities_finding_resample_body">라이브러리가 현재 출력 샘플 레이트보다 높은 %1$d Hz에 도달합니다.</string>
-    <string name="device_capabilities_finding_resample_title">%1$d개의 로컬 트랙이 리샘플링될 수 있음</string>
-    <string name="device_capabilities_finding_unknown_body">라이브러리 전체 재스캔을 통해 누락된 MIME, 비트레이트 및 샘플 레이트 데이터를 채울 수 있습니다.</string>
-    <string name="device_capabilities_finding_unknown_title">%1$d개의 트랙에 알 수 없는 메타데이터가 있음</string>
-    <string name="device_capabilities_finding_unsupported_body">검토할 포맷: %1$s.</string>
-    <string name="device_capabilities_finding_unsupported_title">%1$d개의 트랙이 네이티브로 디코딩되지 않을 수 있음</string>
-    <string name="device_capabilities_findings_title">호환성 조사 결과</string>
-    <string name="device_capabilities_format_hardware">하드웨어 디코더</string>
-    <string name="device_capabilities_format_library_count">라이브러리에 %1$d개</string>
-    <string name="device_capabilities_format_offload">오프로드</string>
-    <string name="device_capabilities_format_software">소프트웨어 디코더</string>
-    <string name="device_capabilities_format_unsupported">보고된 디코더 없음</string>
-    <string name="device_capabilities_formats_supported_count">지원되는 트랙 %1$d개</string>
-    <string name="device_capabilities_formats_title">포맷 호환성</string>
-    <string name="device_capabilities_formats_unknown_count">알 수 없는 포맷 %1$d개</string>
-    <string name="device_capabilities_hifi_pcm_float">Hi-Fi PCM Float</string>
-    <string name="device_capabilities_hifi_pcm_float_supporting">32비트 부동 소수점 출력 경로</string>
-    <string name="device_capabilities_memory_available_of">%1$s 중 사용 가능</string>
-    <string name="device_capabilities_memory_title">메모리</string>
+    <string name="presentation_batch_g_stats_range_today">오늘</string>
+    <string name="presentation_batch_g_stats_range_week_to_date">이번 주</string>
+    <string name="presentation_batch_g_stats_range_month_to_date">이번 달</string>
+    <string name="presentation_batch_g_stats_range_year_to_date">올해</string>
+    <string name="presentation_batch_g_stats_range_all_time">전체 기간</string>
+    <string name="presentation_batch_g_stats_title">감상 통계</string>
+    <string name="presentation_batch_g_stats_cd_refresh">통계 새로고침</string>
+    <string name="presentation_batch_g_stats_hero_listening">감상 시간</string>
+    <string name="presentation_batch_g_stats_hero_plays">재생 횟수</string>
+    <string name="presentation_batch_g_stats_em_dash">—</string>
+    <string name="presentation_batch_g_stats_section_listening_habits">감상 습관</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_title">습관 데이터 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">귀하에 대해 더 알게 되면 감상 습관을 보여드릴게요.</string>
+    <string name="presentation_batch_g_stats_habit_total_sessions">총 세션</string>
+    <string name="presentation_batch_g_stats_habit_avg_session">평균 세션</string>
+    <string name="presentation_batch_g_stats_habit_longest_session">최장 세션</string>
+    <string name="presentation_batch_g_stats_habit_sessions_per_day">일일 평균 세션</string>
+    <string name="presentation_batch_g_stats_habit_most_active_day">가장 활발한 요일</string>
+    <string name="presentation_batch_g_stats_habit_no_playback_yet">재생 기록 없음</string>
+    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">주요 감상 시간대</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time">감상 시간</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">선택한 범위 내의 총 감상 시간입니다.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count">재생 횟수</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">기간별로 완료한 세션 수입니다.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session">평균 세션</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">각 기간별 평균 감상 시간입니다.</string>
+    <string name="presentation_batch_g_stats_n_plays">%1$d회 재생</string>
+    <string name="presentation_batch_g_stats_section_listening_timeline">감상 타임라인</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_title">감상 데이터 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">음악을 재생하여 감상 타임라인을 만들어 보세요</string>
+    <string name="presentation_batch_g_stats_rhythm_daily">일간 리듬</string>
+    <string name="presentation_batch_g_stats_rhythm_weekly">주간 리듬</string>
+    <string name="presentation_batch_g_stats_rhythm_monthly">월간 리듬</string>
+    <string name="presentation_batch_g_stats_rhythm_year">연간 요약</string>
+    <string name="presentation_batch_g_stats_rhythm_all_time">전체 진행 상황</string>
+    <string name="presentation_batch_g_stats_grouped_4h">4시간 단위로 그룹화됨</string>
+    <string name="presentation_batch_g_stats_grouped_dow">요일별로 그룹화됨</string>
+    <string name="presentation_batch_g_stats_grouped_week_of_month">월별 주 단위로 그룹화됨</string>
+    <string name="presentation_batch_g_stats_grouped_by_month">월별로 그룹화됨</string>
+    <string name="presentation_batch_g_stats_grouped_by_year">연별로 그룹화됨</string>
+    <string name="presentation_batch_g_stats_peak_segment">피크 세그먼트</string>
+    <string name="presentation_batch_g_stats_timeline_support_day">일일 리듬을 보여주기 위해 4시간 단위로 나눕니다.</string>
+    <string name="presentation_batch_g_stats_timeline_support_week">일별 막대로 주간 습관을 쉽게 비교할 수 있습니다.</string>
+    <string name="presentation_batch_g_stats_timeline_support_month">주별 막대로 해당 달의 추세를 보여줍니다.</string>
+    <string name="presentation_batch_g_stats_timeline_support_year">월별 막대로 연중 계절성을 보여줍니다.</string>
+    <string name="presentation_batch_g_stats_timeline_support_all">연도별 막대로 전체 기록을 요약합니다.</string>
+    <string name="presentation_batch_g_stats_section_top_categories">주요 카테고리</string>
+    <string name="presentation_batch_g_stats_top_categories_subtitle">장르, 아티스트, 앨범 및 곡별로 감상 방식을 비교해 보세요.</string>
+    <string name="presentation_batch_g_stats_plays_artists">%1$d회 재생 • 아티스트 %2$d명</string>
+    <string name="presentation_batch_g_stats_plays_tracks">%1$d회 재생 • 트랙 %2$d개</string>
+    <string name="presentation_batch_g_stats_dim_genre">장르</string>
+    <string name="presentation_batch_g_stats_dim_artist">아티스트</string>
+    <string name="presentation_batch_g_stats_dim_album">앨범</string>
+    <string name="presentation_batch_g_stats_dim_song">곡</string>
+    <string name="presentation_batch_g_stats_card_listening_by_genre">장르별 감상</string>
+    <string name="presentation_batch_g_stats_card_listening_by_artist">아티스트별 감상</string>
+    <string name="presentation_batch_g_stats_card_listening_by_album">앨범별 감상</string>
+    <string name="presentation_batch_g_stats_card_listening_by_song">곡별 감상</string>
+    <string name="presentation_batch_g_stats_empty_no_category_title">카테고리 데이터 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_category_subtitle">음악을 재생하여 감상 하이라이트를 확인해 보세요</string>
+    <string name="presentation_batch_g_stats_section_top_artists">인기 아티스트</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_title">인기 아티스트 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">음악을 계속 감상하면 좋아하는 아티스트가 여기에 나타납니다.</string>
+    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_section_top_albums">인기 앨범</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_title">인기 앨범 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">자주 다시 듣는 앨범이 여기에 나타납니다.</string>
+    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_title">이 기간의 트랙</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">선택한 시간 범위 내에서 가장 많이 재생한 트랙입니다.</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_title">인기 트랙 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">좋아하는 곡을 감상하면 여기에 강조되어 표시됩니다.</string>
+    <string name="presentation_batch_g_stats_collapse_tracks">트랙 접기</string>
+    <string name="presentation_batch_g_stats_show_all_tracks">모든 트랙 표시</string>
+    <string name="presentation_batch_g_stats_track_concentration_title">트랙 집중도</string>
+    <string name="presentation_batch_g_stats_track_concentration_subtitle">감상 시간이 상위 트랙들에 어떻게 분포되어 있는지 보여줍니다.</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_title">집중도 데이터 없음</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">더 많은 트랙을 재생하여 감상 집중도를 확인해 보세요.</string>
+    <string name="presentation_batch_g_stats_slice_top_1">상위 1위</string>
+    <string name="presentation_batch_g_stats_slice_top_2_3">상위 2-3위</string>
+    <string name="presentation_batch_g_stats_slice_others">기타</string>
+    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
+    <string name="presentation_batch_g_stats_listening_concentration_title">감상 집중도</string>
+    <string name="presentation_batch_g_stats_top_three_share_line">상위 3개 트랙이 감상 시간의 %1$d%%를 차지합니다.</string>
+    <string name="presentation_batch_g_stats_avg_plays_per_track">트랙당 평균 재생 횟수</string>
+    <string name="presentation_batch_g_stats_unique_tracks">고유 트랙 수</string>
+    <string name="presentation_batch_g_stats_top_three_share_label">상위 3개 점유율</string>
+    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
+    <string name="presentation_batch_g_device_info_title">기기 정보</string>
+    <string name="presentation_batch_g_device_supported_codecs_title">지원되는 오디오 코덱</string>
+    <string name="presentation_batch_g_device_section_audio_output">오디오 출력</string>
+    <string name="presentation_batch_g_device_section_exoplayer">ExoPlayer 엔진</string>
+    <string name="presentation_batch_g_device_label_sample_rate">샘플링 레이트</string>
+    <string name="presentation_batch_g_device_label_frames_per_buffer">버퍼당 프레임</string>
+    <string name="presentation_batch_g_device_label_low_latency">저지연 지원</string>
+    <string name="presentation_batch_g_device_label_pro_audio">프로 오디오 지원</string>
+    <string name="presentation_batch_g_device_label_version">버전</string>
+    <string name="presentation_batch_g_device_label_active_renderers">활성 렌더러</string>
+    <string name="presentation_batch_g_device_label_decoder_counters">디코더 카운터</string>
+    <string name="presentation_batch_g_device_value_hz">%1$d Hz</string>
+    <string name="presentation_batch_g_yes">예</string>
+    <string name="presentation_batch_g_no">아니요</string>
+    <string name="presentation_batch_g_device_cd_hw_accelerated">하드웨어 가속</string>
+    <string name="presentation_batch_g_device_key_manufacturer">제조사</string>
+    <string name="presentation_batch_g_device_key_model">모델</string>
+    <string name="presentation_batch_g_device_key_brand">브랜드</string>
+    <string name="presentation_batch_g_device_key_device">기기</string>
+    <string name="presentation_batch_g_device_key_android_version">Android 버전</string>
+    <string name="presentation_batch_g_device_key_sdk_version">SDK 버전</string>
+    <string name="presentation_batch_g_device_key_hardware">하드웨어</string>
+    <string name="device_capabilities_unknown_device">이 기기</string>
+    <string name="device_capabilities_unknown_short">--</string>
+    <string name="device_capabilities_ready_title">재생 준비 완료</string>
+    <string name="device_capabilities_review_title">재생 확인 필요</string>
     <string name="device_capabilities_metric_formats">포맷</string>
     <string name="device_capabilities_metric_hw_decoders">HW 디코더</string>
     <string name="device_capabilities_metric_local_music">로컬 곡</string>
-    <string name="device_capabilities_more_count">+%1$d개 더 보기</string>
-    <string name="device_capabilities_offload_empty">하드웨어 오프로드 지원이 보고된 압축 포맷이 없습니다.</string>
+    <string name="device_capabilities_storage_title">로컬 음악 저장공간</string>
+    <string name="device_capabilities_storage_music_size">음악 크기</string>
+    <string name="device_capabilities_storage_music_count">로컬 곡 %1$d개</string>
+    <string name="device_capabilities_storage_available">사용 가능</string>
+    <string name="device_capabilities_storage_total">총 %1$s</string>
+    <string name="device_capabilities_storage_music_footprint">음악 점유율</string>
+    <string name="device_capabilities_storage_device_used">기기 사용됨</string>
+    <string name="device_capabilities_storage_percent">%1$d%%</string>
+    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
+    <string name="device_capabilities_storage_cloud_count">클라우드 곡 %1$d개</string>
+    <string name="device_capabilities_storage_unavailable_count">읽을 수 없는 파일 %1$d개</string>
+    <string name="device_capabilities_playback_path_title">재생 경로</string>
+    <string name="device_capabilities_buffer_frames">버퍼당 %1$d 프레임</string>
+    <string name="device_capabilities_hifi_pcm_float">Hi-Fi PCM Float</string>
+    <string name="device_capabilities_hifi_pcm_float_supporting">32비트 부동 소수점 출력 경로</string>
+    <string name="device_capabilities_memory_title">메모리</string>
+    <string name="device_capabilities_memory_available_of">%1$s 중 사용 가능</string>
     <string name="device_capabilities_offload_title">오프로드 가능 포맷</string>
-    <string name="device_capabilities_output_bluetooth">블루투스 오디오</string>
+    <string name="device_capabilities_offload_empty">하드웨어 오프로드 지원이 보고된 압축 포맷이 없습니다.</string>
+    <string name="device_capabilities_outputs_title">감지된 출력</string>
+    <string name="device_capabilities_outputs_empty">Android에서 보고된 출력 경로가 없습니다.</string>
+    <string name="device_capabilities_renderers_count">%1$s 렌더러</string>
+    <string name="device_capabilities_formats_title">포맷 호환성</string>
+    <string name="device_capabilities_formats_supported_count">지원되는 트랙 %1$d개</string>
+    <string name="device_capabilities_formats_unknown_count">알 수 없는 포맷 %1$d개</string>
+    <string name="device_capabilities_format_unsupported">보고된 디코더 없음</string>
+    <string name="device_capabilities_format_hardware">하드웨어 디코더</string>
+    <string name="device_capabilities_format_software">소프트웨어 디코더</string>
+    <string name="device_capabilities_format_offload">오프로드</string>
+    <string name="device_capabilities_format_library_count">라이브러리에 %1$d개</string>
+    <string name="device_capabilities_findings_title">호환성 조사 결과</string>
+    <string name="device_capabilities_finding_clear_title">주요 호환성 문제 없음</string>
+    <string name="device_capabilities_finding_clear_body">인덱싱된 트랙이 이 기기의 Android 디코더 보고와 일치합니다.</string>
+    <string name="device_capabilities_finding_unsupported_title">%1$d개의 트랙이 네이티브로 디코딩되지 않을 수 있음</string>
+    <string name="device_capabilities_finding_unsupported_body">검토할 포맷: %1$s.</string>
+    <string name="device_capabilities_finding_resample_title">%1$d개의 로컬 트랙이 리샘플링될 수 있음</string>
+    <string name="device_capabilities_finding_resample_body">라이브러리가 현재 출력 샘플 레이트보다 높은 %1$d Hz에 도달합니다.</string>
+    <string name="device_capabilities_finding_unknown_title">%1$d개의 트랙에 알 수 없는 메타데이터가 있음</string>
+    <string name="device_capabilities_finding_unknown_body">라이브러리 전체 재스캔을 통해 누락된 MIME, 비트레이트 및 샘플 레이트 데이터를 채울 수 있습니다.</string>
+    <string name="device_capabilities_more_count">+%1$d개 더 보기</string>
     <string name="device_capabilities_output_builtin">기본 출력</string>
-    <string name="device_capabilities_output_digital">디지털 출력</string>
-    <string name="device_capabilities_output_other">기타 출력</string>
+    <string name="device_capabilities_output_bluetooth">블루투스 오디오</string>
     <string name="device_capabilities_output_usb">USB 오디오</string>
     <string name="device_capabilities_output_wired">유선 오디오</string>
-    <string name="device_capabilities_outputs_empty">Android에서 보고된 출력 경로가 없습니다.</string>
-    <string name="device_capabilities_outputs_title">감지된 출력</string>
-    <string name="device_capabilities_playback_path_title">재생 경로</string>
-    <string name="device_capabilities_ready_title">재생 준비 완료</string>
-    <string name="device_capabilities_renderers_count">%1$s 렌더러</string>
-    <string name="device_capabilities_report_copied">보고서가 클립보드에 복사되었습니다</string>
-    <string name="device_capabilities_report_copy">복사</string>
-    <string name="device_capabilities_report_description">재생 또는 스캔 지연 분류를 돕기 위해 공유 가능한 진단 보고서를 생성합니다. 파일 경로, 제목 또는 아티스트 정보는 포함되지 않고 기기, 라이브러리 및 타이밍 데이터만 포함됩니다.</string>
-    <string name="device_capabilities_report_generate">보고서 생성</string>
-    <string name="device_capabilities_report_regenerate">재생성</string>
-    <string name="device_capabilities_report_share">공유</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer 성능 보고서</string>
-    <string name="device_capabilities_report_title">성능 보고서</string>
-    <string name="device_capabilities_review_title">재생 확인 필요</string>
-    <string name="device_capabilities_storage_available">사용 가능</string>
-    <string name="device_capabilities_storage_cloud_count">클라우드 곡 %1$d개</string>
-    <string name="device_capabilities_storage_device_used">기기 사용됨</string>
-    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
-    <string name="device_capabilities_storage_music_count">로컬 곡 %1$d개</string>
-    <string name="device_capabilities_storage_music_footprint">음악 점유율</string>
-    <string name="device_capabilities_storage_music_size">음악 크기</string>
-    <string name="device_capabilities_storage_percent">%1$d%%</string>
-    <string name="device_capabilities_storage_title">로컬 음악 저장공간</string>
-    <string name="device_capabilities_storage_total">총 %1$s</string>
-    <string name="device_capabilities_storage_unavailable_count">읽을 수 없는 파일 %1$d개</string>
-    <string name="device_capabilities_unknown_short">--</string>
-    <string name="presentation_batch_g_album_sel_count">앨범 %1$d개</string>
-    <string name="presentation_batch_g_album_sel_limit">제한: 선택당 앨범 최대 %1$d개.</string>
-    <string name="presentation_batch_g_album_sel_queue_hint">대기열 추가 및 재생은 선택한 순서를 존중합니다.</string>
-    <string name="presentation_batch_g_album_sel_selected">선택됨</string>
-    <string name="presentation_batch_g_app_tagline">뮤직 플레이어</string>
+    <string name="device_capabilities_output_digital">디지털 출력</string>
+    <string name="device_capabilities_output_other">기타 출력</string>
+    <string name="presentation_batch_g_ai_token_input">입력</string>
+    <string name="presentation_batch_g_ai_token_output">출력</string>
+    <string name="presentation_batch_g_ai_token_thought">생각</string>
+    <string name="presentation_batch_g_ai_token_count">%1$s: %2$s</string>
+    <string name="presentation_batch_g_ai_usage_date_pattern">MM월 dd일, HH:mm</string>
+    <string name="presentation_batch_g_artist_section_multi_parsing">멀티 아티스트 파싱</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters">문자 구분 기호</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters_current">현재: %1$s</string>
+    <string name="presentation_batch_g_artist_item_word_delimiters">단어 구분 기호</string>
+    <string name="presentation_batch_g_artist_word_none">없음</string>
+    <string name="presentation_batch_g_artist_word_current_prefix">현재: %1$s</string>
+    <string name="presentation_batch_g_artist_word_ellipsis">…</string>
     <string name="presentation_batch_g_artist_cd_configure">구성</string>
+    <string name="presentation_batch_g_artist_extract_from_title">제목에서 아티스트 추출</string>
+    <string name="presentation_batch_g_artist_extract_from_title_sub">곡 제목에서 feat., ft., with 등 감지</string>
+    <string name="presentation_batch_g_artist_section_library_org">라이브러리 구성</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist">앨범 아티스트별로 그룹화</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist_sub">주요 아티스트 아래에 협업 앨범 표시</string>
+    <string name="presentation_batch_g_artist_info_title">멀티 아티스트 파싱 정보</string>
+    <string name="presentation_batch_g_artist_info_body">PixelMusic는 문자 구분 기호(/, ;, &amp;) 및 단어 구분 기호(feat., ft., vs., x)를 사용하여 아티스트 태그를 나눕니다. 단어 구분 기호는 대소문자를 구분하지 않습니다.
+
+\"제목에서 아티스트 추출\"은 곡 제목에서 (feat. 아티스트)와 같은 패턴을 감지합니다.
+
+백슬래시(\\)를 사용하여 문자 구분 기호를 이스케이프할 수 있습니다.</string>
+    <string name="presentation_batch_g_artist_example_arrow"> → </string>
+    <string name="presentation_batch_g_artist_examples_title">예시</string>
     <string name="presentation_batch_g_artist_ex_1_in">\"Artist1/Artist2\"</string>
     <string name="presentation_batch_g_artist_ex_1_out">Artist1, Artist2</string>
     <string name="presentation_batch_g_artist_ex_2_in">\"Drake feat. Rihanna\"</string>
     <string name="presentation_batch_g_artist_ex_2_out">Drake, Rihanna</string>
     <string name="presentation_batch_g_artist_ex_3_in">\"Marshmello x Bastille\"</string>
     <string name="presentation_batch_g_artist_ex_3_out">Marshmello, Bastille</string>
-    <string name="presentation_batch_g_artist_ex_4_in">\"A가 부른 Song (ft. B)\"</string>
+    <string name="presentation_batch_g_artist_ex_4_in">\"Song (ft. B)\" by A</string>
     <string name="presentation_batch_g_artist_ex_4_out">A, B</string>
     <string name="presentation_batch_g_artist_ex_5_in">\"AC\\DC\"</string>
     <string name="presentation_batch_g_artist_ex_5_out">AC/DC (이스케이프됨)</string>
-    <string name="presentation_batch_g_artist_example_arrow"> → </string>
-    <string name="presentation_batch_g_artist_examples_title">예시</string>
-    <string name="presentation_batch_g_artist_extract_from_title">제목에서 아티스트 추출</string>
-    <string name="presentation_batch_g_artist_extract_from_title_sub">곡 제목에서 feat., ft., with 등을 감지</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist">앨범 아티스트별로 그룹화</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist_sub">아티스트 탭과 앨범을 앨범 아티스트 기준으로 그룹화하여 참여 아티스트와 컴필레이션 아티스트가 목록을 어지럽히지 않도록 합니다</string>
-    <string name="presentation_batch_g_artist_info_title">멀티 아티스트 파싱 정보</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters">문자 구분 기호</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters_current">현재: %1$s</string>
-    <string name="presentation_batch_g_artist_item_word_delimiters">단어 구분 기호</string>
-    <string name="presentation_batch_g_artist_rescan">재스캔</string>
-    <string name="presentation_batch_g_artist_rescan_banner_body">아티스트 설정이 변경되었습니다. 적용하려면 라이브러리를 재스캔하세요.</string>
+    <string name="presentation_batch_g_artist_topbar_title">아티스트</string>
     <string name="presentation_batch_g_artist_rescan_banner_title">재스캔 필요</string>
+    <string name="presentation_batch_g_artist_rescan_banner_body">아티스트 설정이 변경되었습니다. 적용하려면 라이브러리를 다시 스캔하세요.</string>
     <string name="presentation_batch_g_artist_rescan_scanning">스캔 중…</string>
-    <string name="presentation_batch_g_artist_section_library_org">라이브러리 구성</string>
-    <string name="presentation_batch_g_artist_section_multi_parsing">멀티 아티스트 파싱</string>
-    <string name="presentation_batch_g_artist_word_current_prefix">현재: %1$s</string>
-    <string name="presentation_batch_g_artist_word_none">없음</string>
-    <string name="presentation_batch_g_backup_app_version">앱 버전</string>
-    <string name="presentation_batch_g_backup_cd_clear_selection">선택 해제</string>
-    <string name="presentation_batch_g_backup_cd_select_all">모두 선택</string>
-    <string name="presentation_batch_g_backup_created">생성일</string>
-    <string name="presentation_batch_g_backup_details">백업 상세 정보</string>
-    <string name="presentation_batch_g_backup_device">기기</string>
-    <string name="presentation_batch_g_backup_entries_will_replace">%1$d개 항목 · 현재 데이터를 대체합니다</string>
-    <string name="presentation_batch_g_backup_modules_selected">%2$d개 중 %1$d개 모듈 선택됨</string>
-    <string name="presentation_batch_g_backup_restore_modules">모듈 복구</string>
-    <string name="presentation_batch_g_backup_restore_selected">선택 항목 복구</string>
-    <string name="presentation_batch_g_backup_restoring">복구 중</string>
-    <string name="presentation_batch_g_backup_schema">스키마</string>
-    <string name="presentation_batch_g_backup_transfer_progress">전송 중…</string>
-    <string name="presentation_batch_g_backup_unknown">알 수 없음</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_1">\"작동하지 않습니다\"와 같은 모호한 보고.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_2">하나의 이슈에 여러 가지 무관한 문제 작성.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_3">개인 정보가 포함된 편집되지 않은 로그 또는 스크린샷.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_title">피해 주세요</string>
-    <string name="presentation_batch_g_beta_sheet_before_1">중복을 방지하기 위해 열려 있거나 닫힌 기존 이슈를 검색하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_before_3">앱을 재시작하고 문제가 지속되는지 확인하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_before_4">문제를 재현해 보고 정확한 단계를 기록해 두세요.</string>
-    <string name="presentation_batch_g_beta_sheet_before_title">이슈를 작성하기 전에</string>
-    <string name="presentation_batch_g_beta_sheet_bug_actual">현재 동작:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_expected">예상 동작:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_frequency">얼마나 자주 발생하나요? 항상 / 때때로 / 드물게.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_logs">로그 / 스택 트레이스: (있는 경우)</string>
-    <string name="presentation_batch_g_beta_sheet_bug_screenshot">스크린샷 / 동영상: (있는 경우)</string>
-    <string name="presentation_batch_g_beta_sheet_bug_steps">재현/실행 단계: 1. 2. 3.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary">요약:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary_text">무언가 잘못 동작하거나 충돌이 발생할 때 이 필드들을 복사해서 작성하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_template_title">버그 보고서</string>
-    <string name="presentation_batch_g_beta_sheet_bug_title">버그 보고</string>
-    <string name="presentation_batch_g_beta_sheet_env_android">Android 버전:</string>
-    <string name="presentation_batch_g_beta_sheet_env_device">기기 모델:</string>
-    <string name="presentation_batch_g_beta_sheet_env_extra">추가 콘텍스트: SD 카드 사용 여부, 특수 설정, 권한 등</string>
-    <string name="presentation_batch_g_beta_sheet_env_source">설치 소스: GitHub 릴리스, 디버그 빌드, 나이틀리 빌드 등</string>
-    <string name="presentation_batch_g_beta_sheet_env_title">환경</string>
-    <string name="presentation_batch_g_beta_sheet_expect_1">버그, 충돌 또는 불완전한 기능이 예기치 않게 발생할 수 있습니다.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_2">일부 기능은 통지 없이 변경되거나 제거될 수 있습니다.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_3">베타 빌드는 정식 릴리스 버전보다 더 불안정할 수 있습니다.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_4">알려진 문제를 보고하기 전에 항상 업데이트를 확인하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_summary">테스트 중 베타 빌드가 변경, 중단 또는 개선할 수 있는 사항.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_title">주요 변경 사항</string>
-    <string name="presentation_batch_g_beta_sheet_feature_alternatives">고려한 대안: 다른 방법이 있나요?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_mockup">목업 또는 참고 이미지 (있는 경우).</string>
-    <string name="presentation_batch_g_beta_sheet_feature_problem">문제 설명: 해결하려는 문제가 무엇인가요?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_scope">범위: 영향을 받는 화면 또는 흐름은 무엇인가요?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_solution">제안하는 해결책: 어떻게 작동해야 하나요?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_summary">새로운 기능이나 개선을 원할 때 이 필드들을 복사해서 작성하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_feature_title">기능 요청</string>
-    <string name="presentation_batch_g_beta_sheet_github_body">먼저 검색한 후 버그, 충돌, 요청 또는 질문에 대한 집중 보고서를 작성하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_github_title">GitHub 이슈 단축키</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_bug">버그 보고: 무언가 잘못 동작함.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_feature">기능 요청: 새로운 기능이나 개선 사항 추가.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_question">질문: 활성화된 경우 토론(Discussions)을 사용하거나 질문 라벨이 있는 이슈를 작성하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_title">어떤 이슈 유형인가요?</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_access">가능한 경우 레포지토리의 GitHub Actions 워크플로 아티팩트에서 다운로드할 수 있습니다.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_body">나이틀리 빌드는 최신 커밋에서 자동으로 생성되므로 미완성된 변경 사항, 일시적인 버그 또는 회귀 오류가 포함되어 있을 수 있습니다. 공식 릴리스보다 훨씬 실험적입니다.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_body">나이틀리 빌드에서 발생한 문제를 보고할 때는 항상 공식 릴리스가 아닌 나이틀리 빌드에서 발생했음을 언급해 주세요. 가능하면 빌드 날짜, 워크플로 실행 이름 또는 번호, 커밋 SHA를 포함해 주세요. 또한 최신 공식 릴리스에서도 동일한 문제가 발생하는지 확인해 보세요.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_title">나이틀리 문제 보고</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_summary">나이틀리 빌드와 정식 릴리스의 차이점 및 문제 발생 시 포함할 정보.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_title">나이틀리 빌드</string>
-    <string name="presentation_batch_g_beta_sheet_open_issues">기존 이슈 열기</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_body">로그, 스크린샷 또는 동영상을 게시하기 전에 개인 또는 민감한 정보를 삭제하세요.</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_title">개인정보 보호 안내</string>
-    <string name="presentation_batch_g_beta_sheet_quality_summary">보고서를 분류하기 쉽고 공유하기 안전하게 만드세요.</string>
-    <string name="presentation_batch_g_beta_sheet_quality_title">제목, 개인정보 및 범위</string>
-    <string name="presentation_batch_g_beta_sheet_report_bug">이슈 또는 충돌 보고</string>
-    <string name="presentation_batch_g_beta_sheet_report_summary">새 이슈를 작성하기 전 빠른 체크리스트.</string>
-    <string name="presentation_batch_g_beta_sheet_report_title">보고 방법</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_1">이퀄라이저: 프리셋 탭을 전환할 때 표시기가 이동함</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_2">검색: 빈 검색어에 대해 검색 기록 목록이 나타나지 않음</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_3">기능: \"최근 추가됨\" 플레이리스트 정렬 옵션 추가</string>
-    <string name="presentation_batch_g_beta_sheet_title_examples_title">올바른 이슈 제목 예시</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body">버그, 충돌 또는 실험적 기능이 포함되어 있을 수 있는 베타 빌드를 사용 중입니다. 문제를 보고하여 앱을 개선할 수 있도록 도와주세요.</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body_stable">정식 릴리스 빌드를 사용 중입니다. 변경 로그에서 새로운 내용을 확인하고, 이상하게 동작하는 부분이 있으면 알려 주세요.</string>
-    <string name="presentation_batch_g_brick_cd_close">닫기</string>
-    <string name="presentation_batch_g_brick_drag_paddle">드래그하여 패들을 이동하세요</string>
-    <string name="presentation_batch_g_brick_game_over">게임 오버</string>
-    <string name="presentation_batch_g_brick_high">최고 기록 %1$d</string>
-    <string name="presentation_batch_g_brick_high_score">최고 점수 %1$d</string>
-    <string name="presentation_batch_g_brick_level_complete">레벨 클리어!</string>
-    <string name="presentation_batch_g_brick_next_level">다음 레벨</string>
-    <string name="presentation_batch_g_brick_play">재생</string>
-    <string name="presentation_batch_g_brick_play_random">무작위 음악 재생</string>
-    <string name="presentation_batch_g_brick_restart">게임 재시작</string>
-    <string name="presentation_batch_g_brick_score_line">점수: %1$d</string>
-    <string name="presentation_batch_g_brick_stat_lives">생명</string>
-    <string name="presentation_batch_g_brick_stat_lvl">레벨 %1$d</string>
-    <string name="presentation_batch_g_brick_stat_score">점수</string>
-    <string name="presentation_batch_g_brick_tap_relaunch">탭하여 다시 시작</string>
-    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
-    <string name="presentation_batch_g_brick_try_again">다시 시도하시겠습니까?</string>
-    <string name="presentation_batch_g_cd_selected">선택됨</string>
-    <string name="presentation_batch_g_cd_switch_on">스위치 켜짐</string>
-    <string name="presentation_batch_g_changelog_sec_improvements">개선 사항</string>
-    <string name="presentation_batch_g_changelog_sec_initial_release">최초 릴리스</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">릴리스 준비</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">FOSS를 위해 제거됨</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">보안 및 개인정보 보호</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">내부 개선</string>
-    <string name="presentation_batch_g_changelog_sec_whats_new">새로운 기능</string>
-    <string name="presentation_batch_g_changelog_title">변경 로그</string>
-    <string name="presentation_batch_g_changelog_view_github">GitHub에서 보기</string>
-    <string name="presentation_batch_g_daily_mix_based_on_history">재생 기록 기반</string>
-    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
-    <string name="presentation_batch_g_daily_mix_queue_name">데일리 믹스</string>
-    <string name="presentation_batch_g_daily_mix_see_all">Daily Mix 전체 확인</string>
-    <string name="presentation_batch_g_device_info_title">기기 정보</string>
-    <string name="presentation_batch_g_device_key_android_version">Android 버전</string>
-    <string name="presentation_batch_g_device_key_brand">브랜드</string>
-    <string name="presentation_batch_g_device_key_device">기기</string>
-    <string name="presentation_batch_g_device_key_hardware">하드웨어</string>
-    <string name="presentation_batch_g_device_key_manufacturer">제조사</string>
-    <string name="presentation_batch_g_device_key_model">모델</string>
-    <string name="presentation_batch_g_device_key_sdk_version">SDK 버전</string>
-    <string name="presentation_batch_g_device_label_low_latency">저지연 지원</string>
-    <string name="presentation_batch_g_device_label_pro_audio">프로 오디오 지원</string>
-    <string name="presentation_batch_g_device_label_sample_rate">샘플링 레이트</string>
-    <string name="presentation_batch_g_device_section_exoplayer">ExoPlayer 엔진</string>
-    <string name="presentation_batch_g_device_value_hz">%1$d Hz</string>
-    <string name="presentation_batch_g_file_explorer_cd_close">닫기</string>
-    <string name="presentation_batch_g_file_explorer_cd_done">완료</string>
-    <string name="presentation_batch_g_file_explorer_cd_go_root">최상위 폴더로 이동</string>
-    <string name="presentation_batch_g_file_explorer_cd_navigate_up">상위 폴더로 이동</string>
-    <string name="presentation_batch_g_file_explorer_cd_refresh">새로고침</string>
-    <string name="presentation_batch_g_file_explorer_done">완료</string>
-    <string name="presentation_batch_g_file_explorer_empty_folders">여기에 하위 폴더가 없습니다</string>
-    <string name="presentation_batch_g_file_explorer_hint">모든 폴더가 기본적으로 허용됩니다. 폴더를 탭하여 스캔에서 제외할 수 있습니다.</string>
-    <string name="presentation_batch_g_genre_sort_album">앨범</string>
-    <string name="presentation_batch_g_genre_sort_artist">아티스트</string>
-    <string name="presentation_batch_g_genre_sort_by">정렬 기준</string>
-    <string name="presentation_batch_g_genre_sort_shuffle">셔플</string>
-    <string name="presentation_batch_g_genre_sort_title">정렬 및 재생</string>
-    <string name="presentation_batch_g_genre_sort_title_opt">제목</string>
-    <string name="presentation_batch_g_list_cd_album_art_for">%1$s의 앨범 아트</string>
-    <string name="presentation_batch_g_list_cd_more_for_title">%1$s의 더 많은 옵션</string>
-    <string name="presentation_batch_g_list_cd_playing">재생 중</string>
-    <string name="presentation_batch_g_list_cd_selected">선택됨</string>
-    <string name="presentation_batch_g_list_song_artist_album">%1$s • %2$s</string>
-    <string name="presentation_batch_g_lyrics_cd_options">가사 옵션</string>
-    <string name="presentation_batch_g_lyrics_mode_static">정적</string>
+    <string name="presentation_batch_g_artist_rescan">재스캔</string>
+    <string name="presentation_batch_g_topbar_beta_letter">β</string>
+    <string name="presentation_batch_g_topbar_beta">베타</string>
+    <string name="presentation_batch_g_topbar_cd_telegram">Telegram</string>
+    <string name="presentation_batch_g_topbar_cd_changelog">변경 사항</string>
+    <string name="presentation_batch_g_topbar_cd_settings">설정</string>
     <string name="presentation_batch_g_lyrics_mode_synced">동기화됨</string>
-    <string name="presentation_batch_g_lyrics_offset_minus_half">−.5</string>
-    <string name="presentation_batch_g_lyrics_offset_minus_point_one">−.1</string>
-    <string name="presentation_batch_g_lyrics_offset_plus_half">+.5</string>
-    <string name="presentation_batch_g_lyrics_offset_plus_point_one">+.1</string>
-    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1f초</string>
-    <string name="presentation_batch_g_lyrics_offset_zero">0초</string>
-    <string name="presentation_batch_g_no">아니요</string>
-    <string name="presentation_batch_g_player_cd_cloud_stream">클라우드 스트림</string>
-    <string name="presentation_batch_g_player_cd_collapse">플레이어 접기</string>
-    <string name="presentation_batch_g_player_cd_lyrics">가사</string>
-    <string name="presentation_batch_g_player_cd_queue">대기열</string>
-    <string name="presentation_batch_g_presets_cd_delete">삭제</string>
-    <string name="presentation_batch_g_presets_cd_pin">고정</string>
-    <string name="presentation_batch_g_presets_cd_rename">이름 변경</string>
-    <string name="presentation_batch_g_presets_cd_unpin">고정 해제</string>
-    <string name="presentation_batch_g_presets_empty">저장된 사용자 지정 프리셋이 없습니다.</string>
-    <string name="presentation_batch_g_presets_saved_title">저장된 프리셋</string>
-    <string name="presentation_batch_g_recently_played_title">최근 재생한 곡</string>
-    <string name="presentation_batch_g_selection_all">전체</string>
-    <string name="presentation_batch_g_selection_cd_like">선택 항목 좋아요</string>
-    <string name="presentation_batch_g_selection_cd_more">추가 옵션</string>
-    <string name="presentation_batch_g_selection_cd_share">선택 항목 공유</string>
-    <string name="presentation_batch_g_selection_deselect">선택 해제</string>
-    <string name="presentation_batch_g_selection_one_song">곡 선택됨</string>
-    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
-    <string name="presentation_batch_g_selection_play">재생</string>
-    <string name="presentation_batch_g_sort_ascending">오름차순</string>
-    <string name="presentation_batch_g_sort_descending">내림차순</string>
-    <string name="presentation_batch_g_sort_order">순서</string>
-    <string name="presentation_batch_g_sort_original_order">원래 순서</string>
+    <string name="presentation_batch_g_lyrics_mode_static">정적</string>
+    <string name="presentation_batch_g_lyrics_cd_options">가사 옵션</string>
+    <string name="presentation_batch_g_streaming_title">클라우드 스트리밍</string>
+    <string name="presentation_batch_g_streaming_subtitle">클라우드 계정에서 음악 스트리밍</string>
     <string name="presentation_batch_g_sort_source">소스</string>
-    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
-    <string name="presentation_batch_g_stats_avg_plays_per_track">트랙당 평균 재생 횟수</string>
-    <string name="presentation_batch_g_stats_card_listening_by_album">앨범별 감상</string>
-    <string name="presentation_batch_g_stats_card_listening_by_artist">아티스트별 감상</string>
-    <string name="presentation_batch_g_stats_card_listening_by_genre">장르별 감상</string>
-    <string name="presentation_batch_g_stats_card_listening_by_song">곡별 감상</string>
-    <string name="presentation_batch_g_stats_cd_refresh">통계 새로고침</string>
-    <string name="presentation_batch_g_stats_collapse_tracks">트랙 접기</string>
-    <string name="presentation_batch_g_stats_dim_album">앨범</string>
-    <string name="presentation_batch_g_stats_dim_artist">아티스트</string>
-    <string name="presentation_batch_g_stats_dim_genre">장르</string>
-    <string name="presentation_batch_g_stats_dim_song">곡</string>
-    <string name="presentation_batch_g_stats_em_dash">—</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">자주 다시 듣는 앨범이 여기에 나타납니다.</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_title">인기 앨범 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">음악을 계속 감상하면 좋아하는 아티스트가 여기에 나타납니다.</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_title">인기 아티스트 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_category_subtitle">음악을 재생하여 감상 하이라이트를 확인해 보세요</string>
-    <string name="presentation_batch_g_stats_empty_no_category_title">카테고리 데이터 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">더 많은 트랙을 재생하여 감상 집중도를 확인해 보세요.</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_title">집중도 데이터 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">귀하에 대해 더 알게 되면 감상 습관을 보여드릴게요.</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_title">습관 데이터 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">음악을 재생하여 감상 타임라인을 만들어 보세요</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_title">감상 데이터 없음</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">좋아하는 곡을 감상하면 여기에 강조되어 표시됩니다.</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_title">인기 트랙 없음</string>
-    <string name="presentation_batch_g_stats_grouped_4h">4시간 단위로 그룹화됨</string>
-    <string name="presentation_batch_g_stats_grouped_by_month">월별로 그룹화됨</string>
-    <string name="presentation_batch_g_stats_grouped_by_year">연별로 그룹화됨</string>
-    <string name="presentation_batch_g_stats_grouped_dow">요일별로 그룹화됨</string>
-    <string name="presentation_batch_g_stats_grouped_week_of_month">월별 주 단위로 그룹화됨</string>
-    <string name="presentation_batch_g_stats_habit_avg_session">평균 세션</string>
-    <string name="presentation_batch_g_stats_habit_longest_session">최장 세션</string>
-    <string name="presentation_batch_g_stats_habit_most_active_day">가장 활발한 요일</string>
-    <string name="presentation_batch_g_stats_habit_no_playback_yet">재생 기록 없음</string>
-    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">주요 감상 시간대</string>
-    <string name="presentation_batch_g_stats_habit_sessions_per_day">일일 평균 세션</string>
-    <string name="presentation_batch_g_stats_habit_total_sessions">총 세션</string>
-    <string name="presentation_batch_g_stats_hero_listening">감상 시간</string>
-    <string name="presentation_batch_g_stats_hero_plays">재생 횟수</string>
-    <string name="presentation_batch_g_stats_listening_concentration_title">감상 집중도</string>
-    <string name="presentation_batch_g_stats_n_plays">%1$d회 재생</string>
-    <string name="presentation_batch_g_stats_overview_avg_per_day">일평균</string>
+    <string name="presentation_batch_g_sort_order">순서</string>
+    <string name="presentation_batch_g_sort_descending">내림차순</string>
+    <string name="presentation_batch_g_sort_ascending">오름차순</string>
+    <string name="presentation_batch_g_sort_original_order">원래 순서</string>
+    <string name="presentation_batch_g_sort_tap_ascending">탭하여 오름차순으로 변경</string>
+    <string name="presentation_batch_g_sort_tap_descending">탭하여 내림차순으로 변경</string>
+    <string name="presentation_batch_g_sort_keeps_order">이 정렬은 원래 순서를 유지합니다</string>
+    <string name="presentation_batch_g_cd_switch_on">스위치 켜짐</string>
+    <string name="presentation_batch_g_file_explorer_cd_close">닫기</string>
+    <string name="presentation_batch_g_file_explorer_cd_refresh">새로고침</string>
+    <string name="presentation_batch_g_file_explorer_cd_done">완료</string>
+    <string name="presentation_batch_g_file_explorer_done">완료</string>
+    <string name="presentation_batch_g_file_explorer_hint">모든 폴더가 기본적으로 허용됩니다. 폴더를 탭하여 스캔에서 제외할 수 있습니다.</string>
+    <string name="presentation_batch_g_file_explorer_empty_folders">여기에 하위 폴더가 없습니다</string>
+    <string name="presentation_batch_g_file_explorer_cd_navigate_up">상위로 이동</string>
+    <string name="presentation_batch_g_file_explorer_cd_go_root">최상위로 이동</string>
+    <string name="presentation_batch_g_daily_mix_queue_name">Daily Mix</string>
+    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
+    <string name="presentation_batch_g_daily_mix_based_on_history">청취 기록 기반</string>
+    <string name="presentation_batch_g_daily_mix_see_all">Daily Mix 전체 보기</string>
+    <string name="presentation_batch_g_selection_one_song">곡 선택됨</string>
+    <string name="presentation_batch_g_selection_n_songs">곡 %1$d개 선택됨</string>
+    <string name="presentation_batch_g_selection_cd_share">선택 항목 공유</string>
+    <string name="presentation_batch_g_selection_cd_like">선택 항목 좋아요</string>
+    <string name="presentation_batch_g_selection_play">재생</string>
+    <string name="presentation_batch_g_selection_all">전체</string>
+    <string name="presentation_batch_g_selection_deselect">선택 해제</string>
+    <string name="presentation_batch_g_selection_cd_more">추가 옵션</string>
+    <string name="presentation_batch_g_selection_options">옵션</string>
+    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
+    <string name="presentation_batch_g_list_song_artist_album">%1$s • %2$s</string>
+    <string name="presentation_batch_g_list_cd_selected">선택됨</string>
+    <string name="presentation_batch_g_list_cd_more_for_title">%1$s 추가 옵션</string>
+    <string name="presentation_batch_g_list_cd_album_art_for">%1$s 앨범 아트</string>
+    <string name="presentation_batch_g_list_cd_playing">재생 중</string>
+    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
     <string name="presentation_batch_g_stats_overview_title">감상 통계</string>
+    <string name="presentation_batch_g_stats_overview_total_plays">총 재생 횟수</string>
+    <string name="presentation_batch_g_stats_overview_avg_per_day">일평균</string>
     <string name="presentation_batch_g_stats_overview_top_track">최고 인기 트랙</string>
     <string name="presentation_batch_g_stats_overview_top_track_line">%1$s • %2$d회 재생</string>
-    <string name="presentation_batch_g_stats_overview_total_plays">총 재생 횟수</string>
-    <string name="presentation_batch_g_stats_peak_segment">피크 세그먼트</string>
-    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
-    <string name="presentation_batch_g_stats_plays_artists">%1$d회 재생 • 아티스트 %2$d명</string>
-    <string name="presentation_batch_g_stats_plays_tracks">%1$d회 재생 • 트랙 %2$d개</string>
-    <string name="presentation_batch_g_stats_range_all_time">전체 기간</string>
-    <string name="presentation_batch_g_stats_range_month_to_date">이번 달</string>
-    <string name="presentation_batch_g_stats_range_today">오늘</string>
-    <string name="presentation_batch_g_stats_range_week_to_date">이번 주</string>
-    <string name="presentation_batch_g_stats_range_year_to_date">올해</string>
-    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_rhythm_all_time">전체 진행 상황</string>
-    <string name="presentation_batch_g_stats_rhythm_daily">일간 리듬</string>
-    <string name="presentation_batch_g_stats_rhythm_monthly">월간 리듬</string>
-    <string name="presentation_batch_g_stats_rhythm_weekly">주간 리듬</string>
-    <string name="presentation_batch_g_stats_rhythm_year">연간 요약</string>
-    <string name="presentation_batch_g_stats_section_listening_habits">감상 습관</string>
-    <string name="presentation_batch_g_stats_section_listening_timeline">감상 타임라인</string>
-    <string name="presentation_batch_g_stats_section_top_albums">인기 앨범</string>
-    <string name="presentation_batch_g_stats_section_top_artists">인기 아티스트</string>
-    <string name="presentation_batch_g_stats_section_top_categories">주요 카테고리</string>
-    <string name="presentation_batch_g_stats_show_all_tracks">모든 트랙 표시</string>
-    <string name="presentation_batch_g_stats_slice_others">기타</string>
-    <string name="presentation_batch_g_stats_slice_top_1">상위 1위</string>
-    <string name="presentation_batch_g_stats_slice_top_2_3">상위 2-3위</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session">평균 세션</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">각 기간별 평균 감상 시간입니다.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time">감상 시간</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">선택한 범위 내의 총 감상 시간입니다.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count">재생 횟수</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">기간별로 완료한 세션 수입니다.</string>
-    <string name="presentation_batch_g_stats_timeline_support_all">연도별 막대로 전체 기록을 요약합니다.</string>
-    <string name="presentation_batch_g_stats_timeline_support_day">일일 리듬을 보여주기 위해 4시간 단위로 나눕니다.</string>
-    <string name="presentation_batch_g_stats_timeline_support_month">주별 막대로 해당 달의 추세를 보여줍니다.</string>
-    <string name="presentation_batch_g_stats_timeline_support_week">일별 막대로 주간 습관을 쉽게 비교할 수 있습니다.</string>
-    <string name="presentation_batch_g_stats_timeline_support_year">월별 막대로 연중 계절성을 보여줍니다.</string>
-    <string name="presentation_batch_g_stats_title">감상 통계</string>
-    <string name="presentation_batch_g_stats_top_categories_subtitle">장르, 아티스트, 앨범 및 곡별로 감상 방식을 비교해 보세요.</string>
-    <string name="presentation_batch_g_stats_top_three_share_label">상위 3개 점유율</string>
-    <string name="presentation_batch_g_stats_top_three_share_line">상위 3개 트랙이 감상 시간의 %1$d%%를 차지합니다.</string>
-    <string name="presentation_batch_g_stats_track_concentration_subtitle">감상 시간이 상위 트랙들에 어떻게 분포되어 있는지 보여줍니다.</string>
-    <string name="presentation_batch_g_stats_track_concentration_title">트랙 집중도</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">선택한 시간 범위 내에서 가장 많이 재생한 트랙입니다.</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_title">이 기간의 트랙</string>
-    <string name="presentation_batch_g_stats_unique_tracks">고유 트랙 수</string>
-    <string name="presentation_batch_g_streaming_subtitle">클라우드 계정에서 음악 스트리밍</string>
-    <string name="presentation_batch_g_streaming_title">클라우드 스트리밍</string>
-    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
-    <string name="presentation_batch_g_topbar_build_debug">디버그</string>
-    <string name="presentation_batch_g_topbar_build_stable">정식</string>
-    <string name="presentation_batch_g_topbar_cd_changelog">변경 로그</string>
-    <string name="presentation_batch_g_yes">예</string>
+    <string name="presentation_batch_g_recently_played_title">최근 재생한 곡</string>
+    <string name="presentation_batch_g_lyrics_offset_minus_half">−.5</string>
+    <string name="presentation_batch_g_lyrics_offset_minus_point_one">−.1</string>
+    <string name="presentation_batch_g_lyrics_offset_plus_point_one">+.1</string>
+    <string name="presentation_batch_g_lyrics_offset_plus_half">+.5</string>
+    <string name="presentation_batch_g_lyrics_offset_zero">0초</string>
+    <!-- Formatted with getString(..., floatSeconds) -->
+    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1f초</string>
+    <string name="presentation_batch_g_playstore_open">Play 스토어 열기</string>
+    <string name="presentation_batch_g_playstore_continue_beta">베타 계속하기</string>
+    <string name="presentation_batch_g_playstore_link_pending">Play 스토어 링크는 GitHub 설정을 통해 활성화됩니다.</string>
+    <string name="presentation_batch_g_playstore_title">PixelMusic를 이제 Google Play에서 만나보세요</string>
+    <string name="presentation_batch_g_playstore_body">정식 업데이트는 Google Play의 정식 채널을 이용해 주시고, 베타 빌드는 계속 유지됩니다.</string>
+    <string name="presentation_batch_g_playstore_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_playstore_release_announcement">출시 공지</string>
+    <string name="presentation_batch_g_playstore_coming_soon">출시 예정</string>
+    <string name="presentation_batch_g_genre_sort_title">정렬 및 재생</string>
+    <string name="presentation_batch_g_genre_sort_shuffle">셔플</string>
+    <string name="presentation_batch_g_genre_sort_by">정렬 기준</string>
+    <string name="presentation_batch_g_genre_sort_artist">아티스트</string>
+    <string name="presentation_batch_g_genre_sort_album">앨범</string>
+    <string name="presentation_batch_g_genre_sort_title_opt">제목</string>
+    <string name="presentation_batch_g_cd_selected">선택됨</string>
+    <string name="presentation_batch_g_changelog_title">변경 사항</string>
+    <string name="presentation_batch_g_changelog_view_github">GitHub에서 보기</string>
+    <string name="presentation_batch_g_presets_saved_title">저장된 프리셋</string>
+    <string name="presentation_batch_g_presets_empty">저장된 사용자 지정 프리셋이 없습니다.</string>
+    <string name="presentation_batch_g_presets_cd_unpin">고정 해제</string>
+    <string name="presentation_batch_g_presets_cd_pin">고정</string>
+    <string name="presentation_batch_g_presets_cd_rename">이름 변경</string>
+    <string name="presentation_batch_g_presets_cd_delete">삭제</string>
+    <string name="presentation_batch_g_beta_sheet_version">베타 0.6.0</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">PixelMusic 0.6.0-beta에 오신 것을 환영합니다</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_body">이번 베타 버전은 주요 새로운 연동 기능을 출시하는 동시에 안정성, 성능 및 기기간 재생 기능에 중점을 두었습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_title">주요 변경 사항</string>
+    <string name="presentation_batch_g_beta_sheet_expect_1">더 빠른 일상 사용: 앱 전반의 시작, 탐색 및 플레이어 상호작용이 더욱 부드러워졌습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_2">더 넓은 기기 지원: Android Auto 지원, Wear OS 업그레이드 및 Cast 안정성이 강화되었습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_3">클라우드 생태계 확장: Telegram 플레이리스트, NetEase 동기화, QQ Music 및 Google Drive 스트리밍 업데이트가 포함되었습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_4">신뢰성 대폭 개선: 대기열/셔플 로직, 백그라운드 재생 동작 및 다양한 UI 수정이 이루어졌습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_report_title">문제 보고</string>
+    <string name="presentation_batch_g_beta_sheet_report_body">재현 단계, 예상 결과, 실제 결과 및 기기/OS 상세 정보를 공유해 주세요. 짧은 화면 녹화가 큰 도움이 됩니다.</string>
+    <string name="presentation_batch_g_beta_sheet_open_issues">GitHub 이슈 열기</string>
+    <string name="presentation_batch_g_beta_sheet_report_bug">버그 보고</string>
+    <string name="presentation_batch_g_beta05_dont_show">다시 보지 않기</string>
+    <string name="presentation_batch_g_beta05_got_it">확인</string>
+    <string name="presentation_batch_g_album_sel_count">앨범 %1$d개</string>
+    <string name="presentation_batch_g_album_sel_selected">선택됨</string>
+    <string name="presentation_batch_g_album_sel_queue_hint">대기열 추가 및 재생은 선택한 순서를 존중합니다.</string>
+    <string name="presentation_batch_g_album_sel_limit">제한: 한 번에 최대 %1$d개의 앨범을 선택할 수 있습니다.</string>
+    <string name="presentation_batch_g_album_sel_add_queue_play">대기열에 추가 및 재생</string>
+    <string name="presentation_batch_g_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_app_tagline">뮤직 플레이어</string>
+    <string name="presentation_batch_g_brick_high">최고 기록 %1$d</string>
+    <string name="presentation_batch_g_brick_cd_close">닫기</string>
+    <string name="presentation_batch_g_brick_stat_score">점수</string>
+    <string name="presentation_batch_g_brick_stat_lvl">레벨 %1$d</string>
+    <string name="presentation_batch_g_brick_stat_lives">생명</string>
+    <string name="presentation_batch_g_brick_level_complete">레벨 클리어!</string>
+    <string name="presentation_batch_g_brick_game_over">게임 오버</string>
+    <string name="presentation_batch_g_brick_score_line">점수: %1$d</string>
+    <string name="presentation_batch_g_brick_try_again">다시 시도하시겠습니까?</string>
+    <string name="presentation_batch_g_brick_next_level">다음 레벨</string>
+    <string name="presentation_batch_g_brick_restart">게임 재시작</string>
+    <string name="presentation_batch_g_brick_tap_relaunch">탭하여 다시 시작</string>
+    <string name="presentation_batch_g_brick_play_random">무작위 음악 재생</string>
+    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
+    <string name="presentation_batch_g_brick_high_score">최고 점수 %1$d</string>
+    <string name="presentation_batch_g_brick_play">재생</string>
+    <string name="presentation_batch_g_brick_drag_paddle">드래그하여 패들을 이동하세요</string>
+    <string name="presentation_batch_g_backup_restore_modules">모듈 복구</string>
+    <string name="presentation_batch_g_backup_restoring">복구 중</string>
+    <string name="presentation_batch_g_backup_restore_selected">선택 항목 복구</string>
+    <string name="presentation_batch_g_backup_details">백업 상세 정보</string>
+    <string name="presentation_batch_g_backup_created">생성일</string>
+    <string name="presentation_batch_g_backup_app_version">앱 버전</string>
+    <string name="presentation_batch_g_backup_schema">스키마</string>
+    <string name="presentation_batch_g_backup_device">기기</string>
+    <string name="presentation_batch_g_backup_unknown">알 수 없음</string>
+    <string name="presentation_batch_g_backup_modules_selected">%2$개 중 %1$개 모듈 선택됨</string>
+    <string name="presentation_batch_g_backup_transfer_progress">전송 중…</string>
+    <string name="presentation_batch_g_backup_cd_select_all">모두 선택</string>
+    <string name="presentation_batch_g_backup_cd_clear_selection">선택 해제</string>
+    <string name="presentation_batch_g_backup_entries_will_replace">%1$개 항목 · 현재 데이터를 대체합니다</string>
+    <string name="presentation_batch_g_player_cd_cloud_stream">클라우드 스트림</string>
+    <string name="presentation_batch_g_player_cd_collapse">플레이어 접기</string>
+    <string name="presentation_batch_g_player_cd_cast">전송(Cast)</string>
+    <string name="presentation_batch_g_player_cd_bluetooth">블루투스</string>
+    <string name="presentation_batch_g_player_cd_local_playback">로컬 재생</string>
+    <string name="presentation_batch_g_player_connecting">연결 중…</string>
+    <string name="presentation_batch_g_player_cd_queue">대기열</string>
+    <string name="presentation_batch_g_player_cd_lyrics">가사</string>
+    <string name="presentation_batch_g_cast_subtitle_session">전송 세션</string>
+    <string name="presentation_batch_g_cast_connecting">연결 중</string>
+    <string name="presentation_batch_g_cast_connected">연결됨</string>
+    <string name="presentation_batch_g_cast_this_phone">이 휴대전화</string>
+    <string name="presentation_batch_g_cast_bluetooth_audio">블루투스 오디오</string>
+    <string name="presentation_batch_g_cast_local_playback">로컬 재생</string>
+    <string name="presentation_batch_g_cast_playing">재생 중</string>
+    <string name="presentation_batch_g_cast_paused">일시정지됨</string>
+    <string name="presentation_batch_g_cast_perm_title">연결 준비</string>
+    <string name="presentation_batch_g_cast_perm_body">PixelMusic가 주변 기기와 현재 Wi‑Fi를 감지할 수 있도록 허용해 주세요. 그래야 전송, 블루투스 오디오 및 스피커를 동기화할 수 있습니다.</string>
+    <string name="presentation_batch_g_cast_nearby_title">주변 기기</string>
+    <string name="presentation_batch_g_cast_nearby_desc">연결된 블루투스 오디오 기기를 감지하고 제어하는 데 필요합니다.</string>
+    <string name="presentation_batch_g_cast_perm_location_title">Wi‑Fi 확인을 위한 위치 정보</string>
+    <string name="presentation_batch_g_cast_perm_location_desc">호환되는 전송 기기를 찾기 위해 현재 연결된 Wi‑Fi 네트워크(SSID) 정보를 확인하는 데 위치 권한이 필요합니다.</string>
+    <string name="presentation_batch_g_cast_allow_access">액세스 허용</string>
+    <string name="presentation_batch_g_cast_perm_footer">이러한 권한은 기기 간 상호 연결(전송, 주변 스피커 제어, 오디오 동기화) 목적으로만 사용됩니다.</string>
+    <string name="presentation_batch_g_cast_title_connect">기기 연결</string>
+    <string name="presentation_batch_g_cast_scanning_nearby">주변 스캔 중</string>
+    <string name="presentation_batch_g_cast_tab_controls">컨트롤</string>
+    <string name="presentation_batch_g_cast_tab_devices">기기</string>
+    <string name="presentation_batch_g_cast_connectivity">연결성</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi_bt">Wi-Fi 또는 블루투스 켜기</string>
+    <string name="presentation_batch_g_cast_manage_radios">연결 관리 및 다시 스캔</string>
+    <string name="presentation_batch_g_cast_cd_refresh_connections">연결 새로고침</string>
+    <string name="presentation_batch_g_cast_cd_refresh_devices">기기 새로고침</string>
+    <string name="presentation_batch_g_cast_nearby_devices">주변 기기</string>
+    <string name="presentation_batch_g_cast_tap_to_connect">탭하여 연결</string>
+    <string name="presentation_batch_g_cast_no_devices_yet">감지된 기기 없음</string>
+    <string name="presentation_batch_g_cast_disconnect">연결 해제</string>
+    <string name="presentation_batch_g_cast_volume_device">기기 볼륨</string>
+    <string name="presentation_batch_g_cast_volume_phone">휴대전화 볼륨</string>
+    <string name="presentation_batch_g_cast_searching">기기 검색 중…</string>
+    <string name="presentation_batch_g_cast_searching_hint">TV나 스피커가 켜져 있고 동일한 Wi‑Fi 네트워크에 연결되어 있는지 확인하세요.</string>
+    <string name="presentation_batch_g_cast_status_connected">연결됨</string>
+    <string name="presentation_batch_g_cast_status_available_connect">연결 가능</string>
+    <string name="presentation_batch_g_cast_status_connecting">연결 중</string>
+    <string name="presentation_batch_g_cast_status_available">사용 가능</string>
+    <string name="presentation_batch_g_cast_cd_battery">배터리 수준</string>
+    <string name="presentation_batch_g_cast_cd_volume_level">볼륨 수준</string>
+    <string name="presentation_batch_g_cast_wifi">Wi-Fi</string>
+    <string name="presentation_batch_g_cast_wifi_off">꺼짐</string>
+    <string name="presentation_batch_g_cast_wifi_connected">연결됨</string>
+    <string name="presentation_batch_g_cast_wifi_on">켜짐</string>
+    <string name="presentation_batch_g_cast_bluetooth">블루투스</string>
+    <string name="presentation_batch_g_cast_bt_connected">연결됨</string>
+    <string name="presentation_batch_g_cast_bt_on">켜짐</string>
+    <string name="presentation_batch_g_cast_bt_off">꺼짐</string>
+    <string name="presentation_batch_g_cast_connections_off_title">연결 기능이 꺼져 있음</string>
+    <string name="presentation_batch_g_cast_connections_off_body">주변 기기를 찾으려면 Wi‑Fi 또는 블루투스를 켜세요</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi">Wi‑Fi 켜기</string>
+    <string name="presentation_batch_g_cast_open_bluetooth">블루투스 열기</string>
+    <string name="presentation_batch_g_cast_cd_disconnect_icon">연결 해제</string>
+    <string name="presentation_batch_g_cast_connecting_ellipsis">연결 중...</string>
+
+    <string name="presentation_batch_g_changelog_sec_whats_new">새로운 기능</string>
+    <string name="presentation_batch_g_changelog_sec_improvements">개선 사항</string>
+    <string name="presentation_batch_g_changelog_sec_fixes">수정 사항</string>
+    <string name="presentation_batch_g_changelog_sec_highlights">주요 기능</string>
+    <string name="presentation_batch_g_changelog_sec_whats_new_lower">새로운 기능</string>
+    <string name="presentation_batch_g_changelog_sec_added">추가됨</string>
+    <string name="presentation_batch_g_changelog_sec_changed">변경됨</string>
+    <string name="presentation_batch_g_changelog_sec_fixed">수정됨</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_g_beta_sheet_expect_summary">테스트하는 동안 어떤 베타 빌드가 변경, 중단 또는 개선될 수 있습니까?</string>
+    <string name="presentation_batch_g_beta_sheet_github_title">GitHub 문제 바로가기</string>
+    <string name="presentation_batch_g_beta_sheet_github_body">먼저 검색한 다음 버그, 충돌, 요청 또는 질문에 대한 집중 보고서를 엽니다.</string>
+    <string name="presentation_batch_g_beta_sheet_report_summary">새 호를 열기 전 빠른 체크리스트입니다.</string>
+    <string name="presentation_batch_g_beta_sheet_before_title">이슈를 열기 전에</string>
+    <string name="presentation_batch_g_beta_sheet_before_1">중복을 방지하려면 기존 공개 및 종료 문제를 검색하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">최신 PixelMusic 버전으로 업데이트하고 문제가 계속 발생하는지 확인하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_before_3">앱을 다시 시작하고 문제가 지속되는지 확인하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_before_4">재현해 보고 정확한 단계를 적어보세요.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_title">어떤 문제 유형인가요?</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_bug">버그 신고: 뭔가 잘못 작동합니다.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_feature">기능 요청: 새로운 기능이나 개선 사항을 추가합니다.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_question">질문: 활성화된 경우 토론을 사용하거나 질문 레이블이 있는 문제를 엽니다.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_title">버그 신고</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary_text">무언가가 잘못 작동하거나 충돌하는 경우 이 필드를 복사하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_template_title">버그 신고</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary">간략한 요약:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_expected">예상되는 동작:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_actual">현재 동작:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_steps">재생/재생 단계: 1. 2. 3.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_frequency">얼마나 자주 발생합니까? 항상/가끔/드물게.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_screenshot">스크린샷/동영상: 가능한 경우.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_logs">로그/스택 추적: 가능한 경우.</string>
+    <string name="presentation_batch_g_beta_sheet_env_title">환경</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">PixelMusic 버전:</string>
+    <string name="presentation_batch_g_beta_sheet_env_source">설치 소스: GitHub 릴리스, 디버그 빌드, 야간 빌드 등</string>
+    <string name="presentation_batch_g_beta_sheet_env_android">안드로이드 버전:</string>
+    <string name="presentation_batch_g_beta_sheet_env_device">장치 모델:</string>
+    <string name="presentation_batch_g_beta_sheet_env_extra">추가 상황: SD 카드 사용, 특수 설정, 권한 등</string>
+    <string name="presentation_batch_g_beta_sheet_feature_title">기능 요청</string>
+    <string name="presentation_batch_g_beta_sheet_feature_summary">새로운 기능이나 개선 사항이 필요할 때 이 필드를 복사하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_feature_problem">문제 설명: 어떤 문제를 해결하려고 합니까?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_solution">제안된 솔루션: 어떻게 작동해야 합니까?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_alternatives">고려된 대안: 다른 접근법이 있습니까?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_scope">범위: 어떤 화면이나 흐름이 영향을 받나요?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_mockup">가능한 경우 모형 또는 참조 이미지.</string>
+    <string name="presentation_batch_g_beta_sheet_quality_title">제목, 개인 정보 보호 및 범위</string>
+    <string name="presentation_batch_g_beta_sheet_quality_summary">보고서를 쉽게 분류하고 안전하게 공유할 수 있도록 하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_title_examples_title">좋은 이슈 제목</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_1">이퀄라이저: 사전 설정 탭을 전환할 때 표시기가 이동합니다</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_2">검색: 빈 쿼리에 대한 기록 목록이 표시되지 않습니다</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_3">기능: \"최근 추가\" 재생목록 정렬 옵션 추가</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_title">피해주세요</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_1">\"작동하지 않습니다\"와 같은 일반적인 보고서입니다.</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_2">하나의 문제에 관련되지 않은 여러 문제가 있습니다.</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_3">개인 데이터가 포함된 수정되지 않은 로그 또는 스크린샷.</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_title">개인정보 보호정책</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_body">로그, 스크린샷, 동영상을 게시하기 전에 개인 정보나 비공개 정보를 삭제하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_title">야간 빌드</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_summary">나이틀리가 릴리스와 어떻게 다른지, 중단될 때 포함할 내용은 무엇입니까?</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_body">Nightly 빌드는 최신 커밋에서 생성되며 완료되지 않은 변경 사항, 임시 버그 또는 회귀가 포함될 수 있습니다. 공식 릴리스보다 실험적입니다.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_access">가능한 경우 저장소의 GitHub Actions 워크플로 아티팩트에서 액세스하세요.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_title">야간 문제 보고</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_body">Nightly 빌드에서 문제를 보고할 때 공식 릴리스가 아닌 Nightly 빌드에서 발생했다는 점을 항상 언급하세요. 빌드 날짜, 워크플로 실행 이름 또는 번호를 포함하거나 가능하면 SHA를 커밋합니다. 또한 최신 공식 릴리스에서도 동일한 문제가 발생하는지 확인하십시오.</string>
+    <string name="presentation_batch_g_beta05_title">v1.6.08 업데이트</string>
+    <string name="presentation_batch_g_beta05_clean_install_title">v1.6.08의 새로운 기능</string>
+    <string name="presentation_batch_g_beta05_clean_install_body">•</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_title">탐색 새로고침</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_body">탐색 탭 전체에서 세련되고 새로운 Material 3 표현 레이아웃을 즐겨보세요!</string>
+    <string name="presentation_batch_g_cast_perm_nearby_title">주변 기기</string>
+    <string name="presentation_batch_g_cast_perm_nearby_desc">연결된 Bluetooth 오디오 장비를 읽고 제어하는 ​​데 필요합니다.</string>
+    <string-array name="presentation_batch_g_changelog_060_whats_new">
+        <item>차량 내 재생을 위한 Android Auto 지원이 추가되었습니다.</item>
+        <item>향상된 시계-휴대폰 재생 제어를 포함하여 Wear OS 지원이 시작되었습니다.</item>
+        <item>Telegram, NetEase, QQ Music 및 Google Drive 개선으로 클라우드 통합이 확장되었습니다.</item>
+        <item>최근 재생 항목 및 영구 대기열 복원으로 청취 세션을 즉시 이어갈 수 있습니다.</item>
+        <item>백업 및 복원 v3와 계정 관리 도구가 포함되었습니다.</item>
+        <item>수동 검색 대체 및 저장소 개선으로 가사 기능이 더욱 스마트해졌습니다.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_improvements">
+        <item>시작, 라이브러리, 대기열 및 플레이어 상호작용 전반에 걸친 대규모 성능 최적화.</item>
+        <item>더욱 부드러운 사용을 위해 플레이어, 전송, 가사, 아티스트 및 장르 화면이 새롭게 디자인되었습니다.</item>
+        <item>더욱 안전한 경로 처리로 탐색 및 검색 흐름의 안정성이 향상되었습니다.</item>
+        <item>더 많은 기기 및 형식에 대한 오디오 재생 호환성이 향상되었습니다.</item>
+        <item>노래, 앨범 및 재생목록 전반에서 다중 선택 작업이 확장되었습니다.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_fixes">
+        <item>대기열 및 셔플 동작이 더욱 안정적이고 예측 가능해졌습니다.</item>
+        <item>여러 백그라운드 재생 및 전송 특이 사항이 수정되었습니다.</item>
+        <item>수면 타이머, 파일 탭 탐색 및 앨범 아티스트 충돌 문제가 해결되었습니다.</item>
+        <item>과열/메모리 문제를 줄이기 위해 위젯 로딩 및 서비스 안정성이 개선되었습니다.</item>
+        <item>앱 전반의 일반적인 버그 수정 및 UI 개선.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_highlights">
+        <item>Material 3 Expressive UI 업데이트</item>
+        <item>10밴드 이퀄라이저 및 효과</item>
+        <item>새로운 라이브러리 동기화 흐름</item>
+        <item>AI 통합 (Gemini 모델)</item>
+        <item>M3U 재생목록 가져오기/내보내기</item>
+        <item>Deezer 아티스트 아트워크 통합</item>
+        <item>사용자 지정 재생목록 커버</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_improvements">
+        <item>설정 아키텍처 리팩터링</item>
+        <item>대기열 및 플레이어 애니메이션</item>
+        <item>베이스라인 프로필 및 성능 최적화</item>
+        <item>동기화 오프셋을 지원하는 향상된 가사 시스템</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_fixes">
+        <item>전송(Cast) 안정성 개선</item>
+        <item>플레이어 시트 안정성</item>
+        <item>일반적인 버그 수정 및 정리</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_040_highlights">
+        <item>주요 내비게이션 재설계</item>
+        <item>소스 디렉터리 선택을 위한 새로운 파일 탐색기</item>
+        <item>새로운 연결 및 전송 기능</item>
+        <item>원격 기기 간의 원활한 연속성</item>
+        <item>곡 간 무음 없는 전환 (Gapless)</item>
+        <item>크로스페이드(Crossfade) 제어</item>
+        <item>새로운 사용자 지정 전환 기능 (재생목록 전용)</item>
+        <item>앱을 닫은 후에도 백그라운드 재생 유지</item>
+        <item>UI 최적화</item>
+        <item>통계 기능 개선</item>
+        <item>더 많은 기능을 갖춘 대기열 제어 재설계</item>
+        <item>재생 및 메타데이터 편집을 위한 다양한 파일 형식 지원 개선</item>
+        <item>권한 컨트롤러 개선</item>
+        <item>사소한 버그 수정</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_whats_new">
+        <item>세션에 대한 더 깊은 통찰력을 제공하는 더욱 풍부한 청취 통계 허브 도입.</item>
+        <item>로컬 파일을 즉시 열고 미리 볼 수 있는 플로팅 퀵 플레이어 출시.</item>
+        <item>트리 스타일 탐색기 및 재생목록 스타일 뷰가 포함된 폴더 탭 추가.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_improvements">
+        <item>더 깔끔하고 일관된 경험을 위해 전반적인 Material 3 UI 개선.</item>
+        <item>메타데이터 편집에서 앨범 커버 아트 변경 지원.</item>
+        <item>유연한 탐색을 위해 앱 전반의 애니메이션 및 화면 전환 부드럽게 조정.</item>
+        <item>더욱 풍부한 디테일로 아티스트 화면 레이아웃 향상.</item>
+        <item>더 스마트하고 다양한 추천으로 DailyMix 및 YourMix 생성 알고리즘 업그레이드.</item>
+        <item>AI 재생목록 생성 기능 강화.</item>
+        <item>더 빠른 탐색을 위해 검색 관련성 및 표시 방식 개선.</item>
+        <item>더 넓은 범위의 오디오 파일 형식 지원 확장.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_fixes">
+        <item>모든 위치에서 노래 정보가 정확하게 유지되도록 메타데이터 문제 해결.</item>
+        <item>알림 바로가기가 안정적으로 재생 화면으로 연결되도록 복원.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_added">
+        <item>기기에서 오디오를 전송하기 위한 Chromecast 지원.</item>
+        <item>최신 기능을 확인할 수 있는 인앱 변경 로그.</item>
+        <item>임베디드 및 외부 .LRC 파일 지원.</item>
+        <item>오프라인 가사 지원.</item>
+        <item>동기화된 가사 (노래와 싱크 일치).</item>
+        <item>전체 대기열을 볼 수 있는 새로운 화면.</item>
+        <item>대기열에서 노래 순서 변경 및 제거.</item>
+        <item>미니 플레이어 제스처 (아래로 스와이프하여 닫기).</item>
+        <item>더 많은 Material 애니메이션 추가.</item>
+        <item>모양과 느낌을 사용자 지정할 수 있는 새로운 설정.</item>
+        <item>캐시를 지우기 위한 새로운 설정.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_changed">
+        <item>사용자 인터페이스 전면 재설계.</item>
+        <item>플레이어 화면 전면 재설계.</item>
+        <item>라이브러리 성능 개선.</item>
+        <item>앱 시작 속도 향상.</item>
+        <item>AI가 더욱 향상된 결과를 제공합니다.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixed">
+        <item>태그 편집기의 다양한 버그 수정.</item>
+        <item>재생 알림이 지워지지 않던 버그 수정.</item>
+        <item>앱 비정상 종료를 유발하던 여러 버그 수정.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_highlights">
+        <item>AI 통합 개선 및 더욱 스마트해진 재생목록 생성.</item>
+        <item>더 깊은 통찰력과 새로운 시각화를 제공하는 향상된 청취 통계.</item>
+        <item>모든 클라우드 제공업체에 대한 라이브러리 동기화 흐름 개선.</item>
+        <item>앨범 커버 지원을 포함한 향상된 메타데이터 편집.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_improvements">
+        <item>시작, 라이브러리, 대기열 및 플레이어 상호작용 전반의 성능 개선.</item>
+        <item>더욱 깔끔하고 일관된 경험을 위한 정교한 Material 3 UI.</item>
+        <item>앱 전반에 걸친 더욱 부드러운 애니메이션 및 전환.</item>
+        <item>향상된 검색 관련성 및 빠른 음악 탐색.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_070_fixes">
+        <item>더 안정적인 재생을 위해 대기열 및 셔플 동작 수정.</item>
+        <item>백그라운드 재생 및 알림 문제 해결.</item>
+        <item>일반적인 버그 수정 및 UI 다듬기.</item>
+    </string-array>
+
 </resources>

@@ -1,61 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="cd_confirm_add_songs">Tambahkan lagu terpilih</string>
+    <!-- Library list errors -->
+    <string name="library_error_loading_songs">Gagal memuat lagu</string>
+    <string name="library_error_loading_albums">Gagal memuat album</string>
+    <string name="library_error_loading_artists">Gagal memuat artis</string>
+    <string name="library_retry">Coba lagi</string>
+
+    <!-- Library empty (paginated) -->
+    <string name="library_no_songs_in_library_message">Tidak ditemukan lagu di pustaka Anda.</string>
+    <string name="library_no_songs_rescan_hint">Coba pindai ulang pustaka Anda di pengaturan jika Anda memiliki musik di perangkat Anda.</string>
+    <string name="cd_no_songs_in_library">Tidak ditemukan lagu</string>
+
+    <!-- Library action row -->
+    <string name="library_action_new">Baru</string>
     <string name="cd_create_new_playlist">Buat playlist baru</string>
     <string name="cd_import_m3u_playlist">Impor playlist M3U</string>
     <string name="cd_locate_current_song">Temukan lagu saat ini</string>
-    <string name="cd_no_songs_in_library">Tidak ada lagu ditemukan</string>
+    <string name="library_storage_filter_all_songs">Semua lagu</string>
+    <string name="library_storage_filter_online">Online</string>
+    <string name="library_storage_filter_offline">Offline</string>
     <string name="cd_sort_options">Opsi pengurutan</string>
-    <string name="lib_empty_albums_all_subtitle">Album akan muncul di sini segera setelah pustaka Anda memiliki trek yang dikelompokkan.</string>
-    <string name="lib_empty_albums_all_title">Tidak ada album yang tersedia</string>
-    <string name="lib_empty_albums_offline_subtitle">Lagu lokal diperlukan untuk membangun grup album lokal.</string>
-    <string name="lib_empty_albums_offline_title">Tidak ada album lokal ditemukan</string>
-    <string name="lib_empty_albums_online_subtitle">Lagu cloud dengan data album akan muncul di sini setelah sinkronisasi.</string>
-    <string name="lib_empty_albums_online_title">Tidak ada album cloud ditemukan</string>
-    <string name="lib_empty_artists_all_subtitle">Artis ditampilkan setelah lagu diindeks dari sumber mana pun.</string>
-    <string name="lib_empty_artists_all_title">Tidak ada artis yang tersedia</string>
-    <string name="lib_empty_artists_offline_subtitle">Tidak ada metadata artis yang tersedia untuk lagu lokal saat ini.</string>
-    <string name="lib_empty_artists_offline_title">Tidak ada artis lokal ditemukan</string>
-    <string name="lib_empty_artists_online_subtitle">Entri artis cloud muncul ketika lagu jarak jauh disinkronkan.</string>
-    <string name="lib_empty_artists_online_title">Tidak ada artis cloud ditemukan</string>
-    <string name="lib_empty_folders_subtitle">Folder penyimpanan internal dengan musik akan muncul di sini.</string>
-    <string name="lib_empty_folders_title">Folder tidak ditemukan</string>
-    <string name="lib_empty_liked_all_subtitle">Ketuk ikon hati saat memutar lagu untuk menyimpannya di sini.</string>
-    <string name="lib_empty_liked_all_title">Belum ada lagu yang disukai</string>
-    <string name="lib_empty_liked_offline_subtitle">Ubah filter sumber atau sukai lagu dari perangkat Anda.</string>
-    <string name="lib_empty_liked_offline_title">Tidak ada lagu lokal yang disukai</string>
-    <string name="lib_empty_liked_online_subtitle">Sukai trek Navidrome atau Jellyfin agar muncul di tampilan ini.</string>
-    <string name="lib_empty_liked_online_title">Tidak ada lagu cloud yang disukai</string>
-    <string name="lib_empty_playlists_subtitle">Buat playlist pertama Anda untuk mengatur pustaka Anda.</string>
-    <string name="lib_empty_playlists_title">Belum ada playlist</string>
-    <string name="lib_empty_songs_all_subtitle">Tambahkan musik ke perangkat Anda atau sinkronkan sumber cloud untuk mulai mendengarkan.</string>
-    <string name="lib_empty_songs_all_title">Belum ada lagu</string>
-    <string name="lib_empty_songs_offline_subtitle">Coba filter sumber lain atau pindai ulang pustaka perangkat Anda.</string>
-    <string name="lib_empty_songs_offline_title">Tidak ada lagu lokal ditemukan</string>
-    <string name="lib_empty_songs_online_subtitle">Sinkronkan lagu Navidrome atau Jellyfin, atau beralih ke sumber lokal.</string>
-    <string name="lib_empty_songs_online_title">Tidak ada lagu cloud ditemukan</string>
-    <string name="library_action_new">Baru</string>
-    <string name="library_error_loading_albums">Gagal memuat album</string>
-    <string name="library_error_loading_artists">Gagal memuat artis</string>
-    <string name="library_error_loading_songs">Gagal memuat lagu</string>
-    <string name="library_no_songs_in_library_message">Tidak ada lagu ditemukan di pustaka Anda.</string>
-    <string name="library_no_songs_rescan_hint">Coba pindai ulang pustaka Anda di pengaturan jika Anda memiliki musik di perangkat Anda.</string>
-    <string name="library_retry">Coba lagi</string>
-    <string name="library_storage_filter_all_songs">Semua Lagu</string>
-    <string name="library_storage_filter_offline">Lokal</string>
-    <string name="library_storage_filter_online">Cloud</string>
-    <string name="library_tab_albums">Album</string>
-    <string name="library_tab_artists">Artis</string>
-    <string name="library_tab_folders">Folder</string>
-    <string name="library_tab_liked">Disukai</string>
-    <string name="library_tab_playlists">Playlist</string>
-    <string name="library_tab_songs">Lagu</string>
+
+    <!-- Fetch lyrics (manual search fields) -->
     <string name="lyrics_synced_badge">SYNCED</string>
     <string name="song_field_artist_optional">Artis (opsional)</string>
-    <string name="song_picker_action_add">Tambah</string>
-    <string name="song_picker_error_load_failed">Gagal memuat lagu</string>
-    <string name="song_picker_filter_favorites">Suka</string>
-    <string name="song_picker_load_more">Muat lebih banyak</string>
-    <string name="song_picker_search_label">Cari atau filter lagu…</string>
+
+    <!-- Song picker -->
     <string name="song_picker_title">Tambah lagu</string>
+    <string name="cd_confirm_add_songs">Tambah lagu terpilih</string>
+    <string name="song_picker_action_add">Tambah</string>
+    <string name="song_picker_search_label">Cari lagu…</string>
+    <string name="song_picker_filter_favorites">Disukai</string>
+    <string name="song_picker_error_load_failed">Gagal memuat lagu</string>
+    <string name="song_picker_load_more">Muat lebih banyak</string>
+
+    <!-- AI playlist sheet -->
+    <string name="cd_ai">AI</string>
+    <string name="ai_playlist_headline_perfect">Perfectly Curated</string>
+    <string name="ai_playlist_headline_daily_mix">Daily Mix</string>
+    <string name="ai_playlist_subtitle_journey_ready">Perjalanan sonik Anda sudah siap</string>
+    <string name="ai_playlist_subtitle_generator">Generator Playlist AI</string>
+    <string name="ai_playlist_description">Jelaskan getaran, suasana hati, atau aktivitas dan biarkan AI menciptakan playlist yang sempurna dari pustaka Anda.</string>
+    <string name="ai_playlist_section_size">Ukuran playlist</string>
+    <string name="ai_playlist_min_songs">Lagu min</string>
+    <string name="ai_playlist_max_songs">Lagu maks</string>
+    <string name="ai_playlist_prompt_placeholder">misal. Getaran malam santai, energi latihan yang ceria…</string>
+    <string name="ai_playlist_tap_to_retry">Ketuk untuk Mencoba Lagi</string>
+    <string name="ai_playlist_status_default">Perjalanan sonik disintesis!</string>
+    <string name="ai_playlist_generating">Menghasilkan…</string>
+    <string name="ai_playlist_ready_to_play">Siap Diputar</string>
+    <string name="ai_playlist_generate">Hasilkan Playlist</string>
+    
+    <!-- Library Empty State -->
+    <string name="lib_empty_songs_all_title">Belum ada lagu</string>
+    <string name="lib_empty_songs_all_subtitle">Tambahkan musik ke perangkat Anda atau sinkronkan sumber cloud untuk mulai mendengarkan.</string>
+    <string name="lib_empty_songs_offline_title">Tidak ditemukan lagu lokal</string>
+    <string name="lib_empty_songs_offline_subtitle">Coba filter sumber lain atau pindai ulang pustaka perangkat Anda.</string>
+    <string name="lib_empty_songs_online_title">Tidak ditemukan lagu cloud</string>
+    <string name="lib_empty_songs_online_subtitle">Sinkronkan lagu Telegram atau NetEase, atau beralih ke sumber lokal.</string>
+    <string name="lib_empty_albums_all_title">Tidak ada album yang tersedia</string>
+    <string name="lib_empty_albums_all_subtitle">Album akan muncul di sini segera setelah pustaka Anda memiliki trek yang dikelompokkan.</string>
+    <string name="lib_empty_albums_offline_title">Tidak ditemukan album lokal</string>
+    <string name="lib_empty_albums_offline_subtitle">Lagu lokal diperlukan untuk membangun grup album lokal.</string>
+    <string name="lib_empty_albums_online_title">Tidak ditemukan album cloud</string>
+    <string name="lib_empty_albums_online_subtitle">Lagu cloud dengan data album akan muncul di sini setelah sinkronisasi.</string>
+    <string name="lib_empty_artists_all_title">Tidak ada artis yang tersedia</string>
+    <string name="lib_empty_artists_all_subtitle">Artis ditampilkan setelah lagu diindeks dari sumber mana pun.</string>
+    <string name="lib_empty_artists_offline_title">Tidak ditemukan artis lokal</string>
+    <string name="lib_empty_artists_offline_subtitle">Tidak ada metadata artis yang tersedia untuk lagu lokal saat ini.</string>
+    <string name="lib_empty_artists_online_title">Tidak ditemukan artis cloud</string>
+    <string name="lib_empty_artists_online_subtitle">Entri artis cloud muncul saat lagu jarak jauh disinkronkan.</string>
+    <string name="lib_empty_liked_all_title">Belum ada lagu yang disukai</string>
+    <string name="lib_empty_liked_all_subtitle">Ketuk ikon hati saat memutar lagu untuk menyimpannya di sini.</string>
+    <string name="lib_empty_liked_offline_title">Tidak ada lagu lokal yang disukai</string>
+    <string name="lib_empty_liked_offline_subtitle">Beralih filter sumber atau sukai lagu dari perangkat Anda.</string>
+    <string name="lib_empty_liked_online_title">Tidak ada lagu cloud yang disukai</string>
+    <string name="lib_empty_liked_online_subtitle">Sukai trek Telegram atau NetEase untuk melihatnya di tampilan ini.</string>
+    <string name="lib_empty_folders_title">Tidak ditemukan folder</string>
+    <string name="lib_empty_folders_subtitle">Folder penyimpanan internal dengan musik akan muncul di sini.</string>
+    <string name="lib_empty_playlists_title">Belum ada playlist</string>
+    <string name="lib_empty_playlists_subtitle">Buat playlist pertama Anda untuk mengatur pustaka Anda.</string>
+
+    <!-- Backfilled translations -->
+    <string name="library_storage_filter_local">Hanya lokal</string>
+    <string name="library_storage_filter_telegram">telegram</string>
+    <string name="library_storage_filter_youtube">YouTube</string>
+    <string name="library_storage_filter_downloaded_only">DIUNDUH</string>
 </resources>

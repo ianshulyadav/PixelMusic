@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Web login security notes (QQ / NetEase) -->
+    <string name="auth_web_login_security_note_qq">Catatan keamanan: kata sandi Anda hanya dimasukkan di halaman web QQ Music. PixelMusic menyimpan cookie sesi untuk menyinkronkan pustaka Anda.</string>
+    <string name="auth_web_login_security_note_netease">Catatan keamanan: kata sandi Anda hanya dimasukkan di halaman web NetEase. PixelMusic menyimpan cookie sesi (MUSIC_U) untuk menyinkronkan pustaka Anda.</string>
+    <string name="auth_error_read_qq_cookies_failed">Gagal membaca cookie QQ Music: %1$s</string>
+    <string name="auth_error_read_netease_cookies_failed">Gagal membaca cookie NetEase: %1$s</string>
+
+    <!-- Google Drive folder setup -->
+    <string name="auth_gdrive_setting_up">Menyiapkan Google Drive…</string>
+    <string name="auth_gdrive_connect_title">Hubungkan Google Drive</string>
+    <string name="auth_gdrive_connect_subtitle">Stream file musik langsung dari Google Drive Anda</string>
+    <string name="auth_gdrive_sign_in_with_google">Masuk dengan Google</string>
+    <string name="auth_gdrive_select_music_folder_title">Pilih folder musik</string>
+    <string name="auth_gdrive_select_music_folder_subtitle">Pilih atau buat folder untuk digunakan sebagai sumber musik Anda</string>
+    <string name="auth_gdrive_create_pixelmusic_music_title">Buat \"PixelMusic Music\"</string>
+    <string name="auth_gdrive_create_folder_here_hint">Buat folder baru di sini untuk musik Anda</string>
+    <string name="auth_gdrive_no_folders_here">Tidak ada folder di sini</string>
+    <string name="auth_gdrive_use_this_folder">Gunakan</string>
+    <string name="auth_gdrive_cd_open_folder">Buka folder</string>
+</resources>

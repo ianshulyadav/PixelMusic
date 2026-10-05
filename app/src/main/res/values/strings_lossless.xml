@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lossless sources (ArchiveTune source-pool port). Provider sign-in strings mirror ArchiveTune's. -->
+<resources>
+    <string name="settings_category_lossless_title">Lossless Sources</string>
+    <string name="settings_category_lossless_subtitle">Tidal, Qobuz, Deezer &amp; Apple Music via the Source Pool</string>
+
+    <!-- Tidal -->
+    <string name="lossless_tidal_login">Sign in to Tidal</string>
+    <string name="lossless_auth_webview_tidal_subtitle">Sign in to Tidal below. PixelMusic saves the session automatically.</string>
+    <string name="lossless_tidal_login_success">Signed in to Tidal</string>
+    <string name="lossless_tidal_account_free_warning">This Tidal account is not HiFi/Premium. Lossless playback through Tidal may fail; the app will fall back to other sources.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">Couldn\'t complete the standard sign-in; opening the Tidal web player instead. Just log in and playback will connect automatically.</string>
+
+    <!-- Deezer -->
+    <string name="lossless_deezer_login">Sign in to Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">Sign in to Deezer below. The session cookie is saved automatically.</string>
+    <string name="lossless_deezer_login_success">Signed in to Deezer as %1$s</string>
+    <string name="lossless_deezer_manual_arl">Sign in manually with ARL cookie</string>
+    <string name="lossless_deezer_manual_arl_hint">Deezer unavailable in your region? Sign in from any browser (a VPN works), copy the arl cookie value and paste it here.</string>
+    <string name="lossless_deezer_manual_arl_apply">Verify and sign in</string>
+    <string name="lossless_deezer_arl_invalid">That ARL didn\'t work — copy the full arl cookie value and try again.</string>
+
+    <!-- Qobuz -->
+    <string name="lossless_qobuz_login">Sign in to Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">Sign in to Qobuz below. Your credentials are captured automatically.</string>
+    <string name="lossless_qobuz_login_success">Added Qobuz account</string>
+    <string name="lossless_qobuz_app_secret_title">Enter Qobuz app secret</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (from your token source)</string>
+
+    <!-- Apple Music -->
+    <string name="lossless_applemusic_login">Sign in to Apple Music</string>
+    <string name="lossless_applemusic_login_subtitle">Sign in with your Apple ID — your Music User Token is fetched automatically.</string>
+    <string name="lossless_applemusic_login_failed">Couldn\'t fetch your Apple Music token — try pasting the tokens manually</string>
+    <string name="lossless_applemusic_login_success">Signed in to Apple Music</string>
+</resources>

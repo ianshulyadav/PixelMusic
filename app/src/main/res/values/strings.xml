@@ -1,43 +1,23 @@
-﻿<resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">PixelMusic</string>
+<resources>
+    <string name="app_name">Pixel Music</string>
     <string name="app_name_change_title">App Name Change</string>
-    <string name="app_name_change_message">This app is now PixelMusic. Keep playing!</string>
+    <string name="app_name_change_message">We have changed our app\'s name from PixelMusic to PixelMusic due to a trademark-related issue. Keep playing!</string>
     <string name="do_not_show_again">Do not show again</string>
     <string name="dismiss">Dismiss</string>
     <string name="all_files_access_title">Special Permission Required</string>
     <string name="all_files_access_description">To edit song metadata (.mp3 files), PixelMusic needs special access to all files. This allows us to modify track tags directly. Please grant this permission on the next screen to enable metadata editing.</string>
     <string name="grant_permission_button">Grant Permission</string>
+    <string name="all_files_access_setting">All Files Access</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="accounts_listenbrainz_title">ListenBrainz</string>
-    <string name="accounts_listenbrainz_token_dialog_title">Connect ListenBrainz</string>
-    <string name="accounts_listenbrainz_token_dialog_body">Paste your user token to scrobble your listens to ListenBrainz. You can find it in your settings on listenbrainz.org.</string>
-    <string name="accounts_listenbrainz_token_hint">User token</string>
-    <string name="accounts_listenbrainz_connect">Connect</string>
-    <string name="accounts_listenbrainz_connect_failed">Couldn\'t connect. Check your token and server URL, then try again.</string>
-    <string name="accounts_listenbrainz_server_hint">Server URL (optional)</string>
-    <string name="accounts_listenbrainz_server_supporting">Leave empty for listenbrainz.org. Works with self-hosted servers that speak the ListenBrainz API, such as Maloja.</string>
-    <string name="accounts_listenbrainz_invalid_url">Enter a valid server URL, like https://maloja.example.com/apis/listenbrainz</string>
-    <string name="accounts_listenbrainz_custom_server">Scrobbling to %1$s</string>
-    <string name="accounts_listenbrainz_get_token">Open listenbrainz.org</string>
-    <string name="accounts_listenbrainz_needs_reauth">Your token is no longer valid — reconnect to resume scrobbling. Queued listens are kept.</string>
-    <string name="accounts_listenbrainz_reconnect">Reconnect</string>
-    <string name="accounts_listenbrainz_scrobble_local">Scrobble local files</string>
-    <string name="accounts_listenbrainz_scrobble_navidrome">Scrobble Subsonic streaming</string>
-    <string name="accounts_listenbrainz_scrobble_jellyfin">Scrobble Jellyfin streaming</string>
-    <string name="accounts_listenbrainz_toggle_hint">If your server already scrobbles to ListenBrainz, turn that source off here to avoid duplicate listens.</string>
-    <string name="accounts_listenbrainz_stat_listens">Total listens</string>
-    <string name="accounts_listenbrainz_stat_queued">Queued</string>
-    <string name="accounts_listenbrainz_now_playing_label">Scrobbling now</string>
-    <string name="accounts_listenbrainz_now_playing_format">%1$s — %2$s</string>
-    <string name="accounts_listenbrainz_now_playing_idle">Nothing playing right now</string>
-    <string name="accounts_available_services">Available services</string>
     <string name="import_file">Import</string>
     <string name="search">Search</string>
 
     <string name="lyrics">Lyrics</string>
+    <string name="close_lyrics_sheet">Close Lyrics Sheet</string>
     <string name="loading_lyrics">Loading lyrics…</string>
+    <string name="cant_find_lyrics">Couldn\'t find lyrics for this song.</string>
     <string name="lyrics_provided_by">Lyrics provided by</string>
     <string name="lrclib_uri">https://lrclib.net/</string>
     <string name="lyrics_not_found">Lyrics not found</string>
@@ -48,7 +28,6 @@
     <string name="lyrics_fetch_timeout">Connection timed out. Please check your internet connection.</string>
     <string name="lyrics_network_error">Network error. Please check your internet connection.</string>
     <string name="lyrics_server_error">Server error (code %d). Please try again later.</string>
-    <string name="lyrics_remote_disabled">Online lyrics are disabled in settings.</string>
     <string name="found_n_matches_format">Found %d match(es)</string>
     <string name="searched_for_x_format">Searched for \"%s\"</string>
     <string name="searching_lyrics">Searching for lyrics…</string>
@@ -57,6 +36,7 @@
     <string name="local_lrc_already_available">Local (.lrc) lyrics already found. Online fetch skipped.</string>
     <string name="fetch_lyrics_show_options_title">Show lyric options</string>
     <string name="fetch_lyrics_show_options_subtitle">Always open the picker instead of auto-applying the first match</string>
+    <string name="save_lyrics_as_lrc">Save lyrics as .lrc</string>
     <string name="save_lyrics_dialog_title">Save Lyrics</string>
     <string name="save_lyrics_dialog_message">Choose which version to save:</string>
     <string name="save_synced_lyrics">Synced (with timestamps)</string>
@@ -65,6 +45,11 @@
     <string name="lyrics_save_failed">Failed to save lyrics</string>
     <string name="no_lyrics_to_save">No lyrics available to save</string>
     <string name="reset_imported_lyrics">Reset imported lyrics</string>
+    <string name="lyrics_sync_offset">Lyrics sync offset</string>
+    <string name="lyrics_sync_offset_format">%+.1fs</string>
+    <string name="lyrics_sync_offset_reset">Reset</string>
+    <string name="lyrics_earlier">Earlier</string>
+    <string name="lyrics_later">Later</string>
 
     <string name="sync_scanning">Scanning music files…</string>
     <string name="sync_processing">Processing files…</string>
@@ -73,8 +58,7 @@
     <string name="sync_complete">Sync complete</string>
     <string name="sync_pending">Waiting…</string>
     <string name="syncing_library">Syncing library…</string>
-    <string name="sync_preparing_library">Preparing your library…</string>
-    <string name="sync_scanned_count">Scanned %1$d of %2$d songs</string>
+    <string name="library_background_sync">Finishing in the background…</string>
     <string name="library_background_sync_lyrics">Scanning lyrics…</string>
     <string name="library_background_sync_cache">Cleaning album art cache…</string>
     <string name="library_background_sync_cloud">Syncing cloud sources…</string>
@@ -82,6 +66,7 @@
     <string name="unknown_artist">Unknown artist</string>
     <string name="unknown_album">Unknown album</string>
     <string name="artist_picker_title">Pick an Artist</string>
+    <string name="artist_picker_supporting_text">Open any credited artist for this track.</string>
     <string name="artist_picker_count_single">1 artist</string>
     <string name="artist_picker_count_multiple">%1$d artists</string>
     <string name="artist_picker_primary_label">Primary artist</string>
@@ -89,18 +74,28 @@
     <string name="external_queue_label">Quick play</string>
     <string name="external_playback_error">Unable to open that audio file.</string>
     <string name="open_full_player">Open full player</string>
+    <string name="close_external_player">Close floating player</string>
     <string name="close_notification_player">Close player</string>
     <string name="previous_track">Previous track</string>
     <string name="next_track">Next track</string>
+    <string name="pause_playback">Pause playback</string>
     <string name="play_playback">Play</string>
     <string name="playlist_not_found">Playlist not found.</string>
     <string name="disc_number_header">Disc %d</string>
 
-
+    <string name="ai_error_api_key">Please configure a valid API key for the selected AI provider in Settings.</string>
+    <string name="ai_error_generic">AI Error: %s</string>
+    <string name="ai_error_quota">The selected AI provider rejected the request because the account has no credits or available quota.</string>
+    <string name="ai_error_model_unavailable">The selected AI model is no longer available. PixelMusic tried to switch to a supported model automatically.</string>
+    <string name="ai_no_songs_found">AI couldn\'t find any songs for your prompt.</string>
+    <string name="ai_prompt_empty">Write an idea for your Daily Mix</string>
+    <string name="ai_daily_mix_updated">Daily Mix updated with AI</string>
+    <string name="ai_no_songs_for_mix">AI couldn\'t find songs for this mix</string>
 
     <string name="shortcut_shuffle_short">Shuffle</string>
     <string name="shortcut_shuffle_long">Shuffle all songs</string>
     <string name="shortcut_playlist_short">Playlist</string>
+    <string name="shortcut_playlist_long">Last played playlist</string>
 
     <string name="tile_shuffle_all">Shuffle All</string>
     <string name="tile_last_playlist">Last Playlist</string>
@@ -110,6 +105,7 @@
     <string name="album_id_not_found">Album ID not found</string>
     <string name="error_loading_album">Error loading album data: %s</string>
     <string name="album_not_found">Album not found</string>
+    <string name="could_not_update">Could not update: %s</string>
     <string name="invalid_artist_id">Invalid artist ID</string>
     <string name="artist_id_not_found">Artist ID not found</string>
     <string name="error_loading_artist">Error loading artist data: %s</string>
@@ -122,16 +118,43 @@
     <string name="widget_grid_2x2_desc">Minimalist square player</string>
     <string name="service_processing_action">Processing playback action…</string>
 
+    <!-- Playlist bulk actions -->
     <string name="playlist_none_to_share">No playlists to share</string>
     <string name="playlist_share_chooser_title">Share playlists</string>
     <string name="playlist_share_failed">Share failed: %1$s</string>
     <string name="playlist_none_to_export">No playlists to export</string>
     <string name="playlist_export_failed">Export failed: %1$s</string>
     <string name="playlist_export_folder_display">Music/PixelMusic Exports</string>
+    <string name="ai_playlist_gemini_key_required">Please configure your Gemini API key in Settings.</string>
     <string name="error_unknown">Unknown error</string>
 
+    <!-- Watch transfer foreground service -->
+    <string name="watch_transfer_sending_n_to_watch">Sending %1$d songs to watch</string>
+    <string name="watch_transfer_sending_to_watch">Sending to watch</string>
+    <string name="watch_transfer_complete">Transfer complete</string>
+    <string name="watch_transfer_failed">Transfer failed</string>
+    <string name="watch_transfer_cancelled">Transfer cancelled</string>
+    <string name="watch_transfer_preparing">Preparing watch transfer</string>
+    <string name="watch_transfer_summary_n">%1$d transfers</string>
+    <string name="watch_transfer_starting">Starting transfer…</string>
+    <string name="watch_transfer_multiple_active">Multiple active transfers</string>
+    <string name="watch_transfer_preparing_transfer">Preparing transfer…</string>
+    <string name="watch_transfer_status_transferring">Transferring</string>
+    <string name="watch_transfer_status_completed">Completed</string>
+    <string name="watch_transfer_status_failed">Failed</string>
+    <string name="watch_transfer_status_cancelled">Cancelled</string>
+    <string name="watch_transfer_status_preparing">Preparing</string>
+    <string name="watch_transfer_starting_short">Starting</string>
+    <string name="watch_transfer_channel_name">Watch transfers</string>
+    <string name="watch_transfer_channel_description">Shows live progress for phone-to-watch music transfers</string>
 
+    <!-- Cast HTTP server -->
+    <string name="cast_server_channel_name">Cast media server</string>
+    <string name="cast_server_notification_title">Casting to device</string>
+    <string name="cast_server_notification_text">Serving media to Cast device</string>
+    <string name="cast_server_foreground_error">%1$s: %2$s</string>
 
+    <!-- Backup / data transfer (ViewModels) -->
     <string name="backup_invalid_format">Invalid backup: %1$s</string>
     <string name="backup_progress_preparing_restore">Preparing restore</string>
     <string name="backup_progress_starting_task">Starting restore task.</string>
@@ -145,8 +168,10 @@
     <string name="export_failed_format">Export failed: %1$s</string>
     <string name="data_restored_successfully">Data restored successfully</string>
     <string name="restore_partial_unresolved_format">Restore completed with unresolved issues. Failed: %1$s</string>
+    <string name="models_fetch_failed">Failed to load models</string>
     <string name="dev_test_crash_message">Test crash triggered from Developer Options - This is intentional for testing the crash reporting system</string>
 
+    <!-- PlayerViewModel -->
     <string name="player_song_not_found_in_list">Song not found in current list</string>
     <string name="player_could_not_locate_song">Could not locate song</string>
     <string name="player_no_songs_in_library_toast">No songs found in library</string>
@@ -158,12 +183,6 @@
     <string name="player_only_first_n_albums_queued">Only the first %1$d albums were queued</string>
     <string name="player_albums_queued_format">%1$d albums queued (%2$d songs)</string>
     <string name="player_could_not_queue_albums">Could not queue selected albums</string>
-    <string name="player_only_first_n_albums_next">Only the first %1$d albums were added as next</string>
-    <string name="player_albums_will_play_next_format">%1$d albums will play next</string>
-    <string name="player_could_not_add_albums_next">Could not add selected albums as next</string>
-    <string name="player_only_first_n_albums_added_queue">Only the first %1$d albums were added to queue</string>
-    <string name="player_albums_added_to_queue_format">%1$d albums added to queue</string>
-    <string name="player_could_not_add_albums_queue">Could not add selected albums to queue</string>
     <string name="player_all_songs_already_in_favorites">All songs already in favorites</string>
     <string name="player_no_songs_were_in_favorites">No songs were in favorites</string>
     <string name="player_creating_zip">Creating ZIP file…</string>
@@ -186,6 +205,7 @@
     <string name="delete_songs_permanent_message">These songs will be permanently deleted from your device and cannot be recovered.</string>
     <string name="delete_action">Delete</string>
 
+    <!-- Sleep timer (SleepTimerStateHolder + TimerOptionsBottomSheet) -->
     <string name="sleep_timer_n_minutes_format">%1$d minutes</string>
     <string name="sleep_timer_display_eot">End of track</string>
     <string name="sleep_timer_set_for_minutes_toast">Timer set for %1$d minutes.</string>
@@ -208,47 +228,37 @@
     <string name="backup_manifest_schema_v">v%1$d</string>
     <string name="backup_manifest_device_line">%1$s %2$s</string>
 
-    <string name="batch_edit_toolbar_title">Edit %d Songs</string>
-    <string name="batch_edit_info_message">Only modified fields will be updated. Leave fields empty to keep existing values.</string>
-    <string name="batch_edit_mixed_values">(Mixed values)</string>
-    <string name="batch_edit_optional">(Optional - leave empty to skip)</string>
-    <string name="batch_edit_success">Successfully updated %d songs</string>
-    <string name="batch_edit_partial_success">Updated %1$d of %2$d songs. Some files could not be edited.</string>
-    <string name="batch_edit_failed">Failed to update songs</string>
+    <!-- Share Bottom Sheet -->
+    <string name="share_sheet_title">Share</string>
+    <string name="share_sheet_chooser_title">Share via</string>
+    <string name="share_card_tab_song">Song Card</string>
+    <string name="share_card_tab_lyrics">Lyrics Card</string>
+    <string name="share_action_snapchat">Snapchat\nStory</string>
+    <string name="share_action_instagram">Instagram\nStory</string>
+    <string name="share_action_download_card">Save\nCard</string>
+    <string name="share_action_copy_yt_link">Copy\nYT Link</string>
+    <string name="share_action_more_apps">Share\nMore</string>
+    <string name="share_action_add_to_playlist">Add to Playlist</string>
+    <string name="share_action_add_to_playlist_sub">Add this song to one of your playlists</string>
+    <string name="share_action_copy_github_link">Copy App Link</string>
+    <string name="share_card_saved">Card saved to Pictures</string>
+    <string name="share_link_copied">Link copied to clipboard</string>
+    <string name="share_text_format">Now listening to \"%1$s\" by %2$s 🎵\n%3$s</string>
 
-    <string name="batch_edit_cover_art_heading">Batch Cover Art</string>
-    <string name="batch_edit_cover_art_hint">This will replace the cover art for all %d selected songs</string>
-    <string name="batch_edit_set_cover_art">Set Cover Art for All</string>
-    <string name="batch_edit_remove_all_art">Remove All Cover Art</string>
-    <string name="batch_edit_multiple_covers">(Multiple different covers)</string>
+    <!-- Player Share / Options Menu -->
+    <string name="player_menu_share_card">Share Story Card</string>
+    <string name="player_menu_download">Download Song</string>
+    <string name="player_menu_add_to_playlist">Add to Playlist</string>
+    <string name="not_interested">Not interested</string>
+    <string name="marked_not_interested">Marked as not interested</string>
+    <string name="action_dislike">Dislike</string>
+    <string name="action_disliked">Disliked</string>
+    <string name="cd_player_more_options">More options</string>
+    <string name="cd_player_theme">Change theme</string>
 
-    <string name="player_error_skipping">Couldn\'t play this track — skipping</string>
-    <string name="sync_failed_toast">Library sync failed. Pull down to refresh and try again.</string>
-
-    <string name="a11y_toggle_on">On</string>
-    <string name="a11y_toggle_off">Off</string>
-
-    <string name="setcat_playback_speed">Playback speed</string>
-
-    <string name="duplicates_title">Duplicate tracks</string>
-    <string name="duplicates_none">No duplicate tracks found.</string>
-    <string name="duplicates_summary">%1$d groups · %2$d tracks</string>
-    <string name="duplicates_group_count">%1$d copies</string>
-    <string name="duplicates_group_title_format">%1$s — %2$s</string>
-    <string name="setcat_find_duplicates_title">Find duplicate tracks</string>
-    <string name="setcat_find_duplicates_subtitle">Scan your library for tracks that appear more than once.</string>
-
-    <string name="cloud_download_action">Download</string>
-    <string name="cloud_download_queued">Queued</string>
-    <string name="cloud_downloading">Downloading…</string>
-    <string name="cloud_download_progress">%1$d%%</string>
-    <string name="cloud_remove_download">Remove download</string>
-    <string name="cloud_download_retry">Retry</string>
-    <string name="cloud_album_download">Download album</string>
-    <string name="cloud_playlist_download" tools:ignore="MissingTranslation">Download playlist</string>
-    <string name="cloud_album_remove_downloads">Remove downloads</string>
+    <!-- Cloud Offline Downloads -->
     <string name="cloud_downloads_title">Downloads</string>
-    <string name="cloud_downloads_settings_subtitle">Manage offline cloud tracks and storage</string>
+    <string name="cloud_downloads_settings_subtitle">Manage offline tracks and storage</string>
     <string name="cloud_downloads_storage_used">Offline storage used</string>
     <string name="cloud_downloads_storage_summary">%1$d completed · %2$d total</string>
     <string name="cloud_downloads_active_section">Queued and downloading</string>
@@ -259,18 +269,17 @@
     <string name="cloud_downloads_downloaded_size">Downloaded · %1$s</string>
     <string name="cloud_downloads_failed_fallback">Download failed</string>
     <string name="cloud_downloads_empty_title">No offline downloads</string>
-    <string name="cloud_downloads_empty_subtitle">Cloud tracks you download will appear here.</string>
-    <string name="cloud_download_selected">Download selected cloud tracks</string>
-    <string name="cloud_download_selected_count">Download %1$d cloud tracks</string>
-    <string name="cloud_download_selected_started">Preparing %1$d cloud tracks for offline playback</string>
-    <string name="musicbrainz_lookup">Find on MusicBrainz</string>
-    <string name="musicbrainz_searching">Searching for recording matches…</string>
-    <string name="musicbrainz_lookup_failed">MusicBrainz lookup failed</string>
-    <string name="musicbrainz_search_failed_fallback">MusicBrainz search failed</string>
-    <string name="musicbrainz_save_failed_fallback">MusicBrainz metadata could not be saved</string>
-    <string name="musicbrainz_choose_match">Choose a MusicBrainz match</string>
-    <string name="musicbrainz_no_results">No suitable recordings were found.</string>
-    <string name="musicbrainz_match_score">Match confidence: %1$d%%</string>
-    <string name="musicbrainz_applied">MusicBrainz identifiers saved. Missing year and placeholder names were enriched.</string>
-
+    <string name="cloud_downloads_empty_subtitle">Tracks you download will appear here.</string>
+    <string name="cloud_download_retry">Retry</string>
+    <string name="cloud_remove_download">Remove</string>
+    <string name="cloud_download_queued">Queued</string>
+    <string name="cloud_downloading">Downloading…</string>
+    <string name="cloud_download_progress">%1$d%%</string>
+    <string name="cloud_download_select_all">Select all</string>
+    <string name="cloud_download_deselect_all">Deselect all</string>
+    <string name="cloud_download_delete_selected">Delete selected</string>
+    <string name="cloud_download_play_selected">Play selected</string>
+    <string name="cloud_download_play_all">Play all</string>
+    <string name="cloud_download_shuffle_all">Shuffle all</string>
+    <string name="in_your_library">In your library</string>
 </resources>

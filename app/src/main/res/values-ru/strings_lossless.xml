@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_category_lossless_title">Источники без потерь</string>
+    <string name="settings_category_lossless_subtitle">Tidal, Qobuz, Deezer и Apple Music через пул исходников</string>
+    <string name="lossless_tidal_login">Войдите в Tidal</string>
+    <string name="lossless_auth_webview_tidal_subtitle">Войдите в Tidal ниже. PixelMusic автоматически сохраняет сеанс.</string>
+    <string name="lossless_tidal_login_success">Выполнен вход в Tidal</string>
+    <string name="lossless_tidal_account_free_warning">Эта учетная запись Tidal не относится к HiFi/Premium. Воспроизведение без потерь через Tidal может дать сбой; приложение вернется к другим источникам.</string>
+    <string name="lossless_tidal_login_webplayer_fallback">Не удалось завершить стандартный вход; вместо этого откройте веб-плеер Tidal. Просто войдите в систему, и воспроизведение подключится автоматически.</string>
+    <string name="lossless_deezer_login">Войдите в Deezer</string>
+    <string name="lossless_auth_webview_deezer_subtitle">Войдите в Deezer ниже. Файл cookie сеанса сохраняется автоматически.</string>
+    <string name="lossless_deezer_login_success">Выполнен вход в Deezer как %1$s</string>
+    <string name="lossless_deezer_manual_arl">Войдите в систему вручную с помощью файла cookie ARL</string>
+    <string name="lossless_deezer_manual_arl_hint">Deezer недоступен в вашем регионе? Войдите в систему из любого браузера (VPN работает), скопируйте значение файла cookie arl и вставьте его сюда.</string>
+    <string name="lossless_deezer_manual_arl_apply">Подтвердите и войдите</string>
+    <string name="lossless_deezer_arl_invalid">Этот ARL не сработал — скопируйте полное значение файла cookie arl и повторите попытку.</string>
+    <string name="lossless_qobuz_login">Войдите в Qobuz</string>
+    <string name="lossless_auth_webview_qobuz_subtitle">Войдите в Qobuz ниже. Ваши учетные данные фиксируются автоматически.</string>
+    <string name="lossless_qobuz_login_success">Добавлен аккаунт Qobuz</string>
+    <string name="lossless_qobuz_app_secret_title">Введите секрет приложения Qobuz</string>
+    <string name="lossless_qobuz_app_secret_hint">app_secret (из источника вашего токена)</string>
+    <string name="lossless_applemusic_login">Войдите в Apple Music</string>
+    <string name="lossless_applemusic_login_subtitle">Войдите в систему, используя свой Apple ID — ваш токен пользователя музыки будет получен автоматически.</string>
+    <string name="lossless_applemusic_login_failed">Не удалось получить токен Apple Music — попробуйте вставить токены вручную</string>
+    <string name="lossless_applemusic_login_success">Выполнен вход в Apple Music</string>
+</resources>

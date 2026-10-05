@@ -1,32 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- LibraryScreen -->
     <string name="presentation_batch_d_library_title">Library</string>
+    <string name="presentation_batch_d_watch_transfer_cd">Watch transfer</string>
     <string name="presentation_batch_d_open_settings_cd">Settings</string>
     <string name="presentation_batch_d_edit_library_tabs_cd">Edit</string>
     <string name="presentation_batch_d_reorder_tabs_cd">Reorder tabs</string>
     <string name="presentation_batch_d_sort_by">Sort by</string>
+    <string name="presentation_batch_d_view_section_cloud">Cloud</string>
     <string name="presentation_batch_d_view_section_view">View</string>
+    <string name="presentation_batch_d_telegram_cloud_channels">Telegram Cloud Channels</string>
     <string name="presentation_batch_d_playlist_view">Playlist View</string>
     <string name="presentation_batch_d_view_grid">Grid</string>
     <string name="presentation_batch_d_view_list">List</string>
     <string name="presentation_batch_d_storage_internal">Internal</string>
     <string name="presentation_batch_d_storage_sd_card">SD Card</string>
     <string name="presentation_batch_d_sd_card_unavailable">SD card is not available right now.</string>
+    <string name="presentation_batch_d_topics_display">Topics Display</string>
+    <string name="presentation_batch_d_topic_mode_channels">Channels</string>
+    <string name="presentation_batch_d_topic_mode_topics">Topics</string>
+    <string name="presentation_batch_d_topic_mode_both">Both</string>
     <string name="presentation_batch_d_cloud_sources_heading">Cloud</string>
     <string name="presentation_batch_d_cloud_only">Cloud Only</string>
+    <string name="presentation_batch_d_generating_ai_metadata">Generating metadata with AI…</string>
     <string name="presentation_batch_d_max_albums_selection">You can select up to %1$d albums</string>
     <string name="presentation_batch_d_folder_name_fallback">Folder</string>
+    <string name="presentation_batch_d_expand_tab_menu_cd">Expand menu</string>
     <string name="presentation_batch_d_library_tabs_sheet_title">Library tabs</string>
     <string name="presentation_batch_d_library_tabs_sheet_subtitle">Jump directly to any tab or reorder them.</string>
     <string name="presentation_batch_d_reorder_tabs_label">Reorder tabs</string>
     <string name="presentation_batch_d_cd_folder">Folder</string>
 
+    <!-- LibraryScreen — watch transfer dialog -->
+    <string name="presentation_batch_d_watch_sending_title">Sending to Watch</string>
+    <string name="presentation_batch_d_watch_starting_transfer">Starting transfer…</string>
+    <string name="presentation_batch_d_watch_status_transferring">Transferring</string>
+    <string name="presentation_batch_d_watch_status_completed">Completed</string>
+    <string name="presentation_batch_d_watch_status_failed">Failed</string>
+    <string name="presentation_batch_d_watch_status_cancelled">Cancelled</string>
+    <string name="presentation_batch_d_watch_status_preparing">Preparing</string>
+    <string name="presentation_batch_d_watch_preparing_transfer">Preparing transfer…</string>
+    <string name="presentation_batch_d_watch_cancel_transfer">Cancel transfer</string>
 
+    <!-- LibraryScreen — merge playlists -->
     <string name="presentation_batch_d_merge_playlists_title">Merge Playlists</string>
     <string name="presentation_batch_d_merge_playlists_prompt">Enter a name for the merged playlist:</string>
     <string name="presentation_batch_d_merge_playlists_placeholder">Merged Playlist</string>
     <string name="presentation_batch_d_merge_playlists_body">This will merge %1$d selected playlists into one.</string>
 
+    <!-- MashupScreen -->
     <string name="presentation_batch_d_mashup_title">DJ Space</string>
     <string name="presentation_batch_d_loading">Loading…</string>
     <string name="presentation_batch_d_mashup_deck_n">Deck %1$d</string>
@@ -41,6 +63,7 @@
     <string name="presentation_batch_d_mashup_deck_2">Deck 2</string>
     <string name="presentation_batch_d_mashup_select_song_title">Select a song</string>
 
+    <!-- EqualizerScreen -->
     <string name="presentation_batch_d_eq_change_view_mode_cd">Change view mode</string>
     <string name="presentation_batch_d_eq_disable_cd">Disable equalizer</string>
     <string name="presentation_batch_d_eq_enable_cd">Enable equalizer</string>
@@ -64,7 +87,9 @@
     <string name="presentation_batch_d_eq_band_bass_low">Bass / Low</string>
     <string name="presentation_batch_d_eq_band_mid_high">Mid / High</string>
     <string name="presentation_batch_d_eq_page_n">Page %1$d</string>
+    <string name="presentation_batch_d_eq_reset_duration_cd">Reset duration</string>
 
+    <!-- EditTransitionScreen -->
     <string name="presentation_batch_d_transition_snackbar_using_global">Using global defaults</string>
     <string name="presentation_batch_d_transition_snackbar_saved">Changes saved successfully</string>
     <string name="presentation_batch_d_transition_title_playlist_rules">Playlist rules</string>
@@ -94,6 +119,7 @@
     <string name="presentation_batch_d_transition_fade_out">Fade Out</string>
     <string name="presentation_batch_d_transition_fade_in">Fade In</string>
 
+    <!-- ArtistDetailScreen -->
     <string name="presentation_batch_d_cd_play_title">Play %1$s</string>
     <string name="presentation_batch_d_cd_collapse_title">Collapse %1$s</string>
     <string name="presentation_batch_d_cd_expand_title">Expand %1$s</string>

@@ -1,76 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="device_capabilities_advanced_diagnostics_description">Nonaktif secara default. Merekam riwayat singkat lag untuk membantu troubleshooting beta.</string>
-    <string name="device_capabilities_advanced_diagnostics_expires">Aktif sampai %1$s</string>
-    <string name="device_capabilities_advanced_diagnostics_mark_lag">Tandai lag sekarang</string>
-    <string name="device_capabilities_advanced_diagnostics_marked">Momen lag ditandai</string>
-    <string name="device_capabilities_advanced_diagnostics_title">Diagnostik performa lanjutan</string>
-    <string name="device_capabilities_buffer_frames">%1$d frame per buffer</string>
-    <string name="device_capabilities_finding_clear_body">Trek yang Anda indeks cocok dengan dekoder yang dilaporkan Android di perangkat ini.</string>
-    <string name="device_capabilities_finding_clear_title">Tidak ada ketidakcocokan besar</string>
-    <string name="device_capabilities_finding_resample_body">Pustaka mencapai %1$d Hz, di atas sample rate output saat ini.</string>
-    <string name="device_capabilities_finding_resample_title">%1$d trek lokal mungkin diresampling</string>
-    <string name="device_capabilities_finding_unknown_body">Pemindaian ulang pustaka lengkap dapat mengisi data MIME, bitrate, dan sample-rate yang hilang.</string>
-    <string name="device_capabilities_finding_unknown_title">%1$d trek lokal memiliki metadata tidak diketahui</string>
-    <string name="device_capabilities_finding_unsupported_body">Format untuk ditinjau: %1$s.</string>
-    <string name="device_capabilities_finding_unsupported_title">%1$d trek mungkin tidak didekode secara asli</string>
-    <string name="device_capabilities_findings_title">Temuan Kompatibilitas</string>
-    <string name="device_capabilities_format_hardware">Dekoder perangkat keras</string>
-    <string name="device_capabilities_format_library_count">%1$d di pustaka</string>
-    <string name="device_capabilities_format_offload">Offload</string>
-    <string name="device_capabilities_format_software">Dekoder perangkat lunak</string>
-    <string name="device_capabilities_format_unsupported">Tidak ada dekoder dilaporkan</string>
-    <string name="device_capabilities_formats_supported_count">%1$d trek didukung</string>
-    <string name="device_capabilities_formats_title">Kompatibilitas Format</string>
-    <string name="device_capabilities_formats_unknown_count">%1$d format tidak diketahui</string>
-    <string name="device_capabilities_hifi_pcm_float">Hi-Fi PCM Float</string>
-    <string name="device_capabilities_hifi_pcm_float_supporting">Jalur output float 32-bit</string>
-    <string name="device_capabilities_memory_available_of">tersedia dari %1$s</string>
-    <string name="device_capabilities_memory_title">Memori</string>
+    <string name="presentation_batch_g_stats_range_today">Hari ini</string>
+    <string name="presentation_batch_g_stats_range_week_to_date">Minggu Berjalan</string>
+    <string name="presentation_batch_g_stats_range_month_to_date">Bulan Berjalan</string>
+    <string name="presentation_batch_g_stats_range_year_to_date">Tahun Berjalan</string>
+    <string name="presentation_batch_g_stats_range_all_time">Semua Waktu</string>
+    <string name="presentation_batch_g_stats_title">Statistik</string>
+    <string name="presentation_batch_g_stats_cd_refresh">Segarkan statistik</string>
+    <string name="presentation_batch_g_stats_hero_listening">Mendengarkan</string>
+    <string name="presentation_batch_g_stats_hero_plays">Putaran</string>
+    <string name="presentation_batch_g_stats_em_dash">—</string>
+    <string name="presentation_batch_g_stats_section_listening_habits">Kebiasaan mendengarkan</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_title">Belum ada kebiasaan</string>
+    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">Kami akan menampilkan kebiasaan mendengarkan Anda setelah kami mengenal Anda lebih baik.</string>
+    <string name="presentation_batch_g_stats_habit_total_sessions">Total sesi</string>
+    <string name="presentation_batch_g_stats_habit_avg_session">Rata-rata sesi</string>
+    <string name="presentation_batch_g_stats_habit_longest_session">Sesi terlama</string>
+    <string name="presentation_batch_g_stats_habit_sessions_per_day">Sesi/hari</string>
+    <string name="presentation_batch_g_stats_habit_most_active_day">Hari paling aktif</string>
+    <string name="presentation_batch_g_stats_habit_no_playback_yet">Belum ada pemutaran</string>
+    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">Slot lini masa puncak</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time">Waktu mendengarkan</string>
+    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">Total waktu mendengarkan dalam rentang yang dipilih.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count">Jumlah putaran</string>
+    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">Berapa banyak sesi yang Anda selesaikan per segmen.</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session">Rata-rata sesi</string>
+    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">Rata-rata durasi mendengarkan untuk setiap segmen.</string>
+    <string name="presentation_batch_g_stats_n_plays">%1$d putaran</string>
+    <string name="presentation_batch_g_stats_section_listening_timeline">Lini masa mendengarkan</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_title">Belum ada data mendengarkan</string>
+    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">Tekan putar untuk mulai membangun lini masa mendengarkan Anda</string>
+    <string name="presentation_batch_g_stats_rhythm_daily">Ritme harian</string>
+    <string name="presentation_batch_g_stats_rhythm_weekly">Ritme mingguan</string>
+    <string name="presentation_batch_g_stats_rhythm_monthly">Ritme bulanan</string>
+    <string name="presentation_batch_g_stats_rhythm_year">Tahun sekilas</string>
+    <string name="presentation_batch_g_stats_rhythm_all_time">Progres semua waktu</string>
+    <string name="presentation_batch_g_stats_grouped_4h">Dikelompokkan dalam segmen 4 jam</string>
+    <string name="presentation_batch_g_stats_grouped_dow">Dikelompokkan berdasarkan hari dalam seminggu</string>
+    <string name="presentation_batch_g_stats_grouped_week_of_month">Dikelompokkan berdasarkan minggu dalam sebulan</string>
+    <string name="presentation_batch_g_stats_grouped_by_month">Dikelompokkan berdasarkan bulan</string>
+    <string name="presentation_batch_g_stats_grouped_by_year">Dikelompokkan berdasarkan tahun</string>
+    <string name="presentation_batch_g_stats_peak_segment">Segmen puncak</string>
+    <string name="presentation_batch_g_stats_timeline_support_day">Dibagi menjadi jendela 4 jam untuk mengungkapkan ritme harian Anda.</string>
+    <string name="presentation_batch_g_stats_timeline_support_week">Bilah harian memudahkan perbandingan kebiasaan dari minggu ke minggu.</string>
+    <string name="presentation_batch_g_stats_timeline_support_month">Bilah mingguan menunjukkan tren bulan ini.</string>
+    <string name="presentation_batch_g_stats_timeline_support_year">Bilah bulanan menunjukkan musiman sepanjang tahun.</string>
+    <string name="presentation_batch_g_stats_timeline_support_all">Bilah tahunan merangkum riwayat lengkap Anda.</string>
+    <string name="presentation_batch_g_stats_section_top_categories">Kategori teratas</string>
+    <string name="presentation_batch_g_stats_top_categories_subtitle">Bandingkan cara Anda mendengarkan lintas genre, artis, album, dan lagu.</string>
+    <string name="presentation_batch_g_stats_plays_artists">%1$d putaran • %2$d artis</string>
+    <string name="presentation_batch_g_stats_plays_tracks">%1$d putaran • %2$d trek</string>
+    <string name="presentation_batch_g_stats_dim_genre">Genre</string>
+    <string name="presentation_batch_g_stats_dim_artist">Artis</string>
+    <string name="presentation_batch_g_stats_dim_album">Album</string>
+    <string name="presentation_batch_g_stats_dim_song">Lagu</string>
+    <string name="presentation_batch_g_stats_card_listening_by_genre">Mendengarkan berdasarkan genre</string>
+    <string name="presentation_batch_g_stats_card_listening_by_artist">Mendengarkan berdasarkan artis</string>
+    <string name="presentation_batch_g_stats_card_listening_by_album">Mendengarkan berdasarkan album</string>
+    <string name="presentation_batch_g_stats_card_listening_by_song">Mendengarkan berdasarkan lagu</string>
+    <string name="presentation_batch_g_stats_empty_no_category_title">Belum ada data kategori</string>
+    <string name="presentation_batch_g_stats_empty_no_category_subtitle">Tekan putar untuk menampilkan sorotan mendengarkan Anda</string>
+    <string name="presentation_batch_g_stats_section_top_artists">Artis teratas</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_title">Tidak ada artis teratas</string>
+    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">Teruslah mendengarkan dan artis favorit Anda akan muncul di sini.</string>
+    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_section_top_albums">Album teratas</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_title">Tidak ada album teratas</string>
+    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">Album yang sering Anda kunjungi kembali akan muncul di sini.</string>
+    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_title">Trek dalam rentang ini</string>
+    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">Trek yang paling sering diputar untuk rentang waktu yang dipilih.</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_title">Tidak ada trek teratas</string>
+    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">Dengarkan favorit Anda untuk melihatnya disorot di sini.</string>
+    <string name="presentation_batch_g_stats_collapse_tracks">Ciutkan trek</string>
+    <string name="presentation_batch_g_stats_show_all_tracks">Tampilkan semua trek</string>
+    <string name="presentation_batch_g_stats_track_concentration_title">Konsentrasi trek</string>
+    <string name="presentation_batch_g_stats_track_concentration_subtitle">Bagaimana waktu mendengarkan Anda didistribusikan ke seluruh trek teratas Anda.</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_title">Belum ada data konsentrasi</string>
+    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">Putar lebih banyak trek untuk melihat seberapa terfokus pendengaran Anda.</string>
+    <string name="presentation_batch_g_stats_slice_top_1">Top 1</string>
+    <string name="presentation_batch_g_stats_slice_top_2_3">Top 2-3</string>
+    <string name="presentation_batch_g_stats_slice_others">Lainnya</string>
+    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
+    <string name="presentation_batch_g_stats_listening_concentration_title">Konsentrasi mendengarkan</string>
+    <string name="presentation_batch_g_stats_top_three_share_line">Top 3 trek menyumbang %1$d%% dari waktu mendengarkan Anda.</string>
+    <string name="presentation_batch_g_stats_avg_plays_per_track">Rata-rata putaran/trek</string>
+    <string name="presentation_batch_g_stats_unique_tracks">Trek unik</string>
+    <string name="presentation_batch_g_stats_top_three_share_label">Top 3 share</string>
+    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
+    <string name="presentation_batch_g_device_info_title">Info Perangkat</string>
+    <string name="presentation_batch_g_device_supported_codecs_title">Codec Audio yang Didukung</string>
+    <string name="presentation_batch_g_device_section_audio_output">Output Audio</string>
+    <string name="presentation_batch_g_device_section_exoplayer">ExoPlayer Engine</string>
+    <string name="presentation_batch_g_device_label_sample_rate">Sample Rate</string>
+    <string name="presentation_batch_g_device_label_frames_per_buffer">Frame Per Buffer</string>
+    <string name="presentation_batch_g_device_label_low_latency">Low Latency Support</string>
+    <string name="presentation_batch_g_device_label_pro_audio">Pro Audio Support</string>
+    <string name="presentation_batch_g_device_label_version">Versi</string>
+    <string name="presentation_batch_g_device_label_active_renderers">Renderer Aktif</string>
+    <string name="presentation_batch_g_device_label_decoder_counters">Penghitung Dekoder</string>
+    <string name="presentation_batch_g_device_value_hz">%1$d Hz</string>
+    <string name="presentation_batch_g_yes">Ya</string>
+    <string name="presentation_batch_g_no">Tidak</string>
+    <string name="presentation_batch_g_device_cd_hw_accelerated">Hardware Accelerated</string>
+    <string name="presentation_batch_g_device_key_manufacturer">Manufaktur</string>
+    <string name="presentation_batch_g_device_key_model">Model</string>
+    <string name="presentation_batch_g_device_key_brand">Merek</string>
+    <string name="presentation_batch_g_device_key_device">Perangkat</string>
+    <string name="presentation_batch_g_device_key_android_version">Versi Android</string>
+    <string name="presentation_batch_g_device_key_sdk_version">Versi SDK</string>
+    <string name="presentation_batch_g_device_key_hardware">Perangkat Keras</string>
+    <string name="device_capabilities_unknown_device">Perangkat ini</string>
+    <string name="device_capabilities_unknown_short">--</string>
+    <string name="device_capabilities_ready_title">Siap untuk pemutaran</string>
+    <string name="device_capabilities_review_title">Pemutaran perlu ditinjau</string>
     <string name="device_capabilities_metric_formats">Format</string>
     <string name="device_capabilities_metric_hw_decoders">Dekoder HW</string>
     <string name="device_capabilities_metric_local_music">Lagu lokal</string>
-    <string name="device_capabilities_more_count">+%1$d lagi</string>
-    <string name="device_capabilities_offload_empty">Tidak ada format terkompresi yang dilaporkan mendukung offload perangkat keras.</string>
+    <string name="device_capabilities_storage_title">Penyimpanan Musik Lokal</string>
+    <string name="device_capabilities_storage_music_size">Ukuran musik</string>
+    <string name="device_capabilities_storage_music_count">%1$d lagu lokal</string>
+    <string name="device_capabilities_storage_available">Tersedia</string>
+    <string name="device_capabilities_storage_total">Total %1$s</string>
+    <string name="device_capabilities_storage_music_footprint">Penggunaan ruang musik</string>
+    <string name="device_capabilities_storage_device_used">Penggunaan perangkat</string>
+    <string name="device_capabilities_storage_percent">%1$d%%</string>
+    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
+    <string name="device_capabilities_storage_cloud_count">%1$d lagu cloud</string>
+    <string name="device_capabilities_storage_unavailable_count">%1$d file tidak dapat dibaca</string>
+    <string name="device_capabilities_playback_path_title">Jalur Pemutaran</string>
+    <string name="device_capabilities_buffer_frames">%1$d frame per buffer</string>
+    <string name="device_capabilities_hifi_pcm_float">PCM Float Hi-Fi</string>
+    <string name="device_capabilities_hifi_pcm_float_supporting">Jalur output float 32-bit</string>
+    <string name="device_capabilities_memory_title">Memori</string>
+    <string name="device_capabilities_memory_available_of">tersedia dari %1$s</string>
     <string name="device_capabilities_offload_title">Format siap offload</string>
-    <string name="device_capabilities_output_bluetooth">Audio Bluetooth</string>
+    <string name="device_capabilities_offload_empty">Tidak ada format terkompresi yang dilaporkan mendukung offload perangkat keras.</string>
+    <string name="device_capabilities_outputs_title">Output terdeteksi</string>
+    <string name="device_capabilities_outputs_empty">Tidak ada jalur output yang dilaporkan oleh Android.</string>
+    <string name="device_capabilities_renderers_count">%1$s renderer</string>
+    <string name="device_capabilities_formats_title">Kompatibilitas Format</string>
+    <string name="device_capabilities_formats_supported_count">%1$d trek didukung</string>
+    <string name="device_capabilities_formats_unknown_count">%1$d format tidak diketahui</string>
+    <string name="device_capabilities_format_unsupported">Tidak ada dekoder tersedia</string>
+    <string name="device_capabilities_format_hardware">Dekoder perangkat keras</string>
+    <string name="device_capabilities_format_software">Dekoder perangkat lunak</string>
+    <string name="device_capabilities_format_offload">Offload</string>
+    <string name="device_capabilities_format_library_count">%1$d di perpustakaan</string>
+    <string name="device_capabilities_findings_title">Hasil Analisis Kompatibilitas</string>
+    <string name="device_capabilities_finding_clear_title">Tidak ada ketidakcocokan besar</string>
+    <string name="device_capabilities_finding_clear_body">Trek yang diindeks sesuai dengan dekoder yang dilaporkan Android pada perangkat ini.</string>
+    <string name="device_capabilities_finding_unsupported_title">%1$d trek mungkin tidak dapat diputar secara native</string>
+    <string name="device_capabilities_finding_unsupported_body">Format yang perlu ditinjau: %1$s.</string>
+    <string name="device_capabilities_finding_resample_title">%1$d trek lokal mungkin akan di-resample</string>
+    <string name="device_capabilities_finding_resample_body">Perpustakaan mencapai %1$d Hz, melebihi sample rate output saat ini.</string>
+    <string name="device_capabilities_finding_unknown_title">%1$d trek memiliki metadata tidak diketahui</string>
+    <string name="device_capabilities_finding_unknown_body">Pemindaian ulang penuh perpustakaan dapat melengkapi data MIME, bitrate, dan sample rate yang hilang.</string>
+    <string name="device_capabilities_more_count">+%1$d lainnya</string>
     <string name="device_capabilities_output_builtin">Output bawaan</string>
+    <string name="device_capabilities_output_bluetooth">Audio Bluetooth</string>
+    <string name="device_capabilities_output_usb">Audio USB</string>
+    <string name="device_capabilities_output_wired">Audio kabel</string>
     <string name="device_capabilities_output_digital">Output digital</string>
     <string name="device_capabilities_output_other">Output lainnya</string>
-    <string name="device_capabilities_output_usb">Audio USB</string>
-    <string name="device_capabilities_output_wired">Audio berkabel</string>
-    <string name="device_capabilities_outputs_empty">Tidak ada rute output yang dilaporkan oleh Android.</string>
-    <string name="device_capabilities_outputs_title">Output yang terdeteksi</string>
-    <string name="device_capabilities_playback_path_title">Jalur Pemutaran</string>
-    <string name="device_capabilities_ready_title">Siap untuk pemutaran</string>
-    <string name="device_capabilities_renderers_count">%1$s renderer</string>
-    <string name="device_capabilities_report_copied">Laporan disalin ke papan klip</string>
-    <string name="device_capabilities_report_copy">Salin</string>
-    <string name="device_capabilities_report_description">Buat laporan diagnostik yang dapat dibagikan untuk membantu kami mengklasifikasikan lag pemutaran atau pemindaian. Laporan ini hanya berisi data perangkat, pustaka, dan waktu — tanpa jalur file, judul, atau artis.</string>
-    <string name="device_capabilities_report_generate">Buat laporan</string>
-    <string name="device_capabilities_report_regenerate">Regenerasi</string>
-    <string name="device_capabilities_report_share">Bagikan</string>
-    <string name="device_capabilities_report_share_title">Laporan performa PixelPlayer</string>
-    <string name="device_capabilities_report_title">Laporan performa</string>
-    <string name="device_capabilities_review_title">Pemutaran perlu ditinjau</string>
-    <string name="device_capabilities_storage_available">Tersedia</string>
-    <string name="device_capabilities_storage_cloud_count">%1$d lagu cloud</string>
-    <string name="device_capabilities_storage_device_used">Perangkat digunakan</string>
-    <string name="device_capabilities_storage_less_than_one_percent">&lt;1%</string>
-    <string name="device_capabilities_storage_music_count">%1$d lagu lokal</string>
-    <string name="device_capabilities_storage_music_footprint">Jejak musik</string>
-    <string name="device_capabilities_storage_music_size">Ukuran musik</string>
-    <string name="device_capabilities_storage_percent">%1$d%%</string>
-    <string name="device_capabilities_storage_title">Penyimpanan Musik Lokal</string>
-    <string name="device_capabilities_storage_total">total %1$s</string>
-    <string name="device_capabilities_storage_unavailable_count">%1$d file tidak terbaca</string>
-    <string name="device_capabilities_unknown_short">--</string>
-    <string name="presentation_batch_g_album_sel_count">%1$d ALBUM</string>
-    <string name="presentation_batch_g_album_sel_limit">Batas: %1$d album per pilihan.</string>
-    <string name="presentation_batch_g_album_sel_queue_hint">Antrekan + putar menghormati urutan pilihan Anda.</string>
-    <string name="presentation_batch_g_album_sel_selected">terpilih</string>
-    <string name="presentation_batch_g_app_tagline">Pemutar Musik</string>
+    <string name="presentation_batch_g_ai_token_input">Input</string>
+    <string name="presentation_batch_g_ai_token_output">Output</string>
+    <string name="presentation_batch_g_ai_token_thought">Pemikiran</string>
+    <string name="presentation_batch_g_ai_token_count">%1$s: %2$s</string>
+    <string name="presentation_batch_g_ai_usage_date_pattern">dd MMM, HH:mm</string>
+    <string name="presentation_batch_g_artist_section_multi_parsing">Penguraian Multi-Artis</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters">Pemisah Karakter</string>
+    <string name="presentation_batch_g_artist_item_char_delimiters_current">Saat ini: %1$s</string>
+    <string name="presentation_batch_g_artist_item_word_delimiters">Pemisah Kata</string>
+    <string name="presentation_batch_g_artist_word_none">Tidak ada</string>
+    <string name="presentation_batch_g_artist_word_current_prefix">Saat ini: %1$s</string>
+    <string name="presentation_batch_g_artist_word_ellipsis">…</string>
     <string name="presentation_batch_g_artist_cd_configure">Konfigurasikan</string>
+    <string name="presentation_batch_g_artist_extract_from_title">Ekstrak Artis dari Judul</string>
+    <string name="presentation_batch_g_artist_extract_from_title_sub">Deteksi feat., ft., with dalam judul lagu</string>
+    <string name="presentation_batch_g_artist_section_library_org">Pengorganisasian Pustaka</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist">Kelompokkan berdasarkan Artis Album</string>
+    <string name="presentation_batch_g_artist_group_by_album_artist_sub">Tampilkan album kolaborasi di bawah artis utama</string>
+    <string name="presentation_batch_g_artist_info_title">Tentang Penguraian Multi-Artis</string>
+    <string name="presentation_batch_g_artist_info_body">PixelMusic membagi tag artis menggunakan pemisah karakter (/, ;, &amp;) dan pemisah kata (feat., ft., vs., x). Pemisah kata dicocokkan tanpa membedakan huruf besar-kecil.
+\n\n"Ekstrak Artis dari Judul" mendeteksi pola seperti (feat. Artis) dalam judul lagu.
+\n\nBackslash (\\) dapat digunakan untuk mengabaikan pemisah karakter.</string>
+    <string name="presentation_batch_g_artist_example_arrow"> → </string>
+    <string name="presentation_batch_g_artist_examples_title">Contoh</string>
     <string name="presentation_batch_g_artist_ex_1_in">\"Artis1/Artis2\"</string>
     <string name="presentation_batch_g_artist_ex_1_out">Artis1, Artis2</string>
     <string name="presentation_batch_g_artist_ex_2_in">\"Drake feat. Rihanna\"</string>
@@ -81,297 +197,403 @@
     <string name="presentation_batch_g_artist_ex_4_out">A, B</string>
     <string name="presentation_batch_g_artist_ex_5_in">\"AC\\DC\"</string>
     <string name="presentation_batch_g_artist_ex_5_out">AC/DC (diabaikan)</string>
-    <string name="presentation_batch_g_artist_example_arrow"> → </string>
-    <string name="presentation_batch_g_artist_examples_title">Contoh</string>
-    <string name="presentation_batch_g_artist_extract_from_title">Ekstrak Artis dari Judul</string>
-    <string name="presentation_batch_g_artist_extract_from_title_sub">Deteksi feat., ft., with dalam judul lagu</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist">Kelompokkan berdasarkan Artis Album</string>
-    <string name="presentation_batch_g_artist_group_by_album_artist_sub">Kelompokkan tab Artis dan album berdasarkan artis album, agar artis tamu dan artis kompilasi tidak memenuhi daftar</string>
-    <string name="presentation_batch_g_artist_info_title">Tentang Penguraian Multi-Artis</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters">Pemisah Karakter</string>
-    <string name="presentation_batch_g_artist_item_char_delimiters_current">Saat ini: %1$s</string>
-    <string name="presentation_batch_g_artist_item_word_delimiters">Pemisah Kata</string>
-    <string name="presentation_batch_g_artist_rescan">Pindai Ulang</string>
-    <string name="presentation_batch_g_artist_rescan_banner_body">Pengaturan artis telah berubah. Pindai ulang pustaka Anda untuk menerapkannya.</string>
+    <string name="presentation_batch_g_artist_topbar_title">Artis</string>
     <string name="presentation_batch_g_artist_rescan_banner_title">Pemindaian Ulang Diperlukan</string>
+    <string name="presentation_batch_g_artist_rescan_banner_body">Pengaturan artis telah berubah. Pindai ulang pustaka Anda untuk menerapkannya.</string>
     <string name="presentation_batch_g_artist_rescan_scanning">Memindai…</string>
-    <string name="presentation_batch_g_artist_section_library_org">Pengorganisasian Pustaka</string>
-    <string name="presentation_batch_g_artist_section_multi_parsing">Penguraian Multi-Artis</string>
-    <string name="presentation_batch_g_artist_word_current_prefix">Saat ini: %1$s</string>
-    <string name="presentation_batch_g_artist_word_none">Tidak ada</string>
-    <string name="presentation_batch_g_backup_app_version">Versi Aplikasi</string>
-    <string name="presentation_batch_g_backup_cd_clear_selection">Bersihkan pilihan</string>
-    <string name="presentation_batch_g_backup_cd_select_all">Pilih semua</string>
-    <string name="presentation_batch_g_backup_created">Dibuat</string>
-    <string name="presentation_batch_g_backup_details">Detail Cadangan</string>
-    <string name="presentation_batch_g_backup_device">Perangkat</string>
-    <string name="presentation_batch_g_backup_entries_will_replace">%1$d entri · Akan menggantikan data saat ini</string>
-    <string name="presentation_batch_g_backup_modules_selected">%1$d dari %2$d modul terpilih</string>
-    <string name="presentation_batch_g_backup_restore_modules">Pulihkan Modul</string>
-    <string name="presentation_batch_g_backup_restore_selected">Pulihkan yang terpilih</string>
-    <string name="presentation_batch_g_backup_restoring">Memulihkan</string>
-    <string name="presentation_batch_g_backup_schema">Skema</string>
-    <string name="presentation_batch_g_backup_transfer_progress">Transfer sedang berlangsung…</string>
-    <string name="presentation_batch_g_backup_unknown">Tidak Diketahui</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_1">Laporan umum seperti "Tidak berfungsi".</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_2">Beberapa masalah yang tidak berkaitan dalam satu issue.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_3">Log atau screenshot tanpa sensor yang berisi data pribadi.</string>
-    <string name="presentation_batch_g_beta_sheet_avoid_title">Harap hindari</string>
-    <string name="presentation_batch_g_beta_sheet_before_1">Cari issue terbuka dan tertutup yang sudah ada untuk menghindari duplikat.</string>
-    <string name="presentation_batch_g_beta_sheet_before_3">Mulai ulang aplikasi dan pastikan masalah tetap terjadi.</string>
-    <string name="presentation_batch_g_beta_sheet_before_4">Coba reproduksi masalah dan catat langkah-langkahnya secara jelas.</string>
-    <string name="presentation_batch_g_beta_sheet_before_title">Sebelum membuat issue</string>
-    <string name="presentation_batch_g_beta_sheet_bug_actual">Perilaku saat ini:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_expected">Perilaku yang diharapkan:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_frequency">Seberapa sering terjadi? Selalu / Kadang / Jarang.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_logs">Log / stack trace: jika tersedia.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_screenshot">Screenshot / video: jika tersedia.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_steps">Langkah memutar/reproduksi: 1. 2. 3.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary">Ringkasan singkat:</string>
-    <string name="presentation_batch_g_beta_sheet_bug_summary_text">Salin bagian ini saat ada fitur yang bermasalah atau crash.</string>
-    <string name="presentation_batch_g_beta_sheet_bug_template_title">Laporan Bug</string>
-    <string name="presentation_batch_g_beta_sheet_bug_title">Laporan bug</string>
-    <string name="presentation_batch_g_beta_sheet_env_android">Versi Android:</string>
-    <string name="presentation_batch_g_beta_sheet_env_device">Model perangkat:</string>
-    <string name="presentation_batch_g_beta_sheet_env_extra">Konteks tambahan: penggunaan kartu SD, pengaturan khusus, izin, dll.</string>
-    <string name="presentation_batch_g_beta_sheet_env_source">Sumber instalasi: GitHub Release, debug build, nightly build, dll.</string>
-    <string name="presentation_batch_g_beta_sheet_env_title">Lingkungan</string>
+    <string name="presentation_batch_g_artist_rescan">Pindai Ulang</string>
+    <string name="presentation_batch_g_topbar_beta_letter">β</string>
+    <string name="presentation_batch_g_topbar_beta">Beta</string>
+    <string name="presentation_batch_g_topbar_cd_telegram">Telegram</string>
+    <string name="presentation_batch_g_topbar_cd_changelog">Log Perubahan</string>
+    <string name="presentation_batch_g_topbar_cd_settings">Pengaturan</string>
+    <string name="presentation_batch_g_lyrics_mode_synced">Synced</string>
+    <string name="presentation_batch_g_lyrics_mode_static">Statis</string>
+    <string name="presentation_batch_g_lyrics_cd_options">Opsi lirik</string>
+    <string name="presentation_batch_g_streaming_title">Cloud Streaming</string>
+    <string name="presentation_batch_g_streaming_subtitle">Stream musik dari akun cloud Anda</string>
+    <string name="presentation_batch_g_sort_source">Sumber</string>
+    <string name="presentation_batch_g_sort_order">Urutan</string>
+    <string name="presentation_batch_g_sort_descending">Menurun</string>
+    <string name="presentation_batch_g_sort_ascending">Menaik</string>
+    <string name="presentation_batch_g_sort_original_order">Urutan Asli</string>
+    <string name="presentation_batch_g_sort_tap_ascending">Ketuk untuk beralih ke menaik</string>
+    <string name="presentation_batch_g_sort_tap_descending">Ketuk untuk beralih ke menurun</string>
+    <string name="presentation_batch_g_sort_keeps_order">Pengurutan ini mempertahankan urutan aslinya</string>
+    <string name="presentation_batch_g_cd_switch_on">Switch is on</string>
+    <string name="presentation_batch_g_file_explorer_cd_close">Tutup</string>
+    <string name="presentation_batch_g_file_explorer_cd_refresh">Segarkan</string>
+    <string name="presentation_batch_g_file_explorer_cd_done">Selesai</string>
+    <string name="presentation_batch_g_file_explorer_done">Selesai</string>
+    <string name="presentation_batch_g_file_explorer_hint">Semuanya diizinkan secara default. Ketuk folder untuk menandainya sebagai dikecualikan dari pemindaian.</string>
+    <string name="presentation_batch_g_file_explorer_empty_folders">Tidak ada subfolder di sini</string>
+    <string name="presentation_batch_g_file_explorer_cd_navigate_up">Navigasi ke atas</string>
+    <string name="presentation_batch_g_file_explorer_cd_go_root">Ke root</string>
+    <string name="presentation_batch_g_daily_mix_queue_name">Daily Mix</string>
+    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
+    <string name="presentation_batch_g_daily_mix_based_on_history">Berdasarkan Riwayat</string>
+    <string name="presentation_batch_g_daily_mix_see_all">Lihat semua Daily Mix</string>
+    <string name="presentation_batch_g_selection_one_song">lagu terpilih</string>
+    <string name="presentation_batch_g_selection_n_songs">lagu terpilih</string>
+    <string name="presentation_batch_g_selection_cd_share">Bagikan terpilih</string>
+    <string name="presentation_batch_g_selection_cd_like">Sukai terpilih</string>
+    <string name="presentation_batch_g_selection_play">Putar</string>
+    <string name="presentation_batch_g_selection_all">Semua</string>
+    <string name="presentation_batch_g_selection_deselect">Batal Pilih</string>
+    <string name="presentation_batch_g_selection_cd_more">Opsi lainnya</string>
+    <string name="presentation_batch_g_selection_options">Opsi</string>
+    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
+    <string name="presentation_batch_g_list_song_artist_album">%1$s • %2$s</string>
+    <string name="presentation_batch_g_list_cd_selected">Terpilih</string>
+    <string name="presentation_batch_g_list_cd_more_for_title">Opsi lainnya untuk %1$s</string>
+    <string name="presentation_batch_g_list_cd_album_art_for">Sampul album untuk %1$s</string>
+    <string name="presentation_batch_g_list_cd_playing">Memutar</string>
+    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
+    <string name="presentation_batch_g_stats_overview_title">Statistik</string>
+    <string name="presentation_batch_g_stats_overview_total_plays">Total putaran</string>
+    <string name="presentation_batch_g_stats_overview_avg_per_day">Rata-rata per hari</string>
+    <string name="presentation_batch_g_stats_overview_top_track">Trek teratas</string>
+    <string name="presentation_batch_g_stats_overview_top_track_line">%1$s • %2$d putaran</string>
+    <string name="presentation_batch_g_recently_played_title">Baru Diputar</string>
+    <string name="presentation_batch_g_lyrics_offset_minus_half">−0,5</string>
+    <string name="presentation_batch_g_lyrics_offset_minus_point_one">−0,1</string>
+    <string name="presentation_batch_g_lyrics_offset_plus_point_one">+0,1</string>
+    <string name="presentation_batch_g_lyrics_offset_plus_half">+0,5</string>
+    <string name="presentation_batch_g_lyrics_offset_zero">0 d</string>
+    <!-- Formatted with getString(..., floatSeconds) -->
+    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1f d</string>
+    <string name="presentation_batch_g_playstore_open">Buka Play Store</string>
+    <string name="presentation_batch_g_playstore_continue_beta">Lanjutkan beta</string>
+    <string name="presentation_batch_g_playstore_link_pending">Tautan Play Store akan diaktifkan dari konfigurasi GitHub.</string>
+    <string name="presentation_batch_g_playstore_title">PixelMusic kini tersedia di Google Play</string>
+    <string name="presentation_batch_g_playstore_body">Gunakan saluran stabil di Google Play untuk pembaruan rilis sementara kami tetap mengaktifkan build beta.</string>
+    <string name="presentation_batch_g_playstore_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_playstore_release_announcement">Pengumuman rilis</string>
+    <string name="presentation_batch_g_playstore_coming_soon">Segera hadir</string>
+    <string name="presentation_batch_g_genre_sort_title">Urutkan &amp; Putar</string>
+    <string name="presentation_batch_g_genre_sort_shuffle">Acak</string>
+    <string name="presentation_batch_g_genre_sort_by">Urutkan Berdasarkan</string>
+    <string name="presentation_batch_g_genre_sort_artist">Artis</string>
+    <string name="presentation_batch_g_genre_sort_album">Album</string>
+    <string name="presentation_batch_g_genre_sort_title_opt">Judul</string>
+    <string name="presentation_batch_g_cd_selected">Terpilih</string>
+    <string name="presentation_batch_g_changelog_title">Log Perubahan</string>
+    <string name="presentation_batch_g_changelog_view_github">Lihat di GitHub</string>
+    <string name="presentation_batch_g_presets_saved_title">Preset Tersimpan</string>
+    <string name="presentation_batch_g_presets_empty">Belum ada preset kustom yang tersimpan.</string>
+    <string name="presentation_batch_g_presets_cd_unpin">Lepas semat</string>
+    <string name="presentation_batch_g_presets_cd_pin">Sematkan</string>
+    <string name="presentation_batch_g_presets_cd_rename">Ubah nama</string>
+    <string name="presentation_batch_g_presets_cd_delete">Hapus</string>
+    <string name="presentation_batch_g_beta_sheet_version">Beta 0.7.0</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_title">Selamat datang di PixelMusic 0.7.0-beta</string>
+    <string name="presentation_batch_g_beta_sheet_welcome_body">Anda menggunakan versi beta yang mungkin berisi bug, crash, atau fitur eksperimental. Bantu kami meningkatkannya dengan melaporkan masalah.</string>
+    <string name="presentation_batch_g_beta_sheet_expect_title">Yang perlu diharapkan</string>
     <string name="presentation_batch_g_beta_sheet_expect_1">Bug, crash, atau fitur yang belum selesai dapat terjadi sewaktu-waktu.</string>
     <string name="presentation_batch_g_beta_sheet_expect_2">Beberapa fitur dapat berubah atau dihapus tanpa pemberitahuan.</string>
     <string name="presentation_batch_g_beta_sheet_expect_3">Versi beta mungkin lebih tidak stabil dibanding versi rilis.</string>
     <string name="presentation_batch_g_beta_sheet_expect_4">Selalu periksa pembaruan sebelum melaporkan masalah yang sudah diketahui.</string>
     <string name="presentation_batch_g_beta_sheet_expect_summary">Hal yang dapat berubah, rusak, atau ditingkatkan selama pengujian beta.</string>
-    <string name="presentation_batch_g_beta_sheet_expect_title">Yang perlu diharapkan</string>
-    <string name="presentation_batch_g_beta_sheet_feature_alternatives">Alternatif yang dipertimbangkan: Apakah ada pendekatan lain?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_mockup">Mockup atau gambar referensi jika tersedia.</string>
-    <string name="presentation_batch_g_beta_sheet_feature_problem">Deskripsi masalah: Masalah apa yang ingin diselesaikan?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_scope">Cakupan: Layar atau alur mana yang terpengaruh?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_solution">Solusi yang diusulkan: Bagaimana fitur ini seharusnya bekerja?</string>
-    <string name="presentation_batch_g_beta_sheet_feature_summary">Salin bagian ini jika ingin fitur atau peningkatan baru.</string>
-    <string name="presentation_batch_g_beta_sheet_feature_title">Permintaan fitur</string>
-    <string name="presentation_batch_g_beta_sheet_github_body">Cari terlebih dahulu, lalu buat laporan yang jelas untuk bug, crash, permintaan fitur, atau pertanyaan.</string>
     <string name="presentation_batch_g_beta_sheet_github_title">Shortcut issue GitHub</string>
+    <string name="presentation_batch_g_beta_sheet_github_body">Cari terlebih dahulu, lalu buat laporan yang jelas untuk bug, crash, permintaan fitur, atau pertanyaan.</string>
+    <string name="presentation_batch_g_beta_sheet_open_issues">Buka issue yang ada</string>
+    <string name="presentation_batch_g_beta_sheet_report_bug">Laporkan masalah atau crash</string>
+    <string name="presentation_batch_g_beta_sheet_report_title">Cara melapor</string>
+    <string name="presentation_batch_g_beta_sheet_report_summary">Checklist singkat sebelum membuat issue baru.</string>
+    <string name="presentation_batch_g_beta_sheet_before_title">Sebelum membuat issue</string>
+    <string name="presentation_batch_g_beta_sheet_before_1">Cari issue terbuka dan tertutup yang sudah ada untuk menghindari duplikat.</string>
+    <string name="presentation_batch_g_beta_sheet_before_2">Perbarui ke versi PixelMusic terbaru dan pastikan masalah masih terjadi.</string>
+    <string name="presentation_batch_g_beta_sheet_before_3">Mulai ulang aplikasi dan pastikan masalah tetap terjadi.</string>
+    <string name="presentation_batch_g_beta_sheet_before_4">Coba reproduksi masalah dan catat langkah-langkahnya secara jelas.</string>
+    <string name="presentation_batch_g_beta_sheet_issue_type_title">Jenis issue apa?</string>
     <string name="presentation_batch_g_beta_sheet_issue_type_bug">Laporan bug: Ada sesuatu yang tidak berjalan semestinya.</string>
     <string name="presentation_batch_g_beta_sheet_issue_type_feature">Permintaan fitur: Tambahkan fitur atau peningkatan baru.</string>
     <string name="presentation_batch_g_beta_sheet_issue_type_question">Pertanyaan: Gunakan Discussions jika tersedia, atau buat issue dengan label pertanyaan.</string>
-    <string name="presentation_batch_g_beta_sheet_issue_type_title">Jenis issue apa?</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_access">Akses build tersebut melalui artifact workflow GitHub Actions repositori jika tersedia.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_body">Build nightly dibuat dari commit terbaru dan mungkin berisi perubahan yang belum selesai, bug sementara, atau regresi. Build ini lebih eksperimental dibanding rilis resmi.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_body">Saat melaporkan masalah dari build nightly, selalu sebutkan bahwa masalah terjadi pada build nightly, bukan rilis resmi. Sertakan tanggal build, nama atau nomor workflow run, atau commit SHA jika memungkinkan. Periksa juga apakah masalah yang sama terjadi pada rilis resmi terbaru.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_report_title">Melaporkan masalah nightly</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_summary">Perbedaan nightly dengan rilis resmi, serta apa yang perlu disertakan saat terjadi masalah.</string>
-    <string name="presentation_batch_g_beta_sheet_nightly_title">Build nightly</string>
-    <string name="presentation_batch_g_beta_sheet_open_issues">Buka issue yang ada</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_body">Sebelum mengunggah log, screenshot, atau video, hapus informasi pribadi atau sensitif.</string>
-    <string name="presentation_batch_g_beta_sheet_privacy_title">Catatan privasi</string>
-    <string name="presentation_batch_g_beta_sheet_quality_summary">Buat laporan mudah ditinjau dan aman untuk dibagikan.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_title">Laporan bug</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary_text">Salin bagian ini saat ada fitur yang bermasalah atau crash.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_template_title">Laporan Bug</string>
+    <string name="presentation_batch_g_beta_sheet_bug_summary">Ringkasan singkat:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_expected">Perilaku yang diharapkan:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_actual">Perilaku saat ini:</string>
+    <string name="presentation_batch_g_beta_sheet_bug_steps">Langkah memutar/reproduksi: 1. 2. 3.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_frequency">Seberapa sering terjadi? Selalu / Kadang / Jarang.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_screenshot">Screenshot / video: jika tersedia.</string>
+    <string name="presentation_batch_g_beta_sheet_bug_logs">Log / stack trace: jika tersedia.</string>
+    <string name="presentation_batch_g_beta_sheet_env_title">Lingkungan</string>
+    <string name="presentation_batch_g_beta_sheet_env_version">Versi PixelMusic:</string>
+    <string name="presentation_batch_g_beta_sheet_env_source">Sumber instalasi: GitHub Release, debug build, nightly build, dll.</string>
+    <string name="presentation_batch_g_beta_sheet_env_android">Versi Android:</string>
+    <string name="presentation_batch_g_beta_sheet_env_device">Model perangkat:</string>
+    <string name="presentation_batch_g_beta_sheet_env_extra">Konteks tambahan: penggunaan kartu SD, pengaturan khusus, izin, dll.</string>
+    <string name="presentation_batch_g_beta_sheet_feature_title">Permintaan fitur</string>
+    <string name="presentation_batch_g_beta_sheet_feature_summary">Salin bagian ini jika ingin fitur atau peningkatan baru.</string>
+    <string name="presentation_batch_g_beta_sheet_feature_problem">Deskripsi masalah: Masalah apa yang ingin diselesaikan?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_solution">Solusi yang diusulkan: Bagaimana fitur ini seharusnya bekerja?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_alternatives">Alternatif yang dipertimbangkan: Apakah ada pendekatan lain?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_scope">Cakupan: Layar atau alur mana yang terpengaruh?</string>
+    <string name="presentation_batch_g_beta_sheet_feature_mockup">Mockup atau gambar referensi jika tersedia.</string>
     <string name="presentation_batch_g_beta_sheet_quality_title">Judul, privasi, dan cakupan</string>
-    <string name="presentation_batch_g_beta_sheet_report_bug">Laporkan masalah atau crash</string>
-    <string name="presentation_batch_g_beta_sheet_report_summary">Checklist singkat sebelum membuat issue baru.</string>
-    <string name="presentation_batch_g_beta_sheet_report_title">Cara melapor</string>
+    <string name="presentation_batch_g_beta_sheet_quality_summary">Buat laporan mudah ditinjau dan aman untuk dibagikan.</string>
+    <string name="presentation_batch_g_beta_sheet_title_examples_title">Contoh judul issue yang baik</string>
     <string name="presentation_batch_g_beta_sheet_title_example_1">Equalizer: Indikator bergeser saat berpindah tab preset</string>
     <string name="presentation_batch_g_beta_sheet_title_example_2">Pencarian: Riwayat tidak muncul saat query kosong</string>
-    <string name="presentation_batch_g_beta_sheet_title_example_3">Fitur: Tambahkan opsi urut playlist "Baru Ditambahkan"</string>
-    <string name="presentation_batch_g_beta_sheet_title_examples_title">Contoh judul issue yang baik</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body">Anda menggunakan versi beta yang mungkin berisi bug, crash, atau fitur eksperimental. Bantu kami meningkatkannya dengan melaporkan masalah.</string>
-    <string name="presentation_batch_g_beta_sheet_welcome_body_stable">Anda menggunakan versi rilis stabil. Lihat log perubahan untuk mengetahui apa yang baru, dan laporkan apa pun yang tidak berjalan semestinya.</string>
-    <string name="presentation_batch_g_brick_cd_close">Tutup</string>
-    <string name="presentation_batch_g_brick_drag_paddle">Seret untuk menggerakkan pemukul</string>
-    <string name="presentation_batch_g_brick_game_over">PERMAINAN BERAKHIR</string>
+    <string name="presentation_batch_g_beta_sheet_title_example_3">Fitur: Tambahkan opsi urut playlist \"Baru Ditambahkan\"</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_title">Harap hindari</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_1">Laporan umum seperti \"Tidak berfungsi\".</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_2">Beberapa masalah yang tidak berkaitan dalam satu issue.</string>
+    <string name="presentation_batch_g_beta_sheet_avoid_3">Log atau screenshot tanpa sensor yang berisi data pribadi.</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_title">Catatan privasi</string>
+    <string name="presentation_batch_g_beta_sheet_privacy_body">Sebelum mengunggah log, screenshot, atau video, hapus informasi pribadi atau sensitif.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_title">Build nightly</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_summary">Perbedaan nightly dengan rilis resmi, serta apa yang perlu disertakan saat terjadi masalah.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_body">Build nightly dibuat dari commit terbaru dan mungkin berisi perubahan yang belum selesai, bug sementara, atau regresi. Build ini lebih eksperimental dibanding rilis resmi.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_access">Akses build tersebut melalui artifact workflow GitHub Actions repositori jika tersedia.</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_title">Melaporkan masalah nightly</string>
+    <string name="presentation_batch_g_beta_sheet_nightly_report_body">Saat melaporkan masalah dari build nightly, selalu sebutkan bahwa masalah terjadi pada build nightly, bukan rilis resmi. Sertakan tanggal build, nama atau nomor workflow run, atau commit SHA jika memungkinkan. Periksa juga apakah masalah yang sama terjadi pada rilis resmi terbaru.</string>
+    <string name="presentation_batch_g_beta05_dont_show">Jangan tampilkan lagi</string>
+    <string name="presentation_batch_g_beta05_got_it">Mengerti</string>
+    <string name="presentation_batch_g_album_sel_count">%1$d ALBUM</string>
+    <string name="presentation_batch_g_album_sel_selected">terpilih</string>
+    <string name="presentation_batch_g_album_sel_queue_hint">Antrekan + putar menghormati urutan pilihan Anda.</string>
+    <string name="presentation_batch_g_album_sel_limit">Batas: %1$d album per pilihan.</string>
+    <string name="presentation_batch_g_album_sel_add_queue_play">Tambah ke Antrean &amp; Putar</string>
+    <string name="presentation_batch_g_app_name">PixelMusic</string>
+    <string name="presentation_batch_g_app_tagline">Pemutar Musik</string>
     <string name="presentation_batch_g_brick_high">TERTINGGI %1$d</string>
-    <string name="presentation_batch_g_brick_high_score">SKOR TERTINGGI  %1$d</string>
-    <string name="presentation_batch_g_brick_level_complete">LEVEL SELESAI!</string>
-    <string name="presentation_batch_g_brick_next_level">Level Berikutnya</string>
-    <string name="presentation_batch_g_brick_play">Putar</string>
-    <string name="presentation_batch_g_brick_play_random">Putar Musik Acak</string>
-    <string name="presentation_batch_g_brick_restart">Mulai Ulang Game</string>
-    <string name="presentation_batch_g_brick_score_line">Skor: %1$d</string>
-    <string name="presentation_batch_g_brick_stat_lives">NYAWA</string>
-    <string name="presentation_batch_g_brick_stat_lvl">LEVEL %1$d</string>
+    <string name="presentation_batch_g_brick_cd_close">Tutup</string>
     <string name="presentation_batch_g_brick_stat_score">SKOR</string>
-    <string name="presentation_batch_g_brick_tap_relaunch">KETUK UNTUK MEMULAI KEMBALI</string>
-    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
+    <string name="presentation_batch_g_brick_stat_lvl">LVL %1$d</string>
+    <string name="presentation_batch_g_brick_stat_lives">NYAWA</string>
+    <string name="presentation_batch_g_brick_level_complete">LEVEL SELESAI!</string>
+    <string name="presentation_batch_g_brick_game_over">PERMAINAN BERAKHIR</string>
+    <string name="presentation_batch_g_brick_score_line">Skor: %1$d</string>
     <string name="presentation_batch_g_brick_try_again">Coba Lagi?</string>
-    <string name="presentation_batch_g_cd_selected">Terpilih</string>
-    <string name="presentation_batch_g_cd_switch_on">Sakelar aktif</string>
-    <string name="presentation_batch_g_changelog_sec_improvements">Peningkatan</string>
-    <string name="presentation_batch_g_changelog_sec_initial_release">Rilis awal</string>
-    <string name="presentation_batch_g_changelog_sec_release_readiness">Kesiapan rilis</string>
-    <string name="presentation_batch_g_changelog_sec_removed_for_foss">Dihapus untuk FOSS</string>
-    <string name="presentation_batch_g_changelog_sec_security_privacy">Keamanan dan privasi</string>
-    <string name="presentation_batch_g_changelog_sec_under_the_hood">Di balik layar</string>
-    <string name="presentation_batch_g_changelog_sec_whats_new">Apa yang baru</string>
-    <string name="presentation_batch_g_changelog_title">Log Perubahan</string>
-    <string name="presentation_batch_g_changelog_view_github">Lihat di GitHub</string>
-    <string name="presentation_batch_g_daily_mix_based_on_history">Berdasarkan Riwayat</string>
-    <string name="presentation_batch_g_daily_mix_heading">DAILY MIX</string>
-    <string name="presentation_batch_g_daily_mix_queue_name">Daily Mix</string>
-    <string name="presentation_batch_g_daily_mix_see_all">Lihat semua Daily Mix</string>
-    <string name="presentation_batch_g_device_info_title">Info Perangkat</string>
-    <string name="presentation_batch_g_device_key_android_version">Versi Android</string>
-    <string name="presentation_batch_g_device_key_brand">Merek</string>
-    <string name="presentation_batch_g_device_key_device">Perangkat</string>
-    <string name="presentation_batch_g_device_key_hardware">Perangkat Keras</string>
-    <string name="presentation_batch_g_device_key_manufacturer">Produsen</string>
-    <string name="presentation_batch_g_device_key_model">Model</string>
-    <string name="presentation_batch_g_device_key_sdk_version">Versi SDK</string>
-    <string name="presentation_batch_g_device_label_low_latency">Dukungan Latensi Rendah</string>
-    <string name="presentation_batch_g_device_label_pro_audio">Dukungan Pro Audio</string>
-    <string name="presentation_batch_g_device_label_sample_rate">Sample Rate</string>
-    <string name="presentation_batch_g_device_section_exoplayer">Mesin ExoPlayer</string>
-    <string name="presentation_batch_g_device_value_hz">%1$d Hz</string>
-    <string name="presentation_batch_g_file_explorer_cd_close">Tutup</string>
-    <string name="presentation_batch_g_file_explorer_cd_done">Selesai</string>
-    <string name="presentation_batch_g_file_explorer_cd_go_root">Kembali ke root</string>
-    <string name="presentation_batch_g_file_explorer_cd_navigate_up">Navigasi ke atas</string>
-    <string name="presentation_batch_g_file_explorer_cd_refresh">Refresh</string>
-    <string name="presentation_batch_g_file_explorer_done">Selesai</string>
-    <string name="presentation_batch_g_file_explorer_empty_folders">Tidak ada subfolder di sini</string>
-    <string name="presentation_batch_g_file_explorer_hint">Semuanya diizinkan secara default. Ketuk folder untuk menandainya sebagai dikecualikan dari pemindaian.</string>
-    <string name="presentation_batch_g_genre_sort_album">Album</string>
-    <string name="presentation_batch_g_genre_sort_artist">Artis</string>
-    <string name="presentation_batch_g_genre_sort_by">Urutkan Berdasarkan</string>
-    <string name="presentation_batch_g_genre_sort_shuffle">Acak</string>
-    <string name="presentation_batch_g_genre_sort_title">Urutkan &amp; Putar</string>
-    <string name="presentation_batch_g_genre_sort_title_opt">Judul</string>
-    <string name="presentation_batch_g_list_cd_album_art_for">Sampul album untuk %1$s</string>
-    <string name="presentation_batch_g_list_cd_more_for_title">Opsi lainnya untuk %1$s</string>
-    <string name="presentation_batch_g_list_cd_playing">Memutar</string>
-    <string name="presentation_batch_g_list_cd_selected">Terpilih</string>
-    <string name="presentation_batch_g_list_song_artist_album">%1$s • %2$s</string>
-    <string name="presentation_batch_g_lyrics_cd_options">Opsi lirik</string>
-    <string name="presentation_batch_g_lyrics_mode_static">Statis</string>
-    <string name="presentation_batch_g_lyrics_mode_synced">Synced</string>
-    <string name="presentation_batch_g_lyrics_offset_minus_half">−.5</string>
-    <string name="presentation_batch_g_lyrics_offset_minus_point_one">−.1</string>
-    <string name="presentation_batch_g_lyrics_offset_plus_half">+.5</string>
-    <string name="presentation_batch_g_lyrics_offset_plus_point_one">+.1</string>
-    <string name="presentation_batch_g_lyrics_offset_seconds_fmt">%1$+.1fs</string>
-    <string name="presentation_batch_g_lyrics_offset_zero">0s</string>
-    <string name="presentation_batch_g_no">Tidak</string>
-    <string name="presentation_batch_g_player_cd_cloud_stream">Aliran cloud</string>
-    <string name="presentation_batch_g_player_cd_collapse">Tutup pemutar</string>
-    <string name="presentation_batch_g_player_cd_lyrics">Lirik</string>
+    <string name="presentation_batch_g_brick_next_level">Level Berikutnya</string>
+    <string name="presentation_batch_g_brick_restart">Mulai Ulang Permainan</string>
+    <string name="presentation_batch_g_brick_tap_relaunch">KETUK UNTUK MELUNCURKAN KEMBALI</string>
+    <string name="presentation_batch_g_brick_play_random">Putar Musik Acak</string>
+    <string name="presentation_batch_g_brick_title">Brick Breaker</string>
+    <string name="presentation_batch_g_brick_high_score">SKOR TERTINGGI %1$d</string>
+    <string name="presentation_batch_g_brick_play">Main</string>
+    <string name="presentation_batch_g_brick_drag_paddle">Seret untuk menggerakkan pemukul</string>
+    <string name="presentation_batch_g_backup_restore_modules">Pulihkan Modul</string>
+    <string name="presentation_batch_g_backup_restoring">Memulihkan</string>
+    <string name="presentation_batch_g_backup_restore_selected">Pulihkan Terpilih</string>
+    <string name="presentation_batch_g_backup_details">Detail Cadangan</string>
+    <string name="presentation_batch_g_backup_created">Dibuat</string>
+    <string name="presentation_batch_g_backup_app_version">Versi Aplikasi</string>
+    <string name="presentation_batch_g_backup_schema">Skema</string>
+    <string name="presentation_batch_g_backup_device">Perangkat</string>
+    <string name="presentation_batch_g_backup_unknown">Tidak diketahui</string>
+    <string name="presentation_batch_g_backup_modules_selected">%1$d dari %2$d modul terpilih</string>
+    <string name="presentation_batch_g_backup_transfer_progress">Transfer sedang berlangsung…</string>
+    <string name="presentation_batch_g_backup_cd_select_all">Pilih semua</string>
+    <string name="presentation_batch_g_backup_cd_clear_selection">Bersihkan pilihan</string>
+    <string name="presentation_batch_g_backup_entries_will_replace">%1$d entri · Akan menggantikan data saat ini</string>
+    <string name="presentation_batch_g_player_cd_cloud_stream">Cloud stream</string>
+    <string name="presentation_batch_g_player_cd_collapse">Ciutkan pemutar</string>
+    <string name="presentation_batch_g_player_cd_cast">Cast</string>
+    <string name="presentation_batch_g_player_cd_bluetooth">Bluetooth</string>
+    <string name="presentation_batch_g_player_cd_local_playback">Pemutaran lokal</string>
+    <string name="presentation_batch_g_player_connecting">Menghubungkan…</string>
     <string name="presentation_batch_g_player_cd_queue">Antrean</string>
-    <string name="presentation_batch_g_presets_cd_delete">Hapus</string>
-    <string name="presentation_batch_g_presets_cd_pin">Pin</string>
-    <string name="presentation_batch_g_presets_cd_rename">Ubah Nama</string>
-    <string name="presentation_batch_g_presets_cd_unpin">Batal Pin</string>
-    <string name="presentation_batch_g_presets_empty">Belum ada preset kustom yang disimpan.</string>
-    <string name="presentation_batch_g_presets_saved_title">Preset Tersimpan</string>
-    <string name="presentation_batch_g_recently_played_title">Baru Diputar</string>
-    <string name="presentation_batch_g_selection_all">Semua</string>
-    <string name="presentation_batch_g_selection_cd_like">Sukai terpilih</string>
-    <string name="presentation_batch_g_selection_cd_more">Opsi lainnya</string>
-    <string name="presentation_batch_g_selection_cd_share">Bagikan terpilih</string>
-    <string name="presentation_batch_g_selection_deselect">Batal pilih</string>
-    <string name="presentation_batch_g_selection_n_songs">lagu terpilih</string>
-    <string name="presentation_batch_g_selection_one_song">lagu terpilih</string>
-    <string name="presentation_batch_g_selection_overflow_count">+%1$d</string>
-    <string name="presentation_batch_g_selection_play">Putar</string>
-    <string name="presentation_batch_g_sort_ascending">Menaik</string>
-    <string name="presentation_batch_g_sort_descending">Menurun</string>
-    <string name="presentation_batch_g_sort_order">Urutan</string>
-    <string name="presentation_batch_g_sort_original_order">Urutan Asli</string>
-    <string name="presentation_batch_g_sort_source">Sumber</string>
-    <string name="presentation_batch_g_stats_avatar_placeholder">\?</string>
-    <string name="presentation_batch_g_stats_avg_plays_per_track">Rata-rata putaran/trek</string>
-    <string name="presentation_batch_g_stats_card_listening_by_album">Mendengarkan berdasarkan album</string>
-    <string name="presentation_batch_g_stats_card_listening_by_artist">Mendengarkan berdasarkan artis</string>
-    <string name="presentation_batch_g_stats_card_listening_by_genre">Mendengarkan berdasarkan genre</string>
-    <string name="presentation_batch_g_stats_card_listening_by_song">Mendengarkan berdasarkan lagu</string>
-    <string name="presentation_batch_g_stats_cd_refresh">Segarkan statistik</string>
-    <string name="presentation_batch_g_stats_collapse_tracks">Ciutkan trek</string>
-    <string name="presentation_batch_g_stats_dim_album">Album</string>
-    <string name="presentation_batch_g_stats_dim_artist">Artis</string>
-    <string name="presentation_batch_g_stats_dim_genre">Genre</string>
-    <string name="presentation_batch_g_stats_dim_song">Lagu</string>
-    <string name="presentation_batch_g_stats_em_dash">—</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_subtitle">Album yang sering Anda kunjungi kembali akan muncul di sini.</string>
-    <string name="presentation_batch_g_stats_empty_no_albums_title">Tidak ada album teratas</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_subtitle">Teruslah mendengarkan dan artis favorit Anda akan muncul di sini.</string>
-    <string name="presentation_batch_g_stats_empty_no_artists_title">Tidak ada artis teratas</string>
-    <string name="presentation_batch_g_stats_empty_no_category_subtitle">Tekan putar untuk menampilkan sorotan mendengarkan Anda</string>
-    <string name="presentation_batch_g_stats_empty_no_category_title">Belum ada data kategori</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_subtitle">Putar lebih banyak trek untuk melihat seberapa terfokus pendengaran Anda.</string>
-    <string name="presentation_batch_g_stats_empty_no_concentration_title">Belum ada data konsentrasi</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_subtitle">Kami akan menampilkan kebiasaan mendengarkan Anda setelah kami mengenal Anda lebih baik.</string>
-    <string name="presentation_batch_g_stats_empty_no_habits_title">Belum ada kebiasaan</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_subtitle">Tekan putar untuk mulai membangun lini masa mendengarkan Anda</string>
-    <string name="presentation_batch_g_stats_empty_no_timeline_title">Belum ada data mendengarkan</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_subtitle">Dengarkan favorit Anda untuk melihatnya disorot di sini.</string>
-    <string name="presentation_batch_g_stats_empty_no_tracks_title">Tidak ada trek teratas</string>
-    <string name="presentation_batch_g_stats_grouped_4h">Dikelompokkan dalam segmen 4 jam</string>
-    <string name="presentation_batch_g_stats_grouped_by_month">Dikelompokkan berdasarkan bulan</string>
-    <string name="presentation_batch_g_stats_grouped_by_year">Dikelompokkan berdasarkan tahun</string>
-    <string name="presentation_batch_g_stats_grouped_dow">Dikelompokkan berdasarkan hari dalam seminggu</string>
-    <string name="presentation_batch_g_stats_grouped_week_of_month">Dikelompokkan berdasarkan minggu dalam sebulan</string>
-    <string name="presentation_batch_g_stats_habit_avg_session">Rata-rata sesi</string>
-    <string name="presentation_batch_g_stats_habit_longest_session">Sesi terlama</string>
-    <string name="presentation_batch_g_stats_habit_most_active_day">Hari paling aktif</string>
-    <string name="presentation_batch_g_stats_habit_no_playback_yet">Belum ada pemutaran</string>
-    <string name="presentation_batch_g_stats_habit_peak_timeline_slot">Slot lini masa puncak</string>
-    <string name="presentation_batch_g_stats_habit_sessions_per_day">Sesi/hari</string>
-    <string name="presentation_batch_g_stats_habit_total_sessions">Total sesi</string>
-    <string name="presentation_batch_g_stats_hero_listening">Mendengarkan</string>
-    <string name="presentation_batch_g_stats_hero_plays">Putaran</string>
-    <string name="presentation_batch_g_stats_listening_concentration_title">Konsentrasi mendengarkan</string>
-    <string name="presentation_batch_g_stats_n_plays">%1$d putaran</string>
-    <string name="presentation_batch_g_stats_overview_avg_per_day">Rata-rata per hari</string>
-    <string name="presentation_batch_g_stats_overview_title">Statistik mendengarkan</string>
-    <string name="presentation_batch_g_stats_overview_top_track">Trek teratas</string>
-    <string name="presentation_batch_g_stats_overview_top_track_line">%1$s • %2$d putaran</string>
-    <string name="presentation_batch_g_stats_overview_total_plays">Total putaran</string>
-    <string name="presentation_batch_g_stats_peak_segment">Segmen puncak</string>
-    <string name="presentation_batch_g_stats_percent">%1$d%%</string>
-    <string name="presentation_batch_g_stats_plays_artists">%1$d putaran • %2$d artis</string>
-    <string name="presentation_batch_g_stats_plays_tracks">%1$d putaran • %2$d trek</string>
-    <string name="presentation_batch_g_stats_range_all_time">Semua Waktu</string>
-    <string name="presentation_batch_g_stats_range_month_to_date">Bulan Berjalan</string>
-    <string name="presentation_batch_g_stats_range_today">Hari ini</string>
-    <string name="presentation_batch_g_stats_range_week_to_date">Minggu Berjalan</string>
-    <string name="presentation_batch_g_stats_range_year_to_date">Tahun Berjalan</string>
-    <string name="presentation_batch_g_stats_ranked_album">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_ranked_artist">%1$d. %2$s</string>
-    <string name="presentation_batch_g_stats_rhythm_all_time">Progres semua waktu</string>
-    <string name="presentation_batch_g_stats_rhythm_daily">Ritme harian</string>
-    <string name="presentation_batch_g_stats_rhythm_monthly">Ritme bulanan</string>
-    <string name="presentation_batch_g_stats_rhythm_weekly">Ritme mingguan</string>
-    <string name="presentation_batch_g_stats_rhythm_year">Tahun sekilas</string>
-    <string name="presentation_batch_g_stats_section_listening_habits">Kebiasaan mendengarkan</string>
-    <string name="presentation_batch_g_stats_section_listening_timeline">Lini masa mendengarkan</string>
-    <string name="presentation_batch_g_stats_section_top_albums">Album teratas</string>
-    <string name="presentation_batch_g_stats_section_top_artists">Artis teratas</string>
-    <string name="presentation_batch_g_stats_section_top_categories">Kategori teratas</string>
-    <string name="presentation_batch_g_stats_show_all_tracks">Tampilkan semua trek</string>
-    <string name="presentation_batch_g_stats_slice_others">Lainnya</string>
-    <string name="presentation_batch_g_stats_slice_top_1">Top 1</string>
-    <string name="presentation_batch_g_stats_slice_top_2_3">Top 2-3</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session">Rata-rata sesi</string>
-    <string name="presentation_batch_g_stats_timeline_metric_avg_session_desc">Rata-rata durasi mendengarkan untuk setiap segmen.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time">Waktu mendengarkan</string>
-    <string name="presentation_batch_g_stats_timeline_metric_listening_time_desc">Total waktu mendengarkan dalam rentang yang dipilih.</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count">Jumlah putaran</string>
-    <string name="presentation_batch_g_stats_timeline_metric_play_count_desc">Berapa banyak sesi yang Anda selesaikan per segmen.</string>
-    <string name="presentation_batch_g_stats_timeline_support_all">Bilah tahunan merangkum riwayat lengkap Anda.</string>
-    <string name="presentation_batch_g_stats_timeline_support_day">Dibagi menjadi jendela 4 jam untuk mengungkapkan ritme harian Anda.</string>
-    <string name="presentation_batch_g_stats_timeline_support_month">Bilah mingguan menunjukkan tren bulan ini.</string>
-    <string name="presentation_batch_g_stats_timeline_support_week">Bilah harian memudahkan perbandingan kebiasaan dari minggu ke minggu.</string>
-    <string name="presentation_batch_g_stats_timeline_support_year">Bilah bulanan menunjukkan musiman sepanjang tahun.</string>
-    <string name="presentation_batch_g_stats_title">Statistik Mendengarkan</string>
-    <string name="presentation_batch_g_stats_top_categories_subtitle">Bandingkan cara Anda mendengarkan lintas genre, artis, album, dan lagu.</string>
-    <string name="presentation_batch_g_stats_top_three_share_label">Top 3 share</string>
-    <string name="presentation_batch_g_stats_top_three_share_line">Top 3 trek menyumbang %1$d%% dari waktu mendengarkan Anda.</string>
-    <string name="presentation_batch_g_stats_track_concentration_subtitle">Bagaimana waktu mendengarkan Anda didistribusikan ke seluruh trek teratas Anda.</string>
-    <string name="presentation_batch_g_stats_track_concentration_title">Konsentrasi trek</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_subtitle">Trek yang paling sering diputar untuk rentang waktu yang dipilih.</string>
-    <string name="presentation_batch_g_stats_tracks_in_range_title">Trek dalam rentang ini</string>
-    <string name="presentation_batch_g_stats_unique_tracks">Trek unik</string>
-    <string name="presentation_batch_g_streaming_subtitle">Alirkan musik dari akun cloud Anda</string>
-    <string name="presentation_batch_g_streaming_title">Cloud Streaming</string>
-    <string name="presentation_batch_g_sync_percent">%1$d%%</string>
-    <string name="presentation_batch_g_topbar_build_debug">Debug</string>
-    <string name="presentation_batch_g_topbar_build_stable">Stabil</string>
-    <string name="presentation_batch_g_topbar_cd_changelog">Log Perubahan</string>
-    <string name="presentation_batch_g_yes">Ya</string>
+    <string name="presentation_batch_g_player_cd_lyrics">Lirik</string>
+    <string name="presentation_batch_g_cast_subtitle_session">Sesi casting</string>
+    <string name="presentation_batch_g_cast_connecting">Menghubungkan</string>
+    <string name="presentation_batch_g_cast_connected">Terhubung</string>
+    <string name="presentation_batch_g_cast_this_phone">Ponsel ini</string>
+    <string name="presentation_batch_g_cast_bluetooth_audio">Audio Bluetooth</string>
+    <string name="presentation_batch_g_cast_local_playback">Pemutaran lokal</string>
+    <string name="presentation_batch_g_cast_playing">Memutar</string>
+    <string name="presentation_batch_g_cast_paused">Dijeda</string>
+    <string name="presentation_batch_g_cast_perm_title">Bersiaplah untuk terhubung</string>
+    <string name="presentation_batch_g_cast_perm_body">Izinkan PixelMusic untuk melihat perangkat terdekat dan Wi‑Fi saat ini agar kami dapat menjaga sinkronisasi cast, audio Bluetooth, dan speaker Anda.</string>
+    <string name="presentation_batch_g_cast_perm_nearby_title">Perangkat terdekat</string>
+    <string name="presentation_batch_g_cast_perm_nearby_desc">Diperlukan untuk membaca dan mengontrol perangkat audio Bluetooth Anda yang terhubung.</string>
+    <string name="presentation_batch_g_cast_perm_location_title">Lokasi untuk Wi‑Fi</string>
+    <string name="presentation_batch_g_cast_perm_location_desc">Android memerlukan Lokasi untuk membagikan jaringan Wi‑Fi (SSID) yang Anda gunakan agar kami dapat menemukan perangkat cast yang kompatibel.</string>
+    <string name="presentation_batch_g_cast_allow_access">Izinkan akses</string>
+    <string name="presentation_batch_g_cast_perm_footer">Kami hanya menggunakan izin ini untuk interkonektivitas perangkat — casting, mengontrol speaker terdekat, dan menjaga sinkronisasi audio.</string>
+    <string name="presentation_batch_g_cast_title_connect">Hubungkan perangkat</string>
+    <string name="presentation_batch_g_cast_scanning_nearby">Memindai perangkat sekitar</string>
+    <string name="presentation_batch_g_cast_tab_controls">Kontrol</string>
+    <string name="presentation_batch_g_cast_tab_devices">Perangkat</string>
+    <string name="presentation_batch_g_cast_connectivity">Konektivitas</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi_bt">Aktifkan Wi-Fi atau Bluetooth</string>
+    <string name="presentation_batch_g_cast_manage_radios">Kelola radio aktif dan pindai ulang</string>
+    <string name="presentation_batch_g_cast_cd_refresh_connections">Segarkan koneksi</string>
+    <string name="presentation_batch_g_cast_cd_refresh_devices">Segarkan perangkat</string>
+    <string name="presentation_batch_g_cast_nearby_devices">Perangkat terdekat</string>
+    <string name="presentation_batch_g_cast_nearby_desc">Diperlukan untuk mendeteksi dan mengontrol perangkat audio Bluetooth yang terhubung.</string>
+    <string name="presentation_batch_g_cast_tap_to_connect">Ketuk untuk menghubungkan</string>
+    <string name="presentation_batch_g_cast_no_devices_yet">Belum ada perangkat</string>
+    <string name="presentation_batch_g_cast_disconnect">Putuskan</string>
+    <string name="presentation_batch_g_cast_volume_device">Volume perangkat</string>
+    <string name="presentation_batch_g_cast_volume_phone">Volume ponsel</string>
+    <string name="presentation_batch_g_cast_searching">Mencari perangkat…</string>
+    <string name="presentation_batch_g_cast_searching_hint">Pastikan TV atau speaker Anda menyala dan menggunakan jaringan Wi‑Fi yang sama.</string>
+    <string name="presentation_batch_g_cast_status_connected">Terhubung</string>
+    <string name="presentation_batch_g_cast_status_available_connect">Tersedia untuk dihubungkan</string>
+    <string name="presentation_batch_g_cast_status_connecting">Menghubungkan</string>
+    <string name="presentation_batch_g_cast_status_available">Tersedia</string>
+    <string name="presentation_batch_g_cast_cd_battery">Tingkat baterai</string>
+    <string name="presentation_batch_g_cast_cd_volume_level">Tingkat volume</string>
+    <string name="presentation_batch_g_cast_wifi">Wi-Fi</string>
+    <string name="presentation_batch_g_cast_wifi_off">Mati</string>
+    <string name="presentation_batch_g_cast_wifi_connected">Terhubung</string>
+    <string name="presentation_batch_g_cast_wifi_on">Nyala</string>
+    <string name="presentation_batch_g_cast_bluetooth">Bluetooth</string>
+    <string name="presentation_batch_g_cast_bt_connected">Terhubung</string>
+    <string name="presentation_batch_g_cast_bt_on">Nyala</string>
+    <string name="presentation_batch_g_cast_bt_off">Mati</string>
+    <string name="presentation_batch_g_cast_connections_off_title">Koneksi mati</string>
+    <string name="presentation_batch_g_cast_connections_off_body">Aktifkan Wi‑Fi atau Bluetooth untuk menemukan perangkat terdekat</string>
+    <string name="presentation_batch_g_cast_turn_on_wifi">Aktifkan Wi‑Fi</string>
+    <string name="presentation_batch_g_cast_open_bluetooth">Buka Bluetooth</string>
+    <string name="presentation_batch_g_cast_cd_disconnect_icon">Putuskan</string>
+    <string name="presentation_batch_g_cast_connecting_ellipsis">Menghubungkan…</string>
+
+    <string name="presentation_batch_g_changelog_sec_highlights">Sorotan</string>
+    <string name="presentation_batch_g_changelog_sec_improvements">Peningkatan</string>
+    <string name="presentation_batch_g_changelog_sec_fixes">Perbaikan</string>
+    <string name="presentation_batch_g_changelog_sec_whats_new_lower">Yang baru</string>
+    <string name="presentation_batch_g_changelog_sec_added">Ditambahkan</string>
+    <string name="presentation_batch_g_changelog_sec_changed">Diubah</string>
+    <string name="presentation_batch_g_changelog_sec_fixed">Diperbaiki</string>
+
+    <string-array name="presentation_batch_g_changelog_070_highlights">
+        <item>Peningkatan integrasi AI dan pembuatan playlist yang lebih cerdas.</item>
+        <item>Statistik mendengarkan yang lebih lengkap dengan insight dan visualisasi baru.</item>
+        <item>Alur sinkronisasi pustaka yang lebih baik di semua penyedia cloud.</item>
+        <item>Pengeditan metadata yang lebih baik dengan dukungan sampul album.</item>
+    </string-array>
+
+    <string-array name="presentation_batch_g_changelog_070_improvements">
+        <item>Peningkatan performa pada startup, pustaka, antrean, dan interaksi pemutar.</item>
+        <item>Tampilan Material 3 yang disempurnakan untuk pengalaman yang lebih rapi dan konsisten.</item>
+        <item>Animasi dan transisi yang lebih mulus di seluruh aplikasi.</item>
+        <item>Pencarian yang lebih relevan dan penemuan lagu yang lebih cepat.</item>
+    </string-array>
+
+    <string-array name="presentation_batch_g_changelog_070_fixes">
+        <item>Memperbaiki perilaku antrean dan shuffle agar pemutaran lebih stabil.</item>
+        <item>Memperbaiki masalah pemutaran latar belakang dan notifikasi.</item>
+        <item>Perbaikan bug umum dan penyempurnaan UI.</item>
+    </string-array>
+    <string name="presentation_batch_g_cast_nearby_title">Perangkat terdekat</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_g_beta_sheet_report_body">Bagikan langkah-langkah untuk mereproduksi, hasil yang diharapkan, hasil aktual, dan detail perangkat/OS Anda.</string>
+    <string name="presentation_batch_g_beta05_title">v1.6.08 Pembaruan</string>
+    <string name="presentation_batch_g_beta05_clean_install_title">Apa yang Baru di v1.6.08</string>
+    <string name="presentation_batch_g_beta05_clean_install_body">•</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_title">Jelajahi Segarkan</string>
+    <string name="presentation_batch_g_beta05_if_wrong_meta_body">Nikmati tata letak Material 3 Ekspresif baru yang ramping di seluruh tab Jelajahi!</string>
+    <string name="presentation_batch_g_changelog_sec_whats_new">Apa yang Baru</string>
+    <string-array name="presentation_batch_g_changelog_060_whats_new">
+        <item>Dukungan Android Auto kini tersedia untuk pemutaran di mobil.</item>
+        <item>Dukungan Wear OS telah hadir, termasuk kontrol pemutaran jam ke ponsel yang lebih baik.</item>
+        <item>Integrasi cloud diperluas dengan peningkatan Telegram, NetEase, QQ Music, dan Google Drive.</item>
+        <item>Terakhir Diputar dan pemulihan antrean persisten menjaga sesi mendengarkan Anda selalu siap.</item>
+        <item>Alat Cadangkan &amp; Pulihkan v3 serta manajemen akun kini disertakan.</item>
+        <item>Lirik semakin pintar dengan pencarian manual cadangan dan peningkatan penyimpanan.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_improvements">
+        <item>Peningkatan performa besar pada startup, perpustakaan, antrean, dan interaksi pemutar.</item>
+        <item>Tampilan Pemutar, Transmisi, Lirik, Artis, dan Genre didesain ulang agar lebih lancar digunakan.</item>
+        <item>Alur navigasi dan pencarian lebih andal dengan penanganan rute yang lebih aman.</item>
+        <item>Kompatibilitas pemutaran audio ditingkatkan untuk lebih banyak perangkat dan format.</item>
+        <item>Alur kerja multi-seleksi diperluas untuk lagu, album, dan daftar putar.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_060_fixes">
+        <item>Perilaku antrean dan acak kini lebih stabil dan mudah diprediksi.</item>
+        <item>Beberapa masalah pemutaran latar belakang dan transmisi telah diperbaiki.</item>
+        <item>Masalah Timer Tidur, navigasi tab File, dan crash artis album telah diperbaiki.</item>
+        <item>Pemuatan widget dan stabilitas layanan ditingkatkan untuk mengurangi panas/memori berlebih.</item>
+        <item>Perbaikan bug umum dan penyempurnaan UI di seluruh aplikasi.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_highlights">
+        <item>Pembaruan UI Material 3 Expressive</item>
+        <item>Equalizer 10-band &amp; Efek</item>
+        <item>Alur Sinkronisasi Perpustakaan Baru</item>
+        <item>Integrasi AI (Model Gemini)</item>
+        <item>Impor/Ekspor Daftar Putar M3U</item>
+        <item>Integrasi Sampul Artis Deezer</item>
+        <item>Sampul Daftar Putar Kustom</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_improvements">
+        <item>Refaktor Arsitektur Pengaturan</item>
+        <item>Animasi Antrean &amp; Pemutar</item>
+        <item>Profil Baseline &amp; Performa</item>
+        <item>Sistem Lirik Lebih Baik dengan Offset Sinkronisasi</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_050_fixes">
+        <item>Peningkatan Stabilitas Transmisi</item>
+        <item>Stabilitas Lembar Pemutar</item>
+        <item>Perbaikan Bug Umum &amp; Pembersihan</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_040_highlights">
+        <item>Desain ulang navigasi utama</item>
+        <item>Penjelajah file baru untuk memilih direktori sumber</item>
+        <item>Fungsi konektivitas dan transmisi baru</item>
+        <item>Kontinuitas mulus antar perangkat jarak jauh</item>
+        <item>Transisi tanpa jeda antar lagu (Gapless)</item>
+        <item>Kontrol Crossfade</item>
+        <item>Fitur Transisi Kustom baru (hanya untuk daftar putar)</item>
+        <item>Tetap memutar setelah aplikasi ditutup</item>
+        <item>Optimalisasi UI</item>
+        <item>Fitur statistik yang ditingkatkan</item>
+        <item>Desain ulang kontrol Antrean dengan lebih banyak fitur</item>
+        <item>Peningkatan dukungan berbagai tipe file dan pengeditan metadata</item>
+        <item>Pengontrol izin yang disempurnakan</item>
+        <item>Perbaikan bug kecil</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_whats_new">
+        <item>Memperkenalkan pusat statistik mendengarkan yang lebih kaya dengan wawasan lebih dalam.</item>
+        <item>Meluncurkan pemutar cepat mengambang untuk langsung membuka dan melihat pratinjau file lokal.</item>
+        <item>Menambahkan tab folder dengan navigator gaya pohon.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_improvements">
+        <item>Menyempurnakan UI Material 3 secara keseluruhan untuk pengalaman yang lebih bersih dan kohesif.</item>
+        <item>Pengeditan metadata kini mendukung perubahan sampul album.</item>
+        <item>Animasi dan transisi yang lebih halus di seluruh aplikasi untuk navigasi yang lebih lancar.</item>
+        <item>Menyempurnakan tata letak layar artis dengan detail yang lebih kaya.</item>
+        <item>Meningkatkan pembuatan DailyMix dan YourMix dengan pilihan yang lebih cerdas dan beragam.</item>
+        <item>Memperkuat pembuatan daftar putar AI.</item>
+        <item>Peningkatan relevansi pencarian untuk penemuan lagu yang lebih cepat.</item>
+        <item>Memperluas dukungan untuk rentang format file audio yang lebih luas.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_030_fixes">
+        <item>Mengatasi kendala metadata agar detail lagu tetap akurat di mana saja.</item>
+        <item>Memulihkan pintasan notifikasi agar kembali ke pemutaran dengan andal.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_added">
+        <item>Dukungan Chromecast untuk mentransmisikan audio dari perangkat Anda.</item>
+        <item>Log perubahan dalam aplikasi untuk memberi Anda info fitur terbaru.</item>
+        <item>Dukungan untuk file .LRC, baik yang disematkan maupun eksternal.</item>
+        <item>Dukungan lirik offline.</item>
+        <item>Lirik tersinkronisasi (sinkron dengan lagu).</item>
+        <item>Layar baru untuk melihat antrean penuh.</item>
+        <item>Mengatur ulang dan menghapus lagu dari antrean.</item>
+        <item>Gestur pemutar mini (geser ke bawah untuk menutup).</item>
+        <item>Menambahkan lebih banyak animasi material.</item>
+        <item>Pengaturan baru untuk menyesuaikan tampilan dan nuansa.</item>
+        <item>Pengaturan baru untuk menghapus cache.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_changed">
+        <item>Desain ulang total pada antarmuka pengguna.</item>
+        <item>Desain ulang total pada pemutar musik.</item>
+        <item>Peningkatan performa pada perpustakaan musik.</item>
+        <item>Peningkatan kecepatan startup aplikasi.</item>
+        <item>AI kini memberikan hasil yang lebih baik.</item>
+    </string-array>
+    <string-array name="presentation_batch_g_changelog_020_fixed">
+        <item>Memperbaiki berbagai bug pada editor tag.</item>
+        <item>Memperbaiki bug di mana notifikasi pemutaran tidak hilang.</item>
+        <item>Memperbaiki beberapa bug yang menyebabkan aplikasi berhenti tiba-tiba.</item>
+    </string-array>
+    
+    
+    
+
 </resources>

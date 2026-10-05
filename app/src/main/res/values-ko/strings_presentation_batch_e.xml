@@ -1,60 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="presentation_batch_e_action_clear_queue">대기열 비우기</string>
-    <string name="presentation_batch_e_action_locate_current_song">현재 곡 위치 찾기</string>
-    <string name="presentation_batch_e_action_save_as_playlist">플레이리스트로 저장</string>
-    <string name="presentation_batch_e_cd_dismiss_song">곡 닫기</string>
-    <string name="presentation_batch_e_cd_hidden">숨겨짐</string>
-    <string name="presentation_batch_e_cd_queue_actions">대기열 작업</string>
-    <string name="presentation_batch_e_cd_remove_from_playlist">플레이리스트에서 제거</string>
-    <string name="presentation_batch_e_cd_reset_presets_default">기본값으로 초기화</string>
-    <string name="presentation_batch_e_cd_sleep_timer">취침 타이머</string>
-    <string name="presentation_batch_e_cd_toggle_repeat">반복 토글</string>
-    <string name="presentation_batch_e_cd_toggle_shuffle">셔플 토글</string>
-    <string name="presentation_batch_e_cd_visible">표시됨</string>
-    <string name="presentation_batch_e_clear_queue_dialog_message">현재 곡을 제외한 대기열의 모든 곡을 지우시겠습니까?</string>
-    <string name="presentation_batch_e_clear_queue_dialog_title">대기열 비우기</string>
-    <string name="presentation_batch_e_create_playlist_subtitle">생성 방식을 선택하세요.</string>
-    <string name="presentation_batch_e_create_playlist_title">플레이리스트 생성</string>
-    <string name="presentation_batch_e_creation_mode_describe">설명으로 만들기</string>
-    <string name="presentation_batch_e_creation_mode_describe_subtitle">듣고 싶은 음악을 입력하면 앱이 완전히 오프라인으로 곡을 골라 줍니다.</string>
-    <string name="presentation_batch_e_creation_mode_manual">직접 만들기</string>
-    <string name="presentation_batch_e_creation_mode_manual_subtitle">아트워크, 아이콘, 모양을 디자인하고 곡을 직접 선택합니다.</string>
-    <string name="presentation_batch_e_describe_generate">생성</string>
-    <string name="presentation_batch_e_describe_no_matches">설명과 일치하는 곡이 라이브러리에 없습니다.</string>
-    <string name="presentation_batch_e_describe_playlist_hint">예: 운동할 때 듣기 좋은 곡</string>
-    <string name="presentation_batch_e_describe_playlist_subtitle">이 기기의 라이브러리에서만 검색합니다. 어떤 정보도 기기 밖으로 나가지 않습니다.</string>
-    <string name="presentation_batch_e_describe_playlist_title">플레이리스트 설명하기</string>
-    <string name="presentation_batch_e_describe_regenerate">재생성</string>
-    <plurals name="presentation_batch_e_describe_result_count">
-        <item quantity="other">곡 %d개가 일치합니다</item>
-    </plurals>
-    <string name="presentation_batch_e_describe_save">플레이리스트 저장</string>
-    <string name="presentation_batch_e_deselect_all">모두 선택 해제</string>
-    <string name="presentation_batch_e_enter_playlist_name">플레이리스트 이름을 입력하세요</string>
-    <string name="presentation_batch_e_manage_presets_title">프리셋 관리</string>
-    <string name="presentation_batch_e_more_options_for_song">%1$s 추가 옵션</string>
-    <plurals name="presentation_batch_e_n_songs_selected">
-        <item quantity="other">곡 %d개 선택됨</item>
-    </plurals>
-    <string name="presentation_batch_e_new_playlist_hint">\'새 플레이리스트\' 버튼을 눌러 시작하세요.</string>
-    <string name="presentation_batch_e_next_up">다음 트랙</string>
-    <string name="presentation_batch_e_no_playlist_created">생성된 플레이리스트가 없습니다.</string>
-    <string name="presentation_batch_e_no_songs_match_query">\"%1$s\"와(과) 일치하는 곡이 없습니다</string>
-    <string name="presentation_batch_e_playlist_name_label">플레이리스트 이름</string>
-    <string name="presentation_batch_e_presets_drag_hint">드래그하여 순서 변경 • 눈 아이콘을 눌러 표시/숨기기</string>
-    <string name="presentation_batch_e_queue_current">현재 대기열</string>
+    <!-- QueueBottomSheet -->
     <string name="presentation_batch_e_queue_empty">대기열이 비어 있습니다.</string>
+    <string name="presentation_batch_e_cd_queue_actions">대기열 작업</string>
+    <string name="presentation_batch_e_action_clear_queue">대기열 비우기</string>
+    <string name="presentation_batch_e_action_save_as_playlist">플레이리스트로 저장</string>
     <string name="presentation_batch_e_queue_named_suffix">%1$s 대기열</string>
-    <string name="presentation_batch_e_queue_source_fallback">대기열</string>
+    <string name="presentation_batch_e_queue_current">현재 대기열</string>
+    <string name="presentation_batch_e_removed">제거됨</string>
+    <string name="presentation_batch_e_clear_queue_dialog_title">대기열 비우기</string>
+    <string name="presentation_batch_e_clear_queue_dialog_message">현재 곡을 제외한 대기열의 모든 곡을 지우시겠습니까?</string>
+    <string name="presentation_batch_e_next_up">다음 트랙</string>
     <string name="presentation_batch_e_queue_subtitle_empty">현재 대기열이 비어 있습니다.</string>
+    <string name="presentation_batch_e_queue_source_fallback">대기열</string>
+    <string name="presentation_batch_e_cd_toggle_shuffle">셔플 토글</string>
+    <string name="presentation_batch_e_cd_toggle_repeat">반복 토글</string>
+    <string name="presentation_batch_e_cd_sleep_timer">취침 타이머</string>
+    <string name="presentation_batch_e_save_as_playlist_sheet_title">플레이리스트로 저장</string>
+    <string name="presentation_batch_e_deselect_all">모두 선택 해제</string>
+    <string name="presentation_batch_e_playlist_name_label">플레이리스트 이름</string>
+    <string name="presentation_batch_e_search_songs_to_include_placeholder">포함할 곡 검색…</string>
+    <string name="presentation_batch_e_save_as_format">저장 형식: %1$s</string>
+    <string name="presentation_batch_e_enter_playlist_name">플레이리스트 이름을 입력하세요</string>
+    <string name="presentation_batch_e_no_songs_match_query">\"%1$s\"와(과) 일치하는 곡이 없습니다</string>
+    <string name="presentation_batch_e_cd_dismiss_song">곡 닫기</string>
+    <string name="presentation_batch_e_cd_remove_from_playlist">플레이리스트에서 제거</string>
+    <string name="presentation_batch_e_more_options_for_song">%1$s 추가 옵션</string>
+
     <plurals name="presentation_batch_e_queue_tracks_lined_up">
         <item quantity="other">트랙 %d개가 대기 중입니다.</item>
     </plurals>
-    <string name="presentation_batch_e_removed">제거됨</string>
-    <string name="presentation_batch_e_reset_presets_message">프리셋 순서와 표시 여부가 기본값으로 복원됩니다. 계속하시겠습니까?</string>
+    <plurals name="presentation_batch_e_n_songs_selected">
+        <item quantity="other">곡 %d개 선택됨</item>
+    </plurals>
+
+    <!-- PlaylistContainer -->
+    <string name="presentation_batch_e_no_playlist_created">생성된 플레이리스트가 없습니다.</string>
+    <string name="presentation_batch_e_new_playlist_hint">\'새 플레이리스트\' 버튼을 눌러 시작하세요.</string>
+
+    <!-- PlaylistCreationDialogs: create flow -->
+    <string name="presentation_batch_e_create_playlist_title">플레이리스트 생성</string>
+    <string name="presentation_batch_e_create_playlist_subtitle">생성 방식을 선택하세요.</string>
+    <string name="presentation_batch_e_creation_mode_manual">직접 만들기</string>
+    <string name="presentation_batch_e_creation_mode_manual_subtitle">아트워크, 아이콘, 모양을 디자인하고 곡을 직접 선택합니다.</string>
+    <string name="presentation_batch_e_creation_mode_ai">AI로 만들기</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_enabled">고급 컨트롤을 사용하여 큐레이팅된 플레이리스트를 생성합니다.</string>
+    <string name="presentation_batch_e_creation_mode_ai_subtitle_disabled">설정에서 Gemini API 키를 구성해야 합니다.</string>
+    <string name="presentation_batch_e_setup_api_key">API 키 설정</string>
+
+    <!-- AI playlist lab -->
+    <string name="presentation_batch_e_ai_playlist_lab_title">AI 플레이리스트 연구소</string>
+    <string name="presentation_batch_e_ai_reset">초기화</string>
+    <string name="presentation_batch_e_ai_generating">생성 중…</string>
+    <string name="presentation_batch_e_ai_generate">생성</string>
+    <string name="presentation_batch_e_ai_section_intent">의도</string>
+    <string name="presentation_batch_e_ai_playlist_name_optional">플레이리스트 이름 (선택 사항)</string>
+    <string name="presentation_batch_e_ai_feel_label">어떤 느낌의 플레이리스트를 원하시나요?</string>
+    <string name="presentation_batch_e_ai_feel_placeholder">예: 따뜻한 신디사이저 사운드와 함께하는 노을 드라이브</string>
+    <string name="presentation_batch_e_ai_section_direction">방향</string>
+    <string name="presentation_batch_e_ai_mood_label">기분</string>
+    <string name="presentation_batch_e_ai_activity_label">활동</string>
+    <string name="presentation_batch_e_ai_era_label">시대</string>
+    <string name="presentation_batch_e_ai_section_curation">큐레이션 엔진</string>
+    <string name="presentation_batch_e_ai_energy_label">에너지</string>
+    <string name="presentation_batch_e_ai_energy_description">곡의 강도와 템포를 조절합니다. 1 = 차분함/느림, 5 = 고에너지/빠름.</string>
+    <string name="presentation_batch_e_ai_discovery_label">발견</string>
+    <string name="presentation_batch_e_ai_discovery_description">곡의 친숙도를 조절합니다. 1 = 가장 많이 들은 즐겨찾기, 5 = 거의 듣지 않은 숨은 명곡.</string>
+    <string name="presentation_batch_e_ai_min_songs">최소 곡 수</string>
+    <string name="presentation_batch_e_ai_max_songs">최대 곡 수</string>
+    <string name="presentation_batch_e_ai_section_filters">필터</string>
+    <string name="presentation_batch_e_ai_prioritize_genres">선호 장르 (선택 사항)</string>
+    <string name="presentation_batch_e_ai_prioritize_genres_placeholder">예: synthwave, indie pop</string>
+    <string name="presentation_batch_e_ai_avoid_genres">제외 장르 (선택 사항)</string>
+    <string name="presentation_batch_e_ai_avoid_genres_placeholder">예: metal, hard trap</string>
+    <string name="presentation_batch_e_ai_preferred_language">선호 언어 (선택 사항)</string>
+    <string name="presentation_batch_e_ai_preferred_language_placeholder">예: 영어, 한국어, 연주곡</string>
+    <string name="presentation_batch_e_ai_prioritize_favorites">즐겨찾기 우선순위 설정</string>
+    <string name="presentation_batch_e_ai_avoid_explicit">자극적인 가사 제외</string>
+    <string name="presentation_batch_e_ai_section_prompt_preview">프롬프트 미리보기</string>
+    <string name="presentation_batch_e_ai_prompt_preview_empty">선호도를 추가하면 최종 프롬프트가 여기에 표시됩니다.</string>
+    <string name="presentation_batch_e_ai_hero_title">정밀한 큐레이션</string>
+    <string name="presentation_batch_e_ai_hero_subtitle">기분, 활동, 제약 조건 및 깊이를 정의하세요.</string>
+    <string name="presentation_batch_e_ai_hero_library_note">AI는 로컬 라이브러리에 있는 곡만 사용합니다.</string>
+    <string name="presentation_batch_e_ai_error_add_instruction">AI를 위한 지침을 하나 이상 추가하세요.</string>
+    <string name="presentation_batch_e_ai_error_song_range">유효한 곡 범위를 설정하세요.</string>
+    <string name="presentation_batch_e_ai_level_out_of_five">%1$d/5</string>
+    <string name="presentation_batch_e_ai_custom_chip">사용자 지정…</string>
+    <string name="presentation_batch_e_ai_enter_custom_title">사용자 지정 값 입력</string>
+    <string name="presentation_batch_e_ai_enter_custom_label">사용자 지정 값을 입력하세요</string>
+
+    <!-- AI prompt assembly (sent to model; localized for consistency with UI) -->
+    <string name="presentation_batch_e_ai_era_any">모든 시대</string>
+    <string name="presentation_batch_e_ai_prompt_core_request">핵심 요청: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_mood">목표 기분: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_activity">활동 문맥: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_era">시대 중점: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_genres">우선 장르: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_genres">제외 장르: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_preferred_language">선호 언어: %1$s.</string>
+    <string name="presentation_batch_e_ai_prompt_energy">목표 에너지 레벨: %1$d/5.</string>
+    <string name="presentation_batch_e_ai_prompt_discovery">목표 발견 레벨: %1$d/5 (1: 친숙함, 5: 숨은 명곡).</string>
+    <string name="presentation_batch_e_ai_prompt_prioritize_favorites">가능한 경우 청취자의 즐겨찾기에 가까운 곡을 우선시합니다.</string>
+    <string name="presentation_batch_e_ai_prompt_avoid_explicit">대안이 있는 경우 자극적인 가사를 피합니다.</string>
+    <string name="presentation_batch_e_ai_prompt_smooth_transitions">전환을 부드럽게 유지하고 동일한 아티스트가 반복되는 것을 피합니다.</string>
+
+    <string-array name="presentation_batch_e_ai_mood_options">
+        <item>편안함</item>
+        <item>활기참</item>
+        <item>행복함</item>
+        <item>어두움</item>
+        <item>로맨틱함</item>
+        <item>우울함</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_activity_options">
+        <item>운동</item>
+        <item>집중</item>
+        <item>드라이브</item>
+        <item>파티</item>
+        <item>공부</item>
+        <item>늦은 밤</item>
+    </string-array>
+    <string-array name="presentation_batch_e_ai_era_options">
+        <item>@string/presentation_batch_e_ai_era_any</item>
+        <item>70년대</item>
+        <item>80년대</item>
+        <item>90년대</item>
+        <item>2000년대</item>
+        <item>2010년대</item>
+        <item>2020년대</item>
+    </string-array>
+
+    <!-- ReorderPresetsSheet -->
     <string name="presentation_batch_e_reset_presets_title">프리셋 초기화</string>
-    <string name="presentation_batch_e_save_as_format">저장 형식: %1$s</string>
-    <string name="presentation_batch_e_save_as_playlist_sheet_title">플레이리스트로 저장</string>
-    <string name="presentation_batch_e_search_songs_to_include_placeholder">포함할 곡 검색…</string>
+    <string name="presentation_batch_e_reset_presets_message">프리셋 순서와 표시 여부가 기본값으로 복원됩니다. 계속하시겠습니까?</string>
+    <string name="presentation_batch_e_manage_presets_title">프리셋 관리</string>
+    <string name="presentation_batch_e_presets_drag_hint">드래그하여 순서 변경 • 눈 아이콘을 눌러 표시/숨기기</string>
+    <string name="presentation_batch_e_cd_reset_presets_default">기본값으로 초기화</string>
+    <string name="presentation_batch_e_cd_visible">표시됨</string>
+    <string name="presentation_batch_e_cd_hidden">숨겨짐</string>
+
+    <!-- DailyMixMenu -->
+    <string name="presentation_batch_e_daily_mix_how_title">Daily Mix 구축 방식</string>
+    <string name="presentation_batch_e_daily_mix_how_body">Daily Mix는 귀하가 즐겨찾는 곡과 가장 많이 재생한 곡을 기반으로 만들어집니다. 또한 새로운 음악을 발견할 수 있도록 귀하가 좋아하는 아티스트와 장르의 트랙도 추가됩니다.</string>
+    <string name="presentation_batch_e_daily_mix_prompt_label">오늘 듣고 싶은 음악을 AI에게 말해 보세요</string>
+    <string name="presentation_batch_e_daily_mix_cost_hint">비용을 낮게 유지하기 위해 작은 샘플을 사용합니다</string>
+    <string name="presentation_batch_e_daily_mix_updating">업데이트 중…</string>
+    <string name="presentation_batch_e_daily_mix_update">Daily Mix 업데이트</string>
+
+    <!-- Backfilled translations -->
+    <string name="presentation_batch_e_action_locate_current_song">현재 노래 찾기</string>
+    <string name="autoplay">자동재생</string>
 </resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Web login security notes (QQ / NetEase) -->
+    <string name="auth_web_login_security_note_qq">Sikkerhetsmerknad: passordet ditt tastes kun inn på QQ Musics nettsider. PixelMusic lagrer sesjonsinformasjon for å synkronisere biblioteket ditt.</string>
+    <string name="auth_web_login_security_note_netease">Sikkerhetsmerknad: passordet ditt tastes kun inn på NetEase sine nettsider. PixelMusic lagrer sesjonsinformasjon (MUSIC_U) for å synkronisere biblioteket ditt.</string>
+    <string name="auth_error_read_qq_cookies_failed">Kunne ikke lese QQ Music-informasjonskapsler: %1$s</string>
+    <string name="auth_error_read_netease_cookies_failed">Kunne ikke lese NetEase-informasjonskapsler: %1$s</string>
+
+    <!-- Google Drive folder setup -->
+    <string name="auth_gdrive_setting_up">Setter opp Google Drive…</string>
+    <string name="auth_gdrive_connect_title">Koble til Google Drive</string>
+    <string name="auth_gdrive_connect_subtitle">Strøm musikkfiler direkte fra din Google Drive</string>
+    <string name="auth_gdrive_sign_in_with_google">Logg inn med Google</string>
+    <string name="auth_gdrive_select_music_folder_title">Velg en musikkmappe</string>
+    <string name="auth_gdrive_select_music_folder_subtitle">Velg eller opprett en mappe som skal brukes som musikkilde</string>
+    <string name="auth_gdrive_create_pixelmusic_music_title">Opprett \"PixelMusic Music\"</string>
+    <string name="auth_gdrive_create_folder_here_hint">Opprett en ny mappe for musikken din her</string>
+    <string name="auth_gdrive_no_folders_here">Ingen mapper her</string>
+    <string name="auth_gdrive_use_this_folder">Bruk</string>
+    <string name="auth_gdrive_cd_open_folder">Åpne mappe</string>
+</resources>

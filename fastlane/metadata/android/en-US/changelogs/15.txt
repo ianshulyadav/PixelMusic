@@ -1,0 +1,8 @@
+• Lossless Audio & Downloads: Support for Hi-Fi streaming & downloading with format badges (BYO API / account).
+• Quick Playlist Import: Paste Spotify and YouTube playlist links directly.
+• Material 3 Expressive UI: Floating navigation pill bar, home header pill, and customizable collage.
+• Redesigned Explore: Daily Discover carousel, mood chips, and personalized New Releases.
+• Stylized Sharing: Share song cards and lyric stories to Snapchat.
+• Extended Audio: Native Apple Lossless (ALAC) and .caf playback.
+• Shuffle & Queue Fixes: Seamless in-place reordering preserving playback position.
+• Full Localization: 100% translation coverage across 11 languages (including Portuguese).

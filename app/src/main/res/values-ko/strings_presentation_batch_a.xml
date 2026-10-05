@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Web login security notes (QQ / NetEase) -->
+    <string name="auth_web_login_security_note_qq">보안 참고 사항: 비밀번호는 QQ Music 웹 페이지에만 입력됩니다. PixelMusic는 라이브러리 동기화를 위해 세션 쿠키를 저장합니다.</string>
+    <string name="auth_web_login_security_note_netease">보안 참고 사항: 비밀번호는 NetEase 웹 페이지에만 입력됩니다. PixelMusic는 라이브러리 동기화를 위해 세션 쿠키(MUSIC_U)를 저장합니다.</string>
+    <string name="auth_error_read_qq_cookies_failed">QQ Music 쿠키 읽기 실패: %1$s</string>
+    <string name="auth_error_read_netease_cookies_failed">NetEase 쿠키 읽기 실패: %1$s</string>
+
+    <!-- Google Drive folder setup -->
+    <string name="auth_gdrive_setting_up">Google Drive 설정 중…</string>
+    <string name="auth_gdrive_connect_title">Google Drive 연결</string>
+    <string name="auth_gdrive_connect_subtitle">Google Drive에서 직접 음악 파일 스트리밍</string>
+    <string name="auth_gdrive_sign_in_with_google">Google 계정으로 로그인</string>
+    <string name="auth_gdrive_select_music_folder_title">음악 폴더 선택</string>
+    <string name="auth_gdrive_select_music_folder_subtitle">음악 소스로 사용할 폴더를 선택하거나 생성하세요</string>
+    <string name="auth_gdrive_create_pixelmusic_music_title">\"PixelMusic Music\" 생성</string>
+    <string name="auth_gdrive_create_folder_here_hint">여기에 음악을 위한 새 폴더 생성</string>
+    <string name="auth_gdrive_no_folders_here">여기에 폴더가 없습니다</string>
+    <string name="auth_gdrive_use_this_folder">사용</string>
+    <string name="auth_gdrive_cd_open_folder">폴더 열기</string>
+</resources>
