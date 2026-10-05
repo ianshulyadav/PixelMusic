@@ -1,7 +1,7 @@
 # PixelMusic Official APK Download [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
 
 <p align="center">
-  <img src="assets/LauncherIcon.png" alt="PixelMusic Official App Icon" width="160"/>
+  <img src="icons/store/hero_icon.png" alt="PixelMusic Official App Icon" width="160"/>
 </p>
 
 <p align="center">
@@ -10,14 +10,14 @@
 </p>
 
 <p align="center">
-  <img src="icons/blue_purple.png" alt="Blue Purple" width="72" style="border-radius:16px; margin:4px;"/>
-  <img src="icons/baby_pink_purple.png" alt="Baby Pink Purple" width="72" style="border-radius:16px; margin:4px;"/>
-  <img src="icons/graphite.png" alt="Graphite" width="72" style="border-radius:16px; margin:4px;"/>
-  <img src="icons/lime_green.png" alt="Lime Green" width="72" style="border-radius:16px; margin:4px;"/>
-  <img src="icons/lime_lemon.png" alt="Lime Lemon" width="72" style="border-radius:16px; margin:4px;"/>
-  <img src="icons/orange_yellow.png" alt="Orange Yellow" width="72" style="border-radius:16px; margin:4px;"/>
+  <img src="icons/store/blue_purple_store.png" alt="Blue Purple" width="72" style="margin:4px;"/>
+  <img src="icons/store/baby_pink_purple_store.png" alt="Baby Pink Purple" width="72" style="margin:4px;"/>
+  <img src="icons/store/graphite_store.png" alt="Graphite" width="72" style="margin:4px;"/>
+  <img src="icons/store/lime_green_store.png" alt="Lime Green" width="72" style="margin:4px;"/>
+  <img src="icons/store/lime_lemon_store.png" alt="Lime Lemon" width="72" style="margin:4px;"/>
+  <img src="icons/store/orange_yellow_store.png" alt="Orange Yellow" width="72" style="margin:4px;"/>
 </p>
-<p align="center"><em>custom icon launchers pick according to your prefrences</em></p>
+<p align="center"><em>6 themed launcher icons — pick your favorite color</em></p>
 
 <p align="center">
   <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
