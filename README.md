@@ -4,66 +4,6 @@
   <img src="assets/LauncherIcon.png" alt="PixelMusic Official App Icon" width="128"/>
 </p>
 
-<p align="center">
-  <strong>PixelMusic is an Android music player and modern streaming powerhouse built with Material 3 Expressive and dynamic Material You theming.</strong><br> 
-  Designed for audiophiles, everyday listeners, and cloud collectors — seamlessly unifying your offline local audio library, YouTube Music streaming catalog, Telegram audio channels, and Google Drive personal cloud into one fluid, privacy-focused experience.
-</p>
-
-<p align="center">
-  <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/explorepage.jpg" alt="PixelMusic Explore Discovery" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer.jpg" alt="PixelMusic Material 3 Player" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer_alt.jpg" alt="PixelMusic Dynamic Theme Player" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/library.jpg" alt="PixelMusic Music Library" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/analytics.jpg" alt="PixelMusic Listening Analytics" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/song_cards.jpg" alt="PixelMusic Share Cards" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/streaming_supports.jpg" alt="PixelMusic Streaming Sources" width="150" style="border-radius:26px; margin:4px;"/>
-</p>
-
-<p align="center">
-  <a href="https://github.com/ianshulyadav/PixelMusicApp/releases/latest">
-    <img src="https://img.shields.io/badge/Download%20APK-v1.7.10%20Latest-success?style=for-the-badge&logo=android&logoColor=white" alt="Download Latest APK">
-  </a>
-  <a href="https://t.me/PixelMusicApp">
-    <img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel">
-  </a>
-  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
-    <img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi">
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android 11+"></a>
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square" alt="GPL-3.0 License"></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Release-v1.7.10-informational?style=flat-square" alt="Version 1.7.10"></a>
-</p>
-
-> Gratitude to the foundational open-source authors and community contributors whose work inspired and empowered this project.
-
----
-
-## 📥 PixelMusic Official APK Download
-
-Download the official signed release APKs directly from the [Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) section or the [Telegram Channel](https://t.me/PixelMusicApp):
-
-| Package / Architecture | Target Devices | Direct Download |
-|:---|:---|:---:|
-| **`app-arm64-v8a-release.apk`** | **Recommended:** Most modern smartphones (Google Pixel, Samsung, OnePlus, Xiaomi, Nothing Phone) | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-arm64-v8a-release.apk) |
-| **`app-universal-release.apk`** | Universal bundle — runs on all supported Android hardware | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-universal-release.apk) |
-| **`app-armeabi-v7a-release.apk`** | Legacy or 32-bit Android phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-armeabi-v7a-release.apk) |
-| **`app-x86_64-release.apk`** | Android emulators, ChromeOS devices, and x86 tablets | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-x86_64-release.apk) |
-
-### Quick Installation Guide
-1. Download the `arm64-v8a` APK (or `universal` if unsure) above.
-2. Open the downloaded file in your browser or file manager and select **Install**.
-3. If prompted by Android, enable **Allow from this source** in Settings.
-4. Launch PixelMusic, grant audio storage permission, and enjoy your music!
-
----
-
-## 📖 What is PixelMusic?
-
 **PixelMusic is an Android music player** engineered from the ground up for seamless audio playback, dynamic visual elegance, and total library freedom. Whether you listen to local high-resolution audio files or stream from online cloud sources, PixelMusic organizes everything into one unified library without ads, telemetry, or bloat.
 
 ### 🌟 Core Capabilities
@@ -117,6 +57,65 @@ PixelMusic embraces Google's latest **Material 3 Expressive** design guidelines:
 
 ---
 
+<p align="center">
+  <strong>PixelMusic is an Android music player and modern streaming powerhouse built with Material 3 Expressive and dynamic Material You theming.</strong><br> 
+  Designed for audiophiles, everyday listeners, and cloud collectors — seamlessly unifying your offline local audio library, YouTube Music streaming catalog, Telegram audio channels, and Google Drive personal cloud into one fluid, privacy-focused experience.
+</p>
+
+<p align="center">
+  <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/explorepage.jpg" alt="PixelMusic Explore Discovery" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/fullplayer.jpg" alt="PixelMusic Material 3 Player" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/fullplayer_alt.jpg" alt="PixelMusic Dynamic Theme Player" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/library.jpg" alt="PixelMusic Music Library" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/analytics.jpg" alt="PixelMusic Listening Analytics" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/song_cards.jpg" alt="PixelMusic Share Cards" width="150" style="border-radius:26px; margin:4px;"/>
+  <img src="assets/streaming_supports.jpg" alt="PixelMusic Streaming Sources" width="150" style="border-radius:26px; margin:4px;"/>
+</p>
+
+<p align="center">
+  <a href="https://github.com/ianshulyadav/PixelMusicApp/releases/latest">
+    <img src="https://img.shields.io/badge/Download%20APK-v1.7.10%20Latest-success?style=for-the-badge&logo=android&logoColor=white" alt="Download Latest APK">
+  </a>
+  <a href="https://t.me/PixelMusicApp">
+    <img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel">
+  </a>
+  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
+    <img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android 11+"></a>
+  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square" alt="GPL-3.0 License"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Release-v1.7.10-informational?style=flat-square" alt="Version 1.7.10"></a>
+</p>
+
+---
+
+## 📥 PixelMusic Official APK Download
+
+Download the official signed release APKs directly from the [Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) section or the [Telegram Channel](https://t.me/PixelMusicApp):
+
+| Package / Architecture | Target Devices | Direct Download |
+|:---|:---|:---:|
+| **`app-arm64-v8a-release.apk`** | **Recommended:** Most modern smartphones (Google Pixel, Samsung, OnePlus, Xiaomi, Nothing Phone) | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-arm64-v8a-release.apk) |
+| **`app-universal-release.apk`** | Universal bundle — runs on all supported Android hardware | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-universal-release.apk) |
+| **`app-armeabi-v7a-release.apk`** | Legacy or 32-bit Android phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-armeabi-v7a-release.apk) |
+| **`app-x86_64-release.apk`** | Android emulators, ChromeOS devices, and x86 tablets | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-x86_64-release.apk) |
+
+### Quick Installation Guide
+1. Download the `arm64-v8a` APK (or `universal` if unsure) above.
+2. Open the downloaded file in your browser or file manager and select **Install**.
+3. If prompted by Android, enable **Allow from this source** in Settings.
+4. Launch PixelMusic, grant audio storage permission, and enjoy your music!
+
+---
+
+## 📖 What is PixelMusic?
+
+
 ## 📚 Documentation & Project Links
 
 - 🔒 **[Security Policy](SECURITY.md)** — APK checksum verification and vulnerability reporting.
@@ -146,6 +145,7 @@ PixelMusic is free and open-source software licensed under the **GNU General Pub
 
 - Built upon and inspired by the foundational work of the [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project.
 - Complete machine-readable notices and third-party attributions are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+> Gratitude to the foundational open-source authors and community contributors whose work inspired and empowered this project.
 
 ```text
 PixelMusic
