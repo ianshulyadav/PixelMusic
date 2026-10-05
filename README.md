@@ -17,7 +17,7 @@
   <img src="icons/lime_lemon.png" alt="Lime Lemon" width="72" style="border-radius:16px; margin:4px;"/>
   <img src="icons/orange_yellow.png" alt="Orange Yellow" width="72" style="border-radius:16px; margin:4px;"/>
 </p>
-<p align="center"><em>6 themed launcher icons — pick your favorite color</em></p>
+<p align="center"><em>custom icon launchers pick according to your prefrences</em></p>
 
 <p align="center">
   <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
