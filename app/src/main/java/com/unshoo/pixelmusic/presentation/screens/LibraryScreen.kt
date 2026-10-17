@@ -170,6 +170,7 @@ import com.unshoo.pixelmusic.presentation.components.AlbumMultiSelectionOptionSh
 import androidx.compose.material3.HorizontalDivider
 import com.unshoo.pixelmusic.presentation.components.PlaylistMultiSelectionBottomSheet
 import com.unshoo.pixelmusic.presentation.components.QuickImportCard
+import com.unshoo.pixelmusic.presentation.components.scrollReveal
 import com.unshoo.pixelmusic.presentation.components.PlaylistCreationTypeDialog
 import com.unshoo.pixelmusic.presentation.components.CreateAiPlaylistDialog
 import com.unshoo.pixelmusic.presentation.components.subcomps.SelectionActionRow
@@ -4093,6 +4094,7 @@ fun AlbumGridItemRedesigned(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
                 .scale(selectionScale)
                 .then(
                     if (isSelected) {
@@ -4216,7 +4218,9 @@ fun AlbumGridItemRedesigned(
 fun ArtistListItem(artist: Artist, onClick: () -> Unit, isLoading: Boolean = false) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.95f),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
@@ -4361,6 +4365,7 @@ fun AlbumListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.dp)
+                .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.95f)
                 .scale(selectionScale)
                 .then(
                     if (isSelected) {

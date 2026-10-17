@@ -426,22 +426,23 @@ class ExploreViewModel @Inject constructor(
                 val personalizedAlbums = rawSections.filter { section ->
                     val t = section.title.lowercase()
                     !t.contains("video") && !t.contains("videos") && (
-                        t.contains("album") || t.contains("for you") || t.contains("recommended") ||
-                        t.contains("albums for you") || t.contains("popular albums") ||
-                        section.label?.lowercase()?.contains("album") == true
+                        t.contains("album") || section.label?.lowercase()?.contains("album") == true ||
+                        (t.contains("for you") && section.items.any { it is AlbumItem })
                     )
                 }.flatMap { it.items }.mapNotNull { item ->
                     when (item) {
                         is AlbumItem -> item
-                        is PlaylistItem -> AlbumItem(
-                            browseId = item.id,
-                            playlistId = item.id,
-                            title = item.title,
-                            artists = listOfNotNull(item.author),
-                            year = null,
-                            thumbnail = item.thumbnail ?: "",
-                            explicit = false
-                        )
+                        is PlaylistItem -> if (item.title.contains("album", ignoreCase = true) || item.id.startsWith("MPRE")) {
+                            AlbumItem(
+                                browseId = item.id,
+                                playlistId = item.id,
+                                title = item.title,
+                                artists = listOfNotNull(item.author),
+                                year = null,
+                                thumbnail = item.thumbnail ?: "",
+                                explicit = false
+                            )
+                        } else null
                         else -> null
                     }
                 }.distinctBy { it.browseId }

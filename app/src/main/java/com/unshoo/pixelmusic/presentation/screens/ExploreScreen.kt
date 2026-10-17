@@ -152,6 +152,7 @@ import com.unshoo.pixelmusic.presentation.components.QuickPicksSection
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.SmartImageCardTargetSize
 import com.unshoo.pixelmusic.presentation.components.bounceClick
+import com.unshoo.pixelmusic.presentation.components.scrollReveal
 import com.unshoo.pixelmusic.presentation.components.SongInfoBottomSheet
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
@@ -432,7 +433,7 @@ fun ExploreScreen(
                     title = album.title,
                     artist = album.artists?.firstOrNull()?.name ?: "Album",
                     artworkUrl = album.thumbnail,
-                    browseId = album.browseId
+                    browseId = album.browseId.takeIf { it.isNotBlank() } ?: album.playlistId
                 )
             }
         } else if (state.feedData.recentAlbums.isNotEmpty()) {
@@ -1523,6 +1524,7 @@ private fun QuickTileCard(
     Card(
         modifier = modifier
             .height(64.dp)
+            .scrollReveal(initialOffsetY = 16.dp, initialScale = 0.97f)
             .clip(shape)
             .bounceClick(scaleDown = 0.96f) { onClick() },
         shape = shape,
@@ -1688,7 +1690,8 @@ private fun FeedSectionHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .scrollReveal(initialOffsetY = 14.dp, initialScale = 0.98f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -1904,6 +1907,7 @@ private fun FeedTrackCard(
     Column(
         modifier = Modifier
             .width(156.dp)
+            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2048,6 +2052,7 @@ private fun FeedPlaylistCard(
     Column(
         modifier = Modifier
             .width(156.dp)
+            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2174,6 +2179,7 @@ private fun ShelfArtistCard(
     Column(
         modifier = Modifier
             .width(156.dp)
+            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2449,6 +2455,7 @@ private fun ChartTrackCard(
         modifier = Modifier
             .width(280.dp)
             .height(72.dp)
+            .scrollReveal(initialOffsetY = 16.dp, initialScale = 0.97f)
             .bounceClick(scaleDown = 0.97f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2549,6 +2556,7 @@ private fun SpotlightHeroCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.96f)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (!spotlight.artworkUrl.isNullOrBlank()) {
@@ -2703,6 +2711,7 @@ private fun ArtistAvatarCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(96.dp)
+            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.94f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2987,6 +2996,7 @@ fun LibraryPlaylistCard(
         modifier = Modifier
             .width(260.dp)
             .height(120.dp)
+            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .clip(cardShape)
             .bounceClick(scaleDown = 0.96f) { onClick() },
         shape = cardShape,

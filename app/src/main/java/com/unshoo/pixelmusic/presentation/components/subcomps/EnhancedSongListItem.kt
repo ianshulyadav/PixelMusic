@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.lerp as lerpDp
 import coil.size.Size
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.presentation.components.ShimmerBox
+import com.unshoo.pixelmusic.presentation.components.scrollReveal
 import com.unshoo.pixelmusic.R
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.SmartImageCache
@@ -291,6 +292,7 @@ fun EnhancedSongListItem(
         Surface(
             modifier = modifier
                 .fillMaxWidth()
+                .scrollReveal(initialOffsetY = 18.dp, initialScale = 0.96f)
                 .graphicsLayer {
                     val scale = if (isStaticState && !isSelected) {
                         1f

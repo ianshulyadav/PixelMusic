@@ -203,7 +203,98 @@ class AlbumDetailViewModel @Inject constructor(
         }
     }
 
+    fun retry() {
+        val albumIdString: String? = savedStateHandle.get("albumId")
+        if (albumIdString != null) {
+            val albumId = albumIdString.toLongOrNull()
+            val mappedBrowseId = albumId?.let {
+                SearchStateHolder.albumIdMap[it] ?: AlbumIdMapper.getBrowseId(context, it)
+            }
+            if (mappedBrowseId != null) {
+                loadOnlineAlbumData(mappedBrowseId)
+            } else if (albumId != null) {
+                loadAlbumData(albumId)
+            } else {
+                loadOnlineAlbumData(albumIdString)
+            }
+        }
+    }
+
+    private fun sanitizeErrorMessage(e: Throwable, fallback: String): String {
+        val msg = e.message ?: e.localizedMessage ?: return fallback
+        return when {
+            msg.contains("400") || msg.contains("INVALID_ARGUMENT") || msg.contains("Client request") ->
+                "This album is currently unavailable."
+            msg.contains("404") || msg.contains("NOT_FOUND") ->
+                "Album not found."
+            msg.contains("Unable to resolve host") || msg.contains("ConnectException") || msg.contains("SocketTimeout") ->
+                "Network error. Please check your connection."
+            else -> fallback
+        }
+    }
+
+    private fun loadOnlinePlaylistAsAlbum(playlistId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            val cleanId = playlistId.removePrefix("VL")
+            val result = withContext(Dispatchers.IO) {
+                InnerTubeYouTube.playlist(cleanId)
+            }
+            result.onSuccess { playlistPage ->
+                val playlist = playlistPage.playlist
+                val albumTitle = playlist.title
+                val unifiedAlbumId = YouTubeIdUtils.toUnifiedYoutubeAlbumId(albumTitle)
+                val artistName = playlist.author?.name ?: ""
+                val albumArt = playlist.thumbnail ?: ""
+
+                AlbumIdMapper.putMapping(context, unifiedAlbumId, playlistId)
+
+                val albumModel = Album(
+                    id = unifiedAlbumId,
+                    title = albumTitle,
+                    artist = artistName,
+                    year = 0,
+                    dateAdded = System.currentTimeMillis(),
+                    albumArtUriString = albumArt,
+                    songCount = playlistPage.songs.size,
+                    albumArtist = artistName
+                )
+
+                val songsModels = playlistPage.songs.mapIndexed { index, songItem ->
+                    val nativeSong = songItem.toNativeSong()
+                    nativeSong.copy(
+                        album = albumTitle,
+                        albumId = unifiedAlbumId,
+                        albumBrowseId = playlistId,
+                        albumArtist = artistName,
+                        trackNumber = index + 1
+                    )
+                }
+
+                _uiState.value = AlbumDetailUiState(
+                    album = albumModel,
+                    songs = songsModels,
+                    isLoading = false,
+                    error = null
+                )
+            }.onFailure { e ->
+                val albumId = savedStateHandle.get<String>("albumId")?.toLongOrNull()
+                if (albumId != null) {
+                    loadAlbumData(albumId)
+                } else {
+                    val friendlyMsg = sanitizeErrorMessage(e, "This album is currently unavailable.")
+                    _uiState.update { it.copy(error = friendlyMsg, isLoading = false) }
+                }
+            }
+        }
+    }
+
     private fun loadOnlineAlbumData(browseId: String) {
+        if (browseId.startsWith("VL") || browseId.startsWith("PL") || browseId.startsWith("RD") || browseId.startsWith("OLAK")) {
+            loadOnlinePlaylistAsAlbum(browseId)
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
@@ -253,11 +344,55 @@ class AlbumDetailViewModel @Inject constructor(
                         error = null
                     )
                 }.onFailure { e ->
-                    val albumId = savedStateHandle.get<String>("albumId")?.toLongOrNull()
-                    if (albumId != null) {
-                        loadAlbumData(albumId)
+                    // Fallback to playlist if browseId can be queried as playlist
+                    val playlistResult = withContext(Dispatchers.IO) {
+                        InnerTubeYouTube.playlist(browseId.removePrefix("VL")).getOrNull()
+                    }
+                    if (playlistResult != null) {
+                        val playlist = playlistResult.playlist
+                        val albumTitle = playlist.title
+                        val unifiedAlbumId = YouTubeIdUtils.toUnifiedYoutubeAlbumId(albumTitle)
+                        val artistName = playlist.author?.name ?: ""
+                        val albumArt = playlist.thumbnail ?: ""
+
+                        AlbumIdMapper.putMapping(context, unifiedAlbumId, browseId)
+
+                        val albumModel = Album(
+                            id = unifiedAlbumId,
+                            title = albumTitle,
+                            artist = artistName,
+                            year = 0,
+                            dateAdded = System.currentTimeMillis(),
+                            albumArtUriString = albumArt,
+                            songCount = playlistResult.songs.size,
+                            albumArtist = artistName
+                        )
+
+                        val songsModels = playlistResult.songs.mapIndexed { index, songItem ->
+                            val nativeSong = songItem.toNativeSong()
+                            nativeSong.copy(
+                                album = albumTitle,
+                                albumId = unifiedAlbumId,
+                                albumBrowseId = browseId,
+                                albumArtist = artistName,
+                                trackNumber = index + 1
+                            )
+                        }
+
+                        _uiState.value = AlbumDetailUiState(
+                            album = albumModel,
+                            songs = songsModels,
+                            isLoading = false,
+                            error = null
+                        )
                     } else {
-                        _uiState.update { it.copy(error = e.localizedMessage ?: "Failed to load online album", isLoading = false) }
+                        val albumId = savedStateHandle.get<String>("albumId")?.toLongOrNull()
+                        if (albumId != null) {
+                            loadAlbumData(albumId)
+                        } else {
+                            val friendlyMsg = sanitizeErrorMessage(e, "This album is currently unavailable.")
+                            _uiState.update { it.copy(error = friendlyMsg, isLoading = false) }
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -265,7 +400,8 @@ class AlbumDetailViewModel @Inject constructor(
                 if (albumId != null) {
                     loadAlbumData(albumId)
                 } else {
-                    _uiState.update { it.copy(error = e.localizedMessage, isLoading = false) }
+                    val friendlyMsg = sanitizeErrorMessage(e, "This album is currently unavailable.")
+                    _uiState.update { it.copy(error = friendlyMsg, isLoading = false) }
                 }
             }
         }

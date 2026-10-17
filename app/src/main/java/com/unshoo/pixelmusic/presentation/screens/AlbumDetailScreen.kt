@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -225,14 +226,45 @@ fun AlbumDetailScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
+                        .statusBarsPadding()
+                        .padding(24.dp)
                 ) {
-                    Text(
-                        text = uiState.error!!,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.align(Alignment.TopStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Album,
+                            contentDescription = null,
+                            modifier = Modifier.size(56.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                        Text(
+                            text = uiState.error!!,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        FilledTonalButton(
+                            onClick = { viewModel.retry() },
+                            shape = CircleShape
+                        ) {
+                            Text(stringResource(R.string.library_retry))
+                        }
+                    }
                 }
             }
 

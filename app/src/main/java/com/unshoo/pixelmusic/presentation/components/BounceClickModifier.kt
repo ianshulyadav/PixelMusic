@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.graphicsLayer
  * guaranteeing zero recomposition of card content and zero layout passes.
  */
 fun Modifier.bounceClick(
-    scaleDown: Float = 0.95f,
-    hoverScale: Float = 1.02f,
+    scaleDown: Float = 0.97f,
+    hoverScale: Float = 1.015f,
     onClick: () -> Unit
 ): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
@@ -46,8 +46,8 @@ fun Modifier.bounceClick(
     val scale by animateFloatAsState(
         targetValue = targetScale,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessLow
         ),
         label = "bounce_click_scale"
     )

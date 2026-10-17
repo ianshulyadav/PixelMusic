@@ -656,7 +656,12 @@ fun HomeScreen(
                                 playerViewModel.showAndPlaySong(nativeSong)
                             },
                             onAlbumClick = { albumItem ->
-                                navController.navigateSafely(Screen.AlbumDetail.createRoute(albumItem.playlistId))
+                                val routeId = albumItem.browseId?.takeIf { it.isNotBlank() } ?: albumItem.playlistId
+                                if (routeId.startsWith("VL") || routeId.startsWith("PL") || routeId.startsWith("RD")) {
+                                    navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(routeId))
+                                } else {
+                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(routeId))
+                                }
                             }
                         )
                     }
