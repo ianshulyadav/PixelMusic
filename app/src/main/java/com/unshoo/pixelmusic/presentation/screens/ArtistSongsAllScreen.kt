@@ -3,7 +3,7 @@ package com.unshoo.pixelmusic.presentation.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -182,10 +182,10 @@ fun ArtistSongsAllScreen(
                         }
                     }
 
-                    itemsIndexed(
-                        items = uiState.popularSongsAll,
-                        key = { idx, song -> "${song.id}_$idx" }
-                    ) { index, song ->
+                    items(
+                        items = uiState.popularSongsAll.distinctBy { it.id },
+                        key = { song -> song.id }
+                    ) { song ->
                         EnhancedSongListItem(
                             song = song,
                             isPlaying = stablePlayerState.isPlaying,

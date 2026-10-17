@@ -228,9 +228,7 @@ class YouTubeLibrarySyncManager @Inject constructor(
         if (!shouldDoFull && existingFavorites.isNotEmpty() && firstPageIds.isNotEmpty()) {
             // If top items are already known and count didn't drop, nothing was added or unliked!
             if (firstPageIds.first() in existingFavorites && firstPageIds.take(5).all { it in existingFavorites }) {
-                Timber.d("YouTubeLibrarySyncManager: Liked songs top boundary unchanged. Skipping continuation paging.")
-                val nativeSongs = allSongItems.map { it.toNativeSong() }
-                persistenceManager.persistLikes(nativeSongs, isFullSync = false)
+                Timber.d("YouTubeLibrarySyncManager: Liked songs top boundary unchanged. Skipping sync.")
                 return@withContext
             }
 

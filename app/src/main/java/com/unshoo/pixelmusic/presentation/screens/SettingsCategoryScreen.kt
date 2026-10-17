@@ -3517,7 +3517,7 @@ private fun PaletteRegenerateSongSheetContent(
                     }
                 }
             } else {
-                itemsIndexed(songs, key = { index, song -> "${song.id}_$index" }) { _, song ->
+                items(songs.distinctBy { it.id }, key = { song -> song.id }) { song ->
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceContainer,
                         shape = RoundedCornerShape(12.dp),

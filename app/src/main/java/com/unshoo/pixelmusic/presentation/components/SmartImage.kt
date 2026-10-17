@@ -198,10 +198,11 @@ fun SmartImage(
             val sizeStr = if (isThumbnail) {
                 val thumbDim = maxOf(widthPx, heightPx).coerceIn(96, 256)
                 "=w$thumbDim-h$thumbDim-c-rj"
-            } else if (widthPx >= 400 || heightPx >= 400) {
-                "=w1024-h1024-l90-rj"
+            } else if (widthPx >= 800 || heightPx >= 800) {
+                "=w800-h800-l90-rj"
             } else {
-                "=w$widthPx-h$heightPx-c-rj"
+                val cardDim = maxOf(widthPx, heightPx).coerceIn(256, 512)
+                "=w$cardDim-h$cardDim-c-rj"
             }
             if (SmartImageRegex.sizeParamRegex.containsMatchIn(model)) {
                 model.replace(SmartImageRegex.sizeParamRegex, sizeStr)

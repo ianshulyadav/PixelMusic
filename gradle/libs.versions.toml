@@ -72,7 +72,6 @@ jdom2 = "2.0.6.1"
 jose4j = "0.9.6"
 httpclient = "4.5.14"
 newpipeextractor = "v0.26.3"
-fuel = "2.3.1"
 
 # DI
 dagger = "2.59.2"
@@ -239,8 +238,6 @@ androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchm
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 newpipeextractor = { module = "com.github.TeamNewPipe:NewPipeExtractor", version.ref = "newpipeextractor" }
-fuel-json = { module = "com.github.kittinunf.fuel:fuel-json", version.ref = "fuel" }
-fuel-android = { module = "com.github.kittinunf.fuel:fuel-android", version.ref = "fuel" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junitJupiter" }

@@ -165,7 +165,7 @@ fun QuickPicksAllScreen(
 
             // Songs
             if (!isLoading) {
-                itemsIndexed(songs, key = { index, song -> "${song.id}_$index" }) { _, song ->
+                items(songs.distinctBy { it.id }, key = { song -> song.id }) { song ->
                     EnhancedSongListItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         song = song,

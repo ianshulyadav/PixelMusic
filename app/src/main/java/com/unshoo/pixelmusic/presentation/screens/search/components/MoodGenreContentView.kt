@@ -496,10 +496,10 @@ fun MoodGenreContentView(
                         )
                     }
 
-                    itemsIndexed(
-                        items = songsList,
-                        key = { index, song -> "mood_song_${song.id}_$index" }
-                    ) { index, song ->
+                    items(
+                        items = songsList.distinctBy { it.id },
+                        key = { song -> "mood_song_${song.id}" }
+                    ) { song ->
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

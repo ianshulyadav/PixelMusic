@@ -311,7 +311,7 @@ private fun SongPickerSheet(songs: List<Song>, onSongSelected: (Song) -> Unit) {
             .fillMaxWidth()
             .heightIn(max = 450.dp)
             .padding(horizontal = 8.dp)) {
-            itemsIndexed(songs, key = { index, song -> "${song.id}_$index" }) { _, song ->
+            items(songs.distinctBy { it.id }, key = { song -> song.id }) { song ->
                 SongPickerItem(song = song, onClick = { onSongSelected(song) })
                 HorizontalDivider()
             }

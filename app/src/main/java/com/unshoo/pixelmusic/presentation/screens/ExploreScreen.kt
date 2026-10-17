@@ -601,7 +601,7 @@ fun ExploreScreen(
                                     subtitle = stringResource(R.string.explore_subtitle_local_albums)
                                 )
                                 FeedMediaRow {
-                                    itemsIndexed(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { idx, a -> "local_album_${a.browseId ?: a.title}_$idx" }) { _, album ->
+                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { a -> "local_album_${a.browseId ?: a.title}" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -637,7 +637,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(artistsForYou, key = { idx, a -> "local_artist_${a.name}_$idx" }) { index, artist ->
+                                    itemsIndexed(artistsForYou, key = { _, a -> "local_artist_${a.browseId ?: a.name}" }) { index, artist ->
                                         ArtistAvatarCard(
                                             artist = artist,
                                             isTop = index < 3,
@@ -669,7 +669,7 @@ fun ExploreScreen(
                                     }
                                 )
                                 FeedMediaRow {
-                                    itemsIndexed(recentSongs, key = { idx, song -> "recent_added_${song.id}_$idx" }) { index, song ->
+                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }) { song ->
                                         FeedTrackCard(
                                             title = song.title,
                                             subtitle = song.displayArtist,
@@ -707,7 +707,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(exploreUiState.libraryPlaylists, key = { idx, p -> "lib_${p.id}_$idx" }) { _, playlist ->
+                                    items(exploreUiState.libraryPlaylists, key = { p -> "lib_${p.id}" }) { playlist ->
                                         LibraryPlaylistCard(
                                             playlist = playlist,
                                             playerViewModel = playerViewModel,
@@ -738,7 +738,7 @@ fun ExploreScreen(
                             }
                         }
 
-                        itemsIndexed(currentSections, key = { idx, s -> "mood_section_${s.title}_$idx" }) { idx, section ->
+                        items(currentSections, key = { s -> "mood_section_${s.title}" }) { section ->
                             val isSimilar = section.title.startsWith("Similar to", ignoreCase = true) ||
                                 section.title.contains("Fans also like", ignoreCase = true) ||
                                 section.title.contains("Similar", ignoreCase = true) ||
@@ -846,7 +846,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(artistsForYou, key = { idx, a -> "artist_${a.name}_$idx" }) { index, artist ->
+                                    itemsIndexed(artistsForYou, key = { _, a -> "artist_${a.browseId ?: a.name}" }) { index, artist ->
                                         ArtistAvatarCard(
                                             artist = artist,
                                             isTop = index < 3,
@@ -889,7 +889,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(section.items, key = { idx, t -> "because_${t.videoId}_$idx" }) { index, track ->
+                                        itemsIndexed(section.items, key = { _, t -> "because_${t.videoId}" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.title,
                                                 subtitle = track.artist,
@@ -926,7 +926,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(state.feedData.freshFinds, key = { idx, t -> "fresh_${t.videoId}_$idx" }) { index, track ->
+                                        itemsIndexed(state.feedData.freshFinds, key = { _, t -> "fresh_${t.videoId}" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.title,
                                                 subtitle = track.artist,
@@ -969,7 +969,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(jumpBackInTracks, key = { idx, t -> "jump_${t.name}_$idx" }) { index, track ->
+                                        itemsIndexed(jumpBackInTracks, key = { _, t -> "jump_${t.url.ifBlank { t.name }}" }) { index, track ->
                                             RecentTrackCard(
                                                 track = track,
                                                 onClick = {
@@ -1010,7 +1010,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(mixesToDisplay.distinctBy { it.seed.videoId }, key = { idx, mix -> "mix_${mix.seed.videoId}_$idx" }) { _, mix ->
+                                        items(mixesToDisplay.distinctBy { it.seed.videoId }, key = { mix -> "mix_${mix.seed.videoId}" }) { mix ->
                                             FeedPlaylistCard(
                                                 title = mix.title,
                                                 subtitle = stringResource(R.string.explore_subtitle_artist_radio_station),
@@ -1037,7 +1037,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(heavyToDisplay, key = { idx, t -> "heavy_${t.key}_$idx" }) { index, track ->
+                                        itemsIndexed(heavyToDisplay, key = { _, t -> "heavy_${t.key}" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.name,
                                                 subtitle = track.artist,
@@ -1069,7 +1069,7 @@ fun ExploreScreen(
                                     subtitle = if (isLocal) stringResource(R.string.explore_subtitle_local_albums) else stringResource(R.string.explore_subtitle_verified_records)
                                 )
                                 FeedMediaRow {
-                                    itemsIndexed(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { idx, album -> "album_${album.browseId ?: album.title}_$idx" }) { _, album ->
+                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { album -> "album_${album.browseId ?: album.title}" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -1109,7 +1109,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(libraryPlaylists, key = { idx, p -> "lib_${p.id}_$idx" }) { _, playlist ->
+                                    items(libraryPlaylists, key = { p -> "lib_${p.id}" }) { playlist ->
                                         LibraryPlaylistCard(
                                             playlist = playlist,
                                             playerViewModel = playerViewModel,
@@ -1142,7 +1142,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(chartTracks.take(15), key = { idx, t -> "chart_${t.videoId}_$idx" }) { index, track ->
+                                    itemsIndexed(chartTracks.take(15), key = { _, t -> "chart_${t.videoId}" }) { index, track ->
                                         ChartTrackCard(
                                             rank = index + 1,
                                             track = track,
@@ -1171,7 +1171,7 @@ fun ExploreScreen(
                                     onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
                                 )
                                 FeedMediaRow {
-                                    itemsIndexed(newReleases, key = { idx, release -> "release_${release.id}_$idx" }) { _, release ->
+                                    items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }) { release ->
                                         FeedPlaylistCard(
                                             title = release.title,
                                             subtitle = release.author ?: "Artist",
@@ -1227,7 +1227,7 @@ fun ExploreScreen(
                                     }
                                 )
                                 FeedMediaRow {
-                                    itemsIndexed(recentSongs, key = { idx, song -> "recent_added_${song.id}_$idx" }) { index, song ->
+                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }) { song ->
                                         FeedTrackCard(
                                             title = song.title,
                                             subtitle = song.displayArtist,
@@ -1252,7 +1252,7 @@ fun ExploreScreen(
 
                         // 15. All real YouTube Home Shelves
                         if (otherHomeSections.isNotEmpty()) {
-                            itemsIndexed(otherHomeSections, key = { idx, s -> "yt_section_${s.title}_$idx" }) { idx, section ->
+                            items(otherHomeSections, key = { s -> "yt_section_${s.title}" }) { section ->
                                 val isSimilar = section.title.startsWith("Similar to", ignoreCase = true) ||
                                     section.title.contains("Fans also like", ignoreCase = true) ||
                                     section.title.contains("Similar", ignoreCase = true) ||
@@ -3150,7 +3150,7 @@ private fun SimilarArtistsCarousel(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier.padding(top = 8.dp)
     ) {
-        itemsIndexed(artists, key = { idx, artist -> "sim_${section.title}_${artist.id}_$idx" }) { _, artist ->
+        items(artists, key = { artist -> "sim_${section.title}_${artist.id}" }) { artist ->
             ArtistAvatarCard(
                 artist = FeedArtist(
                     name = artist.title,
@@ -3596,7 +3596,7 @@ private fun RegionalExploreSection(
     }
 
     FeedMediaRow {
-        itemsIndexed(filteredItems, key = { idx, item -> "regional_${section.title}_${item.id}_$idx" }) { index, item ->
+        itemsIndexed(filteredItems, key = { _, item -> "regional_${section.title}_${item.id}" }) { index, item ->
             when (item) {
                 is SongItem -> {
                     val track = songTracks.firstOrNull { it.videoId == item.id } ?: YouTubeMusicTrack(

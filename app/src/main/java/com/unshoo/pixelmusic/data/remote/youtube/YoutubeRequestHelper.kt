@@ -1,15 +1,17 @@
 package com.unshoo.pixelmusic.data.remote.youtube
 
-import com.github.kittinunf.fuel.core.extensions.jsonBody
-import com.github.kittinunf.fuel.httpPost
-import com.github.kittinunf.fuel.json.responseJson
-import com.github.kittinunf.result.Result
 import com.unshoo.pixelmusic.data.model.youtube.PixelMusicSettings
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.put
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
 
 object YoutubeRequestHelper {
+    private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
     fun browse(browseId: String, settings: PixelMusicSettings): String {
         return requestWithContext(
             url = Constants.YoutubeApi.Browse.URL,
@@ -68,7 +70,6 @@ object YoutubeRequestHelper {
         )
     }
 
-
     private fun requestWithTarget(
         url: String,
         videoId: String,
@@ -85,20 +86,7 @@ object YoutubeRequestHelper {
         }
 
         val headers = YoutubeAuthHelper.getHeaders(settings.cookies)
-
-        val (_, _, result) = url.httpPost().jsonBody(body.toString())
-            .header(headers)
-            .responseJson()
-
-        return when (result) {
-            is Result.Success -> {
-                result.value.content
-            }
-
-            is Result.Failure -> {
-                throw result.error.exception
-            }
-        }
+        return executePost(url, body.toString(), headers)
     }
 
     private fun requestWithContext(
@@ -107,29 +95,34 @@ object YoutubeRequestHelper {
         id: String,
         settings: PixelMusicSettings? = null
     ): String {
-        val body =
-            YoutubeAuthHelper.buildContextBody(idName, id, settings)
-
+        val body = YoutubeAuthHelper.buildContextBody(idName, id, settings)
         val headers = if (settings != null) {
             YoutubeAuthHelper.getHeaders(settings.cookies)
         } else {
-            mapOf()
+            emptyMap()
+        }
+        return executePost(url, body.toString(), headers)
+    }
+
+    private fun executePost(
+        url: String,
+        jsonBody: String,
+        headers: Map<String, Any>
+    ): String {
+        val requestBuilder = Request.Builder()
+            .url(url)
+            .post(jsonBody.toRequestBody(jsonMediaType))
+
+        headers.forEach { (key, value) ->
+            requestBuilder.header(key, value.toString().trim())
         }
 
-        val (_, _, result) = url.httpPost().jsonBody(body.toString())
-            .header(
-                headers
-            )
-            .responseJson()
-
-        return when (result) {
-            is Result.Success -> {
-                result.value.content
+        val response = YoutubeHelper.client.newCall(requestBuilder.build()).execute()
+        return response.use { resp ->
+            if (!resp.isSuccessful) {
+                throw IOException("YouTube API HTTP ${resp.code}: ${resp.message}")
             }
-
-            is Result.Failure -> {
-                throw result.error.exception
-            }
+            resp.body?.string().orEmpty()
         }
     }
 }

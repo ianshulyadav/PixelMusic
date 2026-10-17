@@ -380,7 +380,7 @@ fun DailyMixScreen(
                     }
                 }
 
-                itemsIndexed(dailyMixSongs, key = { index, song -> "${song.id}_$index" }) { _, song ->
+                items(dailyMixSongs.distinctBy { it.id }, key = { song -> song.id }) { song ->
                     EnhancedSongListItem(
                         modifier = Modifier
                             .padding(horizontal = 16.dp),

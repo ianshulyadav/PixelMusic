@@ -97,6 +97,8 @@ import com.unshoo.pixelmusic.data.model.Playlist
 import com.unshoo.pixelmusic.data.model.SearchFilterType
 import com.unshoo.pixelmusic.data.model.SearchHistoryItem
 import com.unshoo.pixelmusic.presentation.utils.itemsUnique
+import com.unshoo.pixelmusic.presentation.utils.uniqueLazyKeys
+import androidx.compose.runtime.produceState
 import com.unshoo.pixelmusic.data.model.SearchResultItem
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
@@ -1132,6 +1134,29 @@ fun SearchResultsList(
     val imePadding = WindowInsets.ime.getBottom(localDensity).dp
     val systemBarPaddingBottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding() + 94.dp
 
+    val allResultKeys = remember(results) {
+        uniqueLazyKeys(results) { item ->
+            when (item) {
+                is SearchResultItem.SongItem -> "song_${item.song.id}"
+                is SearchResultItem.AlbumItem -> "album_${item.album.id}"
+                is SearchResultItem.ArtistItem -> "artist_${item.artist.id}"
+                is SearchResultItem.PlaylistItem -> "playlist_${item.playlist.id}"
+            }
+        }
+    }
+    val sectionKeysMap = remember(groupedResults) {
+        groupedResults.mapValues { (_, items) ->
+            uniqueLazyKeys(items) { item ->
+                when (item) {
+                    is SearchResultItem.SongItem -> "song_${item.song.id}"
+                    is SearchResultItem.AlbumItem -> "album_${item.album.id}"
+                    is SearchResultItem.ArtistItem -> "artist_${item.artist.id}"
+                    is SearchResultItem.PlaylistItem -> "playlist_${item.playlist.id}"
+                }
+            }
+        }
+    }
+
     LazyColumn(
         state = lazyListState,
         modifier = Modifier
@@ -1150,15 +1175,7 @@ fun SearchResultsList(
         if (currentFilter == SearchFilterType.ALL) {
             items(
                 count = results.size,
-                key = { index ->
-                    val item = results[index]
-                    when (item) {
-                        is SearchResultItem.SongItem -> "song_${item.song.id}_$index"
-                        is SearchResultItem.AlbumItem -> "album_${item.album.id}_$index"
-                        is SearchResultItem.ArtistItem -> "artist_${item.artist.id}_$index"
-                        is SearchResultItem.PlaylistItem -> "playlist_${item.playlist.id}_$index"
-                    }
-                },
+                key = { index -> allResultKeys.getOrElse(index) { "result_$index" } },
                 contentType = { index ->
                     when (results[index]) {
                         is SearchResultItem.SongItem -> "search_song"
@@ -1209,12 +1226,9 @@ fun SearchResultsList(
                         }
 
                         is SearchResultItem.PlaylistItem -> {
-                            val playlistSongs by remember(item.playlist.songIds, playerViewModel) {
-                                playerViewModel.observeSongs(item.playlist.songIds)
-                            }.collectAsStateWithLifecycle(initialValue = emptyList())
                             SearchResultPlaylistItem(
                                 playlist = item.playlist,
-                                playlistSongs = playlistSongs,
+                                playerViewModel = playerViewModel,
                                 onPlayClick = { onPlaylistPlayClick(item.playlist) },
                                 onOpenClick = { onPlaylistOpenClick(item.playlist) }
                             )
@@ -1240,17 +1254,10 @@ fun SearchResultsList(
                         )
                     }
 
+                    val currentSectionKeys = sectionKeysMap[filterType] ?: emptyList()
                     items(
                         count = itemsForSection.size,
-                        key = { index ->
-                            val item = itemsForSection[index]
-                            when (item) {
-                                is SearchResultItem.SongItem -> "song_${item.song.id}_$index"
-                                is SearchResultItem.AlbumItem -> "album_${item.album.id}_$index"
-                                is SearchResultItem.ArtistItem -> "artist_${item.artist.id}_$index"
-                                is SearchResultItem.PlaylistItem -> "playlist_${item.playlist.id}_$index"
-                            }
-                        },
+                        key = { index -> currentSectionKeys.getOrElse(index) { "sec_${filterType}_$index" } },
                         contentType = { index ->
                             when (itemsForSection[index]) {
                                 is SearchResultItem.SongItem -> "search_song"
@@ -1301,12 +1308,9 @@ fun SearchResultsList(
                                 }
 
                                 is SearchResultItem.PlaylistItem -> {
-                                    val playlistSongs by remember(item.playlist.songIds, playerViewModel) {
-                                        playerViewModel.observeSongs(item.playlist.songIds)
-                                    }.collectAsStateWithLifecycle(initialValue = emptyList())
                                     SearchResultPlaylistItem(
                                         playlist = item.playlist,
-                                        playlistSongs = playlistSongs,
+                                        playerViewModel = playerViewModel,
                                         onPlayClick = { onPlaylistPlayClick(item.playlist) },
                                         onOpenClick = { onPlaylistOpenClick(item.playlist) }
                                     )
@@ -1485,10 +1489,16 @@ fun SearchResultArtistItem(
 @Composable
 fun SearchResultPlaylistItem(
     playlist: Playlist,
-    playlistSongs: List<Song>,
+    playerViewModel: PlayerViewModel? = null,
     onOpenClick: () -> Unit,
     onPlayClick: () -> Unit
 ) {
+    val needsCollage = playlist.coverImageUri.isNullOrBlank() && playlist.coverColorArgb == null && playlist.songIds.isNotEmpty()
+    val playlistSongs by produceState(initialValue = emptyList<Song>(), key1 = playlist.id, key2 = needsCollage) {
+        if (needsCollage && playerViewModel != null) {
+            value = playerViewModel.getSongs(playlist.songIds.take(4))
+        }
+    }
     val itemShape = remember {
         AbsoluteSmoothCornerShape(
             cornerRadiusTL = 26.dp,

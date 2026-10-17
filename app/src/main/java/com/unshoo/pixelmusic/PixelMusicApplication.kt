@@ -350,7 +350,7 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     }
 
     private val workManagerExecutor by lazy {
-        java.util.concurrent.Executors.newFixedThreadPool(8) { runnable ->
+        java.util.concurrent.Executors.newFixedThreadPool(2) { runnable ->
             Thread(runnable, "PixelMusic-Work").apply {
                 priority = Thread.NORM_PRIORITY - 1
             }
@@ -358,7 +358,7 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     }
 
     private val workManagerTaskExecutor by lazy {
-        java.util.concurrent.Executors.newFixedThreadPool(4) { runnable ->
+        java.util.concurrent.Executors.newFixedThreadPool(1) { runnable ->
             Thread(runnable, "PixelMusic-WorkTask").apply {
                 priority = Thread.NORM_PRIORITY - 1
             }

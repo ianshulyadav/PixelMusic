@@ -554,7 +554,7 @@ fun ArtistDetailScreen(
 
                                     itemsIndexed(
                                         items = sectionSongs,
-                                        key = { songIndex, song -> "${sectionKey}_song_${song.id}_$songIndex" },
+                                        key = { _, song -> "${sectionKey}_song_${song.id}" },
                                         contentType = { _, _ -> "artist_section_song" }
                                     ) { songIndex, song ->
                                         ArtistAlbumSectionSongItem(
