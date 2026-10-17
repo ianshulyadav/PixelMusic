@@ -345,6 +345,8 @@ dependencies {
 
     // Networking & Serialization
     implementation(libs.newpipe.extractor)
+    implementation(libs.fuel.android)
+    implementation(libs.fuel.json)
     implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

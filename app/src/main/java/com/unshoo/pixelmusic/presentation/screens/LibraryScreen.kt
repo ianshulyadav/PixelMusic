@@ -4094,7 +4094,7 @@ fun AlbumGridItemRedesigned(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
+                .scrollReveal(initialOffsetY = 8.dp, initialScale = 0.985f)
                 .scale(selectionScale)
                 .then(
                     if (isSelected) {
@@ -4220,7 +4220,7 @@ fun ArtistListItem(artist: Artist, onClick: () -> Unit, isLoading: Boolean = fal
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.95f),
+            .scrollReveal(initialOffsetY = 8.dp, initialScale = 0.985f),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
@@ -4365,7 +4365,7 @@ fun AlbumListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(88.dp)
-                .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.95f)
+                .scrollReveal(initialOffsetY = 8.dp, initialScale = 0.985f)
                 .scale(selectionScale)
                 .then(
                     if (isSelected) {

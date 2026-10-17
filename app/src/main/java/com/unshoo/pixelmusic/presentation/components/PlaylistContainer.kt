@@ -449,7 +449,7 @@ fun PlaylistItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.95f)
+            .scrollReveal(initialOffsetY = 8.dp, initialScale = 0.985f)
             .scale(selectionScale)
             .then(
                 if (isSelected && !isAddingToPlaylist) {

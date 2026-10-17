@@ -57,4 +57,4 @@ fun <T> LazyGridScope.itemsUnique(
  * returns the same row on two pages (non-unique ORDER BY, concurrent writes).
  */
 fun pagedKey(prefix: String, id: Any?, index: Int): Any =
-    if (id == null) "${prefix}_placeholder_$index" else "${prefix}_${id}_$index"
+    if (id == null) "${prefix}_placeholder_$index" else "${prefix}_$id"
