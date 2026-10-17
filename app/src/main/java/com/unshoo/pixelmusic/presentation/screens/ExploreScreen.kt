@@ -151,14 +151,18 @@ import com.unshoo.pixelmusic.presentation.components.PlaylistBottomSheet
 import com.unshoo.pixelmusic.presentation.components.QuickPicksSection
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.SmartImageCardTargetSize
+import com.unshoo.pixelmusic.presentation.components.SmartImageListTargetSize
+import com.unshoo.pixelmusic.presentation.components.SmartImageCompactListTargetSize
+import com.unshoo.pixelmusic.presentation.components.SmartImageLargeCardTargetSize
 import com.unshoo.pixelmusic.presentation.components.bounceClick
-import com.unshoo.pixelmusic.presentation.components.scrollReveal
 import com.unshoo.pixelmusic.presentation.components.SongInfoBottomSheet
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
 import com.unshoo.pixelmusic.presentation.utils.itemsUnique
-import com.unshoo.pixelmusic.presentation.utils.rememberDominantCardColor
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import com.unshoo.pixelmusic.presentation.viewmodel.ExploreViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.FeedUiState
 import com.unshoo.pixelmusic.presentation.viewmodel.FeedViewModel
@@ -307,17 +311,20 @@ fun ExploreScreen(
             exploreUiState.homePageSections
         }
     }
-    val shouldLoadMore = remember {
-        derivedStateOf {
+    LaunchedEffect(listState, isLocalSelected) {
+        if (isLocalSelected) return@LaunchedEffect
+        snapshotFlow {
             val totalItems = listState.layoutInfo.totalItemsCount
             val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             totalItems > 0 && lastVisibleItem >= totalItems - 3
         }
-    }
-    LaunchedEffect(shouldLoadMore.value, isLocalSelected) {
-        if (!isLocalSelected && shouldLoadMore.value && exploreUiState.homePageContinuation != null && !exploreUiState.isContinuationLoading) {
-            exploreViewModel.loadMore()
-        }
+            .distinctUntilChanged()
+            .filter { it }
+            .collect {
+                if (exploreUiState.homePageContinuation != null && !exploreUiState.isContinuationLoading) {
+                    exploreViewModel.loadMore()
+                }
+            }
     }
 
     val isAdvancedExplore = exploreUiState.isAdvancedExploreEnabled
@@ -1520,12 +1527,10 @@ private fun QuickTileCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val shape = remember { AbsoluteSmoothCornerShape(18.dp, 75) }
+    val shape = ShapeCache.smooth16
     Card(
         modifier = modifier
             .height(64.dp)
-            .scrollReveal(initialOffsetY = 16.dp, initialScale = 0.97f)
-            .clip(shape)
             .bounceClick(scaleDown = 0.96f) { onClick() },
         shape = shape,
         colors = CardDefaults.cardColors(
@@ -1556,10 +1561,11 @@ private fun QuickTileCard(
                         modifier = Modifier.size(24.dp)
                     )
                 } else if (!tile.artworkUrl.isNullOrBlank()) {
-                    AsyncImage(
+                    SmartImage(
                         model = tile.artworkUrl,
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
+                        targetSize = SmartImageListTargetSize,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else if (tile.collection == "new_releases") {
@@ -1690,8 +1696,7 @@ private fun FeedSectionHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .scrollReveal(initialOffsetY = 14.dp, initialScale = 0.98f),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -1719,10 +1724,12 @@ private fun FeedSectionHeader(
                     .size(44.dp)
                     .then(clickModifier)
             ) {
-                AsyncImage(
+                SmartImage(
                     model = avatarUrl,
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
+                    shape = CircleShape,
+                    targetSize = SmartImageCompactListTargetSize,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -1894,20 +1901,11 @@ private fun FeedTrackCard(
     onMoreClick: () -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
-    val cardShape = remember { AbsoluteSmoothCornerShape(18.dp, 75) }
-    val isDark = isSystemInDarkTheme()
-    val dynamicCardBg = rememberDominantCardColor(
-        imageUrl = artworkUrl,
-        baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        isDarkTheme = isDark,
-        darkBlendFraction = 0.18f,
-        lightBlendFraction = 0.35f
-    )
+    val cardShape = ShapeCache.smooth16
 
     Column(
         modifier = Modifier
             .width(156.dp)
-            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -1916,7 +1914,7 @@ private fun FeedTrackCard(
         Box(modifier = Modifier.size(156.dp)) {
             Surface(
                 shape = cardShape,
-                color = dynamicCardBg,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 border = if (isCurrentPlaying) androidx.compose.foundation.BorderStroke(
                     2.dp,
                     MaterialTheme.colorScheme.primary
@@ -2039,20 +2037,11 @@ private fun FeedPlaylistCard(
     onMoreClick: (() -> Unit)? = null
 ) {
     val haptics = LocalHapticFeedback.current
-    val cardShape = remember { AbsoluteSmoothCornerShape(18.dp, 75) }
-    val isDark = isSystemInDarkTheme()
-    val dynamicCardBg = rememberDominantCardColor(
-        imageUrl = artworkUrl,
-        baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        isDarkTheme = isDark,
-        darkBlendFraction = 0.18f,
-        lightBlendFraction = 0.35f
-    )
+    val cardShape = ShapeCache.smooth16
 
     Column(
         modifier = Modifier
             .width(156.dp)
-            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2061,15 +2050,17 @@ private fun FeedPlaylistCard(
         Box(modifier = Modifier.size(156.dp)) {
             Surface(
                 shape = cardShape,
-                color = dynamicCardBg,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(Modifier.fillMaxSize()) {
                     if (!artworkUrl.isNullOrBlank()) {
-                        AsyncImage(
+                        SmartImage(
                             model = artworkUrl,
                             contentDescription = title,
                             contentScale = ContentScale.Crop,
+                            shape = cardShape,
+                            targetSize = SmartImageCardTargetSize,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
@@ -2174,12 +2165,11 @@ private fun ShelfArtistCard(
     onRadioClick: (() -> Unit)? = null
 ) {
     val haptics = LocalHapticFeedback.current
-    val cardShape = remember { AbsoluteSmoothCornerShape(18.dp, 75) }
+    val cardShape = ShapeCache.smooth16
 
     Column(
         modifier = Modifier
             .width(156.dp)
-            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.96f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2202,10 +2192,12 @@ private fun ShelfArtistCard(
                 modifier = Modifier.size(116.dp)
             ) {
                 if (!artist.artworkUrl.isNullOrBlank()) {
-                    AsyncImage(
+                    SmartImage(
                         model = artist.artworkUrl,
                         contentDescription = artist.name,
                         contentScale = ContentScale.Crop,
+                        shape = CircleShape,
+                        targetSize = SmartImageListTargetSize,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -2293,14 +2285,6 @@ private fun RecentTrackCard(
     onMoreClick: (() -> Unit)? = null
 ) {
     val haptics = LocalHapticFeedback.current
-    val isDark = isSystemInDarkTheme()
-    val dynamicCardBg = rememberDominantCardColor(
-        imageUrl = track.artworkUrl,
-        baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        isDarkTheme = isDark,
-        darkBlendFraction = 0.18f,
-        lightBlendFraction = 0.35f
-    )
     val ago = remember(track.date?.uts) {
         val uts = track.date?.uts?.toLongOrNull()
         if (uts != null && uts > 0L) {
@@ -2325,16 +2309,18 @@ private fun RecentTrackCard(
     ) {
         Box(modifier = Modifier.size(156.dp)) {
             Surface(
-                shape = AbsoluteSmoothCornerShape(18.dp, 75),
-                color = dynamicCardBg,
+                shape = ShapeCache.smooth16,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
                 modifier = Modifier.fillMaxSize()
             ) {
                 Box(Modifier.fillMaxSize()) {
                     if (!track.artworkUrl.isNullOrBlank()) {
-                        AsyncImage(
+                        SmartImage(
                             model = track.artworkUrl,
                             contentDescription = track.name,
                             contentScale = ContentScale.Crop,
+                            shape = ShapeCache.smooth16,
+                            targetSize = SmartImageCardTargetSize,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
@@ -2444,7 +2430,7 @@ private fun ChartTrackCard(
     val haptics = LocalHapticFeedback.current
 
     Surface(
-        shape = AbsoluteSmoothCornerShape(18.dp, 75),
+        shape = ShapeCache.smooth16,
         color = if (isTop3) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
         else MaterialTheme.colorScheme.surfaceContainerHigh,
         border = androidx.compose.foundation.BorderStroke(
@@ -2455,7 +2441,6 @@ private fun ChartTrackCard(
         modifier = Modifier
             .width(280.dp)
             .height(72.dp)
-            .scrollReveal(initialOffsetY = 16.dp, initialScale = 0.97f)
             .bounceClick(scaleDown = 0.97f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2478,15 +2463,17 @@ private fun ChartTrackCard(
 
             Box(modifier = Modifier.size(52.dp)) {
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
+                    shape = ShapeCache.smooth12,
                     color = MaterialTheme.colorScheme.surfaceContainerHighest,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     if (!track.artworkUrl.isNullOrBlank()) {
-                        AsyncImage(
+                        SmartImage(
                             model = track.artworkUrl,
                             contentDescription = track.title,
                             contentScale = ContentScale.Crop,
+                            shape = ShapeCache.smooth12,
+                            targetSize = SmartImageListTargetSize,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -2550,20 +2537,20 @@ private fun SpotlightHeroCard(
     onOpenArtist: () -> Unit
 ) {
     Card(
-        shape = AbsoluteSmoothCornerShape(26.dp, 80),
+        shape = ShapeCache.smooth24,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
         elevation = CardDefaults.cardElevation(defaultElevation = if (isSystemInDarkTheme()) 2.dp else 0.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.96f)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             if (!spotlight.artworkUrl.isNullOrBlank()) {
-                AsyncImage(
+                SmartImage(
                     model = spotlight.artworkUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    targetSize = SmartImageLargeCardTargetSize,
                     modifier = Modifier
                         .matchParentSize()
                         .graphicsLayer {
@@ -2631,10 +2618,12 @@ private fun SpotlightHeroCard(
                             modifier = Modifier.size(72.dp)
                         ) {
                             if (!spotlight.artworkUrl.isNullOrBlank()) {
-                                AsyncImage(
+                                SmartImage(
                                     model = spotlight.artworkUrl,
                                     contentDescription = spotlight.artistName,
                                     contentScale = ContentScale.Crop,
+                                    shape = CircleShape,
+                                    targetSize = SmartImageListTargetSize,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
@@ -2711,7 +2700,6 @@ private fun ArtistAvatarCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .width(96.dp)
-            .scrollReveal(initialOffsetY = 20.dp, initialScale = 0.94f)
             .bounceClick(scaleDown = 0.94f) {
                 haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
@@ -2731,10 +2719,12 @@ private fun ArtistAvatarCard(
                 modifier = Modifier.size(84.dp)
             ) {
                 if (!artist.artworkUrl.isNullOrBlank()) {
-                    AsyncImage(
+                    SmartImage(
                         model = artist.artworkUrl,
                         contentDescription = artist.name,
                         contentScale = ContentScale.Crop,
+                        shape = CircleShape,
+                        targetSize = SmartImageListTargetSize,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -2791,10 +2781,12 @@ private fun FriendAvatarCard(friend: FriendEntry) {
             modifier = Modifier.size(60.dp)
         ) {
             if (!friend.avatarUrl.isNullOrBlank()) {
-                AsyncImage(
+                SmartImage(
                     model = friend.avatarUrl,
                     contentDescription = friend.displayName,
                     contentScale = ContentScale.Crop,
+                    shape = CircleShape,
+                    targetSize = SmartImageCompactListTargetSize,
                     modifier = Modifier.fillMaxSize()
                 )
             } else {
@@ -2989,15 +2981,13 @@ fun LibraryPlaylistCard(
         androidx.compose.ui.graphics.lerp(cardBgColor, dominantColor, blendFraction)
     }
 
-    val cardShape = remember { AbsoluteSmoothCornerShape(22.dp, 80) }
-    val thumbShape = remember { AbsoluteSmoothCornerShape(14.dp, 80) }
+    val cardShape = ShapeCache.smooth20
+    val thumbShape = ShapeCache.smooth14
 
     Card(
         modifier = Modifier
             .width(260.dp)
             .height(120.dp)
-            .scrollReveal(initialOffsetY = 24.dp, initialScale = 0.94f)
-            .clip(cardShape)
             .bounceClick(scaleDown = 0.96f) { onClick() },
         shape = cardShape,
         colors = CardDefaults.cardColors(containerColor = blendedBgColor),
@@ -3723,9 +3713,7 @@ private fun ExploreCategoryChipsRow(
                 color = containerColor,
                 contentColor = contentColor,
                 tonalElevation = if (isSelected) 3.dp else 0.dp,
-                modifier = Modifier
-                    .defaultMinSize(minHeight = 38.dp)
-                    .animateContentSize()
+                modifier = Modifier.defaultMinSize(minHeight = 38.dp)
             ) {
                 Box(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),

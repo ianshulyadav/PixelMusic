@@ -35,27 +35,22 @@ fun Modifier.bounceClick(
 ): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val isHovered by interactionSource.collectIsHoveredAsState()
-
-    val targetScale = when {
-        isPressed -> scaleDown
-        isHovered -> hoverScale
-        else -> 1f
-    }
 
     val scale by animateFloatAsState(
-        targetValue = targetScale,
+        targetValue = if (isPressed) scaleDown else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioNoBouncy,
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMediumLow
         ),
         label = "bounce_click_scale"
     )
 
     this
         .graphicsLayer {
-            scaleX = scale
-            scaleY = scale
+            if (scale != 1f) {
+                scaleX = scale
+                scaleY = scale
+            }
         }
         .clickable(
             interactionSource = interactionSource,
