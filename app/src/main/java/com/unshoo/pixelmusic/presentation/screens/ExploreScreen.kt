@@ -17,6 +17,7 @@ import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
@@ -30,6 +31,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.unshoo.pixelmusic.ui.theme.ExpressiveSprings
+import com.unshoo.pixelmusic.ui.theme.fastSpatial
+import com.unshoo.pixelmusic.ui.theme.defaultEffects
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -309,16 +312,15 @@ fun ExploreScreen(
 
     val listState = rememberLazyListState()
 
-    var areChipsVisible by rememberSaveable { mutableStateOf(true) }
     val density = androidx.compose.ui.platform.LocalDensity.current
     val scrollThresholdPx = remember(density) { with(density) { 16.dp.toPx() } }
     val slideDistancePx = remember(density) { with(density) { 16.dp.toPx() } }
     val isScrolled by remember {
-        derivedStateOf { !areChipsVisible || listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
+        derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
     }
     val animatedElevation by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 3.dp else 0.dp,
-        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        targetValue = if (isScrolled) 4.dp else 0.dp,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 200, easing = androidx.compose.animation.core.FastOutSlowInEasing),
         label = "explore_top_bar_elevation"
     )
 
@@ -349,39 +351,14 @@ fun ExploreScreen(
             }
     }
 
-    LaunchedEffect(listState) {
-        var lastIndex = listState.firstVisibleItemIndex
-        var lastOffset = listState.firstVisibleItemScrollOffset
-        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
-            .collect { (currentIndex, currentOffset) ->
-                if (currentIndex == 0 && currentOffset <= 24) {
-                    areChipsVisible = true
-                } else {
-                    val delta = if (currentIndex != lastIndex) {
-                        (currentIndex - lastIndex) * 500 + (currentOffset - lastOffset)
-                    } else {
-                        currentOffset - lastOffset
-                    }
-                    if (delta > 14) {
-                        areChipsVisible = false
-                    } else if (delta < -14) {
-                        areChipsVisible = true
-                    }
-                }
-                lastIndex = currentIndex
-                lastOffset = currentOffset
-            }
-    }
-
     LaunchedEffect(selectedCategory) {
-        areChipsVisible = true
         listState.scrollToItem(0, 0)
         contentProgress.snapTo(0.6f)
         contentProgress.animateTo(
             targetValue = 1f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMediumLow
+                stiffness = ExpressiveSprings.DefaultSpatialStiffness
             )
         )
     }
@@ -562,60 +539,11 @@ fun ExploreScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                ExploreTopBar(
-                    onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
-                    onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
-                    isScrolled = isScrolled
-                )
-                if (effectiveCategories.size > 1) {
-                    AnimatedVisibility(
-                        visible = areChipsVisible,
-                        enter = expandVertically(
-                            animationSpec = spring(
-                                dampingRatio = 0.74f,
-                                stiffness = Spring.StiffnessMediumLow
-                            ),
-                            expandFrom = Alignment.Top
-                        ) + fadeIn(
-                            animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
-                        ) + slideInVertically(
-                            animationSpec = spring(
-                                dampingRatio = 0.74f,
-                                stiffness = Spring.StiffnessMediumLow
-                            ),
-                            initialOffsetY = { -it / 2 }
-                        ),
-                        exit = shrinkVertically(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioNoBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            ),
-                            shrinkTowards = Alignment.Top
-                        ) + fadeOut(
-                            animationSpec = tween(durationMillis = 160, easing = FastOutLinearInEasing)
-                        ) + slideOutVertically(
-                            animationSpec = spring(
-                                dampingRatio = Spring.DampingRatioNoBouncy,
-                                stiffness = Spring.StiffnessMediumLow
-                            ),
-                            targetOffsetY = { -it / 2 }
-                        )
-                    ) {
-                        ExploreCategoryChipsRow(
-                            categories = effectiveCategories,
-                            selectedCategory = selectedCategory,
-                            onCategorySelect = { category ->
-                                quickPicksViewModel.setCategory(category)
-                                exploreViewModel.setSelectedFilter(category)
-                            },
-                            modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
-                        )
-                    }
-                }
-            }
+            ExploreTopBar(
+                onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
+                onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
+                isScrolled = isScrolled
+            )
         }
     ) { innerPadding ->
         PullToRefreshBox(
@@ -632,14 +560,14 @@ fun ExploreScreen(
                 }
             },
             state = pullRefreshState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding()),
+            modifier = Modifier.fillMaxSize(),
             indicator = {
                 PullToRefreshDefaults.LoadingIndicator(
                     state = pullRefreshState,
                     isRefreshing = isRefreshing,
-                    modifier = Modifier.align(Alignment.TopCenter),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = innerPadding.calculateTopPadding() + 8.dp),
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -669,23 +597,52 @@ fun ExploreScreen(
                 label = "explore_loading_crossfade"
             ) { isLoading ->
                 if (isLoading) {
-                    FeedLoadingSkeleton(contentPadding = PaddingValues(bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()))
+                    FeedLoadingSkeleton(
+                        contentPadding = PaddingValues(
+                            top = innerPadding.calculateTopPadding() + 8.dp,
+                            bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()
+                        ),
+                        categories = effectiveCategories,
+                        selectedCategory = selectedCategory,
+                        onCategorySelect = { category ->
+                            quickPicksViewModel.setCategory(category)
+                            exploreViewModel.setSelectedFilter(category)
+                        }
+                    )
                 } else {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
                             .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
                             .graphicsLayer {
                                 val p = contentProgress.value
                                 alpha = p
                                 translationY = slideDistancePx * (1f - p)
                             },
                         contentPadding = PaddingValues(
-                            top = 12.dp,
+                            top = innerPadding.calculateTopPadding() + 8.dp,
                             bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
                         ),
                         verticalArrangement = Arrangement.spacedBy(22.dp)
                     ) {
+                        // 0. Floating Category Chips (Scrolls up with the page, NO black container sheet)
+                        if (effectiveCategories.size > 1) {
+                            item(key = "explore_category_chips", contentType = "category_chips") {
+                                ExploreCategoryChipsRow(
+                                    categories = effectiveCategories,
+                                    selectedCategory = selectedCategory,
+                                    onCategorySelect = { category ->
+                                        quickPicksViewModel.setCategory(category)
+                                        exploreViewModel.setSelectedFilter(category)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 2.dp)
+                                )
+                            }
+                        }
+
                         if (isLocalSelected) {
                         // 1. Local Quick Picks
                         if (quickPicks.isNotEmpty()) {
@@ -2955,7 +2912,12 @@ private fun FeedFooter(lastUpdatedMillis: Long) {
 }
 
 @Composable
-private fun FeedLoadingSkeleton(contentPadding: PaddingValues) {
+private fun FeedLoadingSkeleton(
+    contentPadding: PaddingValues,
+    categories: List<String> = emptyList(),
+    selectedCategory: String = "All",
+    onCategorySelect: (String) -> Unit = {}
+) {
     val transition = rememberInfiniteTransition(label = "skeleton")
     val pulse by transition.animateFloat(
         initialValue = 0.35f,
@@ -2969,6 +2931,18 @@ private fun FeedLoadingSkeleton(contentPadding: PaddingValues) {
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        if (categories.size > 1) {
+            item(key = "skeleton_category_chips") {
+                ExploreCategoryChipsRow(
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelect = onCategorySelect,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 2.dp)
+                )
+            }
+        }
         item {
             Box(
                 modifier = Modifier
@@ -3792,6 +3766,7 @@ private fun ExploreCategoryChipsRow(
 ) {
     if (categories.isEmpty()) return
     val haptics = LocalHapticFeedback.current
+    val motionScheme = MaterialTheme.motionScheme
     LazyRow(
         modifier = modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -3801,13 +3776,18 @@ private fun ExploreCategoryChipsRow(
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
             val containerColor by animateColorAsState(
                 targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                animationSpec = motionScheme.defaultEffects(),
                 label = "cat_container"
             )
             val contentColor by animateColorAsState(
                 targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                animationSpec = motionScheme.defaultEffects(),
                 label = "cat_content"
+            )
+            val pillScale by animateFloatAsState(
+                targetValue = if (isSelected) 1.04f else 1.0f,
+                animationSpec = motionScheme.fastSpatial<Float>(),
+                label = "cat_scale"
             )
 
             Surface(
@@ -3818,8 +3798,14 @@ private fun ExploreCategoryChipsRow(
                 shape = CircleShape,
                 color = containerColor,
                 contentColor = contentColor,
+                shadowElevation = if (isSelected) 3.dp else 1.dp,
                 tonalElevation = if (isSelected) 3.dp else 0.dp,
-                modifier = Modifier.defaultMinSize(minHeight = 38.dp)
+                modifier = Modifier
+                    .defaultMinSize(minHeight = 38.dp)
+                    .graphicsLayer {
+                        scaleX = pillScale
+                        scaleY = pillScale
+                    }
             ) {
                 Box(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
