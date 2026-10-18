@@ -135,7 +135,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -219,6 +219,8 @@ fun ExploreScreen(
 
     val context = androidx.compose.ui.platform.LocalContext.current
     val isOnline by playerViewModel.isOnline.collectAsStateWithLifecycle()
+    val isLocalMode by playerViewModel.localModeEnabled.collectAsStateWithLifecycle()
+    val isEffectivelyOnline = isOnline && !isLocalMode
     val state by feedViewModel.uiState.collectAsStateWithLifecycle()
     val exploreUiState by exploreViewModel.uiState.collectAsStateWithLifecycle()
     val quickPicksRaw by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
@@ -257,8 +259,8 @@ fun ExploreScreen(
             } else emptyList()
         }
     }
-    val quickPicks = remember(effectiveQuickPicks, isOnline) {
-        if (!isOnline) {
+    val quickPicks = remember(effectiveQuickPicks, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             effectiveQuickPicks.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }
         } else {
             effectiveQuickPicks
@@ -268,16 +270,20 @@ fun ExploreScreen(
     val baselineCategories = remember {
         listOf("All", "Local", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize")
     }
-    val effectiveCategories = remember(categories, exploreUiState.moodChips) {
-        val dynamicTitles = exploreUiState.moodChips.map { it.title }
-        if (dynamicTitles.isNotEmpty()) {
-            (listOf("All", "Local") + dynamicTitles).distinctBy { it.lowercase().trim() }
+    val effectiveCategories = remember(categories, exploreUiState.moodChips, isLocalMode) {
+        if (isLocalMode) {
+            listOf("Local")
         } else {
-            (baselineCategories + categories).distinctBy { it.lowercase().trim() }
+            val dynamicTitles = exploreUiState.moodChips.map { it.title }
+            if (dynamicTitles.isNotEmpty()) {
+                (listOf("All", "Local") + dynamicTitles).distinctBy { it.lowercase().trim() }
+            } else {
+                (baselineCategories + categories).distinctBy { it.lowercase().trim() }
+            }
         }
     }
-    val selectedCategory = exploreUiState.selectedFilter
-    val isLocalSelected = selectedCategory.equals("Local", ignoreCase = true)
+    val selectedCategory = if (isLocalMode) "Local" else exploreUiState.selectedFilter
+    val isLocalSelected = isLocalMode || selectedCategory.equals("Local", ignoreCase = true)
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
     val localAlbums by playerViewModel.albumsFlow.collectAsStateWithLifecycle()
     val localArtists by playerViewModel.artistsFlow.collectAsStateWithLifecycle()
@@ -294,11 +300,15 @@ fun ExploreScreen(
     val playlistViewModel: PlaylistViewModel = hiltViewModel()
 
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, exploreViewModel, quickPicksViewModel) {
+    DisposableEffect(lifecycleOwner, exploreViewModel, quickPicksViewModel, isLocalMode) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                exploreViewModel.loadData()
-                quickPicksViewModel.refreshIfStale()
+                if (isLocalMode) {
+                    exploreViewModel.setSelectedFilter("Local")
+                } else {
+                    exploreViewModel.loadData()
+                    quickPicksViewModel.refreshIfStale()
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -318,12 +328,6 @@ fun ExploreScreen(
     val isScrolled by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
     }
-    val animatedElevation by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 4.dp else 0.dp,
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = 200, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-        label = "explore_top_bar_elevation"
-    )
-
     val contentProgress = remember { Animatable(1f) }
 
     val bottomPadding = if (currentSongId != null) MiniPlayerHeight + 16.dp else 16.dp
@@ -339,8 +343,8 @@ fun ExploreScreen(
         if (isLocalSelected) return@LaunchedEffect
         snapshotFlow {
             val totalItems = listState.layoutInfo.totalItemsCount
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            totalItems > 0 && lastVisibleItem >= totalItems - 3
+            val firstIndex = listState.firstVisibleItemIndex
+            totalItems > 0 && firstIndex >= (totalItems - 6).coerceAtLeast(0)
         }
             .distinctUntilChanged()
             .filter { it }
@@ -352,12 +356,18 @@ fun ExploreScreen(
     }
 
     LaunchedEffect(selectedCategory) {
+        contentProgress.animateTo(
+            targetValue = 0.45f,
+            animationSpec = tween(durationMillis = 120, easing = com.unshoo.pixelmusic.presentation.navigation.EmphasizedAccelerateEasing)
+        )
+    }
+
+    LaunchedEffect(currentSections, isLocalSelected) {
         listState.scrollToItem(0, 0)
-        contentProgress.snapTo(0.6f)
         contentProgress.animateTo(
             targetValue = 1f,
             animationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
+                dampingRatio = ExpressiveSprings.DefaultSpatialDampingRatio,
                 stiffness = ExpressiveSprings.DefaultSpatialStiffness
             )
         )
@@ -1487,26 +1497,34 @@ fun ExploreTopBar(
 ) {
     val baseContainerColor = MaterialTheme.colorScheme.primaryContainer
     val surfaceColor = MaterialTheme.colorScheme.surface
-    val solidTintedColor = remember(baseContainerColor, surfaceColor) {
-        Color(
-            red = (baseContainerColor.red * 0.45f) + (surfaceColor.red * 0.55f),
-            green = (baseContainerColor.green * 0.45f) + (surfaceColor.green * 0.55f),
-            blue = (baseContainerColor.blue * 0.45f) + (surfaceColor.blue * 0.55f),
-            alpha = 1f
-        )
+    val targetTintedColor = remember(baseContainerColor, surfaceColor, isScrolled) {
+        if (isScrolled) {
+            Color(
+                red = (baseContainerColor.red * 0.45f) + (surfaceColor.red * 0.55f),
+                green = (baseContainerColor.green * 0.45f) + (surfaceColor.green * 0.55f),
+                blue = (baseContainerColor.blue * 0.45f) + (surfaceColor.blue * 0.55f),
+                alpha = 1f
+            )
+        } else {
+            surfaceColor
+        }
     }
-    val animatedElevation by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 4.dp else 0.dp,
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = 240, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-        label = "explore_top_bar_elevation"
+    val animatedBarColor by animateColorAsState(
+        targetValue = targetTintedColor,
+        animationSpec = spring(
+            dampingRatio = ExpressiveSprings.DefaultEffectsDampingRatio,
+            stiffness = ExpressiveSprings.DefaultEffectsStiffness
+        ),
+        label = "explore_top_bar_color"
     )
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
-        color = solidTintedColor,
+        color = animatedBarColor,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        shadowElevation = animatedElevation
+        shadowElevation = 0.dp,
+        tonalElevation = if (isScrolled) 3.dp else 0.dp
     ) {
         Row(
             modifier = Modifier
@@ -2926,6 +2944,8 @@ private fun FeedLoadingSkeleton(
         label = "pulse"
     )
 
+    val skeletonColor = MaterialTheme.colorScheme.surfaceContainerHigh
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = contentPadding,
@@ -2949,13 +2969,16 @@ private fun FeedLoadingSkeleton(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .height(180.dp)
+                    .graphicsLayer { alpha = pulse }
                     .clip(AbsoluteSmoothCornerShape(26.dp, 75))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = pulse))
+                    .background(skeletonColor)
             )
         }
         item {
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .graphicsLayer { alpha = pulse },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 repeat(2) {
@@ -2966,7 +2989,7 @@ private fun FeedLoadingSkeleton(
                                     .weight(1f)
                                     .height(64.dp)
                                     .clip(AbsoluteSmoothCornerShape(18.dp, 75))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = pulse))
+                                    .background(skeletonColor)
                             )
                         }
                     }
@@ -2975,7 +2998,9 @@ private fun FeedLoadingSkeleton(
         }
         items(3) {
             Column(
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .graphicsLayer { alpha = pulse },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
@@ -2984,7 +3009,7 @@ private fun FeedLoadingSkeleton(
                         .width(160.dp)
                         .height(20.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = pulse))
+                        .background(skeletonColor)
                 )
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp),
@@ -2996,14 +3021,14 @@ private fun FeedLoadingSkeleton(
                                 modifier = Modifier
                                     .size(148.dp)
                                     .clip(AbsoluteSmoothCornerShape(18.dp, 75))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = pulse))
+                                    .background(skeletonColor)
                             )
                             Box(
                                 modifier = Modifier
                                     .width(110.dp)
                                     .height(14.dp)
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = pulse))
+                                    .background(skeletonColor)
                             )
                         }
                     }
@@ -3414,7 +3439,7 @@ private fun LibraryCarouselCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(168.dp)
-            .clickable(onClick = onClick),
+            .bounceClick(scaleDown = 0.98f) { onClick() },
         shape = ShapeCache.smooth24,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(

@@ -1,6 +1,8 @@
 package com.unshoo.pixelmusic.presentation.viewmodel
 
 import android.content.ComponentCallbacks2
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.paging.filter
 import com.unshoo.pixelmusic.data.model.Album
 import com.unshoo.pixelmusic.data.model.Artist
@@ -45,6 +47,7 @@ private const val ENABLE_FOLDERS_STORAGE_FILTER = false
  */
 @Singleton
 class LibraryStateHolder @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val userPreferencesRepository: UserPreferencesRepository,
     private val musicRepository: MusicRepository,
     private val connectivityStateHolder: ConnectivityStateHolder
@@ -101,9 +104,10 @@ class LibraryStateHolder @Inject constructor(
         combine(
             _currentStorageFilter,
             userPreferencesRepository.hideLocalMediaFlow,
-            connectivityStateHolder.isOnline
-        ) { filter, hideLocal, isOnline ->
-            if (!isOnline) {
+            connectivityStateHolder.isOnline,
+            userPreferencesRepository.localModeEnabledFlow
+        ) { filter, hideLocal, isOnline, localMode ->
+            if (localMode || !isOnline) {
                 StorageFilter.LOCAL
             } else if (hideLocal) {
                 StorageFilter.ONLINE
@@ -150,11 +154,24 @@ class LibraryStateHolder @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val favoritesPagingFlow: Flow<androidx.paging.PagingData<Song>> =
-        combine(_currentFavoriteSortOption, effectiveStorageFilter) { sort, filter ->
-            sort to filter
+        combine(
+            _currentFavoriteSortOption,
+            effectiveStorageFilter,
+            userPreferencesRepository.localModeEnabledFlow
+        ) { sort, filter, localMode ->
+            Triple(sort, filter, localMode)
         }.distinctUntilChanged()
-        .flatMapLatest { (sortOption, storageFilter) ->
+        .flatMapLatest { (sortOption, storageFilter, localMode) ->
             musicRepository.getPaginatedFavoriteSongs(sortOption, storageFilter)
+                .map { pagingData ->
+                    if (localMode || storageFilter == StorageFilter.LOCAL) {
+                        pagingData.filter { song ->
+                            song.isLocal || com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, song)
+                        }
+                    } else {
+                        pagingData
+                    }
+                }
         }.flowOn(Dispatchers.IO)
 
     @OptIn(ExperimentalCoroutinesApi::class)

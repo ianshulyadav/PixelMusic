@@ -149,6 +149,7 @@ data class SettingsUiState(
     val avoidRepetitiveSongs: Boolean = false,
     val playerStreamClient: PlayerStreamClient = PlayerStreamClient.ANDROID_VR,
     val pureYtMusicOnly: Boolean = false,
+    val localModeEnabled: Boolean = false,
     val contentLanguage: String = "en",
     val contentCountry: String = java.util.Locale.getDefault().country.ifBlank { "IN" },
     val playlistSuggestionSource: PlaylistSuggestionSource = PlaylistSuggestionSource.BOTH,
@@ -989,6 +990,12 @@ class SettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            userPreferencesRepository.localModeEnabledFlow.collect { enabled ->
+                _uiState.update { it.copy(localModeEnabled = enabled) }
+            }
+        }
+
+        viewModelScope.launch {
             userPreferencesRepository.contentLanguageFlow.collect { value ->
                 _uiState.update { it.copy(contentLanguage = value) }
             }
@@ -1048,6 +1055,12 @@ class SettingsViewModel @Inject constructor(
     fun setPureYtMusicOnly(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setPureYtMusicOnly(enabled)
+        }
+    }
+
+    fun setLocalModeEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setLocalModeEnabled(enabled)
         }
     }
 

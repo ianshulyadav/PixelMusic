@@ -51,7 +51,7 @@ fun Modifier.scrollReveal(
     val progress by animateFloatAsState(
         targetValue = if (isTriggered) 1f else 0f,
         animationSpec = spring(
-            dampingRatio = Spring.DampingRatioNoBouncy,
+            dampingRatio = 0.86f,
             stiffness = Spring.StiffnessMediumLow
         ),
         label = "scroll_reveal_progress"

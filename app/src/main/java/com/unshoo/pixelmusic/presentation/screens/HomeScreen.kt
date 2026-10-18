@@ -177,11 +177,13 @@ fun HomeScreen(
         (context as? android.app.Activity)?.intent?.getBooleanExtra("is_benchmark", false) ?: false
     }
     val isOnline by playerViewModel.isOnline.collectAsStateWithLifecycle()
+    val isLocalMode by playerViewModel.localModeEnabled.collectAsStateWithLifecycle()
+    val isEffectivelyOnline = isOnline && !isLocalMode
     val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val accountsUiState by accountsViewModel.uiState.collectAsStateWithLifecycle()
     val exploreUiState by exploreViewModel.uiState.collectAsStateWithLifecycle()
-    val discoverYoutubeSongs = remember(exploreUiState.homePageSections, isOnline) {
-        if (!isOnline) {
+    val discoverYoutubeSongs = remember(exploreUiState.homePageSections, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             emptyList()
         } else {
             exploreUiState.homePageSections
@@ -198,22 +200,22 @@ fun HomeScreen(
         }
     }
     val dailyMixSongsRaw by playerViewModel.dailyMixSongs.collectAsStateWithLifecycle()
-    val dailyMixSongs = remember(dailyMixSongsRaw, isOnline) {
-        if (!isOnline) {
+    val dailyMixSongs = remember(dailyMixSongsRaw, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             dailyMixSongsRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
         } else {
             dailyMixSongsRaw
         }
     }
-    val mergedDailyMixSongs = remember(dailyMixSongs, discoverYoutubeSongs, isOnline) {
-        if (!isOnline) {
+    val mergedDailyMixSongs = remember(dailyMixSongs, discoverYoutubeSongs, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             dailyMixSongs
         } else {
             (dailyMixSongs + discoverYoutubeSongs).distinctBy { it.id }.toImmutableList()
         }
     }
-    LaunchedEffect(isOnline) {
-        if (!isOnline && dailyMixSongs.isEmpty()) {
+    LaunchedEffect(isEffectivelyOnline) {
+        if (!isEffectivelyOnline && dailyMixSongs.isEmpty()) {
             playerViewModel.forceUpdateDailyMix()
         }
     }
@@ -249,13 +251,13 @@ fun HomeScreen(
     val usesFallbackHomeMix = remember(curatedYourMixSongs, dailyMixSongs) {
         curatedYourMixSongs.isEmpty() && dailyMixSongs.isEmpty()
     }
-    val yourMixSongs = remember(curatedYourMixSongs, dailyMixSongs, homeMixPreviewSongs, isOnline) {
+    val yourMixSongs = remember(curatedYourMixSongs, dailyMixSongs, homeMixPreviewSongs, isEffectivelyOnline) {
         val baseList = when {
             dailyMixSongs.isNotEmpty() -> dailyMixSongs
             curatedYourMixSongs.isNotEmpty() -> curatedYourMixSongs
             else -> homeMixPreviewSongs
         }
-        if (!isOnline) {
+        if (!isEffectivelyOnline) {
             baseList.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
         } else {
             baseList
@@ -302,8 +304,8 @@ fun HomeScreen(
             maxItems = 64
         )
     }
-    val recentlyPlayedSongs = remember(latestRecentlyPlayedSongs, isOnline) {
-        if (!isOnline) {
+    val recentlyPlayedSongs = remember(latestRecentlyPlayedSongs, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             latestRecentlyPlayedSongs.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it.song) }
         } else {
             latestRecentlyPlayedSongs
@@ -353,14 +355,15 @@ fun HomeScreen(
 
     val homeStatsOverview by statsViewModel.homeOverview.collectAsStateWithLifecycle()
     val quickPicksRaw by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
-    val quickPicks = remember(quickPicksRaw, isOnline) {
-        if (!isOnline) {
+    val quickPicks = remember(quickPicksRaw, isEffectivelyOnline) {
+        if (!isEffectivelyOnline) {
             quickPicksRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }
         } else {
             quickPicksRaw
         }
     }
-    val artistReleases by favoriteArtistReleasesViewModel.releases.collectAsStateWithLifecycle()
+    val artistReleasesRaw by favoriteArtistReleasesViewModel.releases.collectAsStateWithLifecycle()
+    val artistReleases = if (isEffectivelyOnline) artistReleasesRaw else emptyList()
     var isRefreshing by remember { mutableStateOf(false) }
 
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }

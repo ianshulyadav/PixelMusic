@@ -363,6 +363,7 @@ constructor(
         val SUBSCRIBED_ARTIST_IDS = stringSetPreferencesKey("subscribed_artist_ids")
         val PLAYER_STREAM_CLIENT = stringPreferencesKey("player_stream_client")
         val PURE_YT_MUSIC_ONLY = booleanPreferencesKey("pure_yt_music_only")
+        val LOCAL_MODE_ENABLED = booleanPreferencesKey("local_mode_enabled")
         val CONTENT_LANGUAGE = stringPreferencesKey("content_language")
         val CONTENT_COUNTRY = stringPreferencesKey("content_country")
         val PLAYLIST_SUGGESTION_SOURCE = stringPreferencesKey("playlist_suggestion_source")
@@ -1148,6 +1149,17 @@ constructor(
     suspend fun setPureYtMusicOnly(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.PURE_YT_MUSIC_ONLY] = enabled
+        }
+    }
+
+    val localModeEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.LOCAL_MODE_ENABLED] ?: false
+        }.distinctUntilChanged()
+
+    suspend fun setLocalModeEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LOCAL_MODE_ENABLED] = enabled
         }
     }
 

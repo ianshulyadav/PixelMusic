@@ -281,5 +281,8 @@
     <string name="cloud_download_play_selected">Play selected</string>
     <string name="cloud_download_play_all">Play all</string>
     <string name="cloud_download_shuffle_all">Shuffle all</string>
-    <string name="in_your_library">In your library</string>
+    <!-- Local Mode -->
+    <string name="settings_local_mode_title">Local Mode</string>
+    <string name="settings_local_mode_desc">Pure offline player. Disconnects all YouTube online services, recommendations, and remote shelves without logging out. Shows only local and downloaded music.</string>
+    <string name="in_your_library">In Your Library</string>
 </resources>

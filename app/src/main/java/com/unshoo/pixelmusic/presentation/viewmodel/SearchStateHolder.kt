@@ -108,7 +108,8 @@ class SearchStateHolder @Inject constructor(
                         return@collectLatest
                     }
 
-                    val source = userPreferencesRepository.searchSourceFlow.first()
+                    val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
+                    val source = if (isLocalMode) SearchSource.LOCAL else userPreferencesRepository.searchSourceFlow.first()
                     val key = cacheKey(query, currentFilter, source)
                     val cached = searchResultCache.get(key)
                     if (cached != null) {
@@ -238,6 +239,7 @@ class SearchStateHolder @Inject constructor(
         isLoadingMore = true
         scope?.launch(Dispatchers.IO) {
             try {
+                if (userPreferencesRepository.localModeEnabledFlow.first()) return@launch
                 val result = YouTube.searchContinuation(token).getOrNull()
                 if (result != null) {
                     val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()

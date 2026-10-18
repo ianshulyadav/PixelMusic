@@ -15,6 +15,49 @@ import java.util.Locale
  */
 object OfflineAudioResolver {
 
+    @Volatile
+    private var downloadedFilesCache: Map<String, File>? = null
+    @Volatile
+    private var lastCacheScanTime: Long = 0L
+    private const val CACHE_TTL_MS = 8_000L
+
+    fun invalidateCache() {
+        downloadedFilesCache = null
+        lastCacheScanTime = 0L
+    }
+
+    private fun getDownloadedFilesMap(context: Context): Map<String, File> {
+        val now = System.currentTimeMillis()
+        val cached = downloadedFilesCache
+        if (cached != null && (now - lastCacheScanTime < CACHE_TTL_MS)) {
+            return cached
+        }
+        val candidateDirs = listOf(
+            PixelMusicHelper.getDownloadDirectory(context, Constants.Downloads.AUDIO_FILES_FOLDER),
+            File(context.filesDir, "audio_files")
+        )
+        val validExtensions = setOf("flac", "webm", "m4a", "opus", "mp3", "ogg", "aac", "wav")
+        val map = HashMap<String, File>()
+        for (dir in candidateDirs) {
+            if (dir.exists() && dir.isDirectory) {
+                dir.listFiles()?.forEach { file ->
+                    if (file.isFile && file.length() > 0L) {
+                        val ext = file.extension.lowercase(Locale.ROOT)
+                        if (ext in validExtensions) {
+                            val id = file.nameWithoutExtension
+                            if (!map.containsKey(id)) {
+                                map[id] = file
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        downloadedFilesCache = map
+        lastCacheScanTime = now
+        return map
+    }
+
     /**
      * Returns true if the song has an accessible offline audio source
      * (verified physical file with size > 0, valid readable content:// URI, or downloaded YouTube audio file).
@@ -39,29 +82,19 @@ object OfflineAudioResolver {
             }
         }
         if (song.contentUriString.startsWith("content://")) {
-            if (isContentUriAccessible(context, song.contentUriString)) {
-                return true
-            }
+            // For local media store items, content:// is verified local storage.
+            // Avoid calling synchronous contentResolver.openAssetFileDescriptor()
+            // on the Main Thread during UI composition layout.
+            return true
         }
 
-        // 3. Downloaded YouTube audio check
+        // 3. Downloaded YouTube audio check (O(1) fast memory lookup)
         val ytId = song.youtubeId ?: if (song.id.startsWith("youtube_")) song.id.removePrefix("youtube_") else null
         if (ytId != null) {
-            return getOfflineAudioFile(context, song) != null
+            return getDownloadedFilesMap(context).containsKey(ytId)
         }
 
         return false
-    }
-
-    private fun isContentUriAccessible(context: Context, uriString: String): Boolean {
-        return try {
-            val uri = Uri.parse(uriString)
-            context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
-                afd.length > 0L || afd.length == android.content.res.AssetFileDescriptor.UNKNOWN_LENGTH
-            } ?: false
-        } catch (_: Exception) {
-            false
-        }
     }
 
     /**
@@ -89,16 +122,7 @@ object OfflineAudioResolver {
         }
         val ytId = song.youtubeId ?: if (song.id.startsWith("youtube_")) song.id.removePrefix("youtube_") else null
         if (ytId != null) {
-            val audioDir = PixelMusicHelper.getDownloadDirectory(context, Constants.Downloads.AUDIO_FILES_FOLDER)
-            val fallbackAudioDir = File(context.filesDir, "audio_files")
-            val candidateDirs = listOf(audioDir, fallbackAudioDir)
-            val possibleExtensions = listOf("flac", "webm", "m4a", "opus", "mp3", "ogg", "aac", "wav")
-            for (dir in candidateDirs) {
-                for (ext in possibleExtensions) {
-                    val f = File(dir, "$ytId.$ext")
-                    if (f.exists() && f.isFile && f.length() > 0L) return f
-                }
-            }
+            return getDownloadedFilesMap(context)[ytId]
         }
         return null
     }

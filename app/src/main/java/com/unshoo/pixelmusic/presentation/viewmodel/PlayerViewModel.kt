@@ -21,6 +21,7 @@ import com.unshoo.pixelmusic.data.database.SongArtistCrossRef
 import com.unshoo.pixelmusic.data.database.SourceType
 import com.unshoo.pixelmusic.data.database.serializeArtistRefs
 import com.unshoo.pixelmusic.data.database.MusicDao
+import com.unshoo.pixelmusic.data.database.toSong
 import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.filter
@@ -918,7 +919,8 @@ class PlayerViewModel @Inject constructor(
                 val baseFilter = playerUiState.value.currentStorageFilter
                 val hideLocal = playerUiState.value.hideLocalMedia
                 val isOnline = connectivityStateHolder.isOnline.value
-                val storageFilter = if (!isOnline) {
+                val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
+                val storageFilter = if (isLocalMode || !isOnline) {
                     com.unshoo.pixelmusic.data.model.StorageFilter.LOCAL
                 } else if (hideLocal) {
                     com.unshoo.pixelmusic.data.model.StorageFilter.ONLINE
@@ -1845,8 +1847,36 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    val favoriteSongIds: StateFlow<Set<String>> = musicRepository
-        .getFavoriteSongIdsFlow()
+    val localModeEnabled: StateFlow<Boolean> = userPreferencesRepository.localModeEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val favoriteSongIds: StateFlow<Set<String>> = combine(
+        musicRepository.getFavoriteSongIdsFlow(),
+        userPreferencesRepository.localModeEnabledFlow
+    ) { ids, localMode ->
+        if (localMode) {
+            withContext(Dispatchers.IO) {
+                val longIds = ids.mapNotNull { it.toLongOrNull() }
+                if (longIds.isEmpty()) return@withContext emptySet<String>()
+                val songs = musicDao.getSongsByIdsListSimple(longIds)
+                val validIds = HashSet<String>()
+                songs.forEach { entity ->
+                    val s = entity.toSong()
+                    if (s.isLocal || com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, s)) {
+                        validIds.add(s.id)
+                        val ytId = s.youtubeId
+                        if (!ytId.isNullOrBlank()) {
+                            validIds.add(ytId)
+                            validIds.add("youtube_$ytId")
+                        }
+                    }
+                }
+                validIds
+            }
+        } else {
+            ids
+        }
+    }.distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     val autoQueueEnabled: StateFlow<Boolean> = youtubeDatastoreRepository.settings
@@ -6710,7 +6740,7 @@ class PlayerViewModel @Inject constructor(
             }
         }
 
-        if (videoId != null && unshoo.ianshulyadav.pixelmusic.innertube.YouTube.hasLoginCookie()) {
+        if (videoId != null && !userPreferencesRepository.localModeEnabledFlow.first() && unshoo.ianshulyadav.pixelmusic.innertube.YouTube.hasLoginCookie()) {
             try {
                 unshoo.ianshulyadav.pixelmusic.innertube.YouTube.likeVideo(videoId, targetFavoriteState)
                 youTubeLibrarySyncManager.syncLikedSongs()
@@ -8104,7 +8134,7 @@ class PlayerViewModel @Inject constructor(
                 syncManager.forceRefresh()
                 return@launch
             }
-            if (!unshoo.ianshulyadav.pixelmusic.innertube.YouTube.hasLoginCookie()) {
+            if (userPreferencesRepository.localModeEnabledFlow.first() || !connectivityStateHolder.isOnline.value || !unshoo.ianshulyadav.pixelmusic.innertube.YouTube.hasLoginCookie()) {
                 // Also use forceRefresh() here so local-only users get an immediate
                 // incremental rescan instead of a potentially throttled no-op.
                 syncManager.forceRefresh()

@@ -1360,6 +1360,13 @@ fun SettingsCategoryScreen(
                                     onCheckedChange = { settingsViewModel.setPureYtMusicOnly(it) },
                                     leadingIcon = { Icon(Icons.Rounded.MusicNote, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
+                                SwitchSettingItem(
+                                    title = stringResource(R.string.settings_local_mode_title),
+                                    subtitle = stringResource(R.string.settings_local_mode_desc),
+                                    checked = uiState.localModeEnabled,
+                                    onCheckedChange = { settingsViewModel.setLocalModeEnabled(it) },
+                                    leadingIcon = { Icon(Icons.Outlined.Folder, null, tint = MaterialTheme.colorScheme.secondary) }
+                                )
                             }
                         }
                         SettingsCategory.BEHAVIOR -> {

@@ -268,7 +268,7 @@ class ExploreViewModel @Inject constructor(
     private suspend fun restoreFromCache() {
         try {
             if (cacheFile.exists()) {
-                if (!connectivityStateHolder.isOnline.value) {
+                if (userPreferencesRepository.localModeEnabledFlow.first() || !connectivityStateHolder.isOnline.value) {
                     loadOfflineExploreData()
                     return
                 }
@@ -325,7 +325,8 @@ class ExploreViewModel @Inject constructor(
     }
 
     private suspend fun loadDataInternal(forceRefresh: Boolean) {
-        if (!connectivityStateHolder.isOnline.value) {
+        val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
+        if (isLocalMode || !connectivityStateHolder.isOnline.value) {
             loadOfflineExploreData()
             return
         }

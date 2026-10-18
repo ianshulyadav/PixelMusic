@@ -48,7 +48,8 @@ class QuickPicksViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val musicRepository: MusicRepository,
     private val engagementDao: com.unshoo.pixelmusic.data.database.EngagementDao,
-    private val playbackStatsRepository: PlaybackStatsRepository
+    private val playbackStatsRepository: PlaybackStatsRepository,
+    private val connectivityStateHolder: ConnectivityStateHolder
 ) : ViewModel() {
 
     private val _quickPicks = MutableStateFlow<ImmutableList<Song>>(persistentListOf())
@@ -97,7 +98,17 @@ class QuickPicksViewModel @Inject constructor(
      */
     fun refreshIfStale() {
         if (isCacheExpired() && !_isLoading.value) {
-            loadQuickPicks(_selectedCategory.value, forceRefresh = true)
+            viewModelScope.launch {
+                val isOnline = connectivityStateHolder.isOnline.value
+                val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
+                if (!isOnline || isLocalMode) {
+                    if (_quickPicks.value.isEmpty()) {
+                        loadCategoryQuickPicks("Local")
+                    }
+                    return@launch
+                }
+                loadQuickPicks(_selectedCategory.value, forceRefresh = true)
+            }
         }
     }
 
@@ -205,6 +216,12 @@ class QuickPicksViewModel @Inject constructor(
 
     private fun loadQuickPicks(category: String, forceRefresh: Boolean = false) {
         viewModelScope.launch {
+            val isOnline = connectivityStateHolder.isOnline.value
+            val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
+            if (isLocalMode || !isOnline || category.equals("Local", ignoreCase = true)) {
+                loadCategoryQuickPicks("Local")
+                return@launch
+            }
             val cacheExpired = isCacheExpired()
             val shouldRefresh = forceRefresh || cacheExpired
             if (category == "All" && !shouldRefresh && _quickPicks.value.isNotEmpty()) {
@@ -272,7 +289,8 @@ class QuickPicksViewModel @Inject constructor(
     // Final output: flat shuffled list of ~20 songs
     // ─────────────────────────────────────────────────────────────────────────
 
-    private suspend fun loadEnhancedQuickPicks(): List<Song> = coroutineScope {
+    private suspend fun loadEnhancedQuickPicks(): List<Song> = withContext(Dispatchers.IO) {
+        coroutineScope {
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
 
         // 1. Gather historical seeds from user's local/online history and favorites
@@ -505,6 +523,7 @@ class QuickPicksViewModel @Inject constructor(
 
         // Shuffle completely to make it dynamic on every view/refresh
         notDisliked.shuffled().take(20)
+    }
     }
 
     private suspend fun loadAllOfflineAndDownloadedSongs(): List<Song> = withContext(Dispatchers.IO) {
