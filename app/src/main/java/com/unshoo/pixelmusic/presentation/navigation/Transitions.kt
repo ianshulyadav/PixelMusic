@@ -24,80 +24,56 @@ const val TRANSITION_DURATION = 260
 
 /**
  * M3 Expressive Shared-Axis Y entry for detail sheets (Playlists, Albums, Artists).
- * Smooth 8% vertical glide + 0.96 scale-in + fast fade-in in 260ms without spring drag.
+ * Smooth 6% vertical glide + fast fade-in without scaling jank or frame drops.
  */
 fun enterTransition(): EnterTransition = slideInVertically(
     animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
-    initialOffsetY = { (it * 0.08f).toInt() }
-) + scaleIn(
-    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
-    initialScale = 0.96f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
+    initialOffsetY = { (it * 0.06f).toInt() }
 ) + fadeIn(
-    animationSpec = tween(durationMillis = 180, easing = EmphasizedDecelerateEasing)
+    animationSpec = tween(durationMillis = 200, easing = EmphasizedDecelerateEasing)
 )
 
 /**
  * Calm background screen transition when navigating forward.
- * Quick fade and subtle scale-out to 0.98 so rendering resources are released cleanly.
+ * Soft fade so rendering resources are released cleanly without scale overhead.
  */
 fun exitTransition(): ExitTransition = fadeOut(
     animationSpec = tween(durationMillis = 160, easing = EmphasizedAccelerateEasing)
-) + scaleOut(
-    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedAccelerateEasing),
-    targetScale = 0.98f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
 )
 
 /**
  * Background screen re-entry when popping back from detail screen.
- * Restores smoothly from 0.98 scale with fast fade.
+ * Restores smoothly with soft fade.
  */
 fun popEnterTransition(): EnterTransition = fadeIn(
-    animationSpec = tween(durationMillis = 200, easing = EmphasizedDecelerateEasing)
-) + scaleIn(
-    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
-    initialScale = 0.98f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
+    animationSpec = tween(durationMillis = 200, delayMillis = 30, easing = EmphasizedDecelerateEasing)
 )
 
 /**
  * Fluid, calm dismiss for detail sheets (Playlists, Albums, Artists).
- * Snappy 240ms exit gliding down 8% with 0.96 scale-out and fade.
+ * Glides down 6% with soothing fade.
  */
 fun popExitTransition(): ExitTransition = slideOutVertically(
-    animationSpec = tween(durationMillis = 240, easing = EmphasizedAccelerateEasing),
-    targetOffsetY = { (it * 0.08f).toInt() }
-) + scaleOut(
-    animationSpec = tween(durationMillis = 240, easing = EmphasizedAccelerateEasing),
-    targetScale = 0.96f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
+    animationSpec = tween(durationMillis = 220, easing = EmphasizedAccelerateEasing),
+    targetOffsetY = { (it * 0.06f).toInt() }
 ) + fadeOut(
-    animationSpec = tween(durationMillis = 180, easing = EmphasizedAccelerateEasing)
+    animationSpec = tween(durationMillis = 170, easing = EmphasizedAccelerateEasing)
 )
 
 // Fast responsive settings dismiss transitions
-private const val SETTINGS_DISMISS_TOTAL_MS = 280
-private const val SETTINGS_DISMISS_FADE_MS = 220
+private const val SETTINGS_DISMISS_TOTAL_MS = 260
+private const val SETTINGS_DISMISS_FADE_MS = 200
 
 fun settingsPopExitTransition(): ExitTransition = slideOutHorizontally(
     animationSpec = tween(durationMillis = SETTINGS_DISMISS_TOTAL_MS, easing = EmphasizedAccelerateEasing),
-    targetOffsetX = { (it * 0.80f).toInt() }
-) + scaleOut(
-    animationSpec = tween(durationMillis = SETTINGS_DISMISS_TOTAL_MS, easing = EmphasizedAccelerateEasing),
-    targetScale = 0.97f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
+    targetOffsetX = { (it * 0.20f).toInt() }
 ) + fadeOut(
     animationSpec = tween(durationMillis = SETTINGS_DISMISS_FADE_MS, easing = EmphasizedAccelerateEasing)
 )
 
 fun settingsPopEnterTransition(): EnterTransition = slideInHorizontally(
     animationSpec = tween(durationMillis = SETTINGS_DISMISS_TOTAL_MS, easing = EmphasizedDecelerateEasing),
-    initialOffsetX = { -(it * 0.12f).toInt() }
-) + scaleIn(
-    animationSpec = tween(durationMillis = SETTINGS_DISMISS_TOTAL_MS, easing = EmphasizedDecelerateEasing),
-    initialScale = 0.98f,
-    transformOrigin = TransformOrigin(0.5f, 0.5f)
+    initialOffsetX = { -(it * 0.08f).toInt() }
 ) + fadeIn(
     animationSpec = tween(durationMillis = SETTINGS_DISMISS_FADE_MS, easing = EmphasizedDecelerateEasing)
 )

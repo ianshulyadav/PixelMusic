@@ -17,7 +17,8 @@ object OfflineAudioResolver {
 
     /**
      * Returns true if the song has an accessible offline audio source
-     * (local file, content:// URI, or downloaded YouTube audio file).
+     * (verified physical file with size > 0, valid readable content:// URI, or downloaded YouTube audio file).
+     * If there is metadata but no valid audio on disk/storage, this returns false.
      */
     fun hasOfflineAudio(
         context: Context,
@@ -26,19 +27,21 @@ object OfflineAudioResolver {
         // 1. Direct path check (local MediaStore / scanned folder / mapped file)
         if (song.path.isNotBlank()) {
             val file = File(song.path)
-            if (file.exists() && file.length() > 0L) return true
+            if (file.exists() && file.isFile && file.length() > 0L) return true
         }
 
-        // 2. Local URI check (content:// or file://)
+        // 2. Local URI check (file:// or content://)
         if (song.contentUriString.startsWith("file://")) {
             val parsedPath = Uri.parse(song.contentUriString).path
             if (!parsedPath.isNullOrBlank()) {
                 val file = File(parsedPath)
-                if (file.exists() && file.length() > 0L) return true
+                if (file.exists() && file.isFile && file.length() > 0L) return true
             }
         }
         if (song.contentUriString.startsWith("content://")) {
-            return true
+            if (isContentUriAccessible(context, song.contentUriString)) {
+                return true
+            }
         }
 
         // 3. Downloaded YouTube audio check
@@ -48,6 +51,17 @@ object OfflineAudioResolver {
         }
 
         return false
+    }
+
+    private fun isContentUriAccessible(context: Context, uriString: String): Boolean {
+        return try {
+            val uri = Uri.parse(uriString)
+            context.contentResolver.openAssetFileDescriptor(uri, "r")?.use { afd ->
+                afd.length > 0L || afd.length == android.content.res.AssetFileDescriptor.UNKNOWN_LENGTH
+            } ?: false
+        } catch (_: Exception) {
+            false
+        }
     }
 
     /**
@@ -71,7 +85,7 @@ object OfflineAudioResolver {
     fun getOfflineAudioFile(context: Context, song: Song): File? {
         if (song.path.isNotBlank()) {
             val file = File(song.path)
-            if (file.exists() && file.length() > 0L) return file
+            if (file.exists() && file.isFile && file.length() > 0L) return file
         }
         val ytId = song.youtubeId ?: if (song.id.startsWith("youtube_")) song.id.removePrefix("youtube_") else null
         if (ytId != null) {
@@ -82,7 +96,7 @@ object OfflineAudioResolver {
             for (dir in candidateDirs) {
                 for (ext in possibleExtensions) {
                     val f = File(dir, "$ytId.$ext")
-                    if (f.exists() && f.length() > 0L) return f
+                    if (f.exists() && f.isFile && f.length() > 0L) return f
                 }
             }
         }

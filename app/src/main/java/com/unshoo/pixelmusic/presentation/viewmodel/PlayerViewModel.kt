@@ -917,7 +917,10 @@ class PlayerViewModel @Inject constructor(
                 // Logic must match effectiveStorageFilter in LibraryStateHolder
                 val baseFilter = playerUiState.value.currentStorageFilter
                 val hideLocal = playerUiState.value.hideLocalMedia
-                val storageFilter = if (hideLocal) {
+                val isOnline = connectivityStateHolder.isOnline.value
+                val storageFilter = if (!isOnline) {
+                    com.unshoo.pixelmusic.data.model.StorageFilter.LOCAL
+                } else if (hideLocal) {
                     com.unshoo.pixelmusic.data.model.StorageFilter.ONLINE
                 } else {
                     baseFilter
@@ -5757,42 +5760,47 @@ class PlayerViewModel @Inject constructor(
             val validSongs = hydrateSongsIfNeeded(songsToPlay)
             throwIfDirectPlaybackRequestIsStale(requestToken)
 
-            if (validSongs.isEmpty()) {
-                // FIX: clear the preparingSongId we set before this coroutine — without this,
-                // the miniplayer shows a song that can never play and stays stuck forever.
+            val isOnline = connectivityStateHolder.isOnline.value
+            val availableSongs = if (!isOnline) {
+                validSongs.filter { song ->
+                    com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, song) ||
+                    (song.telegramFileId != null && musicRepository.telegramRepository.isFileCached(song.telegramFileId))
+                }
+            } else {
+                validSongs
+            }
+
+            if (availableSongs.isEmpty()) {
                 clearPreparingSongIfMatching()
-                _toastEvents.emit(context.getString(R.string.no_valid_songs))
+                if (!isOnline) {
+                    _showNoInternetDialog.tryEmit(Unit)
+                } else {
+                    _toastEvents.emit(context.getString(R.string.no_valid_songs))
+                }
                 return@launch
             }
 
             // Adjust startSong if it was filtered out
             val validStartSong =
-                validSongs.firstOrNull { it.id == startSong.id } ?: validSongs.first()
+                availableSongs.firstOrNull { it.id == startSong.id } ?: availableSongs.first()
 
-            // Offline check for the starting song if it is a Telegram song
-            if (validStartSong.contentUriString.startsWith("telegram:")) {
-                ensureTelegramPlaybackObserversStarted()
-                val isOnline = connectivityStateHolder.isOnline.value
-                val fileId = validStartSong.telegramFileId
-                
-                Timber.d("Offline Check: fileId=$fileId, contentUri=${validStartSong.contentUriString}, isOnline=$isOnline")
-
-                if (!isOnline) {
-                     if (fileId != null) {
-                          val isCached = musicRepository.telegramRepository.isFileCached(fileId)
-                          Timber.d("Offline Check: isCached=$isCached")
-                          throwIfDirectPlaybackRequestIsStale(requestToken)
-                          if (!isCached) {
-                              Timber.w("Blocked playback: Offline and not cached.")
-                              _showNoInternetDialog.tryEmit(Unit)
-                              return@launch
-                          }
-                     }
+            // Offline check for the starting song
+            if (!isOnline) {
+                val canPlayStartSong = com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, validStartSong) ||
+                    (validStartSong.telegramFileId != null && musicRepository.telegramRepository.isFileCached(validStartSong.telegramFileId))
+                if (!canPlayStartSong) {
+                    clearPreparingSongIfMatching()
+                    _showNoInternetDialog.tryEmit(Unit)
+                    return@launch
                 }
             }
 
+            if (validStartSong.contentUriString.startsWith("telegram:")) {
+                ensureTelegramPlaybackObserversStarted()
+            }
+
             // Store the original order so we can "unshuffle" later if the user turns shuffle off
-            queueStateHolder.setOriginalQueueOrder(validSongs)
+            queueStateHolder.setOriginalQueueOrder(availableSongs)
 
             // Check if the user wants shuffle to be persistent across different albums
             val isPersistent = userPreferencesRepository.persistentShuffleEnabledFlow.first()
@@ -5838,14 +5846,33 @@ class PlayerViewModel @Inject constructor(
         startAtZero: Boolean = true
     ) {
         cancelPendingFullQueuePlayback()
-        val cappedSongs = if (songsToPlay.size > 500) {
-            songsToPlay.shuffled().take(500)
-        } else {
-            songsToPlay
-        }
         val requestToken = beginDirectPlaybackRequest()
         directPlaybackJob = viewModelScope.launch {
             try {
+                val isOnline = connectivityStateHolder.isOnline.value
+                val offlineFilteredSongs = if (!isOnline) {
+                    songsToPlay.filter { song ->
+                        com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, song) ||
+                        (song.telegramFileId != null && musicRepository.telegramRepository.isFileCached(song.telegramFileId))
+                    }
+                } else {
+                    songsToPlay
+                }
+
+                if (offlineFilteredSongs.isEmpty()) {
+                    if (!isOnline) {
+                        _showNoInternetDialog.tryEmit(Unit)
+                    } else {
+                        sendToast(context.getString(R.string.player_no_songs_to_shuffle))
+                    }
+                    return@launch
+                }
+
+                val cappedSongs = if (offlineFilteredSongs.size > 500) {
+                    offlineFilteredSongs.shuffled().take(500)
+                } else {
+                    offlineFilteredSongs
+                }
                 val result = queueStateHolder.prepareShuffledQueueSuspending(cappedSongs, startAtZero)
                 throwIfDirectPlaybackRequestIsStale(requestToken)
                 if (result == null) {
@@ -6121,6 +6148,16 @@ class PlayerViewModel @Inject constructor(
             songsToPlay
         }
         val effectiveStartSong = songsToPlay.firstOrNull { it.id == startSong.id } ?: songsToPlay.first()
+        val isOnline = connectivityStateHolder.isOnline.value
+        if (!isOnline) {
+            val hasOffline = com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, effectiveStartSong) ||
+                (effectiveStartSong.telegramFileId != null && musicRepository.telegramRepository.isFileCached(effectiveStartSong.telegramFileId))
+            if (!hasOffline) {
+                clearPreparingSongIfMatching()
+                _showNoInternetDialog.tryEmit(Unit)
+                return
+            }
+        }
         saveYoutubeSongsToDb(listOf(effectiveStartSong))
         if (songsToPlay.size > 1) {
             viewModelScope.launch(Dispatchers.IO) {

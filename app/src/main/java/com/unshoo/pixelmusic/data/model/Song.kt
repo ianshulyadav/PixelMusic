@@ -70,7 +70,8 @@ data class Song(
             ?: ArtistRef(id = artistId, name = artist, isPrimary = true)
 
     val isLocal: Boolean
-        get() = !contentUriString.startsWith("telegram://") &&
+        get() = (path.isNotBlank() || contentUriString.startsWith("content://") || contentUriString.startsWith("file://")) &&
+                !contentUriString.startsWith("telegram://") &&
                 !contentUriString.startsWith("netease://") &&
                 !contentUriString.startsWith("gdrive://") &&
                 !contentUriString.startsWith("qqmusic://") &&

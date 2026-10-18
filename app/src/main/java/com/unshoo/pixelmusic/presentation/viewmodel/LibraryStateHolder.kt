@@ -46,7 +46,8 @@ private const val ENABLE_FOLDERS_STORAGE_FILTER = false
 @Singleton
 class LibraryStateHolder @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val musicRepository: MusicRepository
+    private val musicRepository: MusicRepository,
+    private val connectivityStateHolder: ConnectivityStateHolder
 ) {
 
     // --- Non-paged state kept for compat with callers that still use them ---
@@ -91,16 +92,24 @@ class LibraryStateHolder @Inject constructor(
     val currentFavoriteSortOption = _currentFavoriteSortOption.asStateFlow()
 
     /**
-     * Effective storage filter — when "hide local media" pref is on, force ONLINE so
-     * only streaming/YouTube songs appear; otherwise use the user-selected filter.
+     * Effective storage filter — when offline, force LOCAL so unplayable online/YouTube
+     * metadata without downloaded audio does not appear; when "hide local media" pref is on,
+     * force ONLINE; otherwise use the user-selected filter.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val effectiveStorageFilter: Flow<StorageFilter> =
         combine(
             _currentStorageFilter,
-            userPreferencesRepository.hideLocalMediaFlow
-        ) { filter, hideLocal ->
-            if (hideLocal) StorageFilter.ONLINE else filter
+            userPreferencesRepository.hideLocalMediaFlow,
+            connectivityStateHolder.isOnline
+        ) { filter, hideLocal, isOnline ->
+            if (!isOnline) {
+                StorageFilter.LOCAL
+            } else if (hideLocal) {
+                StorageFilter.ONLINE
+            } else {
+                filter
+            }
         }.distinctUntilChanged()
 
     // --- Paging flows wired to the local Room DB ---

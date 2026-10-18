@@ -439,7 +439,7 @@ class PlaylistViewModel @Inject constructor(
                                         youtubeId = ySong.youtubeId,
                                         albumBrowseId = ySong.albumBrowseId
                                     )
-                                }
+                                }.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }
                             } else {
                                 var songs = musicRepository.getSongsByIdsOnce(effectivePlaylist.songIds)
                                     .distinctBy { it.getDeduplicationKey() }

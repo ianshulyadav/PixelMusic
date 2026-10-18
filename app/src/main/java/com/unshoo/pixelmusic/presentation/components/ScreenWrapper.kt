@@ -100,7 +100,11 @@ fun ScreenWrapper(
     // content for exactly as long as it is not a valid touch target. No timers,
     // no guessing: the gate clears itself the frame the lifecycle/nav state flips,
     // unlike the previous TRANSITION_DURATION-delayed overlay hack.
-    val isInputBlocked = myEntry != null && !isNavigationTarget && !isResumed
+    // ── INPUT ROUTING (hit-testing) FIX ───────────────────────────────────────────
+    // Only block input if this entry is strictly in the background (covered by a
+    // higher entry in the visible stack) and is NOT the navigation target.
+    // The incoming screen and topmost screen must never have their touches consumed.
+    val isInputBlocked = myEntry != null && !isNavigationTarget && myIndex != -1 && topIndex != -1 && myIndex < topIndex
 
     // Dim Logic:
     // If I am BACKGROUND (myIndex < topIndex) -> Dim.
@@ -117,10 +121,10 @@ fun ScreenWrapper(
     }
 
     // Declarative Animations
-    // Radius: If NOT Resumed -> 32dp. (Background OR Popped)
-    val targetRadius = if (shouldRunDepthEffects && !isResumed) 32f else 0f
+    // Radius: Only background screens being covered by a sheet/detail screen should round their corners (20dp).
+    // Foreground screens (active or entering) remain edge-to-edge without snapping.
+    val targetRadius = if (shouldRunDepthEffects && shouldDim) 20f else 0f
     // M3 Expressive effects springs — critically damped (no overshoot), settling ~250ms.
-    // Faster and more cohesive than the old fixed 400ms tween.
     val motionScheme = MaterialTheme.motionScheme
 
     val cornerRadius by animateFloatAsState(
