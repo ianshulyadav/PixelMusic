@@ -84,6 +84,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -450,7 +451,12 @@ fun PlaylistItem(
         modifier = Modifier
             .fillMaxWidth()
             .scrollReveal(initialOffsetY = 8.dp, initialScale = 0.985f)
-            .scale(selectionScale)
+            .graphicsLayer {
+                if (selectionScale != 1f) {
+                    scaleX = selectionScale
+                    scaleY = selectionScale
+                }
+            }
             .then(
                 if (isSelected && !isAddingToPlaylist) {
                     Modifier.border(

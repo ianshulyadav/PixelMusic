@@ -2,15 +2,12 @@ package com.unshoo.pixelmusic.data.remote.youtube
 
 import com.unshoo.pixelmusic.data.model.youtube.Song
 
-import kotlinx.coroutines.runBlocking
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
 
 class SongDataSource {
-    fun getSongInfo(songId: String): Song {
+    suspend fun getSongInfo(songId: String): Song {
         val ytSongItem = runCatching {
-            runBlocking {
-                YouTube.song(songId).getOrNull()
-            }
+            YouTube.song(songId).getOrNull()
         }.getOrNull()
 
         if (ytSongItem != null) {
