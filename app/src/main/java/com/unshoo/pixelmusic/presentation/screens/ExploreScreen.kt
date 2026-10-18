@@ -29,6 +29,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.unshoo.pixelmusic.ui.theme.ExpressiveSprings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -663,7 +664,7 @@ fun ExploreScreen(
                 targetState = exploreUiState.isLoading && !hasFeedContent,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessLow
+                    stiffness = ExpressiveSprings.DefaultEffectsStiffness
                 ),
                 label = "explore_loading_crossfade"
             ) { isLoading ->

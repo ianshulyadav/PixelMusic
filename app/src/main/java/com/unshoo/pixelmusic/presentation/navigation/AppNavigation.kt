@@ -14,6 +14,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import com.unshoo.pixelmusic.ui.theme.ExpressiveSprings
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -763,18 +764,32 @@ private fun mainRootEnterTransition(
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideInHorizontally(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow, dampingRatio = 0.88f),
-                initialOffsetX = { (it * 0.035f).toInt() }
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 0.82f
+                ),
+                initialOffsetX = { (it * 0.04f).toInt() }
             ) + fadeIn(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessLow, dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy)
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 200,
+                    delayMillis = 75,
+                    easing = EmphasizedDecelerateEasing
+                )
             )
         }
         MainRootDirection.BACKWARD -> {
             slideInHorizontally(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow, dampingRatio = 0.88f),
-                initialOffsetX = { -(it * 0.035f).toInt() }
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 0.82f
+                ),
+                initialOffsetX = { -(it * 0.04f).toInt() }
             ) + fadeIn(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessLow, dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy)
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 200,
+                    delayMillis = 75,
+                    easing = EmphasizedDecelerateEasing
+                )
             )
         }
         null -> fallback
@@ -792,18 +807,30 @@ private fun mainRootExitTransition(
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideOutHorizontally(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow, dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy),
-                targetOffsetX = { -(it * 0.035f).toInt() }
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 1f
+                ),
+                targetOffsetX = { -(it * 0.04f).toInt() }
             ) + fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(durationMillis = 150, easing = EmphasizedAccelerateEasing)
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 90,
+                    easing = EmphasizedAccelerateEasing
+                )
             )
         }
         MainRootDirection.BACKWARD -> {
             slideOutHorizontally(
-                animationSpec = spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow, dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy),
-                targetOffsetX = { (it * 0.035f).toInt() }
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 1f
+                ),
+                targetOffsetX = { (it * 0.04f).toInt() }
             ) + fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(durationMillis = 150, easing = EmphasizedAccelerateEasing)
+                animationSpec = androidx.compose.animation.core.tween(
+                    durationMillis = 90,
+                    easing = EmphasizedAccelerateEasing
+                )
             )
         }
         null -> fallback
