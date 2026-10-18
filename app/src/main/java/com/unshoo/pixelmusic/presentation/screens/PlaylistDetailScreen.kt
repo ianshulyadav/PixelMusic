@@ -16,7 +16,6 @@ import com.unshoo.pixelmusic.presentation.navigation.navigateSafelyReplacing
 import android.widget.Toast
 
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.PredictiveBackHandler
 import android.os.Build
 import kotlin.coroutines.cancellation.CancellationException
 import androidx.activity.compose.rememberLauncherForActivityResult

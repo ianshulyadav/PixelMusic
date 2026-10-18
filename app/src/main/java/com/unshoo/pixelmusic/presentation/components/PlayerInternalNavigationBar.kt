@@ -52,7 +52,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -171,24 +170,6 @@ private fun ExpressiveFloatingPillNavigationBar(
     val selectedIndex = mainItems.indexOfFirst { it.screen.route == latestCurrentRoute }
 
     val motionScheme = MaterialTheme.motionScheme
-    val density = LocalDensity.current
-    val textMeasurer = rememberTextMeasurer()
-    val labelTextStyle = MaterialTheme.typography.labelLarge.copy(fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
-
-    // M3 Expressive "dynamic pill": the selected item's target width should reflect its
-    // own label instead of one fixed ratio applied to every tab — "Home" needs less extra
-    // room than "Library"/"Explore". Measured once per label (not per frame) and expressed
-    // as a weight ratio against an icon-only pill, so Modifier.weight() below sizes each
-    // pill against its own content rather than a guessed constant.
-    val expandedWeights = remember(mainItems, labelTextStyle, density) {
-        val iconAndPaddingPx = with(density) { (22.dp + 16.dp).toPx() } // icon + horizontal padding
-        val labelSpacingPx = with(density) { 6.dp.toPx() }
-        mainItems.map { item ->
-            val labelPx = textMeasurer.measure(item.label, style = labelTextStyle).size.width
-            val expandedPx = iconAndPaddingPx + labelSpacingPx + labelPx
-            (expandedPx / iconAndPaddingPx).coerceIn(1.6f, 3.2f)
-        }
-    }
 
     val baseContainerColor = MaterialTheme.colorScheme.primaryContainer
     val surfaceColor = MaterialTheme.colorScheme.surface

@@ -19,54 +19,65 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 
-// Expressive motion physics matching Mood & Genre preview page
-private val EmphasizedEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
-private val EmphasizedDecelerateEasing = CubicBezierEasing(0.2f, 0.85f, 0.7f, 1f)
-private val EmphasizedAccelerateEasing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+// Expressive motion physics matching Material 3 Expressive guidelines
+val EmphasizedEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+val EmphasizedDecelerateEasing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
+val EmphasizedAccelerateEasing = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
 
 const val TRANSITION_DURATION = 260
 
 /**
- * Smooth and calm fluid entry matching Mood & Genre preview opening.
- * Slides up gently from it / 6 with smooth, calm spring physics and fade, without aggressive scaling.
+ * M3 Expressive Shared-Axis Y entry for detail sheets (Playlists, Albums, Artists).
+ * Smooth 8% vertical glide + 0.96 scale-in + fast fade-in in 260ms without spring drag.
  */
 fun enterTransition(): EnterTransition = slideInVertically(
-    animationSpec = spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessLow
-    ),
-    initialOffsetY = { it / 6 }
+    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+    initialOffsetY = { (it * 0.08f).toInt() }
+) + scaleIn(
+    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+    initialScale = 0.96f,
+    transformOrigin = TransformOrigin(0.5f, 0.5f)
 ) + fadeIn(
-    animationSpec = tween(durationMillis = 320, easing = FastOutSlowInEasing)
+    animationSpec = tween(durationMillis = 180, easing = EmphasizedDecelerateEasing)
 )
 
 /**
  * Calm background screen transition when navigating forward.
- * Stays stable with subtle gentle fade so it does not jerk or shrink.
+ * Quick fade and subtle scale-out to 0.98 so rendering resources are released cleanly.
  */
 fun exitTransition(): ExitTransition = fadeOut(
-    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+    animationSpec = tween(durationMillis = 160, easing = EmphasizedAccelerateEasing)
+) + scaleOut(
+    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedAccelerateEasing),
+    targetScale = 0.98f,
+    transformOrigin = TransformOrigin(0.5f, 0.5f)
 )
 
 /**
  * Background screen re-entry when popping back from detail screen.
+ * Restores smoothly from 0.98 scale with fast fade.
  */
 fun popEnterTransition(): EnterTransition = fadeIn(
-    animationSpec = tween(durationMillis = 280, easing = FastOutSlowInEasing)
+    animationSpec = tween(durationMillis = 200, easing = EmphasizedDecelerateEasing)
+) + scaleIn(
+    animationSpec = tween(durationMillis = TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+    initialScale = 0.98f,
+    transformOrigin = TransformOrigin(0.5f, 0.5f)
 )
 
 /**
- * Fluid, calm dismiss matching Mood & Genre preview closing.
- * Drops down smoothly to it / 5 with linear fade and no jarring shrink.
+ * Fluid, calm dismiss for detail sheets (Playlists, Albums, Artists).
+ * Snappy 240ms exit gliding down 8% with 0.96 scale-out and fade.
  */
 fun popExitTransition(): ExitTransition = slideOutVertically(
-    animationSpec = spring(
-        dampingRatio = Spring.DampingRatioNoBouncy,
-        stiffness = Spring.StiffnessLow
-    ),
-    targetOffsetY = { it / 5 }
+    animationSpec = tween(durationMillis = 240, easing = EmphasizedAccelerateEasing),
+    targetOffsetY = { (it * 0.08f).toInt() }
+) + scaleOut(
+    animationSpec = tween(durationMillis = 240, easing = EmphasizedAccelerateEasing),
+    targetScale = 0.96f,
+    transformOrigin = TransformOrigin(0.5f, 0.5f)
 ) + fadeOut(
-    animationSpec = tween(durationMillis = 250, easing = LinearOutSlowInEasing)
+    animationSpec = tween(durationMillis = 180, easing = EmphasizedAccelerateEasing)
 )
 
 // Fast responsive settings dismiss transitions

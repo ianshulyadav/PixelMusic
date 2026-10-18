@@ -738,15 +738,9 @@ private enum class MainRootDirection {
     BACKWARD
 }
 
-private const val BOTTOM_NAV_TRANSITION_DURATION = 380
-
-private val BottomNavEasing = androidx.compose.animation.core.CubicBezierEasing(0.2f, 0f, 0f, 1f)
-
-private val MAIN_ROOT_TRANSITION_SPEC =
-    androidx.compose.animation.core.tween<IntOffset>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = BottomNavEasing)
-
-private val MAIN_ROOT_FADE_SPEC =
-    androidx.compose.animation.core.tween<Float>(durationMillis = BOTTOM_NAV_TRANSITION_DURATION / 2, easing = BottomNavEasing)
+private const val BOTTOM_NAV_TRANSITION_DURATION = 220
+private const val BOTTOM_NAV_FADE_OUT_DURATION = 130
+private const val BOTTOM_NAV_FADE_IN_DURATION = 180
 
 private fun mainRootDirection(
     fromRoute: String?,
@@ -769,15 +763,27 @@ private fun mainRootEnterTransition(
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideInHorizontally(
-                animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-                initialOffsetX = { (it * 0.5f).toInt() }
-            ) + fadeIn(animationSpec = MAIN_ROOT_FADE_SPEC)
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+                initialOffsetX = { (it * 0.08f).toInt() }
+            ) + scaleIn(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+                initialScale = 0.985f,
+                transformOrigin = TransformOrigin(0.5f, 0.5f)
+            ) + fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_FADE_IN_DURATION, delayMillis = 40, easing = EmphasizedDecelerateEasing)
+            )
         }
         MainRootDirection.BACKWARD -> {
             slideInHorizontally(
-                animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-                initialOffsetX = { -(it * 0.5f).toInt() }
-            ) + fadeIn(animationSpec = MAIN_ROOT_FADE_SPEC)
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+                initialOffsetX = { -(it * 0.08f).toInt() }
+            ) + scaleIn(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedDecelerateEasing),
+                initialScale = 0.985f,
+                transformOrigin = TransformOrigin(0.5f, 0.5f)
+            ) + fadeIn(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_FADE_IN_DURATION, delayMillis = 40, easing = EmphasizedDecelerateEasing)
+            )
         }
         null -> fallback
     }
@@ -794,15 +800,19 @@ private fun mainRootExitTransition(
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideOutHorizontally(
-                animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-                targetOffsetX = { -(it * 0.5f).toInt() }
-            ) + fadeOut(animationSpec = MAIN_ROOT_FADE_SPEC)
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedAccelerateEasing),
+                targetOffsetX = { -(it * 0.08f).toInt() }
+            ) + fadeOut(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_FADE_OUT_DURATION, easing = EmphasizedAccelerateEasing)
+            )
         }
         MainRootDirection.BACKWARD -> {
             slideOutHorizontally(
-                animationSpec = MAIN_ROOT_TRANSITION_SPEC,
-                targetOffsetX = { (it * 0.5f).toInt() }
-            ) + fadeOut(animationSpec = MAIN_ROOT_FADE_SPEC)
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_TRANSITION_DURATION, easing = EmphasizedAccelerateEasing),
+                targetOffsetX = { (it * 0.08f).toInt() }
+            ) + fadeOut(
+                animationSpec = androidx.compose.animation.core.tween(durationMillis = BOTTOM_NAV_FADE_OUT_DURATION, easing = EmphasizedAccelerateEasing)
+            )
         }
         null -> fallback
     }
