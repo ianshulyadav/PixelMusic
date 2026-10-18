@@ -919,7 +919,12 @@ class MainActivity : ComponentActivity() {
                                 .map { it.currentSong?.id }
                                 .distinctUntilChanged()
                         }.collectAsStateWithLifecycle(initialValue = null)
-                        val showPlayerContentArea = currentSongId != null || isPreparing
+                        val isUndoBarVisibleForNavBar by remember {
+                            playerViewModel.playerUiState
+                                .map { it.showDismissUndoBar }
+                                .distinctUntilChanged()
+                        }.collectAsStateWithLifecycle(initialValue = false)
+                        val showPlayerContentArea = (currentSongId != null || isPreparing) && !isUndoBarVisibleForNavBar
                         val navBarElevation = 3.dp
 
                         // BUGFIX (recompose storm — every state change re-evaluated
@@ -1074,9 +1079,10 @@ class MainActivity : ComponentActivity() {
                         val showPlayerContentInitially by remember {
                             kotlinx.coroutines.flow.combine(
                                 playerViewModel.stablePlayerState.map { it.currentSong?.id != null },
-                                playerViewModel.playerUiState.map { it.preparingSongId != null }
-                            ) { hasSong, isPreparing ->
-                                hasSong || isPreparing
+                                playerViewModel.playerUiState.map { it.preparingSongId != null },
+                                playerViewModel.playerUiState.map { it.showDismissUndoBar }
+                            ) { hasSong, isPreparing, isUndoBarVisible ->
+                                (hasSong || isPreparing) && !isUndoBarVisible
                             }.distinctUntilChanged()
                         }.collectAsStateWithLifecycle(initialValue = false)
                         val routesWithHiddenMiniPlayer = remember { setOf(Screen.NavBarCrRad.route) }
@@ -1141,12 +1147,19 @@ class MainActivity : ComponentActivity() {
                         val isMiniPlayerDismissingForOverlay by playerViewModel.isMiniPlayerDismissing.collectAsStateWithLifecycle()
                         val expansionFractionForOverlay =
                             playerViewModel.playerContentExpansionFraction.value
+                        val isUndoBarVisibleForOverlay by remember {
+                            playerViewModel.playerUiState
+                                .map { it.showDismissUndoBar }
+                                .distinctUntilChanged()
+                        }.collectAsStateWithLifecycle(initialValue = false)
                         val isExpandedOrExpanding = remember(
                             expansionFractionForOverlay,
                             showPlayerContentInitially,
-                            isMiniPlayerDismissingForOverlay
+                            isMiniPlayerDismissingForOverlay,
+                            isUndoBarVisibleForOverlay
                         ) {
-                            !isMiniPlayerDismissingForOverlay &&
+                            !isUndoBarVisibleForOverlay &&
+                                !isMiniPlayerDismissingForOverlay &&
                                 showPlayerContentInitially &&
                                 expansionFractionForOverlay > 0.01f
                         }

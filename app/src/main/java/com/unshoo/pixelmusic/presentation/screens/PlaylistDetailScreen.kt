@@ -273,7 +273,9 @@ fun PlaylistDetailScreen(
     var isReorderModeEnabled by remember { mutableStateOf(false) }
     var isRemoveModeEnabled by remember { mutableStateOf(false) }
 
-    val canHandlePlaylistBack = isReorderModeEnabled || isRemoveModeEnabled || showAddSongsSheet
+    val sheetState by playerViewModel.sheetState.collectAsStateWithLifecycle()
+    val canHandlePlaylistBack = (isReorderModeEnabled || isRemoveModeEnabled || showAddSongsSheet) &&
+        sheetState == com.unshoo.pixelmusic.presentation.viewmodel.PlayerSheetState.COLLAPSED
     BackHandler(enabled = canHandlePlaylistBack) {
         when {
             showAddSongsSheet -> {

@@ -240,9 +240,22 @@ fun UnifiedPlayerSheetV2(
 
     val isCastConnecting by playerViewModel.isCastConnecting.collectAsStateWithLifecycle()
     val isMiniPlayerDismissing by playerViewModel.isMiniPlayerDismissing.collectAsStateWithLifecycle()
-    val showPlayerContentArea by remember(infrequentPlayerState.currentSong, preparingSongId, isCastConnecting, isMiniPlayerDismissing) {
+    val showDismissUndoBar by remember {
+        playerViewModel.playerUiState
+            .map { it.showDismissUndoBar }
+            .distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = false)
+    val showPlayerContentArea by remember(
+        infrequentPlayerState.currentSong,
+        preparingSongId,
+        isCastConnecting,
+        isMiniPlayerDismissing,
+        showDismissUndoBar
+    ) {
         derivedStateOf {
-            !isMiniPlayerDismissing && (infrequentPlayerState.currentSong != null || preparingSongId != null || isCastConnecting)
+            !showDismissUndoBar &&
+                !isMiniPlayerDismissing &&
+                (infrequentPlayerState.currentSong != null || preparingSongId != null || isCastConnecting)
         }
     }
 
@@ -438,7 +451,7 @@ fun UnifiedPlayerSheetV2(
         sheetMotionController = sheetMotionController,
         animationDurationMs = ANIMATION_DURATION_MS,
         onSwipeEdgeChanged = { playerViewModel.updatePredictiveBackSwipeEdge(it) },
-        registrationKey = currentBackStackEntry?.id
+        registrationKey = currentBackStackEntry?.id to canHandlePlayerBack
     )
 
     val sheetOverlayState = rememberSheetOverlayState(

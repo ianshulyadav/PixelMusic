@@ -35,7 +35,8 @@ class PlaylistDismissUndoStateHolder @Inject constructor(
         clearPlayback: () -> Unit,
         clearStablePlaybackState: () -> Unit,
         setCurrentPosition: (Long) -> Unit,
-        setSheetVisible: (Boolean) -> Unit
+        setSheetVisible: (Boolean) -> Unit,
+        onDismissComplete: (() -> Unit)? = null
     ) {
         scope.launch {
             if (currentSong == null && queue.isEmpty()) return@launch
@@ -46,20 +47,16 @@ class PlaylistDismissUndoStateHolder @Inject constructor(
                     dismissedQueue = queue.toImmutableList(),
                     dismissedQueueName = queueName,
                     dismissedPosition = position,
-                    showDismissUndoBar = true
-                )
-            }
-
-            disconnectRemoteIfNeeded()
-            clearPlayback()
-            clearStablePlaybackState()
-
-            updateUiState {
-                it.copy(
+                    showDismissUndoBar = true,
+                    preparingSongId = null,
                     currentPlaybackQueue = persistentListOf(),
                     currentQueueSourceName = ""
                 )
             }
+
+            clearStablePlaybackState()
+            clearPlayback()
+            disconnectRemoteIfNeeded()
             setCurrentPosition(0L)
             setSheetVisible(false)
 
@@ -74,13 +71,15 @@ class PlaylistDismissUndoStateHolder @Inject constructor(
                             dismissedQueue = persistentListOf()
                         )
                     }
+                    onDismissComplete?.invoke()
                 }
             }
         }
     }
 
     fun hideDismissUndoBar(
-        updateUiState: (((PlayerUiState) -> PlayerUiState) -> Unit)
+        updateUiState: (((PlayerUiState) -> PlayerUiState) -> Unit),
+        onDismissComplete: (() -> Unit)? = null
     ) {
         dismissUndoTimerJob?.cancel()
         updateUiState {
@@ -92,6 +91,7 @@ class PlaylistDismissUndoStateHolder @Inject constructor(
                 dismissedPosition = 0L
             )
         }
+        onDismissComplete?.invoke()
     }
 
     fun observeUndoStateAgainstPlayback(

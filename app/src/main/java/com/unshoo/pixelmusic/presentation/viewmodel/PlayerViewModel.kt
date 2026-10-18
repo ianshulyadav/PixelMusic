@@ -7933,8 +7933,9 @@ class PlayerViewModel @Inject constructor(
 
     fun dismissPlaylistAndShowUndo() {
         collapsePlayerSheet()
-        setMiniPlayerDismissing(false)
+        setMiniPlayerDismissing(true)
         cancelPendingDirectPlaybackBuild()
+        clearPreparingSongIfMatching()
         dualPlayerEngine.cancelNext()
         lastQueueSignature = null
         playlistDismissUndoStateHolder.dismissPlaylistAndShowUndo(
@@ -7980,14 +7981,17 @@ class PlayerViewModel @Inject constructor(
                 }
             },
             setCurrentPosition = { playbackStateHolder.setCurrentPosition(it) },
-            setSheetVisible = { _isSheetVisible.value = it }
+            setSheetVisible = { _isSheetVisible.value = it },
+            onDismissComplete = { setMiniPlayerDismissing(false) }
         )
     }
 
     fun hideDismissUndoBar() {
-        playlistDismissUndoStateHolder.hideDismissUndoBar { mutation ->
-            _playerUiState.update(mutation)
-        }
+        setMiniPlayerDismissing(false)
+        playlistDismissUndoStateHolder.hideDismissUndoBar(
+            updateUiState = { mutation -> _playerUiState.update(mutation) },
+            onDismissComplete = { setMiniPlayerDismissing(false) }
+        )
     }
 
     fun undoDismissPlaylist() {
