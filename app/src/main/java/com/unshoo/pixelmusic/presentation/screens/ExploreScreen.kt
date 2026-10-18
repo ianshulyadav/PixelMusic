@@ -4,10 +4,15 @@
 )
 package com.unshoo.pixelmusic.presentation.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -16,8 +21,14 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -296,11 +307,21 @@ fun ExploreScreen(
     val isRefreshing = state.isRefreshing || isManualRefreshing
 
     val listState = rememberLazyListState()
+
+    var areChipsVisible by rememberSaveable { mutableStateOf(true) }
     val density = androidx.compose.ui.platform.LocalDensity.current
     val scrollThresholdPx = remember(density) { with(density) { 16.dp.toPx() } }
+    val slideDistancePx = remember(density) { with(density) { 16.dp.toPx() } }
     val isScrolled by remember {
-        derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
+        derivedStateOf { !areChipsVisible || listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
     }
+    val animatedElevation by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 3.dp else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "explore_top_bar_elevation"
+    )
+
+    val contentProgress = remember { Animatable(1f) }
 
     val bottomPadding = if (currentSongId != null) MiniPlayerHeight + 16.dp else 16.dp
 
@@ -325,6 +346,43 @@ fun ExploreScreen(
                     exploreViewModel.loadMore()
                 }
             }
+    }
+
+    LaunchedEffect(listState) {
+        var lastIndex = listState.firstVisibleItemIndex
+        var lastOffset = listState.firstVisibleItemScrollOffset
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (currentIndex, currentOffset) ->
+                if (currentIndex == 0 && currentOffset <= 24) {
+                    areChipsVisible = true
+                } else {
+                    val delta = if (currentIndex != lastIndex) {
+                        (currentIndex - lastIndex) * 500 + (currentOffset - lastOffset)
+                    } else {
+                        currentOffset - lastOffset
+                    }
+                    if (delta > 14) {
+                        areChipsVisible = false
+                    } else if (delta < -14) {
+                        areChipsVisible = true
+                    }
+                }
+                lastIndex = currentIndex
+                lastOffset = currentOffset
+            }
+    }
+
+    LaunchedEffect(selectedCategory) {
+        areChipsVisible = true
+        listState.scrollToItem(0, 0)
+        contentProgress.snapTo(0.6f)
+        contentProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
     }
 
     val isAdvancedExplore = exploreUiState.isAdvancedExploreEnabled
@@ -503,26 +561,64 @@ fun ExploreScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = animatedElevation
             ) {
-                ExploreTopBar(
-                    onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
-                    onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
-                    isScrolled = isScrolled
-                )
-                if (effectiveCategories.size > 1) {
-                    ExploreCategoryChipsRow(
-                        categories = effectiveCategories,
-                        selectedCategory = selectedCategory,
-                        onCategorySelect = { category ->
-                            quickPicksViewModel.setCategory(category)
-                            exploreViewModel.setSelectedFilter(category)
-                        },
-                        modifier = Modifier.padding(bottom = 8.dp)
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ExploreTopBar(
+                        onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
+                        onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
+                        isScrolled = isScrolled
                     )
+                    if (effectiveCategories.size > 1) {
+                        AnimatedVisibility(
+                            visible = areChipsVisible,
+                            enter = expandVertically(
+                                animationSpec = spring(
+                                    dampingRatio = 0.74f,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                expandFrom = Alignment.Top
+                            ) + fadeIn(
+                                animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
+                            ) + slideInVertically(
+                                animationSpec = spring(
+                                    dampingRatio = 0.74f,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                initialOffsetY = { -it / 2 }
+                            ),
+                            exit = shrinkVertically(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                shrinkTowards = Alignment.Top
+                            ) + fadeOut(
+                                animationSpec = tween(durationMillis = 160, easing = FastOutLinearInEasing)
+                            ) + slideOutVertically(
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                ),
+                                targetOffsetY = { -it / 2 }
+                            )
+                        ) {
+                            ExploreCategoryChipsRow(
+                                categories = effectiveCategories,
+                                selectedCategory = selectedCategory,
+                                onCategorySelect = { category ->
+                                    quickPicksViewModel.setCategory(category)
+                                    exploreViewModel.setSelectedFilter(category)
+                                },
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -569,19 +665,33 @@ fun ExploreScreen(
                 albumsForYou.isNotEmpty()
             }
 
-            if (exploreUiState.isLoading && !hasFeedContent) {
-                FeedLoadingSkeleton(contentPadding = PaddingValues(bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()))
-            } else {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        top = 12.dp,
-                        bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(22.dp)
-                ) {
-                    if (isLocalSelected) {
+            Crossfade(
+                targetState = exploreUiState.isLoading && !hasFeedContent,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessLow
+                ),
+                label = "explore_loading_crossfade"
+            ) { isLoading ->
+                if (isLoading) {
+                    FeedLoadingSkeleton(contentPadding = PaddingValues(bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()))
+                } else {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                val p = contentProgress.value
+                                alpha = p
+                                translationY = slideDistancePx * (1f - p)
+                            },
+                        contentPadding = PaddingValues(
+                            top = 12.dp,
+                            bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(22.dp)
+                    ) {
+                        if (isLocalSelected) {
                         // 1. Local Quick Picks
                         if (quickPicks.isNotEmpty()) {
                             item(key = "local_quick_picks") {
@@ -1322,6 +1432,7 @@ fun ExploreScreen(
             }
         }
     }
+}
 
     if (showSongInfoBottomSheet && selectedSongForInfo != null) {
         val currentSong = selectedSongForInfo
@@ -1422,67 +1533,43 @@ fun ExploreTopBar(
     onCreateClick: () -> Unit,
     isScrolled: Boolean = false,
 ) {
-    val baseContainerColor = MaterialTheme.colorScheme.primaryContainer
-    val surfaceColor = MaterialTheme.colorScheme.surface
-    val solidTintedColor = remember(baseContainerColor, surfaceColor) {
-        Color(
-            red = (baseContainerColor.red * 0.45f) + (surfaceColor.red * 0.55f),
-            green = (baseContainerColor.green * 0.45f) + (surfaceColor.green * 0.55f),
-            blue = (baseContainerColor.blue * 0.45f) + (surfaceColor.blue * 0.55f),
-            alpha = 1f
-        )
-    }
-    val animatedElevation by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 4.dp else 0.dp,
-        animationSpec = androidx.compose.animation.core.tween(durationMillis = 240, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-        label = "explore_top_bar_elevation"
-    )
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
-        color = solidTintedColor,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        shadowElevation = animatedElevation
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(start = 24.dp, top = 12.dp, end = 20.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        Text(
+            text = stringResource(R.string.tab_explore),
+            fontFamily = GoogleSansRounded,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 38.sp,
+            letterSpacing = 0.5.sp
+        )
+
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(start = 24.dp, top = 12.dp, end = 20.dp, bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = stringResource(R.string.tab_explore),
-                fontFamily = GoogleSansRounded,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 40.sp,
-                letterSpacing = 1.sp
-            )
+            AnimatedSparklesIconButton(onClick = onCreateClick)
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            FilledIconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
             ) {
-                AnimatedSparklesIconButton(onClick = onCreateClick)
-
-                FilledIconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.size(40.dp),
-                    shape = CircleShape,
-                    colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.rounded_settings_24),
-                        contentDescription = stringResource(R.string.settings_top_bar_title),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                Icon(
+                    painter = painterResource(R.drawable.rounded_settings_24),
+                    contentDescription = stringResource(R.string.settings_top_bar_title),
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }

@@ -35,13 +35,6 @@ fun Modifier.scrollReveal(
 ): Modifier = composed {
     if (!enabled) return@composed this
 
-    var hasAnimated by rememberSaveable(key) { mutableStateOf(false) }
-
-    // Once revealed, bypass all modifier layers and animations completely
-    if (hasAnimated) {
-        return@composed this
-    }
-
     var isTriggered by remember(key) { mutableStateOf(false) }
 
     LaunchedEffect(key) {
@@ -61,17 +54,21 @@ fun Modifier.scrollReveal(
             dampingRatio = Spring.DampingRatioNoBouncy,
             stiffness = Spring.StiffnessMediumLow
         ),
-        finishedListener = {
-            hasAnimated = true
-        },
         label = "scroll_reveal_progress"
     )
 
     this.graphicsLayer {
-        this.alpha = 0.75f + (0.25f * progress)
-        this.translationY = slideDistancePx * (1f - progress)
-        val s = safeScale + ((1f - safeScale) * progress)
-        this.scaleX = s
-        this.scaleY = s
+        if (progress >= 0.999f) {
+            this.alpha = 1f
+            this.translationY = 0f
+            this.scaleX = 1f
+            this.scaleY = 1f
+        } else {
+            this.alpha = 0.75f + (0.25f * progress)
+            this.translationY = slideDistancePx * (1f - progress)
+            val s = safeScale + ((1f - safeScale) * progress)
+            this.scaleX = s
+            this.scaleY = s
+        }
     }
 }
