@@ -561,63 +561,57 @@ fun ExploreScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = animatedElevation
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ExploreTopBar(
-                        onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
-                        onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
-                        isScrolled = isScrolled
-                    )
-                    if (effectiveCategories.size > 1) {
-                        AnimatedVisibility(
-                            visible = areChipsVisible,
-                            enter = expandVertically(
-                                animationSpec = spring(
-                                    dampingRatio = 0.74f,
-                                    stiffness = Spring.StiffnessMediumLow
-                                ),
-                                expandFrom = Alignment.Top
-                            ) + fadeIn(
-                                animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
-                            ) + slideInVertically(
-                                animationSpec = spring(
-                                    dampingRatio = 0.74f,
-                                    stiffness = Spring.StiffnessMediumLow
-                                ),
-                                initialOffsetY = { -it / 2 }
+                ExploreTopBar(
+                    onSettingsClick = { navController.navigateSafely(Screen.Settings.route) },
+                    onCreateClick = { navController.navigateSafely(Screen.SmartMix.route) },
+                    isScrolled = isScrolled
+                )
+                if (effectiveCategories.size > 1) {
+                    AnimatedVisibility(
+                        visible = areChipsVisible,
+                        enter = expandVertically(
+                            animationSpec = spring(
+                                dampingRatio = 0.74f,
+                                stiffness = Spring.StiffnessMediumLow
                             ),
-                            exit = shrinkVertically(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
-                                ),
-                                shrinkTowards = Alignment.Top
-                            ) + fadeOut(
-                                animationSpec = tween(durationMillis = 160, easing = FastOutLinearInEasing)
-                            ) + slideOutVertically(
-                                animationSpec = spring(
-                                    dampingRatio = Spring.DampingRatioNoBouncy,
-                                    stiffness = Spring.StiffnessMediumLow
-                                ),
-                                targetOffsetY = { -it / 2 }
-                            )
-                        ) {
-                            ExploreCategoryChipsRow(
-                                categories = effectiveCategories,
-                                selectedCategory = selectedCategory,
-                                onCategorySelect = { category ->
-                                    quickPicksViewModel.setCategory(category)
-                                    exploreViewModel.setSelectedFilter(category)
-                                },
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                        }
+                            expandFrom = Alignment.Top
+                        ) + fadeIn(
+                            animationSpec = tween(durationMillis = 200, easing = LinearOutSlowInEasing)
+                        ) + slideInVertically(
+                            animationSpec = spring(
+                                dampingRatio = 0.74f,
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            initialOffsetY = { -it / 2 }
+                        ),
+                        exit = shrinkVertically(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            shrinkTowards = Alignment.Top
+                        ) + fadeOut(
+                            animationSpec = tween(durationMillis = 160, easing = FastOutLinearInEasing)
+                        ) + slideOutVertically(
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioNoBouncy,
+                                stiffness = Spring.StiffnessMediumLow
+                            ),
+                            targetOffsetY = { -it / 2 }
+                        )
+                    ) {
+                        ExploreCategoryChipsRow(
+                            categories = effectiveCategories,
+                            selectedCategory = selectedCategory,
+                            onCategorySelect = { category ->
+                                quickPicksViewModel.setCategory(category)
+                                exploreViewModel.setSelectedFilter(category)
+                            },
+                            modifier = Modifier.padding(top = 10.dp, bottom = 6.dp)
+                        )
                     }
                 }
             }
@@ -1533,43 +1527,67 @@ fun ExploreTopBar(
     onCreateClick: () -> Unit,
     isScrolled: Boolean = false,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(start = 24.dp, top = 12.dp, end = 20.dp, bottom = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(R.string.tab_explore),
-            fontFamily = GoogleSansRounded,
-            fontWeight = FontWeight.Black,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 38.sp,
-            letterSpacing = 0.5.sp
+    val baseContainerColor = MaterialTheme.colorScheme.primaryContainer
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val solidTintedColor = remember(baseContainerColor, surfaceColor) {
+        Color(
+            red = (baseContainerColor.red * 0.45f) + (surfaceColor.red * 0.55f),
+            green = (baseContainerColor.green * 0.45f) + (surfaceColor.green * 0.55f),
+            blue = (baseContainerColor.blue * 0.45f) + (surfaceColor.blue * 0.55f),
+            alpha = 1f
         )
+    }
+    val animatedElevation by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 4.dp else 0.dp,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 240, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+        label = "explore_top_bar_elevation"
+    )
 
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp),
+        color = solidTintedColor,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        shadowElevation = animatedElevation
+    ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(start = 24.dp, top = 12.dp, end = 20.dp, bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AnimatedSparklesIconButton(onClick = onCreateClick)
+            Text(
+                text = stringResource(R.string.tab_explore),
+                fontFamily = GoogleSansRounded,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 40.sp,
+                letterSpacing = 1.sp
+            )
 
-            FilledIconButton(
-                onClick = onSettingsClick,
-                modifier = Modifier.size(40.dp),
-                shape = CircleShape,
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.rounded_settings_24),
-                    contentDescription = stringResource(R.string.settings_top_bar_title),
-                    modifier = Modifier.size(20.dp)
-                )
+                AnimatedSparklesIconButton(onClick = onCreateClick)
+
+                FilledIconButton(
+                    onClick = onSettingsClick,
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.rounded_settings_24),
+                        contentDescription = stringResource(R.string.settings_top_bar_title),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
