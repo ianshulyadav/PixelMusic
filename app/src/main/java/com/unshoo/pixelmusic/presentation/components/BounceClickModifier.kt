@@ -12,6 +12,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -28,9 +30,11 @@ import androidx.compose.ui.graphics.graphicsLayer
  * Runs spring physics purely in the Draw/RenderNode phase via graphicsLayer,
  * guaranteeing zero recomposition of card content and zero layout passes.
  */
+@OptIn(ExperimentalFoundationApi::class)
 fun Modifier.bounceClick(
     scaleDown: Float = 0.96f,
     hoverScale: Float = 1.015f,
+    onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit
 ): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
@@ -45,22 +49,31 @@ fun Modifier.bounceClick(
         label = "bounce_click_scale"
     )
 
-    this
-        .graphicsLayer {
-            if (scale >= 0.999f && !isPressed) {
-                scaleX = 1f
-                scaleY = 1f
-            } else {
-                scaleX = scale
-                scaleY = scale
-            }
+    val baseModifier = this.graphicsLayer {
+        if (scale >= 0.999f && !isPressed) {
+            scaleX = 1f
+            scaleY = 1f
+        } else {
+            scaleX = scale
+            scaleY = scale
         }
-        .clickable(
+    }
+
+    if (onLongClick != null) {
+        baseModifier.combinedClickable(
+            interactionSource = interactionSource,
+            indication = null,
+            onLongClick = onLongClick,
+            onClick = onClick
+        )
+    } else {
+        baseModifier.clickable(
             interactionSource = interactionSource,
             indication = null
         ) {
             onClick()
         }
+    }
 }
 
 /**

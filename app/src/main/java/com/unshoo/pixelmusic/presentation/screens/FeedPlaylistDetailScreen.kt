@@ -20,9 +20,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Album
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +32,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -87,6 +91,9 @@ fun FeedPlaylistDetailScreen(
     val isPlaying by remember { derivedStateOf { stablePlayerState.isPlaying } }
     val currentSongId by remember { derivedStateOf { stablePlayerState.currentSong?.id } }
 
+    val context = LocalContext.current
+    val isNewReleases = playlistId == "new_releases"
+    var songToBlock by remember { mutableStateOf<Song?>(null) }
     val selectedSongForInfo by playerViewModel.selectedSongForInfo.collectAsStateWithLifecycle()
     var showSongInfoBottomSheet by remember { mutableStateOf(false) }
     var showPlaylistBottomSheet by remember { mutableStateOf(false) }
@@ -334,7 +341,7 @@ fun FeedPlaylistDetailScreen(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = "New releases from your artists will appear here.",
+                                        text = "Latest releases will appear here.",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontFamily = GoogleSansRounded
@@ -355,6 +362,11 @@ fun FeedPlaylistDetailScreen(
                                 song = song,
                                 isPlaying = isPlaying && currentSongId == song.id,
                                 isCurrentSong = currentSongId == song.id,
+                                onLongPress = {
+                                    if (isNewReleases) {
+                                        songToBlock = song
+                                    }
+                                },
                                 onClick = {
                                     playerViewModel.playSongs(songs, song, queueName = playlist.title)
                                 },
@@ -381,7 +393,7 @@ fun FeedPlaylistDetailScreen(
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
                                     Text(
-                                        text = "Loading more tracks from your artists…",
+                                        text = "Loading more releases…",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontFamily = GoogleSansRounded
@@ -484,6 +496,55 @@ fun FeedPlaylistDetailScreen(
             onDismiss = { showPlaylistBottomSheet = false },
             bottomBarHeight = 0.dp,
             playerViewModel = playerViewModel,
+        )
+    }
+
+    if (songToBlock != null) {
+        val song = songToBlock!!
+        AlertDialog(
+            onDismissRequest = { songToBlock = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Block,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = "Not Interested",
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Permanently hide \"${song.title}\" by ${song.artist} from new releases?",
+                    fontFamily = GoogleSansRounded
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val title = song.title
+                        val releaseId = song.youtubeId ?: song.id.removePrefix("youtube_")
+                        viewModel.blockRelease(releaseId)
+                        songToBlock = null
+                        android.widget.Toast.makeText(context, "\"$title\" blocked from new releases", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text("Block", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { songToBlock = null }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }

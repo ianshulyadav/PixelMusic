@@ -747,7 +747,7 @@ fun FullPlayerContent(
         topBar = {
             // MD3: TopAppBar 在竖屏时滑入，横屏时向上滑出淡出
             AnimatedVisibility(
-                visible = !isLandscape,
+                visible = !isLandscape && !showLyricsSheet,
                 enter = fadeIn(animationSpec = tween(350, easing = FastOutSlowInEasing)) +
                         slideInVertically(
                             initialOffsetY = { -it / 2 },
@@ -998,7 +998,7 @@ fun FullPlayerContent(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { alpha = contentAlpha }
+                .graphicsLayer { alpha = if (showLyricsSheet) 0f else contentAlpha }
         ) {
             if (isLandscape) {
                 FullPlayerLandscapeContent(
@@ -1028,9 +1028,11 @@ fun FullPlayerContent(
         exit = slideOutVertically(
             targetOffsetY = { it / 6 },
             animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing)
-        ) + fadeOut(animationSpec = tween(durationMillis = 120))
+        ) + fadeOut(animationSpec = tween(durationMillis = 120)),
+        modifier = Modifier.fillMaxSize()
     ) {
         LyricsSheet(
+            modifier = Modifier.fillMaxSize(),
             stablePlayerStateFlow = playerViewModel.stablePlayerState,
             playbackPositionFlow = playerViewModel.currentPlaybackPosition,
             lyricsSearchUiState = lyricsSearchUiState,

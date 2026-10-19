@@ -42,7 +42,7 @@ object SearchPage {
                 SongItem(
                     id = renderer.playlistItemData?.videoId ?: endpoint?.videoId ?: return null,
                     title = title,
-                    artists = metadata.getOrNull(0).toArtists(),
+                    artists = PageHelper.extractArtists(renderer, title),
                     album = PageHelper.extractAlbum(renderer)
                         ?: metadata.getOrNull(1)?.firstOrNull()?.let {
                             Album(
@@ -88,7 +88,7 @@ object SearchPage {
                             ?.playlistId
                             ?: return null,
                     title = title,
-                    artists = metadata.getOrNull(0).toArtists().takeIf { it.isNotEmpty() },
+                    artists = PageHelper.extractArtists(renderer, title).takeIf { it.isNotEmpty() },
                     year = metadata.year(),
                     thumbnail = thumbnail ?: return null,
                     explicit = renderer.isExplicit,

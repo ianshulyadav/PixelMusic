@@ -81,6 +81,7 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -88,8 +89,10 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledIconButton
@@ -355,21 +358,22 @@ fun ExploreScreen(
             }
     }
 
+    var lastSelectedCategory by rememberSaveable { mutableStateOf<String?>(null) }
     LaunchedEffect(selectedCategory) {
+        if (lastSelectedCategory != null && lastSelectedCategory != selectedCategory) {
+            listState.scrollToItem(0, 0)
+        }
+        lastSelectedCategory = selectedCategory
         contentProgress.animateTo(
             targetValue = 0.45f,
-            animationSpec = tween(durationMillis = 120, easing = com.unshoo.pixelmusic.presentation.navigation.EmphasizedAccelerateEasing)
+            animationSpec = tween(durationMillis = 120)
         )
     }
 
     LaunchedEffect(currentSections, isLocalSelected) {
-        listState.scrollToItem(0, 0)
         contentProgress.animateTo(
             targetValue = 1f,
-            animationSpec = spring(
-                dampingRatio = ExpressiveSprings.DefaultSpatialDampingRatio,
-                stiffness = ExpressiveSprings.DefaultSpatialStiffness
-            )
+            animationSpec = tween(durationMillis = 280)
         )
     }
 
@@ -464,8 +468,11 @@ fun ExploreScreen(
         }
     }
 
-    val newReleases = remember(exploreUiState.newReleaseAlbums, state.feedData.newReleases) {
-        if (exploreUiState.newReleaseAlbums.isNotEmpty()) {
+    val blockedReleaseIds by feedViewModel.blockedReleaseIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    var releaseToBlock by remember { mutableStateOf<YouTubePlaylistSummary?>(null) }
+
+    val newReleases = remember(exploreUiState.newReleaseAlbums, state.feedData.newReleases, blockedReleaseIds) {
+        val rawList = if (exploreUiState.newReleaseAlbums.isNotEmpty()) {
             exploreUiState.newReleaseAlbums.map { album ->
                 YouTubePlaylistSummary(
                     id = album.browseId,
@@ -477,6 +484,7 @@ fun ExploreScreen(
         } else if (state.feedData.newReleases.isNotEmpty()) {
             state.feedData.newReleases
         } else emptyList()
+        rawList.filter { it.id !in blockedReleaseIds }
     }
 
     val albumsForYou = remember(exploreUiState.albumsForYou, state.feedData.recentAlbums, localAlbums) {
@@ -626,9 +634,7 @@ fun ExploreScreen(
                             .fillMaxSize()
                             .background(MaterialTheme.colorScheme.background)
                             .graphicsLayer {
-                                val p = contentProgress.value
-                                alpha = p
-                                translationY = slideDistancePx * (1f - p)
+                                alpha = contentProgress.value
                             },
                         contentPadding = PaddingValues(
                             top = innerPadding.calculateTopPadding() + 8.dp,
@@ -1256,6 +1262,9 @@ fun ExploreScreen(
                                             subtitle = release.author ?: "Artist",
                                             artworkUrl = release.artworkUrl,
                                             badgeText = "NEW",
+                                            onLongClick = {
+                                                releaseToBlock = release
+                                            },
                                             onClick = {
                                                 if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
                                                     navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
@@ -1487,6 +1496,54 @@ fun ExploreScreen(
             playerViewModel = playerViewModel,
         )
     }
+
+    if (releaseToBlock != null) {
+        val rel = releaseToBlock!!
+        AlertDialog(
+            onDismissRequest = { releaseToBlock = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Block,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = "Not Interested",
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Permanently hide \"${rel.title}\" by ${rel.author ?: "this artist"} from your new releases?",
+                    fontFamily = GoogleSansRounded
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val title = rel.title
+                        feedViewModel.blockRelease(rel.id)
+                        releaseToBlock = null
+                        android.widget.Toast.makeText(context, "\"$title\" blocked from new releases", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text("Block", fontWeight = FontWeight.SemiBold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { releaseToBlock = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -1554,8 +1611,8 @@ fun ExploreTopBar(
                     modifier = Modifier.size(40.dp),
                     shape = CircleShape,
                     colors = IconButtonDefaults.filledIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
                     Icon(
@@ -2114,6 +2171,7 @@ private fun FeedPlaylistCard(
     artworkUrl: String?,
     badgeText: String? = null,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     onPlayClick: (() -> Unit)? = null,
     onMoreClick: (() -> Unit)? = null
 ) {
@@ -2123,10 +2181,19 @@ private fun FeedPlaylistCard(
     Column(
         modifier = Modifier
             .width(156.dp)
-            .bounceClick(scaleDown = 0.96f) {
-                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
-            }
+            .bounceClick(
+                scaleDown = 0.96f,
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onClick()
+                },
+                onLongClick = onLongClick?.let { action ->
+                    {
+                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                        action()
+                    }
+                }
+            )
     ) {
         Box(modifier = Modifier.size(156.dp)) {
             Surface(
@@ -3823,7 +3890,7 @@ private fun ExploreCategoryChipsRow(
                 shape = CircleShape,
                 color = containerColor,
                 contentColor = contentColor,
-                shadowElevation = if (isSelected) 3.dp else 1.dp,
+                shadowElevation = 0.dp,
                 tonalElevation = if (isSelected) 3.dp else 0.dp,
                 modifier = Modifier
                     .defaultMinSize(minHeight = 38.dp)

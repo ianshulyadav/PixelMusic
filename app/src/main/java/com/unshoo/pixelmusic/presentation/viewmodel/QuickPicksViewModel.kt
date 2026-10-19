@@ -1,6 +1,8 @@
 package com.unshoo.pixelmusic.presentation.viewmodel
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.unshoo.pixelmusic.data.model.Song
@@ -8,6 +10,7 @@ import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +19,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
@@ -34,6 +40,7 @@ import kotlinx.collections.immutable.toImmutableList
 import com.unshoo.pixelmusic.data.stats.PlaybackStatsRepository
 import com.unshoo.pixelmusic.utils.AppReadinessSignal
 import unshoo.ianshulyadav.pixelmusic.innertube.models.ArtistItem
+import kotlin.random.Random
 
 private const val PREFS_NAME = "quick_picks_cache"
 private const val KEY_SONGS = "songs_json"
@@ -41,6 +48,8 @@ private const val KEY_CATEGORIES = "categories_json"
 private const val KEY_CACHE_TIMESTAMP = "cache_timestamp"
 // Cache valid for 4 hours (shorter than before so new releases appear faster)
 private const val CACHE_MAX_AGE_MS = 4 * 60 * 60 * 1000L
+private const val QUICK_PICK_COUNT = 25
+private const val NETWORK_REQUEST_TIMEOUT_MS = 2_500L
 
 @HiltViewModel
 class QuickPicksViewModel @Inject constructor(
@@ -48,8 +57,7 @@ class QuickPicksViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val musicRepository: MusicRepository,
     private val engagementDao: com.unshoo.pixelmusic.data.database.EngagementDao,
-    private val playbackStatsRepository: PlaybackStatsRepository,
-    private val connectivityStateHolder: ConnectivityStateHolder
+    private val playbackStatsRepository: PlaybackStatsRepository
 ) : ViewModel() {
 
     private val _quickPicks = MutableStateFlow<ImmutableList<Song>>(persistentListOf())
@@ -58,18 +66,20 @@ class QuickPicksViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _categories = MutableStateFlow<ImmutableList<String>>(persistentListOf("All", "Local", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize"))
+    private val _categories = MutableStateFlow<ImmutableList<String>>(persistentListOf("All", "Local"))
     val categories: StateFlow<ImmutableList<String>> = _categories.asStateFlow()
 
     private val _selectedCategory = MutableStateFlow("All")
     val selectedCategory: StateFlow<String> = _selectedCategory.asStateFlow()
 
     private val prefs by lazy { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+    private val recommendationSemaphore = Semaphore(2)
+    private var quickPicksLoadJob: Job? = null
 
     init {
-        // Immediately populate from cache so the UI shows something on relaunch.
-        loadFromCache()
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
+            AppReadinessSignal.awaitReady()
+            loadFromCache()
             loadQuickPicks(_selectedCategory.value, forceRefresh = isCacheExpired())
             userPreferencesRepository.discoverFlow.collect { _ ->
                 if (_selectedCategory.value == "All") {
@@ -86,8 +96,10 @@ class QuickPicksViewModel @Inject constructor(
     }
 
     fun refresh(force: Boolean = false) {
-        clearCache()
-        loadQuickPicks(_selectedCategory.value, forceRefresh = true)
+        viewModelScope.launch(Dispatchers.IO) {
+            clearCache()
+            loadQuickPicks(_selectedCategory.value, forceRefresh = true)
+        }
     }
 
     /**
@@ -97,19 +109,42 @@ class QuickPicksViewModel @Inject constructor(
      * was already empty.
      */
     fun refreshIfStale() {
-        if (isCacheExpired() && !_isLoading.value) {
-            viewModelScope.launch {
-                val isOnline = connectivityStateHolder.isOnline.value
-                val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
-                if (!isOnline || isLocalMode) {
-                    if (_quickPicks.value.isEmpty()) {
-                        loadCategoryQuickPicks("Local")
-                    }
-                    return@launch
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            if (isCacheExpired() && !_isLoading.value) {
                 loadQuickPicks(_selectedCategory.value, forceRefresh = true)
             }
         }
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val manager = context.getSystemService(ConnectivityManager::class.java) ?: return false
+        val network = manager.activeNetwork ?: return false
+        val capabilities = manager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    private suspend fun <T> boundedNetworkRequest(block: suspend () -> T): T? =
+        recommendationSemaphore.withPermit {
+            withTimeoutOrNull(NETWORK_REQUEST_TIMEOUT_MS) { block() }
+        }
+
+    private suspend fun loadRandomSongs(limit: Int): List<Song> {
+        val total = musicRepository.getSongCountFlow().first()
+        if (total == 0) return emptyList()
+        val offset = if (total <= limit) 0 else Random.nextInt(total - limit + 1)
+        return musicRepository.getSongsPage(limit = limit, offset = offset)
+    }
+
+    private suspend fun loadRandomFavoriteSongs(limit: Int): List<Song> {
+        val storageFilter = com.unshoo.pixelmusic.data.model.StorageFilter.ALL
+        val total = musicRepository.getFavoriteSongCountFlow(storageFilter).first()
+        if (total == 0) return emptyList()
+        val offset = if (total <= limit) 0 else Random.nextInt(total - limit + 1)
+        return musicRepository.getFavoriteSongsPage(
+            limit = limit,
+            offset = offset,
+            storageFilter = storageFilter
+        )
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -215,13 +250,8 @@ class QuickPicksViewModel @Inject constructor(
     // ─────────────────────────────────────────────────────────────────────────
 
     private fun loadQuickPicks(category: String, forceRefresh: Boolean = false) {
-        viewModelScope.launch {
-            val isOnline = connectivityStateHolder.isOnline.value
-            val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
-            if (isLocalMode || !isOnline || category.equals("Local", ignoreCase = true)) {
-                loadCategoryQuickPicks("Local")
-                return@launch
-            }
+        quickPicksLoadJob?.cancel()
+        quickPicksLoadJob = viewModelScope.launch(Dispatchers.IO) {
             val cacheExpired = isCacheExpired()
             val shouldRefresh = forceRefresh || cacheExpired
             if (category == "All" && !shouldRefresh && _quickPicks.value.isNotEmpty()) {
@@ -242,7 +272,7 @@ class QuickPicksViewModel @Inject constructor(
                             _quickPicks.value = persistentListOf()
                         }
                         QuickPicks.QUICK_PICKS -> {
-                            // Try enhanced 5-bucket algorithm first
+                            // Enhanced 5-bucket recommendation algorithm
                             val songs = loadEnhancedQuickPicks()
                             if (songs.isNotEmpty()) {
                                 _quickPicks.value = songs.toImmutableList()
@@ -286,11 +316,11 @@ class QuickPicksViewModel @Inject constructor(
 
     // ─────────────────────────────────────────────────────────────────────────
     // 5-bucket parallel algorithm — all buckets fetched concurrently
-    // Final output: flat shuffled list of ~20 songs
+    // Final output: flat shuffled list of ~25 songs
     // ─────────────────────────────────────────────────────────────────────────
 
-    private suspend fun loadEnhancedQuickPicks(): List<Song> = withContext(Dispatchers.IO) {
-        coroutineScope {
+    private suspend fun loadEnhancedQuickPicks(): List<Song> = coroutineScope {
+        if (!isNetworkAvailable()) return@coroutineScope loadOfflineQuickPicks()
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
 
         // 1. Gather historical seeds from user's local/online history and favorites
@@ -301,13 +331,15 @@ class QuickPicksViewModel @Inject constructor(
         }
 
         val localFavoritesList = try {
-            musicRepository.getFavoriteSongsOnce(com.unshoo.pixelmusic.data.model.StorageFilter.ALL)
+            loadRandomFavoriteSongs(50)
         } catch (e: Exception) {
             emptyList()
         }
 
         val ytHistoryList = try {
-            YouTube.musicHistory().getOrNull()?.sections?.flatMap { it.songs } ?: emptyList()
+            boundedNetworkRequest {
+                YouTube.musicHistory().getOrNull()?.sections?.flatMap { it.songs } ?: emptyList()
+            } ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -365,9 +397,11 @@ class QuickPicksViewModel @Inject constructor(
         val songMixesDeferred = uniqueSeedSongs.take(3).map { (videoId, _) ->
             async(Dispatchers.IO) {
                 try {
-                    val radioResult = YouTube.next(
-                        WatchEndpoint(playlistId = "RDAMVM$videoId", videoId = videoId)
-                    ).getOrNull()
+                    val radioResult = boundedNetworkRequest {
+                        YouTube.next(
+                            WatchEndpoint(playlistId = "RDAMVM$videoId", videoId = videoId)
+                        ).getOrNull()
+                    }
                     radioResult?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
                 } catch (e: Exception) {
                     Timber.tag("QuickPicks").w(e, "Song mix radio fetch failed for videoId: $videoId")
@@ -380,10 +414,13 @@ class QuickPicksViewModel @Inject constructor(
         val artistRadiosDeferred = uniqueSeedArtistIds.take(2).map { artistId ->
             async(Dispatchers.IO) {
                 try {
-                    val artistPage = YouTube.artist(artistId).getOrNull()
+                    val artistPage = boundedNetworkRequest {
+                        YouTube.artist(artistId).getOrNull()
+                    }
                     val radioEndpoint = artistPage?.artist?.radioEndpoint
                     if (radioEndpoint != null) {
-                        YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
+                        boundedNetworkRequest { YouTube.next(radioEndpoint).getOrNull() }
+                            ?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
                     } else {
                         // Fallback to top song's mix radio
                         val songsSection = artistPage?.sections?.find {
@@ -392,9 +429,11 @@ class QuickPicksViewModel @Inject constructor(
                         }
                         val firstSong = songsSection?.items?.filterIsInstance<SongItem>()?.firstOrNull()
                         if (firstSong != null) {
-                            YouTube.next(
-                                WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
-                            ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
+                            boundedNetworkRequest {
+                                YouTube.next(
+                                    WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
+                                ).getOrNull()
+                            }?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
                         } else emptyList()
                     }
                 } catch (e: Exception) {
@@ -409,14 +448,19 @@ class QuickPicksViewModel @Inject constructor(
             uniqueSeedArtistNames.take(2).map { artistName ->
                 async(Dispatchers.IO) {
                     try {
-                        val searchResult = YouTube.search(artistName, YouTube.SearchFilter.FILTER_ARTIST).getOrNull()
+                        val searchResult = boundedNetworkRequest {
+                            YouTube.search(artistName, YouTube.SearchFilter.FILTER_ARTIST).getOrNull()
+                        }
                         val artistItem = searchResult?.items?.find { it is ArtistItem } as? ArtistItem
                         val artistId = artistItem?.id
                         if (artistId != null) {
-                            val artistPage = YouTube.artist(artistId).getOrNull()
+                            val artistPage = boundedNetworkRequest {
+                                YouTube.artist(artistId).getOrNull()
+                            }
                             val radioEndpoint = artistPage?.artist?.radioEndpoint
                             if (radioEndpoint != null) {
-                                YouTube.next(radioEndpoint).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
+                                boundedNetworkRequest { YouTube.next(radioEndpoint).getOrNull() }
+                                    ?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
                             } else {
                                 val songsSection = artistPage?.sections?.find {
                                     it.title.contains("songs", ignoreCase = true) ||
@@ -424,9 +468,11 @@ class QuickPicksViewModel @Inject constructor(
                                 }
                                 val firstSong = songsSection?.items?.filterIsInstance<SongItem>()?.firstOrNull()
                                 if (firstSong != null) {
-                                    YouTube.next(
-                                        WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
-                                    ).getOrNull()?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
+                                    boundedNetworkRequest {
+                                        YouTube.next(
+                                            WatchEndpoint(playlistId = "RDAMVM${firstSong.id}", videoId = firstSong.id)
+                                        ).getOrNull()
+                                    }?.items?.filterIsInstance<SongItem>()?.filterVideo(pureYtMusicOnly) ?: emptyList()
                                 } else emptyList()
                             }
                         } else emptyList()
@@ -438,27 +484,19 @@ class QuickPicksViewModel @Inject constructor(
             }
         } else emptyList()
 
-        // Bucket C: YouTube Music personalized Home page sections + Trending
+        // Bucket C: YouTube Music personalized Home page sections + Trending + category chips
         val ytHomeRecommendationsDeferred = async(Dispatchers.IO) {
             try {
-                val homePage = YouTube.home().getOrNull() ?: return@async emptyList<SongItem>()
+                val homePage = boundedNetworkRequest { YouTube.home().getOrNull() }
+                    ?: return@async emptyList<SongItem>()
                 val chipTitles = homePage.chips?.map { it.title } ?: emptyList()
-                val baseline = listOf("All", "Local", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize")
-                val updatedCategories = (baseline + chipTitles).distinct()
+                val updatedCategories = (listOf("All", "Local") + chipTitles).distinct()
                 _categories.value = updatedCategories.toImmutableList()
 
                 val items = mutableListOf<SongItem>()
-                val quickPicksShelf = homePage.sections.firstOrNull {
-                    it.title.contains("quick", ignoreCase = true)
-                }
-                if (quickPicksShelf != null) {
-                    items.addAll(quickPicksShelf.items.filterIsInstance<SongItem>())
-                }
-                // Extract items from remaining home sections
+                // Extract items from home sections (including Daily Discover, Quick Picks, Trending, etc.)
                 homePage.sections.forEach { section ->
-                    if (section != quickPicksShelf) {
-                        items.addAll(section.items.filterIsInstance<SongItem>())
-                    }
+                    items.addAll(section.items.filterIsInstance<SongItem>())
                 }
                 items.filterVideo(pureYtMusicOnly)
             } catch (e: Exception) {
@@ -494,9 +532,8 @@ class QuickPicksViewModel @Inject constructor(
 
         val onlineSongs = (songMixSongs + artistRadioSongs + artistNameRadioSongs + homeRecSongs).map { it.toNativeSong() }
 
-        // OFFLINE FALLBACK: 0 internet -> load all local songs + fully downloaded playlist songs
         if (onlineSongs.isEmpty()) {
-            return@coroutineScope loadAllOfflineAndDownloadedSongs()
+            return@coroutineScope loadOfflineQuickPicks()
         }
 
         // 3. Blend online recommendations with sparse local sampling
@@ -504,10 +541,13 @@ class QuickPicksViewModel @Inject constructor(
         combinedCandidates.addAll(onlineSongs)
         combinedCandidates.addAll(localPopularSongs)
 
-        val deduplicated = combinedCandidates.distinctBy { song ->
-            song.youtubeId?.takeIf { it.isNotBlank() } ?: "${song.title.lowercase()}|${song.artist.lowercase()}"
-        }
+        val deduplicated = combinedCandidates
+            .distinctBy { it.id }
+            .distinctBy { song ->
+                song.youtubeId?.takeIf { it.isNotBlank() } ?: "${song.title.lowercase()}|${song.artist.lowercase()}"
+            }
 
+        // Filter out disliked and not-interested tracks
         val dislikedYtIds = runCatching { musicRepository.getDislikedYoutubeIds() }.getOrNull() ?: emptySet()
         val notInterestedIds = runCatching { userPreferencesRepository.notInterestedSongIdsFlow.first() }.getOrNull() ?: emptySet()
         val notDisliked = deduplicated.filter { song ->
@@ -522,24 +562,30 @@ class QuickPicksViewModel @Inject constructor(
         }
 
         // Shuffle completely to make it dynamic on every view/refresh
-        notDisliked.shuffled().take(20)
-    }
+        notDisliked.shuffled().take(QUICK_PICK_COUNT)
     }
 
-    private suspend fun loadAllOfflineAndDownloadedSongs(): List<Song> = withContext(Dispatchers.IO) {
+    private suspend fun loadOfflineQuickPicks(): List<Song> = withContext(Dispatchers.IO) {
         try {
-            val localSongs = musicRepository.getAllSongsOnce()
-            val downloadedYtSongs = com.unshoo.pixelmusic.data.database.youtube.AppDatabase
+            val localSongs = loadRandomSongs(QUICK_PICK_COUNT)
+            val downloadedSongSource = com.unshoo.pixelmusic.data.database.youtube.AppDatabase
                 .getInstance(context)
                 .songRepository()
-                .getDownloadedSongs()
+            val downloadedCount = downloadedSongSource.getDownloadedSongCount()
+            val downloadedOffset = if (downloadedCount <= QUICK_PICK_COUNT) 0 else {
+                Random.nextInt(downloadedCount - QUICK_PICK_COUNT + 1)
+            }
+            val downloadedYtSongs = downloadedSongSource
+                .getDownloadedSongsPage(QUICK_PICK_COUNT, downloadedOffset)
                 .map { it.toNativeSong() }
 
             (localSongs + downloadedYtSongs)
+                .distinctBy { it.id }
                 .distinctBy { song ->
                     song.youtubeId?.takeIf { it.isNotBlank() } ?: song.id
                 }
                 .shuffled()
+                .take(QUICK_PICK_COUNT)
         } catch (e: Exception) {
             Timber.tag("QuickPicks").e(e, "Failed to load offline/downloaded songs")
             emptyList()
@@ -566,11 +612,12 @@ class QuickPicksViewModel @Inject constructor(
                         musicRepository.getSongsByIdsOnce(preferredLocalIds)
                     } else emptyList()
 
-                    val (favoriteLocal, otherLocal) = musicRepository.getAllSongsOnce()
-                        .partition { it.isFavorite }
-
-                    val pool = (preferredLocalSongs + favoriteLocal.shuffled() + otherLocal.shuffled()).distinctBy { it.id }
-                    pool.shuffled().take(25)
+                    val favoriteLocal = loadRandomFavoriteSongs(12)
+                    val otherLocal = loadRandomSongs(30)
+                    (preferredLocalSongs + favoriteLocal + otherLocal)
+                        .distinctBy { it.id }
+                        .shuffled()
+                        .take(QUICK_PICK_COUNT)
                 } catch (e: Exception) {
                     Timber.tag("QuickPicks").e(e, "Local category fetch failed")
                     emptyList()
@@ -579,53 +626,40 @@ class QuickPicksViewModel @Inject constructor(
             if (localSongs.isNotEmpty()) {
                 _quickPicks.value = localSongs.toImmutableList()
             } else {
-                _quickPicks.value = loadAllOfflineAndDownloadedSongs().take(25).toImmutableList()
+                _quickPicks.value = loadOfflineQuickPicks().toImmutableList()
             }
             return
         }
 
+        if (!isNetworkAvailable()) {
+            _quickPicks.value = loadOfflineQuickPicks().toImmutableList()
+            return
+        }
         val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow.first()
         val songs = withContext(Dispatchers.IO) {
             try {
-                val defaultHome = YouTube.home().getOrNull()
-                val matchingChip = defaultHome?.chips?.firstOrNull {
+                val defaultHome = boundedNetworkRequest { YouTube.home().getOrNull() }
+                    ?: return@withContext emptyList<Song>()
+                val matchingChip = defaultHome.chips?.firstOrNull {
                     it.title.equals(category, ignoreCase = true)
                 }
-                if (matchingChip?.endpoint?.params != null) {
-                    val targetHome = YouTube.home(params = matchingChip.endpoint.params).getOrNull() ?: defaultHome
-                    targetHome?.sections
-                        .orEmpty()
-                        .filter {
-                            !it.title.contains("listen again", ignoreCase = true) &&
-                            !it.title.contains("recently played", ignoreCase = true)
-                        }
-                        .flatMap { it.items.filterIsInstance<SongItem>() }
-                        .filterVideo(pureYtMusicOnly)
-                        .distinctBy { it.id }
-                        .take(25)
-                        .map { it.toNativeSong() }
-                        .shuffled()
-                } else {
-                    val searchResult = YouTube.search(category, YouTube.SearchFilter.FILTER_SONG).getOrNull()
-                    val searchSongs = searchResult?.items
-                        ?.filterIsInstance<SongItem>()
-                        ?.filterVideo(pureYtMusicOnly)
-                        ?.map { it.toNativeSong() }
-                        .orEmpty()
-                    if (searchSongs.isNotEmpty()) {
-                        searchSongs.take(25).shuffled()
-                    } else if (defaultHome != null) {
-                        defaultHome.sections
-                            .flatMap { it.items.filterIsInstance<SongItem>() }
-                            .filterVideo(pureYtMusicOnly)
-                            .distinctBy { it.id }
-                            .take(25)
-                            .map { it.toNativeSong() }
-                            .shuffled()
-                    } else {
-                        emptyList()
+                val targetHome = if (matchingChip?.endpoint?.params != null) {
+                    boundedNetworkRequest {
+                        YouTube.home(params = matchingChip.endpoint.params).getOrNull()
+                    } ?: defaultHome
+                } else defaultHome
+
+                targetHome.sections
+                    .filter {
+                        !it.title.contains("listen again", ignoreCase = true) &&
+                        !it.title.contains("recently played", ignoreCase = true)
                     }
-                }
+                    .flatMap { it.items.filterIsInstance<SongItem>() }
+                    .filterVideo(pureYtMusicOnly)
+                    .distinctBy { it.id }
+                    .take(QUICK_PICK_COUNT)
+                    .map { it.toNativeSong() }
+                    .shuffled()
             } catch (e: Exception) {
                 Timber.tag("QuickPicks").e(e, "Category fetch failed: $category")
                 emptyList()
@@ -647,7 +681,7 @@ class QuickPicksViewModel @Inject constructor(
             _quickPicks.value = filtered.toImmutableList()
         } else {
             // Offline fallback for categories if net is unreachable
-            _quickPicks.value = loadAllOfflineAndDownloadedSongs().take(25).toImmutableList()
+            _quickPicks.value = loadOfflineQuickPicks().toImmutableList()
         }
     }
 }

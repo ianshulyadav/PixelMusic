@@ -88,6 +88,12 @@ import androidx.compose.ui.platform.LocalDensity
 import com.unshoo.pixelmusic.utils.AudioMetaUtils.mimeTypeToFormat
 import com.unshoo.pixelmusic.utils.formatDuration
 import java.util.Locale
+import android.os.Build
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawBehind
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.snapchat.kit.sdk.SnapCreative
 import com.snapchat.kit.sdk.creative.models.SnapPhotoContent
 import com.snapchat.kit.sdk.creative.models.SnapVideoContent
@@ -144,6 +150,12 @@ fun ShareBottomSheet(
     }
     val themeStateHolder = entryPoint.themeStateHolder()
     val albumColorSchemeState by themeStateHolder.getAlbumColorSchemeFlow(song.albumArtUriString.orEmpty()).collectAsStateWithLifecycle(initialValue = null)
+    val userPreferencesRepository = remember(entryPoint) { entryPoint.userPreferencesRepository() }
+    val useBlurEffects by userPreferencesRepository.useBlurEffectsFlow.collectAsStateWithLifecycle(initialValue = true)
+    val storyCardBlurEnabled by userPreferencesRepository.storyCardBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val isStoryCardBlurActive = useBlurEffects && storyCardBlurEnabled
+    val bottomSheetBlurEnabled by userPreferencesRepository.bottomSheetBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+    val isBottomSheetBlurActive = useBlurEffects && bottomSheetBlurEnabled
 
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -234,14 +246,16 @@ fun ShareBottomSheet(
             cornerRadiusBL = 0.dp, smoothnessAsPercentTR = 60
         )
     }
+    val sheetContainerColor = if (isBottomSheetBlurActive) colorScheme.surfaceContainer.copy(alpha = 0.82f) else colorScheme.surfaceContainer
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colorScheme.surfaceContainer,
+        containerColor = sheetContainerColor,
         shape = sheetShape,
         dragHandle = null,
         contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
     ) {
+        ApplyBottomSheetWindowBlur(isBottomSheetBlurActive)
         MaterialTheme(
             colorScheme = colorScheme,
             typography = MaterialTheme.typography,
@@ -252,7 +266,7 @@ fun ShareBottomSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(sheetShape)
-                    .background(colorScheme.surfaceContainer)
+                    .background(sheetContainerColor)
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = 16.dp)
             ) {
@@ -563,6 +577,7 @@ fun ShareBottomSheet(
                             albumColorScheme = albumColorSchemeState,
                             useSolidLyricsCard = solidMode,
                             isCardDark = isCardDark,
+                            isBlurEnabled = isStoryCardBlurActive,
                             formatTag = formatTag,
                             playbackMimeType = playbackMimeType,
                             playbackSampleRate = playbackSampleRate,
@@ -634,12 +649,25 @@ fun ShareBottomSheet(
                                         )
                                     }
                                     ShareThemeStyle.BLURRED_ARTWORK -> {
-                                        SmartImage(
-                                            model = song.albumArtUriString,
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
+                                        Box(modifier = Modifier.fillMaxSize()) {
+                                            SmartImage(
+                                                model = song.albumArtUriString,
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .then(
+                                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                                            Modifier.blur(10.dp)
+                                                        } else Modifier
+                                                    )
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .background(Color.Black.copy(alpha = 0.25f))
+                                            )
+                                        }
                                     }
                                     ShareThemeStyle.SOOTHING_GRADIENT -> {
                                         Box(
@@ -943,6 +971,7 @@ private fun ShareableCard(
     albumColorScheme: ColorSchemePair?,
     useSolidLyricsCard: Boolean = false,
     isCardDark: Boolean = true,
+    isBlurEnabled: Boolean = false,
     formatTag: String? = null,
     playbackMimeType: String? = null,
     playbackSampleRate: Int? = null,
@@ -1010,27 +1039,52 @@ private fun ShareableCard(
                 )
             }
             ShareThemeStyle.BLURRED_ARTWORK -> {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    SmartImage(
-                        model = song.albumArtUriString,
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(surfaceContainerLowest)
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(song.albumArtUriString)
+                            .size(1080, 1920)
+                            .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                scaleX = 1.08f
+                                scaleY = 1.08f
+                                alpha = if (isCardDark) 0.90f else 0.85f
+                            }
+                            .then(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    Modifier.blur(if (isCardDark) 14.dp else 16.dp)
+                                } else {
+                                    Modifier
+                                }
+                            )
                     )
+                    // Atmospheric subtle depth tint so the artwork is clearly recognizable and visible
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.25f))
+                            .background(
+                                if (isCardDark) Color.Black.copy(alpha = 0.16f)
+                                else Color.White.copy(alpha = 0.10f)
+                            )
                     )
+                    // Gradient scrim only at top and bottom for readability, leaving center artwork visible
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
                                 brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        primaryContainer.copy(alpha = 0.65f),
-                                        surfaceContainerLowest.copy(alpha = 0.85f)
-                                    )
+                                    0.0f to if (isCardDark) Color.Black.copy(alpha = 0.35f) else Color.Transparent,
+                                    0.25f to Color.Transparent,
+                                    0.70f to Color.Transparent,
+                                    1.0f to if (isCardDark) Color.Black.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.25f)
                                 )
                             )
                     )
@@ -1087,7 +1141,7 @@ private fun ShareableCard(
                 .fillMaxSize()
                 .background(
                     brush = Brush.radialGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.45f)),
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = if (themeStyle == ShareThemeStyle.BLURRED_ARTWORK) 0.20f else 0.45f)),
                         radius = 1200f
                     )
                 )
@@ -1110,19 +1164,85 @@ private fun ShareableCard(
                     modifier = Modifier
                         .fillMaxWidth(0.82f)
                         .clip(AbsoluteSmoothCornerShape(18.dp, 60))
-                        .background(activeCardScheme.primaryContainer)
-                        .padding(horizontal = 9.dp, vertical = 9.dp),
+                        .background(activeCardScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    SongMiniCard(
-                        song = song,
-                        albumScheme = activeCardScheme,
-                        isCardDark = isCardDark,
-                        formatTag = formatTag,
-                        playbackMimeType = playbackMimeType,
-                        playbackSampleRate = playbackSampleRate,
-                        playbackBitDepth = playbackBitDepth,
-                    )
+                    if (isBlurEnabled) {
+                        // 1. Vibrant Gaussian Blur Layer (exact match with FullPlayerAtmosphereBackground)
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .graphicsLayer {
+                                    scaleX = 1.20f
+                                    scaleY = 1.20f
+                                    alpha = if (isCardDark) 0.65f else 0.45f
+                                }
+                                .then(
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                        Modifier.blur(if (isCardDark) 52.dp else 60.dp)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                        ) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(song.albumArtUriString)
+                                    .size(512, 512)
+                                    .build(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        // 2. Contrast & Harmonization Layer (exact match with FullPlayerAtmosphereBackground)
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .drawBehind {
+                                    if (!isCardDark) {
+                                        drawRect(
+                                            color = activeCardScheme.primaryContainer.copy(alpha = 0.20f)
+                                        )
+                                    } else {
+                                        drawRect(
+                                            color = Color(0xFF090D14).copy(alpha = 0.28f)
+                                        )
+                                        drawRect(
+                                            brush = Brush.verticalGradient(
+                                                0.0f to Color.Black.copy(alpha = 0.18f),
+                                                0.35f to Color.Transparent,
+                                                1.0f to Color.Transparent
+                                            )
+                                        )
+                                        drawRect(
+                                            brush = Brush.verticalGradient(
+                                                0.0f to Color.Transparent,
+                                                0.65f to Color.Transparent,
+                                                0.82f to Color.Black.copy(alpha = 0.42f),
+                                                0.92f to Color.Black.copy(alpha = 0.68f),
+                                                1.0f to Color(0xFF090D13).copy(alpha = 0.82f)
+                                            )
+                                        )
+                                    }
+                                }
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 9.dp)
+                    ) {
+                        SongMiniCard(
+                            song = song,
+                            albumScheme = activeCardScheme,
+                            isCardDark = isCardDark,
+                            formatTag = formatTag,
+                            playbackMimeType = playbackMimeType,
+                            playbackSampleRate = playbackSampleRate,
+                            playbackBitDepth = playbackBitDepth,
+                        )
+                    }
                 }
             } else {
                 // ── LYRICS PANEL ─────────────────────────────────────────────
@@ -1996,4 +2116,5 @@ private fun shareToInstagramStory(
 @InstallIn(SingletonComponent::class)
 interface ShareBottomSheetEntryPoint {
     fun themeStateHolder(): ThemeStateHolder
+    fun userPreferencesRepository(): UserPreferencesRepository
 }

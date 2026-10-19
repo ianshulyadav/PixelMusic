@@ -431,4 +431,22 @@
     <string name="setcat_playback_client_desc">Select stream client. Android VR is faster; Web Client uses YouTube Music.</string>
     <string name="setcat_playback_client_android_vr">Android VR (Default)</string>
     <string name="setcat_playback_client_web_remix">Web Client</string>
+
+    <!-- Blur Settings -->
+    <string name="blur_settings_title">Blur Settings</string>
+    <string name="blur_settings_desc">Customize blur effects across the app</string>
+    <string name="blur_settings_use_blur_effects">Use blur effects</string>
+    <string name="blur_settings_section_customize">Customize blur effects across the app</string>
+    <string name="blur_settings_now_playing_title">Now Playing Background Blur</string>
+    <string name="blur_settings_now_playing_desc">Use a blurred representation of album art behind the player controls.</string>
+    <string name="blur_settings_player_expansion_title">Player Expansion Blur</string>
+    <string name="blur_settings_player_expansion_desc">Apply a progressive blur to the app content when opening the player.</string>
+    <string name="blur_settings_nav_bar_title">Navigation Bar Blur Background</string>
+    <string name="blur_settings_nav_bar_desc">Apply a theme-tinted blurred background to the navigation bar.</string>
+    <string name="blur_settings_bottom_sheet_title">Bottom Sheet Blur Background</string>
+    <string name="blur_settings_bottom_sheet_desc">Apply a theme-tinted blurred background to all bottom sheets in the application.</string>
+    <string name="blur_settings_story_card_title">Story Card Blur</string>
+    <string name="blur_settings_story_card_desc">Apply dynamic album art blur to mini cards and story share cards.</string>
+    <string name="blur_settings_lyrics_screen_title">Lyrics Screen Blur</string>
+    <string name="blur_settings_lyrics_screen_desc">Apply album art blur background to the lyrics screen.</string>
 </resources>

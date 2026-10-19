@@ -77,6 +77,13 @@ data class SettingsUiState(
     val appFontMode: String = AppFontMode.APP_DEFAULT,
     val playerThemePreference: String = ThemePreference.ALBUM_ART,
     val playerBackgroundStyle: String = PlayerBackgroundStyle.GRADIENT,
+    val useBlurEffects: Boolean = true,
+    val nowPlayingBlurEnabled: Boolean = true,
+    val playerExpansionBlurEnabled: Boolean = true,
+    val navBarBlurEnabled: Boolean = false,
+    val bottomSheetBlurEnabled: Boolean = false,
+    val storyCardBlurEnabled: Boolean = true,
+    val lyricsScreenBlurEnabled: Boolean = true,
     val colorPalette: String = "SAGE",
     val albumArtPaletteStyle: AlbumArtPaletteStyle = AlbumArtPaletteStyle.default,
     val albumArtColorAccuracy: Int = AlbumArtColorAccuracy.DEFAULT,
@@ -817,6 +824,31 @@ class SettingsViewModel @Inject constructor(
             }
         }
 
+        // Blur Settings Collectors
+        viewModelScope.launch {
+            combine(
+                userPreferencesRepository.useBlurEffectsFlow,
+                userPreferencesRepository.nowPlayingBlurEnabledFlow,
+                userPreferencesRepository.playerExpansionBlurEnabledFlow,
+                userPreferencesRepository.navBarBlurEnabledFlow,
+                userPreferencesRepository.bottomSheetBlurEnabledFlow,
+                userPreferencesRepository.storyCardBlurEnabledFlow,
+                userPreferencesRepository.lyricsScreenBlurEnabledFlow
+            ) { values ->
+                _uiState.update { state ->
+                    state.copy(
+                        useBlurEffects = values[0],
+                        nowPlayingBlurEnabled = values[1],
+                        playerExpansionBlurEnabled = values[2],
+                        navBarBlurEnabled = values[3],
+                        bottomSheetBlurEnabled = values[4],
+                        storyCardBlurEnabled = values[5],
+                        lyricsScreenBlurEnabled = values[6]
+                    )
+                }
+            }.collect()
+        }
+
         // Beta Features Collectors
         viewModelScope.launch {
             userPreferencesRepository.albumArtQualityFlow.collect { quality ->
@@ -1226,6 +1258,48 @@ fun setBeta05CleanInstallDisclaimerDismissed(dismissed: Boolean) {
     fun setPlayerBackgroundStyle(style: String) {
         viewModelScope.launch {
             themePreferencesRepository.setPlayerBackgroundStyle(style)
+        }
+    }
+
+    fun setUseBlurEffects(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setUseBlurEffects(enabled)
+        }
+    }
+
+    fun setNowPlayingBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setNowPlayingBlurEnabled(enabled)
+        }
+    }
+
+    fun setPlayerExpansionBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setPlayerExpansionBlurEnabled(enabled)
+        }
+    }
+
+    fun setNavBarBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setNavBarBlurEnabled(enabled)
+        }
+    }
+
+    fun setBottomSheetBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setBottomSheetBlurEnabled(enabled)
+        }
+    }
+
+    fun setStoryCardBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setStoryCardBlurEnabled(enabled)
+        }
+    }
+
+    fun setLyricsScreenBlurEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setLyricsScreenBlurEnabled(enabled)
         }
     }
 

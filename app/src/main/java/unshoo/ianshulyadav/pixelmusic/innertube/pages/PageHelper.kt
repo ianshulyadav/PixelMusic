@@ -17,6 +17,8 @@ import unshoo.ianshulyadav.pixelmusic.innertube.models.MusicResponsiveListItemRe
 import unshoo.ianshulyadav.pixelmusic.innertube.models.MusicTwoRowItemRenderer
 import unshoo.ianshulyadav.pixelmusic.innertube.models.Run
 import unshoo.ianshulyadav.pixelmusic.innertube.models.splitBySeparator
+import unshoo.ianshulyadav.pixelmusic.innertube.models.Artist
+import unshoo.ianshulyadav.pixelmusic.innertube.models.oddElements
 import unshoo.ianshulyadav.pixelmusic.innertube.utils.parseTime
 
 object PageHelper {
@@ -64,6 +66,75 @@ object PageHelper {
         if (trimmed.parseTime() != null) return true
         if (VIEWS_REGEX.matches(trimmed)) return true
         return false
+    }
+
+    private fun isMediaTypeMarker(text: String): Boolean {
+        val lower = text.trim().lowercase()
+        return lower in setOf(
+            "song", "songs", "video", "videos", "single", "singles", "album", "albums", "ep",
+            "canción", "chanson", "lied", "canzone", "música", "music"
+        )
+    }
+
+    private fun List<Run>.toArtistsList(): List<Artist> =
+        this
+            .oddElements()
+            .mapNotNull { run ->
+                val cleanName = run.text.trim()
+                if (cleanName.isNotBlank() && cleanName != "•" && cleanName != "&" && cleanName != ",") {
+                    Artist(
+                        name = cleanName,
+                        id = run.navigationEndpoint?.browseEndpoint?.browseId
+                    )
+                } else null
+            }
+
+    fun extractArtists(
+        renderer: MusicResponsiveListItemRenderer,
+        title: String? = null
+    ): List<Artist> {
+        val rawGroups = renderer.flexColumns
+            .drop(1)
+            .flatMap {
+                it.musicResponsiveListItemFlexColumnRenderer.text?.runs?.splitBySeparator().orEmpty()
+            }
+
+        if (rawGroups.isEmpty()) return emptyList()
+
+        // 1. Definite match: Find group containing an artist endpoint (UC... or pageType ARTIST)
+        for (group in rawGroups) {
+            val hasArtist = group.any { isArtistEndpoint(it) }
+            if (hasArtist) {
+                val artists = group.toArtistsList()
+                if (artists.isNotEmpty()) return artists
+            }
+        }
+
+        // 2. Fallback: Filter out media type, album, title-duplicate, duration, and view-count groups
+        val normalizedTitle = title?.trim()?.lowercase()?.replace(Regex("[^a-z0-9]"), "")
+        val candidateGroup = rawGroups.firstOrNull { group ->
+            val firstRun = group.firstOrNull() ?: return@firstOrNull false
+            val text = firstRun.text.trim()
+            val normalizedText = text.lowercase().replace(Regex("[^a-z0-9]"), "")
+
+            // Reject if it matches the song title
+            if (!normalizedTitle.isNullOrEmpty() && (normalizedText == normalizedTitle || text.equals(title?.trim(), ignoreCase = true))) {
+                return@firstOrNull false
+            }
+
+            // Reject album endpoints
+            if (group.any { isAlbumEndpoint(it) }) return@firstOrNull false
+
+            // Reject duration and view count
+            if (isNonAlbumMetadata(text)) return@firstOrNull false
+
+            // Reject standalone media type markers
+            if (isMediaTypeMarker(text)) return@firstOrNull false
+
+            true
+        }
+
+        return candidateGroup?.toArtistsList().orEmpty()
     }
 
     fun extractAlbum(renderer: MusicResponsiveListItemRenderer): Album? {

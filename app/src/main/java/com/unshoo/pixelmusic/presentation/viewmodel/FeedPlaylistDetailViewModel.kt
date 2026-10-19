@@ -52,6 +52,20 @@ class FeedPlaylistDetailViewModel @Inject constructor(
     private var currentPlaylistId: String? = null
     private var loadJob: Job? = null
 
+    fun blockRelease(id: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.blockRelease(id, true)
+            val state = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return@launch
+            val remainingTracks = state.playlist.tracks.filter { it.videoId != id && it.album != id }
+            _uiState.value = state.copy(
+                playlist = state.playlist.copy(
+                    tracks = remainingTracks,
+                    trackCount = remainingTracks.size
+                )
+            )
+        }
+    }
+
     fun load(playlistId: String, force: Boolean = false) {
         if (playlistId.isBlank()) {
             _uiState.value = FeedPlaylistDetailUiState.Error("This playlist is unavailable.")
@@ -75,14 +89,18 @@ class FeedPlaylistDetailViewModel @Inject constructor(
             val author = when {
                 liked -> "Your favorites"
                 recent -> "Recently played tracks"
-                isNewReleases -> "From your artists"
+                isNewReleases -> "Latest releases"
                 else -> "YouTube Music"
             }
 
             val pureYtMusic = runCatching { userPreferencesRepository.pureYtMusicOnlyFlow.first() }.getOrDefault(false)
             val filterCoverAndLofi = runCatching { userPreferencesRepository.filterCoverAndLofiFlow.first() }.getOrDefault(true)
             val filterKeywords = runCatching { userPreferencesRepository.filterKeywordsFlow.first() }.getOrDefault(ContentFilterUtils.DEFAULT_FILTER_KEYWORDS)
-            fun filterTrack(t: YouTubeMusicTrack): Boolean = (!pureYtMusic || !t.isVideo) && (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
+            val blockedReleaseIds = runCatching { userPreferencesRepository.blockedReleaseIdsFlow.first() }.getOrDefault(emptySet())
+            fun filterTrack(t: YouTubeMusicTrack): Boolean =
+                (!pureYtMusic || !t.isVideo) &&
+                (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords)) &&
+                (t.videoId !in blockedReleaseIds)
 
             fun showTracks(tracks: List<YouTubeMusicTrack>, customArt: String? = null) {
                 coroutineContext.ensureActive()
@@ -126,182 +144,125 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         val accumulatedTracks = mutableListOf<YouTubeMusicTrack>()
                         var coverArt: String? = null
 
-                        // 1. Check if FeedRepository already has cached/loaded user new releases
-                        val cachedReleases = feedRepository.getCachedFeed()?.newReleases.orEmpty()
-                            .filter { !it.id.startsWith("VL") && !it.id.startsWith("PL") && !it.id.startsWith("RD") }
-
-                        val directReleases = cachedReleases.ifEmpty {
-                            // Fetch user's home sections
-                            val home = withContext(Dispatchers.IO) {
-                                runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.home().getOrNull() }.getOrNull()
-                            }
-                            var homeSections = home?.sections.orEmpty()
-                            if (homeSections.none { s -> s.title.contains("release", ignoreCase = true) || s.title.contains("released", ignoreCase = true) } && home?.continuation != null) {
-                                val cont = withContext(Dispatchers.IO) {
-                                    runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.home(continuation = home.continuation).getOrNull() }.getOrNull()
+                        // 1. Fetch user account based new releases from user's YouTube Home & YouTube Music new releases
+                        val homeReleases = withContext(Dispatchers.IO) {
+                            runCatching {
+                                val home = unshoo.ianshulyadav.pixelmusic.innertube.YouTube.home().getOrNull()
+                                val sections = home?.sections.orEmpty()
+                                val releaseSections = sections.filter { section ->
+                                    val t = section.title.lowercase()
+                                    !t.contains("video") && !t.contains("videos") && (
+                                        t.contains("released") ||
+                                        t.contains("new release") ||
+                                        t.contains("new album") ||
+                                        t.contains("latest release") ||
+                                        t.contains("new music") ||
+                                        t.contains("recent release") ||
+                                        t.contains("release radar") ||
+                                        t.contains("new for you") ||
+                                        t.contains("fresh drops") ||
+                                        section.label?.lowercase()?.contains("release") == true
+                                    )
                                 }
-                                if (cont != null && cont.sections.isNotEmpty()) {
-                                    homeSections = homeSections + cont.sections
-                                }
-                            }
-
-                            val newReleaseSections = homeSections.filter { section ->
-                                val t = section.title.lowercase()
-                                !t.contains("video") && !t.contains("videos") && (
-                                    t.contains("released") ||
-                                    t.contains("new release") ||
-                                    t.contains("new album") ||
-                                    t.contains("latest release") ||
-                                    t.contains("new music") ||
-                                    t.contains("recent release") ||
-                                    t.contains("novedades") ||
-                                    t.contains("nouveautés") ||
-                                    t.contains("veröffentlichungen") ||
-                                    t.contains("release radar") ||
-                                    t.contains("new for you") ||
-                                    t.contains("fresh drops") ||
-                                    section.label?.lowercase()?.contains("release") == true
-                                )
-                            }
-
-                            val items = newReleaseSections.flatMap { it.items }
-                            items.mapNotNull { item ->
-                                when (item) {
-                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem -> {
-                                        com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
-                                            id = item.browseId,
-                                            title = item.title,
-                                            author = item.artists?.firstOrNull()?.name ?: "Album",
-                                            artworkUrl = item.thumbnail
-                                        )
-                                    }
-                                    is unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem -> {
-                                        com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
-                                            id = item.id,
-                                            title = item.title,
-                                            author = item.artists.firstOrNull()?.name ?: "Single",
-                                            artworkUrl = item.thumbnail
-                                        )
-                                    }
-                                    // Strictly ignore PlaylistItem (editorial/curated compilation playlists)
-                                    else -> null
-                                }
-                            }.distinctBy { it.id }
+                                releaseSections.flatMap { it.items }
+                            }.getOrDefault(emptyList())
                         }
 
-                        if (directReleases.isNotEmpty()) {
-                            coverArt = directReleases.firstOrNull { !it.artworkUrl.isNullOrBlank() }?.artworkUrl
+                        // 2. Direct song releases from home sections (user account based)
+                        val directSongs = homeReleases.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
+                            .map { item ->
+                                YouTubeMusicTrack(
+                                    videoId = item.id,
+                                    title = item.title,
+                                    artist = item.artists.firstOrNull()?.name ?: "Unknown artist",
+                                    album = item.album?.name,
+                                    artworkUrl = item.thumbnail
+                                )
+                            }.filter(::filterTrack)
 
-                            // First, immediately add single track releases
-                            val directSongs = directReleases.filter { !it.id.startsWith("MPRE") && !it.id.startsWith("FEmusic_album") }
-                                .map { r ->
-                                    YouTubeMusicTrack(
-                                        videoId = r.id,
-                                        title = r.title,
-                                        artist = r.author ?: "Unknown artist",
-                                        album = r.title,
-                                        artworkUrl = r.artworkUrl
-                                    )
-                                }.filter(::filterTrack)
+                        if (directSongs.isNotEmpty()) {
+                            coverArt = directSongs.firstOrNull()?.artworkUrl
+                            accumulatedTracks.addAll(directSongs)
+                            showTracks(accumulatedTracks.distinctBy { it.videoId }, customArt = coverArt)
+                        }
 
-                            if (directSongs.isNotEmpty()) {
-                                accumulatedTracks.addAll(directSongs)
-                                showTracks(accumulatedTracks.distinctBy { it.videoId }, customArt = coverArt)
+                        // 3. User account / YouTube Music popular new release albums (capped at max 12 albums, 1-2 tracks each)
+                        val albumCandidates = mutableListOf<com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary>()
+
+                        // Add album items from user home
+                        homeReleases.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem>().forEach { album ->
+                            albumCandidates.add(
+                                com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
+                                    id = album.browseId,
+                                    title = album.title,
+                                    author = album.artists?.firstOrNull()?.name ?: "Album",
+                                    artworkUrl = album.thumbnail
+                                )
+                            )
+                        }
+
+                        // Also include cached user new releases if available
+                        if (albumCandidates.size < 8) {
+                            val cached = feedRepository.getCachedFeed()?.newReleases.orEmpty()
+                                .filter { it.id.startsWith("MPRE") || it.id.startsWith("FEmusic_album") }
+                            albumCandidates.addAll(cached)
+                        }
+
+                        // Fallback to official YouTube Music new release albums
+                        if (albumCandidates.size < 8) {
+                            val ytNewReleases = withContext(Dispatchers.IO) {
+                                runCatching {
+                                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.newReleaseAlbums().getOrNull()?.map { album ->
+                                        com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
+                                            id = album.browseId,
+                                            title = album.title,
+                                            author = album.artists?.firstOrNull()?.name ?: "Album",
+                                            artworkUrl = album.thumbnail
+                                        )
+                                    }.orEmpty()
+                                }.getOrDefault(emptyList())
                             }
+                            albumCandidates.addAll(ytNewReleases)
+                        }
 
-                            // Second, concurrently fetch tracks from user albums
-                            val albumReleases = directReleases.filter { it.id.startsWith("MPRE") || it.id.startsWith("FEmusic_album") }
+                        val targetAlbums = albumCandidates.distinctBy { it.id }.filter { it.id !in blockedReleaseIds }.take(12)
+                        if (coverArt == null) {
+                            coverArt = targetAlbums.firstOrNull()?.artworkUrl
+                        }
+
+                        // Fetch top 1-2 lead tracks per album in parallel (CPU and network friendly)
+                        if (targetAlbums.isNotEmpty()) {
                             kotlinx.coroutines.coroutineScope {
-                                val albumJobs = albumReleases.map { rel ->
+                                val albumJobs = targetAlbums.map { rel ->
                                     async(Dispatchers.IO) {
                                         val page = runCatching { innerTube.fetchAlbumPage(rel.id) }.getOrNull()
                                         val fallbackArtist = rel.author ?: page?.artist ?: "Artist"
                                         val fallbackThumb = rel.artworkUrl?.takeIf { it.isNotBlank() } ?: page?.artworkUrl
-                                        page?.songs?.map { s ->
-                                            s.copy(
-                                                artist = if (s.artist.isBlank() || s.artist == "Unknown artist") fallbackArtist else s.artist,
-                                                album = s.album ?: rel.title,
-                                                artworkUrl = s.artworkUrl ?: fallbackThumb
-                                            )
-                                        }.orEmpty().filter(::filterTrack)
+                                        // Take only the top 1-2 lead tracks from each album to prevent flooding
+                                        page?.songs.orEmpty()
+                                            .take(2)
+                                            .map { s ->
+                                                s.copy(
+                                                    artist = if (s.artist.isBlank() || s.artist == "Unknown artist") fallbackArtist else s.artist,
+                                                    album = s.album ?: rel.title,
+                                                    artworkUrl = s.artworkUrl ?: fallbackThumb
+                                                )
+                                            }.filter(::filterTrack)
                                     }
                                 }
 
                                 for (job in albumJobs) {
                                     coroutineContext.ensureActive()
-                                    val songs = job.await()
-                                    if (songs.isNotEmpty()) {
-                                        accumulatedTracks.addAll(songs)
+                                    val tracks = job.await()
+                                    if (tracks.isNotEmpty()) {
+                                        accumulatedTracks.addAll(tracks)
                                         showTracks(accumulatedTracks.distinctBy { it.videoId }, customArt = coverArt)
                                     }
                                 }
                             }
                         }
 
-                        // Fallback to personalized feed repository releases if home section was empty
-                        if (accumulatedTracks.isEmpty()) {
-                            val feed = feedRepository.getCachedFeed() ?: feedRepository.loadFeed()
-                            var releases = feed.newReleases
-                                .filter { !it.id.startsWith("VL") && !it.id.startsWith("PL") && !it.id.startsWith("RD") }
-                            if (releases.isEmpty()) {
-                                val releaseYear = java.time.Year.now().value.toString()
-                                val top = feed.topArtists.filter { !it.browseId.isNullOrBlank() }.take(6)
-                                releases = top.mapNotNull { artist ->
-                                    val page = artist.browseId?.let { id ->
-                                        runCatching { innerTube.fetchArtistPage(id, artist.name) }.getOrNull()
-                                    }
-                                    (page?.albums.orEmpty() + page?.singles.orEmpty())
-                                        .filter { (it.year == releaseYear || it.year == null) && it.browseId.isNotBlank() }
-                                        .take(2)
-                                        .map { r ->
-                                            com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
-                                                id = r.browseId,
-                                                title = r.title,
-                                                author = artist.name,
-                                                artworkUrl = r.artworkUrl
-                                            )
-                                        }
-                                }.flatten().distinctBy { it.id }
-                            }
-
-                            if (releases.isEmpty()) {
-                                throw java.io.IOException("No new releases from your artists found.")
-                            }
-
-                            coverArt = releases.firstOrNull { !it.artworkUrl.isNullOrBlank() }?.artworkUrl
-
-                            for (release in releases) {
-                                coroutineContext.ensureActive()
-                                val songs = if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
-                                    val page = runCatching { innerTube.fetchAlbumPage(release.id) }.getOrNull()
-                                    page?.songs?.map { s ->
-                                        s.copy(
-                                            artist = (if (s.artist.isBlank() || s.artist == "Unknown artist") release.author else s.artist) ?: "Unknown artist",
-                                            album = s.album ?: release.title,
-                                            artworkUrl = s.artworkUrl ?: release.artworkUrl
-                                        )
-                                    }.orEmpty()
-                                } else if (release.id.startsWith("VL") || release.id.startsWith("PL")) {
-                                    runCatching { innerTube.fetchPlaylist(release.id)?.tracks }.getOrNull().orEmpty()
-                                } else {
-                                    listOf(
-                                        YouTubeMusicTrack(
-                                            videoId = release.id,
-                                            title = release.title,
-                                            artist = release.author ?: "Unknown artist",
-                                            artworkUrl = release.artworkUrl
-                                        )
-                                    )
-                                }.filter(::filterTrack)
-
-                                if (songs.isNotEmpty()) {
-                                    accumulatedTracks.addAll(songs)
-                                    showTracks(accumulatedTracks.distinctBy { it.videoId }, customArt = coverArt)
-                                }
-                            }
-                        }
-
-                        val distinctTracks = accumulatedTracks.distinctBy { it.videoId }
+                        val distinctTracks = accumulatedTracks.distinctBy { it.videoId }.take(30)
                         if (distinctTracks.isEmpty()) {
                             throw java.io.IOException("No new release tracks found.")
                         }

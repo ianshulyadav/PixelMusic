@@ -660,6 +660,34 @@ class PlayerViewModel @Inject constructor(
             initialValue = PlayerBackgroundStyle.GRADIENT
         )
 
+    val useBlurEffects: StateFlow<Boolean> = userPreferencesRepository.useBlurEffectsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val nowPlayingBlurEnabled: StateFlow<Boolean> = userPreferencesRepository.nowPlayingBlurEnabledFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
+    val navBarBlurEnabled: StateFlow<Boolean> = userPreferencesRepository.navBarBlurEnabledFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
+    val playerExpansionBlurEnabled: StateFlow<Boolean> = userPreferencesRepository.playerExpansionBlurEnabledFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = true
+        )
+
     val colorPalette: StateFlow<String> = themePreferencesRepository.colorPalettePreferenceFlow
         .stateIn(
             scope = viewModelScope,
@@ -1998,7 +2026,9 @@ class PlayerViewModel @Inject constructor(
         val tapBackgroundClosesPlayer: Boolean = false,
         val useSmoothCorners: Boolean = true,
         val playerThemePreference: String = ThemePreference.ALBUM_ART,
-        val playerBackgroundStyle: String = PlayerBackgroundStyle.GRADIENT
+        val playerBackgroundStyle: String = PlayerBackgroundStyle.GRADIENT,
+        val useBlurEffects: Boolean = true,
+        val nowPlayingBlurEnabled: Boolean = true
     )
 
     private val playerConfigSlicePart1 = combine(
@@ -2023,8 +2053,8 @@ class PlayerViewModel @Inject constructor(
         playerConfigSlicePart1,
         useSmoothCorners,
         playerThemePreference,
-        playerBackgroundStyle
-    ) { p1, smoothCorners, themePref, bgStyle ->
+        combine(playerBackgroundStyle, useBlurEffects, nowPlayingBlurEnabled) { bg, blur, npBlur -> Triple(bg, blur, npBlur) }
+    ) { p1, smoothCorners, themePref, blurConfig ->
         PlayerConfigSlice(
             navBarCornerRadius = p1.navBarCornerRadius,
             navBarStyle = p1.navBarStyle,
@@ -2033,7 +2063,9 @@ class PlayerViewModel @Inject constructor(
             tapBackgroundClosesPlayer = p1.tapBackgroundClosesPlayer,
             useSmoothCorners = smoothCorners,
             playerThemePreference = themePref,
-            playerBackgroundStyle = bgStyle
+            playerBackgroundStyle = blurConfig.first,
+            useBlurEffects = blurConfig.second,
+            nowPlayingBlurEnabled = blurConfig.third
         )
     }
         .distinctUntilChanged()

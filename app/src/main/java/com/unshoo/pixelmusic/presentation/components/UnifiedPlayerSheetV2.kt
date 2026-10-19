@@ -653,7 +653,7 @@ fun UnifiedPlayerSheetV2(
                             }
                     ) {
                         val playerConfig by playerViewModel.playerConfigSlice.collectAsStateWithLifecycle()
-                        if (playerConfig.playerBackgroundStyle == PlayerBackgroundStyle.GRADIENT && infrequentPlayerState.currentSong != null) {
+                        if (playerConfig.useBlurEffects && playerConfig.nowPlayingBlurEnabled && infrequentPlayerState.currentSong != null) {
                             FullPlayerAtmosphereBackground(
                                 currentSong = infrequentPlayerState.currentSong,
                                 albumColorScheme = albumColorScheme,

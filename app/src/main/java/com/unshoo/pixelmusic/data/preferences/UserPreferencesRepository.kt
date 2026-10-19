@@ -397,6 +397,7 @@ constructor(
         val FILTER_KEYWORDS = stringPreferencesKey("filter_keywords")
         val DOWNLOAD_AUDIO_QUALITY = stringPreferencesKey("download_audio_quality")
         val NOT_INTERESTED_SONG_IDS = stringSetPreferencesKey("not_interested_song_ids")
+        val BLOCKED_RELEASE_IDS = stringSetPreferencesKey("blocked_release_ids")
 
         // YouTube Granular Sync & Personalization Options
         val YOUTUBE_SYNC_PLAYLISTS_AND_LIKES = booleanPreferencesKey("youtube_sync_playlists_and_likes")
@@ -410,6 +411,92 @@ constructor(
         val LAST_UPDATE_ETAG = stringPreferencesKey("last_update_etag")
         val IGNORED_UPDATE_VERSION = stringPreferencesKey("ignored_update_version")
         val CACHED_RELEASE_INFO = stringPreferencesKey("cached_release_info")
+
+        // Blur Settings
+        val USE_BLUR_EFFECTS = booleanPreferencesKey("use_blur_effects")
+        val NOW_PLAYING_BLUR_ENABLED = booleanPreferencesKey("now_playing_blur_enabled")
+        val PLAYER_EXPANSION_BLUR_ENABLED = booleanPreferencesKey("player_expansion_blur_enabled")
+        val NAV_BAR_BLUR_ENABLED = booleanPreferencesKey("nav_bar_blur_enabled")
+        val BOTTOM_SHEET_BLUR_ENABLED = booleanPreferencesKey("bottom_sheet_blur_enabled")
+        val STORY_CARD_BLUR_ENABLED = booleanPreferencesKey("story_card_blur_enabled")
+        val LYRICS_SCREEN_BLUR_ENABLED = booleanPreferencesKey("lyrics_screen_blur_enabled")
+    }
+
+    val useBlurEffectsFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.USE_BLUR_EFFECTS] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setUseBlurEffects(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USE_BLUR_EFFECTS] = enabled
+        }
+    }
+
+    val nowPlayingBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.NOW_PLAYING_BLUR_ENABLED] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setNowPlayingBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NOW_PLAYING_BLUR_ENABLED] = enabled
+        }
+    }
+
+    val playerExpansionBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.PLAYER_EXPANSION_BLUR_ENABLED] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setPlayerExpansionBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PLAYER_EXPANSION_BLUR_ENABLED] = enabled
+        }
+    }
+
+    val navBarBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.NAV_BAR_BLUR_ENABLED] ?: false
+        }.distinctUntilChanged()
+
+    suspend fun setNavBarBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NAV_BAR_BLUR_ENABLED] = enabled
+        }
+    }
+
+    val bottomSheetBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.BOTTOM_SHEET_BLUR_ENABLED] ?: false
+        }.distinctUntilChanged()
+
+    suspend fun setBottomSheetBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.BOTTOM_SHEET_BLUR_ENABLED] = enabled
+        }
+    }
+
+    val storyCardBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.STORY_CARD_BLUR_ENABLED] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setStoryCardBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STORY_CARD_BLUR_ENABLED] = enabled
+        }
+    }
+
+    val lyricsScreenBlurEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.LYRICS_SCREEN_BLUR_ENABLED] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setLyricsScreenBlurEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.LYRICS_SCREEN_BLUR_ENABLED] = enabled
+        }
     }
 
     val deduplicateQueueEntriesFlow: Flow<Boolean> =
@@ -2627,6 +2714,30 @@ constructor(
                 current + ids
             } else {
                 current - ids.toSet()
+            }
+        }
+    }
+
+    val blockedReleaseIdsFlow: Flow<Set<String>> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.BLOCKED_RELEASE_IDS] ?: emptySet()
+        }.distinctUntilChanged()
+
+    suspend fun blockRelease(id: String, blocked: Boolean = true) {
+        if (id.isBlank()) return
+        dataStore.edit { preferences ->
+            val current = preferences[PreferencesKeys.BLOCKED_RELEASE_IDS] ?: emptySet()
+            preferences[PreferencesKeys.BLOCKED_RELEASE_IDS] = if (blocked) {
+                current + id
+            } else {
+                current - id
+            }
+            // Also synchronize with not-interested songs if applicable
+            val currentNotInterested = preferences[PreferencesKeys.NOT_INTERESTED_SONG_IDS] ?: emptySet()
+            preferences[PreferencesKeys.NOT_INTERESTED_SONG_IDS] = if (blocked) {
+                currentNotInterested + id
+            } else {
+                currentNotInterested - id
             }
         }
     }

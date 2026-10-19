@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.layout.ContentScale
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.AutoScrollingText
+import com.unshoo.pixelmusic.presentation.components.player.FullPlayerAtmosphereBackground
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.animateFloat
@@ -43,6 +44,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -259,25 +262,12 @@ fun LyricsSheet(
     autoscrollAnimationSpec: AnimationSpec<Float>? = null // null = auto-detect from preference
 ) {
     // ─── Enter / Exit animation state ────────────────────────────────────────
-    // Mirrors the player-sheet pattern: a plain Float in state drives graphicsLayer
-    // at draw-phase (no recomposition per frame). 0f = fully visible, 1f = dismissed.
-    var backProgress by remember { mutableFloatStateOf(1f) }
+    // 0f = fully visible, 1f = dismissed.
+    var backProgress by remember { mutableFloatStateOf(0f) }
 
     // Draw-phase lambda provider — read only inside graphicsLayer so layout is never
     // re-triggered during the gesture (same technique as SheetVisualState).
     val backProgressProvider = rememberUpdatedState(backProgress)
-
-    // Enter animation: slide up from +6 % height + fade in.
-    LaunchedEffect(Unit) {
-        val anim = Animatable(1f)
-        anim.animateTo(
-            targetValue = 0f,
-            animationSpec = spring(
-                stiffness = Spring.StiffnessMediumLow,
-                dampingRatio = Spring.DampingRatioLowBouncy
-            )
-        ) { backProgress = value }
-    }
 
     // Predictive-back (Android 13+) or plain back on older devices.
     LyricsPredictiveBackHandler(
@@ -357,6 +347,18 @@ fun LyricsSheet(
         context.dataStore.data.map { it[androidx.datastore.preferences.core.floatPreferencesKey("animated_lyrics_blur_strength")] ?: 2.5f }
     }
     val animatedLyricsBlurStrength by animatedLyricsBlurStrengthFlow.collectAsStateWithLifecycle(initialValue = 2.5f)
+
+    val useBlurEffectsFlow = remember(context) {
+        context.dataStore.data.map { it[booleanPreferencesKey("use_blur_effects")] ?: true }
+    }
+    val useBlurEffects by useBlurEffectsFlow.collectAsStateWithLifecycle(initialValue = true)
+
+    val lyricsScreenBlurEnabledFlow = remember(context) {
+        context.dataStore.data.map { it[booleanPreferencesKey("lyrics_screen_blur_enabled")] ?: true }
+    }
+    val lyricsScreenBlurEnabled by lyricsScreenBlurEnabledFlow.collectAsStateWithLifecycle(initialValue = true)
+
+    val isLyricsBlurActive = useBlurEffects && lyricsScreenBlurEnabled
 
     // Read keep-screen-on preference from DataStore
     val keepScreenOnFlow = remember(context) {
@@ -454,6 +456,7 @@ fun LyricsSheet(
     var immersiveMode by remember { mutableStateOf(false) }
     var lastInteractionTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var showMoreSheet by remember { mutableStateOf(false) }
+    @Suppress("DEPRECATION")
     val moreSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -622,7 +625,6 @@ fun LyricsSheet(
                 scaleY = scale
                 translationY = lerp(0f, size.height * 0.08f, p)
             }
-            .clip(RoundedCornerShape(32.dp))
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = {
@@ -670,15 +672,24 @@ fun LyricsSheet(
                     }
                 )
             },
-        containerColor = containerColor,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = if (isLyricsBlurActive) Color.Transparent else containerColor,
         contentColor = contentColor,
         // Removed TopBar and FAB
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {
+            if (isLyricsBlurActive) {
+                FullPlayerAtmosphereBackground(
+                    currentSong = currentSong,
+                    albumColorScheme = colorScheme,
+                    modifier = Modifier.fillMaxSize(),
+                    showTopVignette = false
+                )
+            }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = paddingValues.calculateTopPadding())
+                    .statusBarsPadding()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -851,31 +862,35 @@ fun LyricsSheet(
                     }
                 }
                 
-                // Top Gradient for fade
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(130.dp)
-                        .align(Alignment.TopCenter)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(containerColor, Color.Transparent)
+                // Top Gradient for fade (solid mode only)
+                if (!isLyricsBlurActive) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(130.dp)
+                            .align(Alignment.TopCenter)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(containerColor, Color.Transparent)
+                                )
                             )
-                        )
-                )
+                    )
+                }
 
-                // Bottom Gradient for fade
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .align(Alignment.BottomCenter)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, containerColor)
+                // Bottom Gradient for fade (solid mode only)
+                if (!isLyricsBlurActive) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .align(Alignment.BottomCenter)
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(Color.Transparent, containerColor)
+                                )
                             )
-                        )
-                )
+                    )
+                }
             }
 
             // Controls Section (Auto-hide in immersive mode)
@@ -887,7 +902,7 @@ fun LyricsSheet(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(containerColor)
+                        .background(if (isLyricsBlurActive) Color.Transparent else containerColor)
                         .padding(bottom = paddingValues.calculateBottomPadding() + 10.dp, end = 16.dp, start = 16.dp)
                         .pointerInput(Unit) {
                             awaitPointerEventScope {

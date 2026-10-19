@@ -345,31 +345,15 @@ class FeedRepository @Inject constructor(
             }
         }.awaitAll()
 
-        val releaseYear = java.time.Year.now().value.toString()
-        val artistReleases = if (artistRanks.isEmpty()) emptyList() else topArtists
-            .filter { it.name.lowercase() in artistRanks }
-            .take(4).map { artist ->
-                async(Dispatchers.IO) {
-                    val page = artist.browseId?.let { id ->
-                        runCatching { innerTube.fetchArtistPage(id, artist.name) }.getOrNull()
-                    }
-                    (page?.albums.orEmpty() + page?.singles.orEmpty())
-                        .filter { it.year == releaseYear && it.browseId.isNotBlank() }
-                        .take(3).map { release ->
-                            YouTubePlaylistSummary(
-                                id = release.browseId,
-                                title = release.title,
-                                author = artist.name,
-                                artworkUrl = release.artworkUrl
-                            )
-                        }
-                }
-            }.awaitAll().flatten()
+        val blockedReleaseIds = runCatching { userPreferencesRepository.blockedReleaseIdsFlow.first() }.getOrDefault(emptySet())
+        val onlineNewReleases = runCatching { innerTube.fetchNewReleases(authenticated = isYtConnected) }.getOrDefault(emptyList())
 
-        val newReleases: List<YouTubePlaylistSummary> = releaseCandidates
-            .ifEmpty { (matchedReleases + artistReleases).distinctBy { it.id } }
-            .ifEmpty { previous?.newReleases.orEmpty() }
-            .take(20)
+        // Pure latest releases: all singles and albums in release order, strictly not based on artists
+        val newReleases: List<YouTubePlaylistSummary> = (releaseCandidates + onlineNewReleases)
+            .distinctBy { it.id }
+            .filter { it.id !in blockedReleaseIds }
+            .ifEmpty { previous?.newReleases.orEmpty().filter { it.id !in blockedReleaseIds } }
+            .take(30)
 
         val discoveryResults = discoverySeeds.zip(discoveryDef.await())
         val discoveryTracks = discoveryResults.flatMap { it.second }.filter(::filterTrack).distinctBy { it.videoId }

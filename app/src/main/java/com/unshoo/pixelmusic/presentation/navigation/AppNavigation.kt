@@ -51,6 +51,7 @@ import com.unshoo.pixelmusic.presentation.screens.LibraryScreen
 import com.unshoo.pixelmusic.presentation.screens.MashupScreen
 import com.unshoo.pixelmusic.presentation.screens.NavBarCornerRadiusScreen
 import com.unshoo.pixelmusic.presentation.screens.PaletteStyleSettingsScreen
+import com.unshoo.pixelmusic.presentation.screens.BlurSettingsScreen
 import com.unshoo.pixelmusic.presentation.screens.PlaylistDetailScreen
 import com.unshoo.pixelmusic.presentation.screens.FeedPlaylistDetailScreen
 import com.unshoo.pixelmusic.presentation.screens.RecentlyPlayedScreen
@@ -289,6 +290,20 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     PaletteStyleSettingsScreen(
+                        playerViewModel = playerViewModel,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+            }
+            composable(
+                Screen.BlurSettings.route,
+                enterTransition = { enterTransition() },
+                exitTransition = { exitTransition() },
+                popEnterTransition = { settingsPopEnterTransition() },
+                popExitTransition = { settingsPopExitTransition() },
+            ) {
+                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
+                    BlurSettingsScreen(
                         playerViewModel = playerViewModel,
                         onBackClick = { navController.popBackStack() }
                     )

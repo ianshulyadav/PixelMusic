@@ -79,6 +79,7 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -861,6 +862,13 @@ fun SettingsCategoryScreen(
                                     onCheckedChange = settingsViewModel::setUseSmoothCorners,
                                     leadingIcon = { Icon(painterResource(R.drawable.rounded_rounded_corner_24), null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
+                                SettingsItem(
+                                    title = stringResource(R.string.blur_settings_title),
+                                    subtitle = stringResource(R.string.blur_settings_desc),
+                                    leadingIcon = { Icon(Icons.Outlined.BlurOn, null, tint = MaterialTheme.colorScheme.secondary) },
+                                    trailingIcon = { Icon(Icons.Rounded.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    onClick = { navController.navigateSafely(Screen.BlurSettings.route) }
+                                )
                             }
 
                             SettingsSubsection(title = stringResource(R.string.setcat_now_playing)) {
@@ -875,17 +883,6 @@ fun SettingsCategoryScreen(
                                     selectedKey = uiState.playerThemePreference,
                                     onSelectionChanged = { settingsViewModel.setPlayerThemePreference(it) },
                                     leadingIcon = { Icon(Icons.Outlined.PlayCircle, null, tint = MaterialTheme.colorScheme.secondary) }
-                                )
-                                ThemeSelectorItem(
-                                    label = stringResource(R.string.setcat_player_background_style_label),
-                                    description = stringResource(R.string.setcat_player_background_style_desc),
-                                    options = mapOf(
-                                        PlayerBackgroundStyle.GRADIENT to stringResource(R.string.setcat_player_background_style_gradient),
-                                        PlayerBackgroundStyle.SOLID to stringResource(R.string.setcat_player_background_style_solid)
-                                    ),
-                                    selectedKey = uiState.playerBackgroundStyle,
-                                    onSelectionChanged = { settingsViewModel.setPlayerBackgroundStyle(it) },
-                                    leadingIcon = { Icon(Icons.Outlined.AutoAwesome, null, tint = MaterialTheme.colorScheme.secondary) }
                                 )
                                 SwitchSettingItem(
                                     title = stringResource(R.string.setcat_show_player_file_info_title),

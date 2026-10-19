@@ -57,7 +57,8 @@ fun FullPlayerAtmosphereBackground(
     albumColorScheme: ColorScheme,
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean = LocalPixelMusicDarkTheme.current,
-    expansionFractionProvider: (() -> Float)? = null
+    expansionFractionProvider: (() -> Float)? = null,
+    showTopVignette: Boolean = true
 ) {
     val context = LocalContext.current
     val albumArtUri = currentSong?.albumArtUriString
@@ -171,13 +172,15 @@ fun FullPlayerAtmosphereBackground(
                             )
 
                             // Top subtle vignette for header contrast in full player only
-                            drawRect(
-                                brush = Brush.verticalGradient(
-                                    0.0f to Color.Black.copy(alpha = 0.18f * fullPlayerAlpha),
-                                    0.35f to Color.Transparent,
-                                    1.0f to Color.Transparent
+                            if (showTopVignette) {
+                                drawRect(
+                                    brush = Brush.verticalGradient(
+                                        0.0f to Color.Black.copy(alpha = 0.18f * fullPlayerAlpha),
+                                        0.35f to Color.Transparent,
+                                        1.0f to Color.Transparent
+                                    )
                                 )
-                            )
+                            }
                         }
 
                         if (scrimAlpha > 0f) {

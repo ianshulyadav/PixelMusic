@@ -56,8 +56,22 @@ class FeedViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(FeedUiState())
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
+    val blockedReleaseIds = userPreferencesRepository.blockedReleaseIdsFlow
     private var feedJob: Job? = null
     private var lastLoadedMillis: Long = 0L
+
+    fun blockRelease(id: String) {
+        viewModelScope.launch {
+            userPreferencesRepository.blockRelease(id, true)
+            _uiState.update { current ->
+                current.copy(
+                    feedData = current.feedData.copy(
+                        newReleases = current.feedData.newReleases.filter { it.id != id }
+                    )
+                )
+            }
+        }
+    }
 
     init {
         viewModelScope.launch {

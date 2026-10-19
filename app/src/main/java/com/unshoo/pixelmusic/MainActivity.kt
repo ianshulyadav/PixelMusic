@@ -73,6 +73,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -214,6 +215,7 @@ class MainActivity : ComponentActivity() {
             )
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isStatusBarContrastEnforced = false
             window.isNavigationBarContrastEnforced = false
         }
         super.onCreate(savedInstanceState)
@@ -742,6 +744,7 @@ class MainActivity : ComponentActivity() {
                 Screen.SettingsCategory.route,
                 Screen.DelimiterConfig.route,
                 Screen.PaletteStyle.route,
+                Screen.BlurSettings.route,
                 Screen.RecentlyPlayed.route,
                 Screen.DeviceCapabilities.route,
                 Screen.EasterEgg.route,
@@ -774,6 +777,9 @@ class MainActivity : ComponentActivity() {
         val navBarCornerRadius = sanitizeNavBarCornerRadius(navBarCornerRadiusRaw)
         val isMiniPlayerDismissing by playerViewModel.isMiniPlayerDismissing.collectAsStateWithLifecycle()
         val hapticsEnabled by playerViewModel.hapticsEnabled.collectAsStateWithLifecycle()
+        val useBlurEffects by playerViewModel.useBlurEffects.collectAsStateWithLifecycle(initialValue = true)
+        val playerExpansionBlurEnabled by playerViewModel.playerExpansionBlurEnabled.collectAsStateWithLifecycle(initialValue = true)
+        val isPlayerExpansionBlurActive = useBlurEffects && playerExpansionBlurEnabled
         val rootView = LocalView.current
         // Jank diagnostics: JankStats (wired up in onResume, below) already flags dropped
         // frames but had no way to say *where* — every log line just said "frame drop
@@ -1124,14 +1130,32 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        AppNavigation(
-                            playerViewModel = playerViewModel,
-                            navController = navController,
-                            paddingValues = innerPadding,
-                            userPreferencesRepository = userPreferencesRepository,
-                            onSearchBarActiveChange = { isSearchBarActive = it },
-                            onOpenSidebar = { scope.launch { drawerState.open() } }
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isPlayerExpansionBlurActive) {
+                                        val frac = playerViewModel.playerContentExpansionFraction.value
+                                        val radiusPx = (frac * 24.dp.toPx()).coerceAtLeast(0f)
+                                        renderEffect = if (radiusPx > 1f) {
+                                            android.graphics.RenderEffect.createBlurEffect(
+                                                radiusPx,
+                                                radiusPx,
+                                                android.graphics.Shader.TileMode.CLAMP
+                                            ).asComposeRenderEffect()
+                                        } else null
+                                    }
+                                }
+                        ) {
+                            AppNavigation(
+                                playerViewModel = playerViewModel,
+                                navController = navController,
+                                paddingValues = innerPadding,
+                                userPreferencesRepository = userPreferencesRepository,
+                                onSearchBarActiveChange = { isSearchBarActive = it },
+                                onOpenSidebar = { scope.launch { drawerState.open() } }
+                            )
+                        }
 
                         // BUGFIX (recompose storm — read .value off a StateFlow):
                         // `derivedStateOf { someFlow.value > x }` is a known
