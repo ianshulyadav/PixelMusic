@@ -101,4 +101,36 @@ object ContentFilterUtils {
 
     fun isCoverOrLofi(track: GeneratedTrack, filterKeywords: Collection<String>? = null): Boolean =
         isCoverOrLofi(track.name, track.artist, track.album, filterKeywords)
+
+    /**
+     * Checks whether a track's metadata contains any of the user's custom filter keywords.
+     * Case-insensitive match on title, artist, or album.
+     */
+    fun matchesFilterKeywords(
+        title: String?,
+        artist: String?,
+        album: String? = null,
+        filterKeywords: Collection<String>? = null
+    ): Boolean {
+        val keywords = filterKeywords ?: return false
+        if (keywords.isEmpty()) return false
+        val t = title.orEmpty().lowercase()
+        val a = artist.orEmpty().lowercase()
+        val al = album.orEmpty().lowercase()
+
+        for (keyword in keywords) {
+            val kw = keyword.trim().lowercase()
+            if (kw.isEmpty()) continue
+            if (t.contains(kw) || a.contains(kw) || al.contains(kw)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    fun matchesFilterKeywords(song: Song, filterKeywords: Collection<String>?): Boolean =
+        matchesFilterKeywords(song.title, song.artist, song.album, filterKeywords)
+
+    fun matchesFilterKeywords(track: YouTubeMusicTrack, filterKeywords: Collection<String>?): Boolean =
+        matchesFilterKeywords(track.title, track.artist, track.album, filterKeywords)
 }

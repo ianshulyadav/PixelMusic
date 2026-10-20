@@ -39,6 +39,8 @@ sealed interface FeedPlaylistDetailUiState {
         val chartsPage: unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage? = null,
         val newReleaseAlbums: List<unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem> = emptyList(),
         val selectedCountryCode: String = "IN",
+        val albumArtQuality: com.unshoo.pixelmusic.data.preferences.AlbumArtQuality = com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL,
+        val filterKeywords: List<String> = emptyList(),
     ) : FeedPlaylistDetailUiState
 
     data class Error(val message: String) : FeedPlaylistDetailUiState
@@ -56,6 +58,21 @@ class FeedPlaylistDetailViewModel @Inject constructor(
     private var currentPlaylistId: String? = null
     private var loadJob: Job? = null
     private var selectedChartsCountry: String = "IN"
+
+    init {
+        viewModelScope.launch {
+            userPreferencesRepository.albumArtQualityFlow.collect { quality ->
+                val current = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return@collect
+                _uiState.value = current.copy(albumArtQuality = quality)
+            }
+        }
+        viewModelScope.launch {
+            userPreferencesRepository.filterKeywordsFlow.collect { keywords ->
+                val current = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return@collect
+                _uiState.value = current.copy(filterKeywords = keywords)
+            }
+        }
+    }
 
     fun blockRelease(id: String) {
         viewModelScope.launch {
@@ -112,8 +129,9 @@ class FeedPlaylistDetailViewModel @Inject constructor(
             val blockedReleaseIds = runCatching { userPreferencesRepository.blockedReleaseIdsFlow.first() }.getOrDefault(emptySet())
             fun filterTrack(t: YouTubeMusicTrack): Boolean =
                 (!pureYtMusic || !t.isVideo) &&
-                (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords)) &&
-                (t.videoId !in blockedReleaseIds)
+                (t.videoId !in blockedReleaseIds) &&
+                !ContentFilterUtils.matchesFilterKeywords(t, filterKeywords) &&
+                (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
 
             fun showTracks(tracks: List<YouTubeMusicTrack>, customArt: String? = null) {
                 coroutineContext.ensureActive()
@@ -131,6 +149,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         tracks = filtered
                     ),
                     isLoadingMore = true,
+                    filterKeywords = filterKeywords
                 )
             }
 
@@ -249,8 +268,12 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                                 unshoo.ianshulyadav.pixelmusic.innertube.YouTube.newReleaseAlbums().getOrNull().orEmpty()
                             }.getOrDefault(emptyList())
                         }
-                        fetchedNewReleaseAlbums = ytAlbums
-                        val ytNewReleases = ytAlbums.map { album ->
+                        val cleanYtAlbums = ytAlbums.filter { album ->
+                            album.browseId !in blockedReleaseIds &&
+                            !ContentFilterUtils.matchesFilterKeywords(album.title, album.artists?.firstOrNull()?.name, null, filterKeywords)
+                        }
+                        fetchedNewReleaseAlbums = cleanYtAlbums
+                        val ytNewReleases = cleanYtAlbums.map { album ->
                             com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary(
                                 id = album.browseId,
                                 title = album.title,
@@ -260,7 +283,10 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         }
                         albumCandidates.addAll(ytNewReleases)
 
-                        val targetAlbums = albumCandidates.distinctBy { it.id }.filter { it.id !in blockedReleaseIds }.take(16)
+                        val targetAlbums = albumCandidates.distinctBy { it.id }.filter {
+                            it.id !in blockedReleaseIds &&
+                            !ContentFilterUtils.matchesFilterKeywords(it.title, it.author, null, filterKeywords)
+                        }.take(16)
                         if (coverArt == null) {
                             coverArt = targetAlbums.firstOrNull()?.artworkUrl
                         }
@@ -317,7 +343,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                     isCharts -> {
                         val chartsPage = withContext(Dispatchers.IO) {
                             runCatching {
-                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(selectedChartsCountry).getOrNull()
+                                unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(selectedChartsCountry.takeIf { it != "GLOBAL" }).getOrNull()
                             }.getOrNull()
                         }
                         fetchedChartsPage = chartsPage
@@ -441,7 +467,9 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                     ),
                     chartsPage = fetchedChartsPage,
                     newReleaseAlbums = fetchedNewReleaseAlbums,
-                    selectedCountryCode = selectedChartsCountry
+                    selectedCountryCode = selectedChartsCountry,
+                    albumArtQuality = userPreferencesRepository.albumArtQualityFlow.first(),
+                    filterKeywords = filterKeywords
                 )
             } catch (error: CancellationException) {
                 throw error
@@ -461,7 +489,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
             _uiState.value = current.copy(selectedCountryCode = countryCode, isLoadingMore = true)
             val chartsPage = withContext(Dispatchers.IO) {
                 runCatching {
-                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(countryCode).getOrNull()
+                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(countryCode.takeIf { it != "GLOBAL" }).getOrNull()
                 }.getOrNull()
             }
             val trendingSongs = chartsPage?.sections

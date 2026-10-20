@@ -4,17 +4,41 @@ import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.model.ArtistRef
 import unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem
 
-fun upgradeThumbnailUrlToHighQuality(url: String?): String? {
+fun upgradeThumbnailUrlToQuality(
+    url: String?,
+    quality: com.unshoo.pixelmusic.data.preferences.AlbumArtQuality = com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL
+): String? {
     if (url.isNullOrBlank()) return url
+
+    val sizeParam = when (quality) {
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.LOW -> "=w256-h256-l90-rj"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.MEDIUM -> "=w512-h512-l90-rj"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.HIGH -> "=w800-h800-l90-rj"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL -> "=w1024-h1024-l90-rj"
+    }
+
+    val sParam = when (quality) {
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.LOW -> "=s256"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.MEDIUM -> "=s512"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.HIGH -> "=s800"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL -> "=s1024"
+    }
+
+    val ytQuality = when (quality) {
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.LOW -> "mqdefault.jpg"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.MEDIUM -> "hqdefault.jpg"
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.HIGH,
+        com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL -> "maxresdefault.jpg"
+    }
 
     return when {
         url.contains("googleusercontent.com") || url.contains("ggpht.com") -> {
-            url.replace(Regex("=w\\d+-h\\d+.*"), "=w1024-h1024-l90-rj")
-                .replace(Regex("=s\\d+.*"), "=s1024")
+            url.replace(Regex("=w\\d+-h\\d+.*"), sizeParam)
+                .replace(Regex("=s\\d+.*"), sParam)
                 .let {
                     if (!it.contains("=w") && !it.contains("=s")) {
-                        if (it.contains("=")) it.substringBeforeLast("=") + "=w1024-h1024-l90-rj"
-                        else "$it=w1024-h1024-l90-rj"
+                        if (it.contains("=")) it.substringBeforeLast("=") + sizeParam
+                        else "$it$sizeParam"
                     } else it
                 }
         }
@@ -22,7 +46,7 @@ fun upgradeThumbnailUrlToHighQuality(url: String?): String? {
             val match = Regex("/vi(?:_webp)?/([^/]+)/").find(url)
             if (match != null) {
                 val videoId = match.groupValues[1]
-                "https://i.ytimg.com/vi/$videoId/hqdefault.jpg"
+                "https://i.ytimg.com/vi/$videoId/$ytQuality"
             } else {
                 url.substringBefore("?")
             }
@@ -30,6 +54,10 @@ fun upgradeThumbnailUrlToHighQuality(url: String?): String? {
         else -> url
     }
 }
+
+fun upgradeThumbnailUrlToHighQuality(url: String?): String? =
+    upgradeThumbnailUrlToQuality(url, com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL)
+
 
 fun SongItem.toYoutubeSong(): com.unshoo.pixelmusic.data.model.youtube.Song {
     val artistName = artists.joinToString { it.name }

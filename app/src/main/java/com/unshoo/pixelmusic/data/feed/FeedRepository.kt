@@ -54,9 +54,16 @@ class FeedRepository @Inject constructor(
         val filterCoverAndLofi = runCatching { userPreferencesRepository.filterCoverAndLofiFlow.first() }.getOrDefault(true)
         val filterKeywords = runCatching { userPreferencesRepository.filterKeywordsFlow.first() }.getOrDefault(ContentFilterUtils.DEFAULT_FILTER_KEYWORDS)
         fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !t.isVideo
-        fun filterTrack(t: YouTubeMusicTrack): Boolean = filterVideoTrack(t) && (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
-        fun filterRecent(t: RecentTrack): Boolean = !filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords)
-        fun filterGenerated(t: GeneratedTrack): Boolean = !filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords)
+        fun filterTrack(t: YouTubeMusicTrack): Boolean =
+            filterVideoTrack(t) &&
+            !ContentFilterUtils.matchesFilterKeywords(t, filterKeywords) &&
+            (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
+        fun filterRecent(t: RecentTrack): Boolean =
+            !ContentFilterUtils.matchesFilterKeywords(t.name, t.artist.displayName, t.album.displayName, filterKeywords) &&
+            (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
+        fun filterGenerated(t: GeneratedTrack): Boolean =
+            !ContentFilterUtils.matchesFilterKeywords(t.name, t.artist, t.album, filterKeywords) &&
+            (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
 
         val homeDef = async(Dispatchers.IO) {
             runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.home().getOrNull() }.getOrNull()
@@ -81,7 +88,7 @@ class FeedRepository @Inject constructor(
         val home = homeDef.await()
         val sections = home?.sections.orEmpty()
 
-        val releaseCandidates = sections.filter { s ->
+        val releaseSections = sections.filter { s ->
             val t = s.title.lowercase()
             !t.contains("video") && !t.contains("videos") && (
                 t.contains("released") ||
@@ -92,7 +99,21 @@ class FeedRepository @Inject constructor(
                 t.contains("veröffentlichungen") || t.contains("release radar") ||
                 t.contains("new for you") || t.contains("fresh")
             )
-        }.flatMap { it.items }.mapNotNull { item ->
+        }
+
+        val newReleaseSongTracks = releaseSections.flatMap { it.items }
+            .filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
+            .map { song ->
+                YouTubeMusicTrack(
+                    videoId = song.id,
+                    title = song.title,
+                    artist = song.artists.firstOrNull()?.name ?: "Unknown artist",
+                    album = song.album?.name,
+                    artworkUrl = song.thumbnail
+                )
+            }.filter(::filterTrack)
+
+        val releaseCandidates = releaseSections.flatMap { it.items }.mapNotNull { item ->
             when (item) {
                 is unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem -> YouTubePlaylistSummary(
                     id = item.browseId,
@@ -108,6 +129,8 @@ class FeedRepository @Inject constructor(
                 )
                 else -> null
             }
+        }.filterNot {
+            ContentFilterUtils.matchesFilterKeywords(it.title, it.author, null, filterKeywords)
         }.distinctBy { it.id }
 
         val onlineCharts = chartsDef.await().filter(::filterTrack)
@@ -358,7 +381,7 @@ class FeedRepository @Inject constructor(
         val discoveryResults = discoverySeeds.zip(discoveryDef.await())
         val discoveryTracks = discoveryResults.flatMap { it.second }.filter(::filterTrack).distinctBy { it.videoId }
         val familiarIds = (ytLikedSongs + ytRecentSongs + regularPicks).mapTo(mutableSetOf()) { it.videoId }
-        val freshPool = (discoveryTracks + charts + homeSongs + ytQuickPicks)
+        val freshPool = (discoveryTracks + charts + homeSongs + ytQuickPicks + newReleaseSongTracks)
             .filter { it.videoId.isNotBlank() && it.videoId !in familiarIds && filterTrack(it) }
             .distinctBy { it.videoId }.shuffled(random)
         val previousFreshIds = previous?.freshFinds.orEmpty().mapTo(mutableSetOf()) { it.videoId }
@@ -369,7 +392,7 @@ class FeedRepository @Inject constructor(
             ),
             YouTubeMusicTrack::artist,
             maxPerArtist = 1,
-        ).take(12)
+        ).take(20)
 
         val previousMixIds = previous?.mixes.orEmpty().mapTo(mutableSetOf()) { it.seed.videoId }
         val mixes = (quickPicks + ytLikedSongs + discoveryTracks)

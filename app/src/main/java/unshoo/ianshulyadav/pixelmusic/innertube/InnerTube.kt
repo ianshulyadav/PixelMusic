@@ -454,6 +454,7 @@ class InnerTube {
         browseId: String? = null,
         params: String? = null,
         continuation: String? = null,
+        formData: BrowseBody.FormData? = null,
         setLogin: Boolean = false,
         forceAnonymous: Boolean = false,
     ) = withRetry {
@@ -469,7 +470,8 @@ class InnerTube {
                     ),
                     browseId = browseId,
                     params = params,
-                    continuation = continuation
+                    continuation = continuation,
+                    formData = formData
                 )
             )
         }

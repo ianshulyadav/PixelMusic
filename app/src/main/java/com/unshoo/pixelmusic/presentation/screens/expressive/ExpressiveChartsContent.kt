@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -63,10 +64,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.unshoo.pixelmusic.data.preferences.AlbumArtQuality
 import com.unshoo.pixelmusic.data.feed.YouTubePlaylistResult
 import com.unshoo.pixelmusic.data.feed.toSong
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
+import com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToQuality
 import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.bounceClick
@@ -89,11 +92,12 @@ val chartCountries = listOf(
     ChartCountry("US", "United States"),
     ChartCountry("GB", "United Kingdom"),
     ChartCountry("JP", "Japan"),
-    ChartCountry("BR", "Brazil"),
-    ChartCountry("DE", "Germany"),
-    ChartCountry("CA", "Canada"),
     ChartCountry("KR", "South Korea"),
-    ChartCountry("ES", "Spain")
+    ChartCountry("DE", "Germany"),
+    ChartCountry("FR", "France"),
+    ChartCountry("BR", "Brazil"),
+    ChartCountry("CA", "Canada"),
+    ChartCountry("AU", "Australia")
 )
 
 enum class ChartsFilterTab(val title: String, val icon: String? = null) {
@@ -111,6 +115,7 @@ fun ExpressiveChartsContent(
     playerViewModel: PlayerViewModel,
     navController: NavController,
     onBackClick: () -> Unit,
+    albumArtQuality: AlbumArtQuality = AlbumArtQuality.ORIGINAL,
     modifier: Modifier = Modifier
 ) {
     val isDark = LocalPixelMusicDarkTheme.current
@@ -306,6 +311,89 @@ fun ExpressiveChartsContent(
             }
         }
 
+        // Play & Shuffle Action Row
+        item(key = "charts_action_row") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Play Button
+                Surface(
+                    onClick = {
+                        if (allSongs.isNotEmpty()) {
+                            playerViewModel.playSongs(allSongs, allSongs.first(), queueName = "Charts ($currentCountryName)")
+                        }
+                    },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.bounceClick(scaleDown = 0.95f) {
+                        if (allSongs.isNotEmpty()) {
+                            playerViewModel.playSongs(allSongs, allSongs.first(), queueName = "Charts ($currentCountryName)")
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayArrow,
+                            contentDescription = "Play",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Play",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+
+                // Shuffle Button
+                Surface(
+                    onClick = {
+                        if (allSongs.isNotEmpty()) {
+                            playerViewModel.playSongsShuffled(allSongs, queueName = "Charts ($currentCountryName)")
+                        }
+                    },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.bounceClick(scaleDown = 0.95f) {
+                        if (allSongs.isNotEmpty()) {
+                            playerViewModel.playSongsShuffled(allSongs, queueName = "Charts ($currentCountryName)")
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Shuffle,
+                            contentDescription = "Shuffle",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = "Shuffle",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+
         // 2. Segmented Pill Filter: Canciones | Álbumes | Artistas (Screenshot 1)
         item(key = "charts_filter_pills") {
             Row(
@@ -476,7 +564,7 @@ fun ExpressiveChartsContent(
                                         .border(2.dp, Color.White.copy(alpha = 0.15f), CircleShape)
                                 ) {
                                     SmartImage(
-                                        model = artwork,
+                                        model = upgradeThumbnailUrlToQuality(artwork, albumArtQuality),
                                         contentDescription = title,
                                         shape = CircleShape,
                                         modifier = Modifier.fillMaxSize()
@@ -572,7 +660,7 @@ fun ExpressiveChartsContent(
                                     .clip(RoundedCornerShape(10.dp))
                             ) {
                                 SmartImage(
-                                    model = song.albumArtUriString,
+                                    model = upgradeThumbnailUrlToQuality(song.albumArtUriString, albumArtQuality),
                                     contentDescription = song.title,
                                     shape = RoundedCornerShape(10.dp),
                                     modifier = Modifier.fillMaxSize()
@@ -680,7 +768,7 @@ fun ExpressiveChartsContent(
                                             .clip(RoundedCornerShape(12.dp))
                                     ) {
                                         SmartImage(
-                                            model = videoChart.thumbnail,
+                                            model = upgradeThumbnailUrlToQuality(videoChart.thumbnail, albumArtQuality),
                                             contentDescription = videoChart.title,
                                             shape = RoundedCornerShape(12.dp),
                                             modifier = Modifier.fillMaxSize()
@@ -799,7 +887,7 @@ fun ExpressiveChartsContent(
                                             .border(2.dp, Color.White.copy(alpha = 0.12f), CircleShape)
                                     ) {
                                         SmartImage(
-                                            model = artist.thumbnail,
+                                            model = upgradeThumbnailUrlToQuality(artist.thumbnail, albumArtQuality),
                                             contentDescription = artist.title,
                                             shape = CircleShape,
                                             modifier = Modifier.fillMaxSize()

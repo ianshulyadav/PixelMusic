@@ -24,13 +24,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,10 +50,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.unshoo.pixelmusic.data.feed.YouTubePlaylistResult
 import com.unshoo.pixelmusic.data.feed.toSong
 import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.data.preferences.AlbumArtQuality
+import com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToQuality
+import com.unshoo.pixelmusic.utils.ContentFilterUtils
 import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.bounceClick
@@ -79,7 +83,6 @@ private data class AlbumCardItem(
     val artwork: String?
 )
 
-
 @Composable
 fun ExpressiveNewReleasesContent(
     playlist: YouTubePlaylistResult,
@@ -87,6 +90,8 @@ fun ExpressiveNewReleasesContent(
     playerViewModel: PlayerViewModel,
     navController: NavController,
     onBackClick: () -> Unit,
+    albumArtQuality: AlbumArtQuality = AlbumArtQuality.ORIGINAL,
+    filterKeywords: List<String> = emptyList(),
     modifier: Modifier = Modifier
 ) {
     val isDark = LocalPixelMusicDarkTheme.current
@@ -96,26 +101,37 @@ fun ExpressiveNewReleasesContent(
     val navBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val bottomContentPadding = navBarInset + MiniPlayerHeight + 24.dp
 
-    val songs: List<Song> = remember(playlist.tracks) {
-        playlist.tracks.map { it.toSong() }
+    val songs: List<Song> = remember(playlist.tracks, filterKeywords) {
+        playlist.tracks
+            .filterNot { ContentFilterUtils.matchesFilterKeywords(it.title, it.artist, it.album, filterKeywords) }
+            .map { it.toSong() }
     }
 
-    // Hero items for the 2 large top cards (Screenshot 2)
-    val heroItems = remember(songs, newReleaseAlbums) {
+    val filteredAlbums: List<AlbumItem> = remember(newReleaseAlbums, filterKeywords) {
+        newReleaseAlbums.filterNot {
+            ContentFilterUtils.matchesFilterKeywords(it.title, it.artists?.firstOrNull()?.name, null, filterKeywords)
+        }
+    }
+
+    // Hero items for the 2 large top cards
+    val heroItems = remember(songs, filteredAlbums, albumArtQuality) {
         if (songs.size >= 2) {
             listOf(
-                Triple(songs[0].title, songs[0].artist, songs[0].albumArtUriString),
-                Triple(songs[1].title, "Mix • YouTube Music", songs[1].albumArtUriString)
+                Triple(songs[0].title, songs[0].artist, upgradeThumbnailUrlToQuality(songs[0].albumArtUriString, albumArtQuality)),
+                Triple(songs[1].title, "Mix • YouTube Music", upgradeThumbnailUrlToQuality(songs[1].albumArtUriString, albumArtQuality))
             )
-        } else if (newReleaseAlbums.size >= 2) {
+        } else if (filteredAlbums.size >= 2) {
             listOf(
-                Triple(newReleaseAlbums[0].title, newReleaseAlbums[0].artists?.firstOrNull()?.name ?: "Artist", newReleaseAlbums[0].thumbnail),
-                Triple(newReleaseAlbums[1].title, "Mix • YouTube Music", newReleaseAlbums[1].thumbnail)
+                Triple(filteredAlbums[0].title, filteredAlbums[0].artists?.firstOrNull()?.name ?: "Artist", upgradeThumbnailUrlToQuality(filteredAlbums[0].thumbnail, albumArtQuality)),
+                Triple(filteredAlbums[1].title, "Mix • YouTube Music", upgradeThumbnailUrlToQuality(filteredAlbums[1].thumbnail, albumArtQuality))
             )
         } else {
             emptyList()
         }
     }
+
+    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
+    val currentPlayingId = stablePlayerState.currentSong?.id
 
     LazyColumn(
         modifier = modifier
@@ -125,7 +141,7 @@ fun ExpressiveNewReleasesContent(
             top = statusBarInset + 8.dp,
             bottom = bottomContentPadding
         ),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         // 1. Top Bar with back arrow and "New releases" title
         item(key = "new_releases_top_bar") {
@@ -158,7 +174,108 @@ fun ExpressiveNewReleasesContent(
             }
         }
 
-        // 2. Hero Featured Releases (2 large portrait cards side by side - Screenshot 2)
+        // 2. Play & Shuffle Action Row
+        item(key = "new_releases_action_row") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Play Button
+                Surface(
+                    onClick = {
+                        if (songs.isNotEmpty()) {
+                            playerViewModel.playSongs(songs, songs.first(), queueName = "New releases")
+                        }
+                    },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.bounceClick(scaleDown = 0.95f) {
+                        if (songs.isNotEmpty()) {
+                            playerViewModel.playSongs(songs, songs.first(), queueName = "New releases")
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.PlayArrow,
+                            contentDescription = "Play",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text(
+                            text = "Play",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+
+                // Shuffle Button
+                Surface(
+                    onClick = {
+                        if (songs.isNotEmpty()) {
+                            playerViewModel.playSongsShuffled(songs, queueName = "New releases")
+                        }
+                    },
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.bounceClick(scaleDown = 0.95f) {
+                        if (songs.isNotEmpty()) {
+                            playerViewModel.playSongsShuffled(songs, queueName = "New releases")
+                        }
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Shuffle,
+                            contentDescription = "Shuffle",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = "Shuffle",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                if (songs.isNotEmpty()) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow
+                    ) {
+                        Text(
+                            text = "${songs.size} tracks",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 3. Hero Featured Releases (2 large portrait cards side by side)
         if (heroItems.isNotEmpty()) {
             item(key = "new_releases_hero_cards") {
                 Row(
@@ -183,7 +300,6 @@ fun ExpressiveNewReleasesContent(
                             shadowElevation = 0.dp
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                // Full-bleed background image
                                 SmartImage(
                                     model = artwork,
                                     contentDescription = title,
@@ -191,7 +307,6 @@ fun ExpressiveNewReleasesContent(
                                     modifier = Modifier.fillMaxSize()
                                 )
 
-                                // Dark gradient scrim for text legibility
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
@@ -207,7 +322,6 @@ fun ExpressiveNewReleasesContent(
                                         )
                                 )
 
-                                // Optional RELEASED pill badge on first card
                                 if (index == 0) {
                                     Box(
                                         modifier = Modifier
@@ -228,7 +342,6 @@ fun ExpressiveNewReleasesContent(
                                     }
                                 }
 
-                                // Bottom Titles
                                 Column(
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
@@ -261,7 +374,7 @@ fun ExpressiveNewReleasesContent(
             }
         }
 
-        // 3. Filter Pills: All | Albums | Singles | Mixes
+        // 4. Filter Pills: All | Albums | Singles | Mixes
         item(key = "new_releases_filter_pills") {
             Row(
                 modifier = Modifier
@@ -310,9 +423,8 @@ fun ExpressiveNewReleasesContent(
             }
         }
 
-        // 4. Content based on selectedFilter: All | Albums | Singles | Mixes
+        // 5. Content based on selectedFilter: All | Albums | Singles | Mixes
         if (selectedFilter == NewReleasesFilter.ALL || selectedFilter == NewReleasesFilter.ALBUMS) {
-            // "Albums & singles" Section (Screenshot 2 Middle)
             item(key = "new_releases_albums_section") {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -333,40 +445,65 @@ fun ExpressiveNewReleasesContent(
                             color = MaterialTheme.colorScheme.onSurface
                         )
 
-                        // Trailing circular arrow button
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                .clickable {
-                                    if (songs.isNotEmpty()) {
-                                        playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                                contentDescription = "View all",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(16.dp)
-                            )
+                            // Shuffle Button
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                    .clickable {
+                                        if (songs.isNotEmpty()) {
+                                            playerViewModel.playSongsShuffled(songs, queueName = "Albums & singles")
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Shuffle,
+                                    contentDescription = "Shuffle all albums & singles",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(17.dp)
+                                )
+                            }
+
+                            // Play All Button
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                    .clickable {
+                                        if (songs.isNotEmpty()) {
+                                            playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    contentDescription = "Play all albums & singles",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
 
-                    // Horizontal row of square album art cards
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        val albumCards: List<AlbumCardItem> = if (newReleaseAlbums.isNotEmpty()) {
-                            newReleaseAlbums.map {
+                        val albumCards: List<AlbumCardItem> = if (filteredAlbums.isNotEmpty()) {
+                            filteredAlbums.map {
                                 AlbumCardItem(
                                     id = it.browseId,
                                     title = it.title,
                                     artist = it.artists?.firstOrNull()?.name ?: "Artist",
-                                    artwork = it.thumbnail
+                                    artwork = upgradeThumbnailUrlToQuality(it.thumbnail, albumArtQuality)
                                 )
                             }
                         } else {
@@ -375,7 +512,7 @@ fun ExpressiveNewReleasesContent(
                                     id = it.id,
                                     title = it.title,
                                     artist = it.artist,
-                                    artwork = it.albumArtUriString
+                                    artwork = upgradeThumbnailUrlToQuality(it.albumArtUriString, albumArtQuality)
                                 )
                             }
                         }
@@ -396,7 +533,6 @@ fun ExpressiveNewReleasesContent(
                                     },
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                // Square artwork with rounded corners
                                 val albumShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
                                 Box(
                                     modifier = Modifier
@@ -438,7 +574,7 @@ fun ExpressiveNewReleasesContent(
             }
         }
 
-        // 5. "More to explore" Section (Screenshot 2 & 3 - ALL popular new releases)
+        // 6. "More to explore" Section
         if (selectedFilter == NewReleasesFilter.ALL || selectedFilter == NewReleasesFilter.SINGLES || selectedFilter == NewReleasesFilter.MIXES) {
             item(key = "new_releases_more_to_explore_section") {
                 val exploreTracks = remember(songs, selectedFilter) {
@@ -471,6 +607,13 @@ fun ExpressiveNewReleasesContent(
 
                     exploreTracks.forEach { song ->
                         val pillShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
+                        val isCurrentPlaying = currentPlayingId == song.id
+                        val itemBgColor = if (isCurrentPlaying) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.40f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerLow
+                        }
+
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -479,7 +622,7 @@ fun ExpressiveNewReleasesContent(
                                     playerViewModel.playSongs(songs, song, queueName = "More to explore")
                                 },
                             shape = pillShape,
-                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            color = itemBgColor,
                             shadowElevation = 0.dp
                         ) {
                             Row(
@@ -488,14 +631,13 @@ fun ExpressiveNewReleasesContent(
                                     .padding(horizontal = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                // Artwork square
                                 Box(
                                     modifier = Modifier
                                         .size(46.dp)
                                         .clip(RoundedCornerShape(12.dp))
                                 ) {
                                     SmartImage(
-                                        model = song.albumArtUriString,
+                                        model = upgradeThumbnailUrlToQuality(song.albumArtUriString, albumArtQuality),
                                         contentDescription = song.title,
                                         shape = RoundedCornerShape(12.dp),
                                         modifier = Modifier.fillMaxSize()
@@ -504,7 +646,6 @@ fun ExpressiveNewReleasesContent(
 
                                 Spacer(modifier = Modifier.width(14.dp))
 
-                                // Song title & artist
                                 Column(
                                     modifier = Modifier.weight(1f),
                                     verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -514,7 +655,7 @@ fun ExpressiveNewReleasesContent(
                                         fontFamily = GoogleSansRounded,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 14.5.sp,
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                        color = if (isCurrentPlaying) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -529,7 +670,6 @@ fun ExpressiveNewReleasesContent(
                                     )
                                 }
 
-                                // Trailing Play Icon (Screenshot 2 & 3 Purple Play Icon)
                                 IconButton(
                                     onClick = {
                                         playerViewModel.playSongs(songs, song, queueName = "More to explore")

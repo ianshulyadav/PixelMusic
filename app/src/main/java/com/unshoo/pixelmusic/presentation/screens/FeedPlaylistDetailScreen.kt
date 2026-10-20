@@ -150,7 +150,8 @@ fun FeedPlaylistDetailScreen(
                             onCountrySelected = { viewModel.setChartsCountry(it) },
                             playerViewModel = playerViewModel,
                             navController = navController,
-                            onBackClick = { navController.popBackStack() }
+                            onBackClick = { navController.popBackStack() },
+                            albumArtQuality = s.albumArtQuality
                         )
                     } else {
                         ExpressiveNewReleasesContent(
@@ -158,7 +159,9 @@ fun FeedPlaylistDetailScreen(
                             newReleaseAlbums = s.newReleaseAlbums,
                             playerViewModel = playerViewModel,
                             navController = navController,
-                            onBackClick = { navController.popBackStack() }
+                            onBackClick = { navController.popBackStack() },
+                            albumArtQuality = s.albumArtQuality,
+                            filterKeywords = s.filterKeywords
                         )
                     }
                 }
