@@ -1322,10 +1322,10 @@ private fun ShareableCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Link,
+                    painter = painterResource(R.drawable.ic_pixelmusic_monochrome),
                     contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.95f),
-                    modifier = Modifier.size(13.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
                 )
                 Text(
                     text = "PixelMusic",
@@ -1334,12 +1334,6 @@ private fun ShareableCard(
                     fontSize = 11.sp,
                     letterSpacing = 0.2.sp,
                     color = Color.White
-                )
-                Icon(
-                    imageVector = Icons.Rounded.ChevronRight,
-                    contentDescription = null,
-                    tint = Color.White.copy(alpha = 0.70f),
-                    modifier = Modifier.size(13.dp)
                 )
             }
         }
