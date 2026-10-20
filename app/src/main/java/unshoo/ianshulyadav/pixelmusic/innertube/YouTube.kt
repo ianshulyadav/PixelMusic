@@ -1151,29 +1151,80 @@ object YouTube {
             innerTube.locale = originalLocale.copy(gl = countryCode)
         }
         try {
-            val response = innerTube.browse(
-                client = WEB_REMIX,
-                browseId = "FEmusic_charts",
-                params = "ggMGCgQIgAQ%3D",
-                continuation = continuation,
-                forceAnonymous = true
-            ).body<BrowseResponse>()
-        
-            var sections = parseChartsSections(response)
-            if (sections.isEmpty() && continuation == null) {
-                val fallbackResponse = innerTube.browse(
-                    client = WEB_REMIX,
-                    browseId = "FEmusic_charts",
-                    params = null,
-                    continuation = null,
-                    forceAnonymous = true
-                ).body<BrowseResponse>()
-                sections = parseChartsSections(fallbackResponse)
+            val clientsToTry = listOf(
+                WEB_REMIX,
+                YouTubeClient.MOBILE,
+                YouTubeClient.IOS,
+                YouTubeClient.WEB
+            )
+            var sections = emptyList<ChartsPage.ChartSection>()
+            var lastContinuation: String? = null
+
+            for (client in clientsToTry) {
+                // 1. Try with params
+                val resp1 = runCatching {
+                    innerTube.browse(
+                        client = client,
+                        browseId = "FEmusic_charts",
+                        params = "ggMGCgQIgAQ%3D",
+                        continuation = continuation,
+                        forceAnonymous = false
+                    ).body<BrowseResponse>()
+                }.getOrNull()
+
+                if (resp1 != null) {
+                    val parsed = parseChartsSections(resp1)
+                    if (parsed.isNotEmpty()) {
+                        sections = parsed
+                        lastContinuation = resp1.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+                        break
+                    }
+                }
+
+                // 2. Try without params
+                val resp2 = runCatching {
+                    innerTube.browse(
+                        client = client,
+                        browseId = "FEmusic_charts",
+                        params = null,
+                        continuation = continuation,
+                        forceAnonymous = false
+                    ).body<BrowseResponse>()
+                }.getOrNull()
+
+                if (resp2 != null) {
+                    val parsed = parseChartsSections(resp2)
+                    if (parsed.isNotEmpty()) {
+                        sections = parsed
+                        lastContinuation = resp2.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+                        break
+                    }
+                }
+
+                // 3. Try with forceAnonymous
+                val resp3 = runCatching {
+                    innerTube.browse(
+                        client = client,
+                        browseId = "FEmusic_charts",
+                        params = "ggMGCgQIgAQ%3D",
+                        continuation = continuation,
+                        forceAnonymous = true
+                    ).body<BrowseResponse>()
+                }.getOrNull()
+
+                if (resp3 != null) {
+                    val parsed = parseChartsSections(resp3)
+                    if (parsed.isNotEmpty()) {
+                        sections = parsed
+                        lastContinuation = resp3.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+                        break
+                    }
+                }
             }
-        
+
             ChartsPage(
                 sections = sections,
-                continuation = response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
+                continuation = lastContinuation
             )
         } catch (e: Exception) {
             android.util.Log.e("YouTube", "Error fetching charts page", e)
@@ -1185,19 +1236,106 @@ object YouTube {
 
     private fun parseChartsSections(response: BrowseResponse): List<ChartsPage.ChartSection> {
         val sections = mutableListOf<ChartsPage.ChartSection>()
-        response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents?.forEach { content ->
-                content.musicCarouselShelfRenderer?.let { renderer ->
-                    val title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                        ?: return@forEach
-                    val items = renderer.contents.mapNotNull { item ->
-                        when {
-                            item.musicResponsiveListItemRenderer != null -> 
-                                convertToChartItem(item.musicResponsiveListItemRenderer)
-                            item.musicTwoRowItemRenderer != null -> 
-                                convertMusicTwoRowItem(item.musicTwoRowItemRenderer)
-                            else -> null
-                        }
+        val tabContents = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer?.contents
+            ?: response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+                ?.tabRenderer?.content?.sectionListRenderer?.contents
+            ?: emptyList()
+
+        tabContents.forEach { content ->
+            // 1. Music Carousel Shelf (Video charts, Artists, etc.)
+            content.musicCarouselShelfRenderer?.let { renderer ->
+                val title = renderer.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.firstOrNull()?.text
+                    ?: return@let
+                val items = renderer.contents.mapNotNull { item ->
+                    when {
+                        item.musicResponsiveListItemRenderer != null -> 
+                            convertToChartItem(item.musicResponsiveListItemRenderer)
+                        item.musicTwoRowItemRenderer != null -> 
+                            convertMusicTwoRowItem(item.musicTwoRowItemRenderer)
+                        else -> null
+                    }
+                }
+                if (items.isNotEmpty()) {
+                    sections.add(
+                        ChartsPage.ChartSection(
+                            title = title,
+                            items = items,
+                            chartType = determineChartType(title)
+                        )
+                    )
+                }
+            }
+
+            // 2. Music Shelf Renderer (e.g. Trending 20 India, Top Songs)
+            content.musicShelfRenderer?.let { renderer ->
+                val title = renderer.title?.runs?.firstOrNull()?.text ?: "Trending"
+                val items = renderer.contents?.mapNotNull { item ->
+                    item.musicResponsiveListItemRenderer?.let { convertToChartItem(it) }
+                }.orEmpty()
+                if (items.isNotEmpty()) {
+                    sections.add(
+                        ChartsPage.ChartSection(
+                            title = title,
+                            items = items,
+                            chartType = determineChartType(title)
+                        )
+                    )
+                }
+            }
+
+            // 3. Grid Renderer
+            content.gridRenderer?.let { renderer ->
+                val title = renderer.header?.gridHeaderRenderer?.title?.runs?.firstOrNull()?.text
+                    ?: return@let
+                val items = renderer.items.mapNotNull { item ->
+                    item.musicTwoRowItemRenderer?.let { renderer ->
+                        convertMusicTwoRowItem(renderer)
+                    }
+                }
+                if (items.isNotEmpty()) {
+                    sections.add(
+                        ChartsPage.ChartSection(
+                            title = title,
+                            items = items,
+                            chartType = ChartsPage.ChartType.NEW_RELEASES
+                        )
+                    )
+                }
+            }
+
+            // 4. Nested Item Section Renderer
+            content.itemSectionRenderer?.contents?.forEach { subItem ->
+                subItem.musicShelfRenderer?.let { renderer ->
+                    val title = renderer.title?.runs?.firstOrNull()?.text ?: "Trending"
+                    val items = renderer.contents?.mapNotNull { item ->
+                        item.musicResponsiveListItemRenderer?.let { convertToChartItem(it) }
+                    }.orEmpty()
+                    if (items.isNotEmpty()) {
+                        sections.add(
+                            ChartsPage.ChartSection(
+                                title = title,
+                                items = items,
+                                chartType = determineChartType(title)
+                            )
+                        )
+                    }
+                }
+                subItem.musicResponsiveListItemRenderer?.let { item ->
+                    convertToChartItem(item)?.let { chartItem ->
+                        sections.add(
+                            ChartsPage.ChartSection(
+                                title = "Trending",
+                                items = listOf(chartItem),
+                                chartType = ChartsPage.ChartType.TRENDING
+                            )
+                        )
+                    }
+                }
+                subItem.gridRenderer?.let { renderer ->
+                    val title = renderer.header?.gridHeaderRenderer?.title?.runs?.firstOrNull()?.text ?: "Top Charts"
+                    val items = renderer.items.mapNotNull { item ->
+                        item.musicTwoRowItemRenderer?.let { convertMusicTwoRowItem(it) }
                     }
                     if (items.isNotEmpty()) {
                         sections.add(
@@ -1209,25 +1347,8 @@ object YouTube {
                         )
                     }
                 }
-                content.gridRenderer?.let { renderer ->
-                    val title = renderer.header?.gridHeaderRenderer?.title?.runs?.firstOrNull()?.text
-                        ?: return@let
-                    val items = renderer.items.mapNotNull { item ->
-                        item.musicTwoRowItemRenderer?.let { renderer ->
-                            convertMusicTwoRowItem(renderer)
-                        }
-                    }
-                    if (items.isNotEmpty()) {
-                        sections.add(
-                            ChartsPage.ChartSection(
-                                title = title,
-                                items = items,
-                                chartType = ChartsPage.ChartType.NEW_RELEASES
-                            )
-                        )
-                    }
-                }
             }
+        }
         return sections
     }
 

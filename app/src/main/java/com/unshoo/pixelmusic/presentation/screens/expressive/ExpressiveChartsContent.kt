@@ -131,12 +131,28 @@ fun ExpressiveChartsContent(
         if (pageSongs.isNotEmpty()) pageSongs else playlist.tracks.map { it.toSong() }
     }
 
-    val topArtists: List<ArtistItem> = remember(chartsPage) {
-        chartsPage?.sections
+    val topArtists: List<ArtistItem> = remember(chartsPage, allSongs) {
+        val pageArtists = chartsPage?.sections
             ?.flatMap { it.items }
             ?.filterIsInstance<ArtistItem>()
             ?.distinctBy { it.id }
             .orEmpty()
+        if (pageArtists.isNotEmpty()) {
+            pageArtists
+        } else {
+            allSongs.mapNotNull { song ->
+                if (song.artist.isNotBlank() && song.artist != "Unknown artist") {
+                    val artistIdStr = song.artists.firstOrNull()?.id?.toString() ?: song.id
+                    ArtistItem(
+                        id = artistIdStr,
+                        title = song.artist,
+                        thumbnail = song.albumArtUriString,
+                        shuffleEndpoint = null,
+                        radioEndpoint = null
+                    )
+                } else null
+            }.distinctBy { it.title }.take(15)
+        }
     }
 
     val videoCharts: List<PlaylistItem> = remember(chartsPage) {
@@ -707,7 +723,7 @@ fun ExpressiveChartsContent(
             }
         }
 
-        // 6. "Top artists" with Scalloped Flower Avatars (Screenshot 4)
+        // 6. "Top artists" with Screenshot 4 Expressive Squircle Cards
         if (topArtists.isNotEmpty()) {
             item(key = "charts_top_artists_section") {
                 Column(
@@ -725,52 +741,98 @@ fun ExpressiveChartsContent(
 
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        items(topArtists) { artist ->
-                            Column(
+                        itemsIndexed(topArtists) { index, artist ->
+                            val cardShape = remember { AbsoluteSmoothCornerShape(22.dp, 60) }
+                            val (bgGradient, badgeColor) = remember(index) {
+                                when (index % 4) {
+                                    0 -> listOf(Color(0xFF5A350E), Color(0xFF381F05)) to Color(0xFFFFB77F) // Warm amber #1
+                                    1 -> listOf(Color(0xFF2C2D30), Color(0xFF1E1E20)) to Color(0xFFA6A8AE) // Graphite slate #2
+                                    2 -> listOf(Color(0xFF432240), Color(0xFF281126)) to Color(0xFFDAA0D5) // Plum berry #3
+                                    else -> listOf(Color(0xFF1D3245), Color(0xFF0F1E2B)) to Color(0xFF8AC0DE) // Cyan navy #4+
+                                }
+                            }
+
+                            Surface(
                                 modifier = Modifier
-                                    .width(105.dp)
+                                    .width(135.dp)
+                                    .height(180.dp)
                                     .bounceClick(scaleDown = 0.96f) {
                                         navController.navigateSafely(Screen.ArtistDetail.createRoute(artist.id))
                                     },
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                shape = cardShape,
+                                color = Color.Transparent,
+                                shadowElevation = 0.dp
                             ) {
-                                // 10-Petal Scalloped Flower Avatar (Screenshot 4)
                                 Box(
                                     modifier = Modifier
-                                        .size(100.dp)
-                                        .clip(ScallopFlowerShape(petals = 10, depthRatio = 0.08f))
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                        .fillMaxSize()
+                                        .background(brush = Brush.verticalGradient(bgGradient))
+                                        .padding(12.dp)
                                 ) {
-                                    SmartImage(
-                                        model = artist.thumbnail,
-                                        contentDescription = artist.title,
-                                        shape = ScallopFlowerShape(petals = 10, depthRatio = 0.08f),
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                    // Pill Rank Badge #1, #2, #3
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopStart)
+                                            .clip(CircleShape)
+                                            .background(badgeColor)
+                                            .padding(horizontal = 8.dp, vertical = 3.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "#${index + 1}",
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.5.sp,
+                                            color = Color.Black
+                                        )
+                                    }
+
+                                    // Circular Artist Photo
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.Center)
+                                            .padding(top = 8.dp)
+                                            .size(76.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, Color.White.copy(alpha = 0.12f), CircleShape)
+                                    ) {
+                                        SmartImage(
+                                            model = artist.thumbnail,
+                                            contentDescription = artist.title,
+                                            shape = CircleShape,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+
+                                    // Artist Name & subtitle at the bottom
+                                    Column(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(1.dp)
+                                    ) {
+                                        Text(
+                                            text = artist.title,
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 14.sp,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = "Top Artist",
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Normal,
+                                            fontSize = 11.5.sp,
+                                            color = Color.White.copy(alpha = 0.70f),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
-
-                                Text(
-                                    text = artist.title,
-                                    fontFamily = GoogleSansRounded,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                Text(
-                                    text = "Artist",
-                                    fontFamily = GoogleSansRounded,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
                             }
                         }
                     }

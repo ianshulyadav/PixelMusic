@@ -24,9 +24,17 @@ import androidx.compose.ui.unit.sp
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.SmartImageCardTargetSize
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.shape.CircleShape
+import com.unshoo.pixelmusic.presentation.components.bounceClick
+import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
+
 /**
- * 100% Musify-style Featured Playlist card (equivalent to Musify's HomeFeedCard).
- * Clean, borderless 156dp square artwork with subtle rounded corners and 2-line title caption.
+ * Material 3 Expressive Featured Playlist card.
+ * Clean 156dp square artwork with AbsoluteSmoothCornerShape squircle corners, floating play button, and GoogleSansRounded typography.
  */
 @Composable
 fun FeaturedPlaylistCard(
@@ -36,7 +44,7 @@ fun FeaturedPlaylistCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val coverShape = remember { RoundedCornerShape(12.dp) }
+    val coverShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
 
     Column(
         modifier = modifier
@@ -54,16 +62,36 @@ fun FeaturedPlaylistCard(
                 contentDescription = title,
                 targetSize = SmartImageCardTargetSize,
                 contentScale = ContentScale.Crop,
+                shape = coverShape,
                 modifier = Modifier.fillMaxSize()
             )
+
+            // Floating Expressive Play Action Button
+            Box(
+                modifier = Modifier
+                    .align(androidx.compose.ui.Alignment.BottomEnd)
+                    .padding(8.dp)
+                    .size(34.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.90f)),
+                contentAlignment = androidx.compose.ui.Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.PlayArrow,
+                    contentDescription = "Play",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = title,
+            fontFamily = GoogleSansRounded,
             style = MaterialTheme.typography.bodyMedium.copy(
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 lineHeight = 18.sp
             ),
@@ -75,6 +103,7 @@ fun FeaturedPlaylistCard(
 
         Text(
             text = subtitle.ifBlank { " " },
+            fontFamily = GoogleSansRounded,
             style = MaterialTheme.typography.bodySmall.copy(
                 fontSize = 12.sp,
                 lineHeight = 16.sp,

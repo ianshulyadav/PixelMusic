@@ -75,6 +75,8 @@ import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
 import com.unshoo.pixelmusic.presentation.screens.SwipeActionWrapper
 import com.unshoo.pixelmusic.ui.theme.LocalPixelMusicDarkTheme
+import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -287,6 +289,7 @@ fun MoodGenreContentView(
                                 Text(
                                     text = if (moodGenre.category == MoodGenreCategory.MOOD_MOMENT) "Mood & Moment" else "Genre",
                                     color = if (isDark) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontFamily = GoogleSansRounded,
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
                                 )
@@ -298,6 +301,7 @@ fun MoodGenreContentView(
                         // Category Title
                         Text(
                             text = moodGenre.title,
+                            fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.ExtraBold,
                                 fontSize = 32.sp,
@@ -320,6 +324,7 @@ fun MoodGenreContentView(
 
                         Text(
                             text = subtitleText,
+                            fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Normal,
                                 color = subtitleTextColor
@@ -409,6 +414,7 @@ fun MoodGenreContentView(
                     item(key = "shelf_header_${sIndex}_${section.title}") {
                         Text(
                             text = section.title,
+                            fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
@@ -446,6 +452,7 @@ fun MoodGenreContentView(
                     item(key = "album_shelf_header_${aIndex}_${section.title}") {
                         Text(
                             text = section.title,
+                            fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
@@ -486,6 +493,7 @@ fun MoodGenreContentView(
                     item(key = "songs_header") {
                         Text(
                             text = "Popular in ${moodGenre.title}",
+                            fontFamily = GoogleSansRounded,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,

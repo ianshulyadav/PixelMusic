@@ -58,8 +58,8 @@ fun MoodGenreCard(
     val cover1 = cachedImages?.first ?: item.playlistImage1
     val cover2 = cachedImages?.second ?: item.playlistImage2 ?: cover1
 
-    // Material 3 Expressive 24dp rounded squircle shape
-    val cardShape = remember { RoundedCornerShape(24.dp) }
+    // Material 3 Expressive 22dp smooth squircle shape
+    val cardShape = remember { racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape(22.dp, 60) }
 
     // Expressive dynamic gradient: subtle tone shift across the card surface
     val surfaceBrush = remember(baseColor, isDark) {
@@ -134,6 +134,7 @@ fun MoodGenreCard(
         Text(
             text = item.title,
             color = textColor,
+            fontFamily = com.unshoo.pixelmusic.ui.theme.GoogleSansRounded,
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 15.sp,

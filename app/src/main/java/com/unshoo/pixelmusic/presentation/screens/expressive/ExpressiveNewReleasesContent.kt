@@ -310,198 +310,120 @@ fun ExpressiveNewReleasesContent(
             }
         }
 
-        // 4. "Albums & singles" Section (Screenshot 2 Middle)
-        item(key = "new_releases_albums_section") {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+        // 4. Content based on selectedFilter: All | Albums | Singles | Mixes
+        if (selectedFilter == NewReleasesFilter.ALL || selectedFilter == NewReleasesFilter.ALBUMS) {
+            // "Albums & singles" Section (Screenshot 2 Middle)
+            item(key = "new_releases_albums_section") {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = "Albums & singles",
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    // Trailing circular arrow button
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                            .clickable {
-                                if (songs.isNotEmpty()) {
-                                    playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
-                                }
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-                            contentDescription = "View all",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                // Horizontal row of square album art cards
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    val albumCards: List<AlbumCardItem> = if (newReleaseAlbums.isNotEmpty()) {
-                        newReleaseAlbums.map {
-                            AlbumCardItem(
-                                id = it.browseId,
-                                title = it.title,
-                                artist = it.artists?.firstOrNull()?.name ?: "Artist",
-                                artwork = it.thumbnail
-                            )
-                        }
-                    } else {
-                        songs.take(10).map {
-                            AlbumCardItem(
-                                id = it.id,
-                                title = it.title,
-                                artist = it.artist,
-                                artwork = it.albumArtUriString
-                            )
-                        }
-                    }
-
-                    items(albumCards) { item ->
-                        Column(
-                            modifier = Modifier
-                                .width(135.dp)
-                                .bounceClick(scaleDown = 0.96f) {
-                                    if (item.id.startsWith("MPREb_") || item.id.startsWith("OLAK")) {
-                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(item.id))
-                                    } else {
-                                        val songMatch = songs.firstOrNull { it.id == item.id }
-                                        if (songMatch != null) {
-                                            playerViewModel.playSongs(songs, songMatch, queueName = "Albums & singles")
-                                        }
-                                    }
-                                },
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            // Square artwork with rounded corners
-                            Box(
-                                modifier = Modifier
-                                    .size(135.dp)
-                                    .clip(RoundedCornerShape(16.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                            ) {
-                                SmartImage(
-                                    model = item.artwork,
-                                    contentDescription = item.title,
-                                    shape = RoundedCornerShape(16.dp),
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-
-                            Text(
-                                text = item.title,
-                                fontFamily = GoogleSansRounded,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            Text(
-                                text = "Album • ${item.artist}",
-                                fontFamily = GoogleSansRounded,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // 5. "More to explore" Section (Screenshot 2 Bottom)
-        item(key = "new_releases_more_to_explore_section") {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(
-                    text = "More to explore",
-                    fontFamily = GoogleSansRounded,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(start = 4.dp)
-                )
-
-                songs.drop(2).take(15).forEach { song ->
-                    val pillShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
-                    Surface(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp)
-                            .bounceClick(scaleDown = 0.98f) {
-                                playerViewModel.playSongs(songs, song, queueName = "More to explore")
-                            },
-                        shape = pillShape,
-                        color = MaterialTheme.colorScheme.surfaceContainerLow,
-                        shadowElevation = 0.dp
+                            .padding(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
+                        Text(
+                            text = if (selectedFilter == NewReleasesFilter.ALBUMS) "All Albums & Singles" else "Albums & singles",
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        // Trailing circular arrow button
+                        Box(
                             modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                .clickable {
+                                    if (songs.isNotEmpty()) {
+                                        playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
+                                    }
+                                },
+                            contentAlignment = Alignment.Center
                         ) {
-                            // Artwork square
-                            Box(
-                                modifier = Modifier
-                                    .size(46.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                            ) {
-                                SmartImage(
-                                    model = song.albumArtUriString,
-                                    contentDescription = song.title,
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxSize()
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                contentDescription = "View all",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    // Horizontal row of square album art cards
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        val albumCards: List<AlbumCardItem> = if (newReleaseAlbums.isNotEmpty()) {
+                            newReleaseAlbums.map {
+                                AlbumCardItem(
+                                    id = it.browseId,
+                                    title = it.title,
+                                    artist = it.artists?.firstOrNull()?.name ?: "Artist",
+                                    artwork = it.thumbnail
                                 )
                             }
+                        } else {
+                            songs.take(15).map {
+                                AlbumCardItem(
+                                    id = it.id,
+                                    title = it.title,
+                                    artist = it.artist,
+                                    artwork = it.albumArtUriString
+                                )
+                            }
+                        }
 
-                            Spacer(modifier = Modifier.width(14.dp))
-
-                            // Song title & artist
+                        items(albumCards) { item ->
                             Column(
-                                modifier = Modifier.weight(1f),
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                                modifier = Modifier
+                                    .width(135.dp)
+                                    .bounceClick(scaleDown = 0.96f) {
+                                        if (item.id.startsWith("MPREb_") || item.id.startsWith("OLAK") || item.id.startsWith("FEmusic_album")) {
+                                            navController.navigateSafely(Screen.AlbumDetail.createRoute(item.id))
+                                        } else {
+                                            val songMatch = songs.firstOrNull { it.id == item.id }
+                                            if (songMatch != null) {
+                                                playerViewModel.playSongs(songs, songMatch, queueName = "Albums & singles")
+                                            }
+                                        }
+                                    },
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
+                                // Square artwork with rounded corners
+                                val albumShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
+                                Box(
+                                    modifier = Modifier
+                                        .size(135.dp)
+                                        .clip(albumShape)
+                                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                ) {
+                                    SmartImage(
+                                        model = item.artwork,
+                                        contentDescription = item.title,
+                                        shape = albumShape,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+
                                 Text(
-                                    text = song.title,
+                                    text = item.title,
                                     fontFamily = GoogleSansRounded,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 14.5.sp,
+                                    fontSize = 14.sp,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
+
                                 Text(
-                                    text = song.artist,
+                                    text = "Album • ${item.artist}",
                                     fontFamily = GoogleSansRounded,
                                     fontWeight = FontWeight.Normal,
                                     fontSize = 12.sp,
@@ -510,20 +432,117 @@ fun ExpressiveNewReleasesContent(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
+                        }
+                    }
+                }
+            }
+        }
 
-                            // Trailing Play Icon
-                            IconButton(
-                                onClick = {
+        // 5. "More to explore" Section (Screenshot 2 & 3 - ALL popular new releases)
+        if (selectedFilter == NewReleasesFilter.ALL || selectedFilter == NewReleasesFilter.SINGLES || selectedFilter == NewReleasesFilter.MIXES) {
+            item(key = "new_releases_more_to_explore_section") {
+                val exploreTracks = remember(songs, selectedFilter) {
+                    when (selectedFilter) {
+                        NewReleasesFilter.ALL -> songs.drop(if (heroItems.isNotEmpty()) 2 else 0)
+                        NewReleasesFilter.SINGLES -> songs
+                        NewReleasesFilter.MIXES -> songs.filter { it.title.contains("mix", ignoreCase = true) || it.artist.contains("mix", ignoreCase = true) }.ifEmpty { songs }
+                        else -> songs
+                    }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = when (selectedFilter) {
+                            NewReleasesFilter.SINGLES -> "Popular Singles & Tracks"
+                            NewReleasesFilter.MIXES -> "Mixes & Radio Drops"
+                            else -> "More to explore"
+                        },
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+
+                    exploreTracks.forEach { song ->
+                        val pillShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(64.dp)
+                                .bounceClick(scaleDown = 0.98f) {
                                     playerViewModel.playSongs(songs, song, queueName = "More to explore")
                                 },
-                                modifier = Modifier.size(36.dp)
+                            shape = pillShape,
+                            color = MaterialTheme.colorScheme.surfaceContainerLow,
+                            shadowElevation = 0.dp
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Rounded.PlayArrow,
-                                    contentDescription = "Play",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                // Artwork square
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                ) {
+                                    SmartImage(
+                                        model = song.albumArtUriString,
+                                        contentDescription = song.title,
+                                        shape = RoundedCornerShape(12.dp),
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                // Song title & artist
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = song.title,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.5.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = song.artist,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+
+                                // Trailing Play Icon (Screenshot 2 & 3 Purple Play Icon)
+                                IconButton(
+                                    onClick = {
+                                        playerViewModel.playSongs(songs, song, queueName = "More to explore")
+                                    },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.PlayArrow,
+                                        contentDescription = "Play",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                }
                             }
                         }
                     }
