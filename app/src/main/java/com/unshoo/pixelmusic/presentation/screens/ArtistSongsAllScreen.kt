@@ -33,7 +33,7 @@ import com.unshoo.pixelmusic.data.model.Song
 import kotlinx.coroutines.delay
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ArtistSongsAllScreen(
     artistId: String,
@@ -110,7 +110,7 @@ fun ArtistSongsAllScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    ContainedLoadingIndicator()
                 }
             }
             uiState.popularSongsAll.isEmpty() -> {

@@ -296,7 +296,15 @@ object AppModule {
             .dispatcher(Dispatchers.IO.limitedParallelism(2))
             .allowHardware(true)
             .crossfade(250)
-            .bitmapConfig(if (isLowRamDevice) android.graphics.Bitmap.Config.RGB_565 else android.graphics.Bitmap.Config.ARGB_8888)
+            .bitmapConfig(
+                if (isLowRamDevice) {
+                    android.graphics.Bitmap.Config.RGB_565
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    android.graphics.Bitmap.Config.HARDWARE
+                } else {
+                    android.graphics.Bitmap.Config.ARGB_8888
+                }
+            )
             .memoryCache {
                 MemoryCache.Builder(context)
                     .maxSizePercent(cachePercent)

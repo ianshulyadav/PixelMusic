@@ -41,6 +41,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeExtendedFloatingActionButton
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -104,7 +105,6 @@ import com.unshoo.pixelmusic.presentation.components.HomeOptionsBottomSheet
 import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
 import com.unshoo.pixelmusic.presentation.components.QuickPicksSection
 import com.unshoo.pixelmusic.presentation.components.bounceClick
-import com.unshoo.pixelmusic.presentation.components.QuickPicksSkeletonSection
 import com.unshoo.pixelmusic.presentation.components.RecentlyPlayedSection
 import com.unshoo.pixelmusic.presentation.components.RecentlyPlayedSectionMinSongsToShow
 import com.unshoo.pixelmusic.presentation.viewmodel.QuickPicksViewModel
@@ -509,10 +509,17 @@ fun HomeScreen(
                     }
                 } else if (shouldShowYourMixLoadingPlaceholder) {
                     item(
-                        key = "quick_picks_skeleton",
-                        contentType = "quick_picks_skeleton"
+                        key = "quick_picks_loading",
+                        contentType = "quick_picks_loading"
                     ) {
-                        QuickPicksSkeletonSection()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            ContainedLoadingIndicator()
+                        }
                     }
                 }
 
@@ -747,14 +754,11 @@ private fun YourMixLoadingPlaceholder() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(256.dp)
+            .height(200.dp)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        LoadingIndicator(
-            modifier = Modifier.size(128.dp),
-            color = MaterialTheme.colorScheme.primary
-        )
+        ContainedLoadingIndicator()
     }
 }
 

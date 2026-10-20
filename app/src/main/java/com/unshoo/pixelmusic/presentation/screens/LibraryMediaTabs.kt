@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
@@ -263,60 +264,13 @@ fun LibraryAlbumsTab(
             }
 
             "loading" -> {
-                if (isListView) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(start = 14.dp, end = 14.dp, bottom = 6.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 24.dp,
-                                    topEnd = 24.dp,
-                                    bottomStart = PlayerSheetCollapsedCornerRadius,
-                                    bottomEnd = PlayerSheetCollapsedCornerRadius
-                                )
-                            )
-                            .fillMaxSize(),
-                        state = listState,
-                        contentPadding = PaddingValues(bottom = bottomBarHeight + MiniPlayerHeight + ListExtraBottomGap + 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(8, key = { "skeleton_album_list_$it" }) {
-                            AlbumListItem(
-                                album = Album.empty(),
-                                albumColorSchemePairFlow = EmptyColorSchemePairFlow,
-                                onClick = {},
-                                isLoading = true
-                            )
-                        }
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        modifier = Modifier
-                            .padding(start = 14.dp, end = 14.dp, bottom = 6.dp)
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = 16.dp,
-                                    topEnd = 16.dp,
-                                    bottomStart = PlayerSheetCollapsedCornerRadius,
-                                    bottomEnd = PlayerSheetCollapsedCornerRadius
-                                )
-                            )
-                            .fillMaxSize(),
-                        state = gridState,
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(bottom = bottomBarHeight + MiniPlayerHeight + ListExtraBottomGap + 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        items(8, key = { "skeleton_album_grid_$it" }) {
-                            AlbumGridItemRedesigned(
-                                album = Album.empty(),
-                                albumColorSchemePairFlow = EmptyColorSchemePairFlow,
-                                onClick = {},
-                                isLoading = true
-                            )
-                        }
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = bottomBarHeight + MiniPlayerHeight + ListExtraBottomGap),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ContainedLoadingIndicator()
                 }
             }
 
@@ -589,30 +543,13 @@ fun LibraryArtistsTab(
             }
 
             "loading" -> {
-                LazyColumn(
+                Box(
                     modifier = Modifier
-                        .padding(start = 12.dp, end = 12.dp, bottom = 6.dp)
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 26.dp,
-                                topEnd = 26.dp,
-                                bottomStart = PlayerSheetCollapsedCornerRadius,
-                                bottomEnd = PlayerSheetCollapsedCornerRadius
-                            )
-                        )
-                        .fillMaxSize(),
-                    state = listState,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(bottom = bottomBarHeight + MiniPlayerHeight + ListExtraBottomGap)
+                        .fillMaxSize()
+                        .padding(bottom = bottomBarHeight + MiniPlayerHeight + ListExtraBottomGap),
+                    contentAlignment = Alignment.Center
                 ) {
-                    item(key = "skeleton_top_spacer") { Spacer(Modifier.height(4.dp)) }
-                    items(10, key = { "skeleton_artist_$it" }) {
-                        ArtistListItem(
-                            artist = Artist.empty(),
-                            onClick = {},
-                            isLoading = true
-                        )
-                    }
+                    ContainedLoadingIndicator()
                 }
             }
 

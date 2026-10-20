@@ -219,7 +219,14 @@ fun AlbumDetailScreen(
 
         when {
             uiState.isLoading && uiState.album == null -> {
-                com.unshoo.pixelmusic.presentation.components.AlbumSkeletonDetail()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ContainedLoadingIndicator()
+                }
             }
 
             uiState.error != null && uiState.album == null -> {

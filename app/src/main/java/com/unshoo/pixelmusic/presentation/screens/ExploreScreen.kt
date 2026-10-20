@@ -35,6 +35,7 @@ import com.unshoo.pixelmusic.ui.theme.fastSpatial
 import com.unshoo.pixelmusic.ui.theme.defaultEffects
 import com.unshoo.pixelmusic.utils.ContentFilterUtils
 import androidx.compose.foundation.background
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -350,9 +351,10 @@ fun ExploreScreen(
     LaunchedEffect(listState, isLocalSelected) {
         if (isLocalSelected) return@LaunchedEffect
         snapshotFlow {
-            val totalItems = listState.layoutInfo.totalItemsCount
-            val firstIndex = listState.firstVisibleItemIndex
-            totalItems > 0 && firstIndex >= (totalItems - 6).coerceAtLeast(0)
+            val layoutInfo = listState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            totalItems > 0 && lastVisibleIndex >= (totalItems - 2).coerceAtLeast(0)
         }
             .distinctUntilChanged()
             .filter { it }
@@ -369,17 +371,6 @@ fun ExploreScreen(
             listState.scrollToItem(0, 0)
         }
         lastSelectedCategory = selectedCategory
-        contentProgress.animateTo(
-            targetValue = 0.45f,
-            animationSpec = tween(durationMillis = 120)
-        )
-    }
-
-    LaunchedEffect(currentSections, isLocalSelected) {
-        contentProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 280)
-        )
     }
 
     val isAdvancedExplore = exploreUiState.isAdvancedExploreEnabled
@@ -643,27 +634,23 @@ fun ExploreScreen(
                 label = "explore_loading_crossfade"
             ) { isLoading ->
                 if (isLoading) {
-                    FeedLoadingSkeleton(
-                        contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding() + 8.dp,
-                            bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()
-                        ),
-                        categories = effectiveCategories,
-                        selectedCategory = selectedCategory,
-                        onCategorySelect = { category ->
-                            quickPicksViewModel.setCategory(category)
-                            exploreViewModel.setSelectedFilter(category)
-                        }
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = innerPadding.calculateTopPadding() + 32.dp,
+                                bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ContainedLoadingIndicator()
+                    }
                 } else {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background)
-                            .graphicsLayer {
-                                alpha = contentProgress.value
-                            },
+                            .background(MaterialTheme.colorScheme.background),
                         contentPadding = PaddingValues(
                             top = innerPadding.calculateTopPadding() + 8.dp,
                             bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
@@ -893,18 +880,14 @@ fun ExploreScreen(
                         }
 
                         if (exploreUiState.isContinuationLoading) {
-                            item(key = "home_continuation_loader", contentType = "loader") {
+                            item(key = "home_continuation_loader_mood", contentType = "loader") {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 20.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        strokeWidth = 2.5.dp
-                                    )
+                                    ContainedLoadingIndicator()
                                 }
                             }
                         }
@@ -1434,11 +1417,7 @@ fun ExploreScreen(
                                         .padding(vertical = 20.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(28.dp),
-                                        color = MaterialTheme.colorScheme.primary,
-                                        strokeWidth = 2.5.dp
-                                    )
+                                    ContainedLoadingIndicator()
                                 }
                             }
                         }
@@ -3040,114 +3019,6 @@ private fun FeedFooter(lastUpdatedMillis: Long) {
     }
 }
 
-@Composable
-private fun FeedLoadingSkeleton(
-    contentPadding: PaddingValues,
-    categories: List<String> = emptyList(),
-    selectedCategory: String = "All",
-    onCategorySelect: (String) -> Unit = {}
-) {
-    val transition = rememberInfiniteTransition(label = "skeleton")
-    val pulse by transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.85f,
-        animationSpec = infiniteRepeatable(animation = tween(800, easing = FastOutSlowInEasing), repeatMode = RepeatMode.Reverse),
-        label = "pulse"
-    )
-
-    val skeletonColor = MaterialTheme.colorScheme.surfaceContainerHigh
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = contentPadding,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
-        if (categories.size > 1) {
-            item(key = "skeleton_category_chips") {
-                ExploreCategoryChipsRow(
-                    categories = categories,
-                    selectedCategory = selectedCategory,
-                    onCategorySelect = onCategorySelect,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 2.dp)
-                )
-            }
-        }
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(180.dp)
-                    .graphicsLayer { alpha = pulse }
-                    .clip(AbsoluteSmoothCornerShape(26.dp, 75))
-                    .background(skeletonColor)
-            )
-        }
-        item {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .graphicsLayer { alpha = pulse },
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                repeat(2) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        repeat(2) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(64.dp)
-                                    .clip(AbsoluteSmoothCornerShape(18.dp, 75))
-                                    .background(skeletonColor)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        items(3) {
-            Column(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .graphicsLayer { alpha = pulse },
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .width(160.dp)
-                        .height(20.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(skeletonColor)
-                )
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(4) {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Box(
-                                modifier = Modifier
-                                    .size(148.dp)
-                                    .clip(AbsoluteSmoothCornerShape(18.dp, 75))
-                                    .background(skeletonColor)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .width(110.dp)
-                                    .height(14.dp)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(skeletonColor)
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun AnimatedSparklesIconButton(

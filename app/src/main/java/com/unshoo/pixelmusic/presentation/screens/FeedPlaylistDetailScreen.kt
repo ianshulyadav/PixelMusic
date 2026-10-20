@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.unshoo.pixelmusic.presentation.screens
 
 import androidx.activity.compose.BackHandler
@@ -32,6 +34,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -116,7 +119,7 @@ fun FeedPlaylistDetailScreen(
             when (val s = state) {
                 is FeedPlaylistDetailUiState.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        ContainedLoadingIndicator()
                     }
                 }
                 is FeedPlaylistDetailUiState.Error -> {
@@ -216,7 +219,7 @@ fun FeedPlaylistDetailScreen(
             when (val s = state) {
                 is FeedPlaylistDetailUiState.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        ContainedLoadingIndicator()
                     }
                 }
                 is FeedPlaylistDetailUiState.Error -> {

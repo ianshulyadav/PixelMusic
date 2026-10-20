@@ -30,7 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ArtistAlbumsAllScreen(
     artistId: String,
@@ -114,7 +114,7 @@ fun ArtistAlbumsAllScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    ContainedLoadingIndicator()
                 }
             }
             uiState.allItems.isEmpty() -> {

@@ -245,6 +245,11 @@ fun SmartImage(
                 .diskCachePolicy(if (useDiskCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
                 .memoryCachePolicy(if (useMemoryCache) CachePolicy.ENABLED else CachePolicy.DISABLED)
                 .allowHardware(allowHardware)
+                .apply {
+                    if (allowHardware && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        bitmapConfig(Bitmap.Config.HARDWARE)
+                    }
+                }
                 .size(requestTargetSize)
                 // PERF: use the URL as a memory cache key so that returning
                 // to a tab or scrolling rapidly instantly shows the cached bitmap
