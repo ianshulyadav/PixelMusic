@@ -1290,7 +1290,7 @@ private fun ShareableCard(
             Row(
                 modifier = Modifier
                     .shadow(
-                        elevation = 8.dp,
+                        elevation = 6.dp,
                         shape = CircleShape,
                         ambientColor = Color.Black.copy(alpha = 0.40f),
                         spotColor = Color.Black.copy(alpha = 0.30f)
@@ -1317,15 +1317,15 @@ private fun ShareableCard(
                     .clickable {
                         try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
                     }
-                    .padding(horizontal = 14.dp, vertical = 6.5.dp),
+                    .padding(horizontal = 12.dp, vertical = 3.5.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(5.5.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_pixelmusic_monochrome),
+                    painter = painterResource(R.drawable.pixelmusic_base_monochrome),
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
                 Text(
                     text = "PixelMusic",
