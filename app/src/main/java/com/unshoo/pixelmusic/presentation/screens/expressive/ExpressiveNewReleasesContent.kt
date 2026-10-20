@@ -95,6 +95,7 @@ fun ExpressiveNewReleasesContent(
     onBackClick: () -> Unit,
     albumArtQuality: AlbumArtQuality = AlbumArtQuality.ORIGINAL,
     filterKeywords: List<String> = emptyList(),
+    onPlayAlbumsClick: () -> Unit = {},
     onShuffleAlbumsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -372,13 +373,9 @@ fun ExpressiveNewReleasesContent(
                                 )
                             }
 
-                            // Play All Button
+                            // Play All Button (plays mix of first 10-15 albums)
                             FilledIconButton(
-                                onClick = {
-                                    if (songs.isNotEmpty()) {
-                                        playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
-                                    }
-                                },
+                                onClick = onPlayAlbumsClick,
                                 modifier = Modifier.size(36.dp),
                                 colors = IconButtonDefaults.filledIconButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -387,7 +384,7 @@ fun ExpressiveNewReleasesContent(
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.PlayArrow,
-                                    contentDescription = "Play all albums & singles",
+                                    contentDescription = "Play all albums & singles mix",
                                     modifier = Modifier.size(20.dp)
                                 )
                             }

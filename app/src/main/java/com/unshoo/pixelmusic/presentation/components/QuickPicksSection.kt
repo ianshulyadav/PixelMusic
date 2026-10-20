@@ -70,6 +70,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.SongInfoBottomSheetViewModel
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -244,6 +245,7 @@ fun QuickPicksSection(
                 CenteredHeroCard(
                     song = song,
                     isPlaying = song.id == activePlayingSongId,
+                    loadArtImmediately = page < 3,
                     onClick = {
                         animationScope.launch { carouselState.animateScrollToItem(page) }
                         onSongClick(song)
@@ -336,10 +338,23 @@ fun QuickPicksSection(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
+                                val classicIndex = limitSongs.indexOf(song)
+                                val loadArtImmediately = classicIndex in 0..2
+                                val artUri = if (loadArtImmediately) {
+                                    song.albumArtUriString
+                                } else {
+                                    val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
+                                        delay(120L)
+                                        value = song.albumArtUriString
+                                    }
+                                    calmUri
+                                }
                                 SmartImage(
-                                    model = song.albumArtUriString,
+                                    model = artUri,
                                     contentDescription = song.title,
                                     contentScale = ContentScale.Crop,
+                                    targetSize = SmartImageCardTargetSize,
+                                    crossfadeDurationMillis = 200,
                                     modifier = Modifier.fillMaxSize()
                                 )
                                 
@@ -451,10 +466,23 @@ fun QuickPicksSection(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
+                                val uncontainedIndex = limitSongs.indexOf(song)
+                                val loadArtImmediately = uncontainedIndex in 0..2
+                                val artUri = if (loadArtImmediately) {
+                                    song.albumArtUriString
+                                } else {
+                                    val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
+                                        delay(120L)
+                                        value = song.albumArtUriString
+                                    }
+                                    calmUri
+                                }
                                 SmartImage(
-                                    model = song.albumArtUriString,
+                                    model = artUri,
                                     contentDescription = song.title,
                                     contentScale = ContentScale.Crop,
+                                    targetSize = SmartImageCardTargetSize,
+                                    crossfadeDurationMillis = 200,
                                     modifier = Modifier.fillMaxSize()
                                 )
                                 
@@ -514,16 +542,19 @@ fun QuickPicksSection(
                     .horizontalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(QuickPicksPillSpacing)
             ) {
-                rows.forEach { row ->
+                rows.forEachIndexed { rowIndex, row ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(QuickPicksPillSpacing),
                         modifier = Modifier.padding(start = 8.dp)
                     ) {
-                        row.pills.forEach { cell ->
+                        row.pills.forEachIndexed { colIndex, cell ->
+                            val absoluteIndex = colIndex * QuickPicksPillsPerColumn + rowIndex
+                            val loadArtImmediately = absoluteIndex < 3
                             QuickPickPill(
                                 song = cell.song,
                                 width = cell.width,
                                 isPlaying = cell.song.id == activePlayingSongId,
+                                loadArtImmediately = loadArtImmediately,
                                 onClick = { onSongClick(cell.song) }
                             )
                         }
@@ -624,6 +655,7 @@ private fun rememberAlbumVibrantColor(
 private fun CarouselItemScope.CenteredHeroCard(
     song: Song,
     isPlaying: Boolean,
+    loadArtImmediately: Boolean = true,
     onClick: () -> Unit,
     onPlayNext: (Song) -> Unit,
     onAddToQueue: (Song) -> Unit,
@@ -644,10 +676,22 @@ private fun CarouselItemScope.CenteredHeroCard(
     // 2. Text opacity: strictly visible for the centered carousel card
     val textAlpha = ((sizeFraction - 0.55f) / 0.45f).coerceIn(0f, 1f)
 
+    // Calm loading of artwork and colors for smooth initial render & scroll
+    val shouldLoadImmediately = loadArtImmediately || textAlpha > 0.05f
+    val artUri = if (shouldLoadImmediately) {
+        song.albumArtUriString
+    } else {
+        val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
+            delay(120L)
+            value = song.albumArtUriString
+        }
+        calmUri
+    }
+
     // Dynamic extracted color directly from the album art
     val defaultColor = MaterialTheme.colorScheme.primary
     val albumColor = rememberAlbumVibrantColor(
-        imageUrl = song.albumArtUriString,
+        imageUrl = if (shouldLoadImmediately) song.albumArtUriString else null,
         fallbackColor = defaultColor
     )
 
@@ -697,7 +741,7 @@ private fun CarouselItemScope.CenteredHeroCard(
         Box(modifier = Modifier.fillMaxSize()) {
             // Full-bleed Artwork
             SmartImage(
-                model = song.albumArtUriString,
+                model = artUri,
                 contentDescription = song.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -915,6 +959,7 @@ private fun QuickPickPill(
     song: Song,
     width: Dp,
     isPlaying: Boolean,
+    loadArtImmediately: Boolean = true,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -942,13 +987,22 @@ private fun QuickPickPill(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val artUri = song.albumArtUriString
+            val artUri = if (loadArtImmediately) {
+                song.albumArtUriString
+            } else {
+                val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
+                    delay(120L)
+                    value = song.albumArtUriString
+                }
+                calmUri
+            }
             SmartImage(
                 model = artUri,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 shape = CircleShape,
                 targetSize = SmartImageCompactListTargetSize,
+                crossfadeDurationMillis = 200,
                 modifier = Modifier.size(QuickPicksPillArtSize)
             )
             Column(modifier = Modifier.weight(1f)) {

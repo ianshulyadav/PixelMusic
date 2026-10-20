@@ -38,6 +38,7 @@ sealed interface FeedPlaylistDetailUiState {
         val loadError: String? = null,
         val chartsPage: unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage? = null,
         val newReleaseAlbums: List<unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem> = emptyList(),
+        val albumSongs: List<com.unshoo.pixelmusic.data.model.Song> = emptyList(),
         val selectedCountryCode: String = "IN",
         val albumArtQuality: com.unshoo.pixelmusic.data.preferences.AlbumArtQuality = com.unshoo.pixelmusic.data.preferences.AlbumArtQuality.ORIGINAL,
         val filterKeywords: List<String> = emptyList(),
@@ -88,23 +89,41 @@ class FeedPlaylistDetailViewModel @Inject constructor(
         }
     }
 
-    fun shuffleFirst15Albums(playerViewModel: PlayerViewModel) {
+    fun playFirst15Albums(playerViewModel: PlayerViewModel) {
         val state = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return
-        val albums = state.newReleaseAlbums.take(15)
-        val albumBrowseIds = albums.map { it.browseId }.toSet()
-        val albumTitles = albums.map { it.title.lowercase().trim() }.toSet()
-
-        val matchingTracks = state.playlist.tracks.filter { track ->
-            val albumName = track.album?.lowercase()?.trim()
-            (albumName != null && albumTitles.any { it.contains(albumName) || albumName.contains(it) }) ||
-            track.videoId in albumBrowseIds
+        val songsToPlay = state.albumSongs.ifEmpty {
+            val albums = state.newReleaseAlbums.take(15)
+            val albumBrowseIds = albums.map { it.browseId }.toSet()
+            val albumTitles = albums.map { it.title.lowercase().trim() }.toSet()
+            val matching = state.playlist.tracks.filter { track ->
+                val albumName = track.album?.lowercase()?.trim()
+                (albumName != null && albumTitles.any { it.contains(albumName) || albumName.contains(it) }) ||
+                track.videoId in albumBrowseIds
+            }
+            if (matching.isNotEmpty()) matching.map { it.toSong() } else state.playlist.tracks.map { it.toSong() }
         }
 
-        val finalTracks = if (matchingTracks.isNotEmpty()) matchingTracks else state.playlist.tracks
-        val songsToPlay = finalTracks.map { it.toSong() }
+        if (songsToPlay.isNotEmpty()) {
+            playerViewModel.playSongs(songsToPlay, songsToPlay.first(), queueName = "Albums & singles")
+        }
+    }
+
+    fun shuffleFirst15Albums(playerViewModel: PlayerViewModel) {
+        val state = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return
+        val songsToPlay = state.albumSongs.ifEmpty {
+            val albums = state.newReleaseAlbums.take(15)
+            val albumBrowseIds = albums.map { it.browseId }.toSet()
+            val albumTitles = albums.map { it.title.lowercase().trim() }.toSet()
+            val matching = state.playlist.tracks.filter { track ->
+                val albumName = track.album?.lowercase()?.trim()
+                (albumName != null && albumTitles.any { it.contains(albumName) || albumName.contains(it) }) ||
+                track.videoId in albumBrowseIds
+            }
+            if (matching.isNotEmpty()) matching.map { it.toSong() } else state.playlist.tracks.map { it.toSong() }
+        }
 
         if (songsToPlay.isNotEmpty()) {
-            playerViewModel.playSongsShuffled(songsToPlay, queueName = "Albums & singles (First 15)")
+            playerViewModel.playSongsShuffled(songsToPlay, queueName = "Albums & singles")
         }
     }
 
@@ -121,6 +140,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             var fetchedChartsPage: unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage? = null
             var fetchedNewReleaseAlbums = emptyList<unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem>()
+            var fetchedAlbumSongs = emptyList<com.unshoo.pixelmusic.data.model.Song>()
             val liked = playlistId == "yt_liked"
             val recent = playlistId == "yt_recent"
             val isNewReleases = playlistId == "new_releases"
@@ -312,9 +332,10 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         }
 
                         // Fetch top 2-3 lead tracks per album in parallel
+                        val albumTracksList = mutableListOf<List<YouTubeMusicTrack>>()
                         if (targetAlbums.isNotEmpty()) {
                             kotlinx.coroutines.coroutineScope {
-                                val albumJobs = targetAlbums.map { rel ->
+                                val albumJobs = targetAlbums.take(15).map { rel ->
                                     async(Dispatchers.IO) {
                                         val page = runCatching { innerTube.fetchAlbumPage(rel.id) }.getOrNull()
                                         val fallbackArtist = rel.author ?: page?.artist ?: "Artist"
@@ -335,12 +356,25 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                                     coroutineContext.ensureActive()
                                     val tracks = job.await()
                                     if (tracks.isNotEmpty()) {
+                                        albumTracksList.add(tracks)
                                         accumulatedTracks.addAll(tracks)
                                         showTracks(accumulatedTracks.distinctBy { it.videoId }, customArt = coverArt)
                                     }
                                 }
                             }
                         }
+
+                        // Interleave tracks across albums to create a true album mix (track 1 from each album, then track 2, etc.)
+                        val mixedAlbumSongs = mutableListOf<com.unshoo.pixelmusic.data.model.Song>()
+                        val maxTracksPerAlbum = albumTracksList.maxOfOrNull { it.size } ?: 0
+                        for (trackIndex in 0 until maxTracksPerAlbum) {
+                            for (albumTracks in albumTracksList) {
+                                if (trackIndex < albumTracks.size) {
+                                    mixedAlbumSongs.add(albumTracks[trackIndex].toSong())
+                                }
+                            }
+                        }
+                        fetchedAlbumSongs = mixedAlbumSongs.distinctBy { it.id }
 
                         val distinctTracks = accumulatedTracks.distinctBy { it.videoId }.take(50)
                         val finalTracks: List<YouTubeMusicTrack> = if (distinctTracks.isNotEmpty()) {
@@ -532,6 +566,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                     ),
                     chartsPage = fetchedChartsPage,
                     newReleaseAlbums = fetchedNewReleaseAlbums,
+                    albumSongs = fetchedAlbumSongs,
                     selectedCountryCode = selectedChartsCountry,
                     albumArtQuality = userPreferencesRepository.albumArtQualityFlow.first(),
                     filterKeywords = filterKeywords

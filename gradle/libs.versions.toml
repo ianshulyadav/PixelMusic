@@ -166,6 +166,7 @@ androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version
 capturable = { module = "dev.shreyaspatil:capturable", version.ref = "capturable" }
 codeview = { module = "io.github.amrdeveloper:codeview", version.ref = "codeview" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coilCompose" }
 compose-dnd = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "composeDnd" }
 duktape-android = { module = "com.squareup.duktape:duktape-android", version.ref = "duktapeAndroid" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }

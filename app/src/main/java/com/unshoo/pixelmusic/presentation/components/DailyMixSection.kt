@@ -61,6 +61,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import androidx.compose.ui.res.stringResource
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 
 // 2) DailyMixSection y DailyMixCard quedan igual de ligeras...
@@ -353,7 +355,12 @@ private fun DailyMixSongList(
     onMoreOptionsClick: (Song) -> Unit
 ) {
     val dailyMixQueueName = stringResource(R.string.presentation_batch_g_daily_mix_queue_name)
-    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
+    val isPlaying by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.isPlaying }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.isPlaying)
+    val currentSongId by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.currentSong?.id }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.currentSong?.id)
     val itemContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
 
     Column(
@@ -366,8 +373,8 @@ private fun DailyMixSongList(
         songs.forEach { song ->
             EnhancedSongListItem(
                 song = song,
-                isCurrentSong = stablePlayerState.currentSong?.id == song.id,
-                isPlaying = stablePlayerState.isPlaying && stablePlayerState.currentSong?.id == song.id,
+                isCurrentSong = currentSongId == song.id,
+                isPlaying = isPlaying && currentSongId == song.id,
                 containerColorOverride = itemContainerColor,
                 onMoreOptionsClick = onMoreOptionsClick,
                 customShape = RoundedCornerShape(10.dp),

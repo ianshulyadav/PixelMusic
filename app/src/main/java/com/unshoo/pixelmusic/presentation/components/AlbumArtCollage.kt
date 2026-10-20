@@ -75,11 +75,9 @@ fun AlbumArtCollage(
             .padding(padding)
     ) {
         val boxMaxHeight = maxHeight
-        val shapeConfigs by produceState<List<Config>>(initialValue = emptyList(), songsToShow, boxMaxHeight, pattern) {
-            value = withContext(Dispatchers.Default) {
-                val min = minOf(300.dp, height)
-                buildCollageConfigs(pattern, min, boxMaxHeight)
-            }
+        val shapeConfigs = remember(pattern, boxMaxHeight, height) {
+            val min = minOf(300.dp, height)
+            buildCollageConfigs(pattern, min, boxMaxHeight)
         }
 
         if (shapeConfigs.isNotEmpty()) {

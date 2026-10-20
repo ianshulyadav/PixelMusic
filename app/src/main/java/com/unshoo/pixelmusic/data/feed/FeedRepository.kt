@@ -53,15 +53,12 @@ class FeedRepository @Inject constructor(
         val pureYtMusicOnly = runCatching { userPreferencesRepository.pureYtMusicOnlyFlow.first() }.getOrDefault(false)
         val filterCoverAndLofi = runCatching { userPreferencesRepository.filterCoverAndLofiFlow.first() }.getOrDefault(true)
         val filterKeywords = runCatching { userPreferencesRepository.filterKeywordsFlow.first() }.getOrDefault(ContentFilterUtils.DEFAULT_FILTER_KEYWORDS)
-        val videoTitlePattern = Regex("""(?i)\b(official\s+video|official\s+music\s+video|music\s+video|lyric\s+video|visualizer|video\s+song)\b|\((video|music\s+video)\)|\[(video|music\s+video)\]""")
         fun isSongItemVideo(song: unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem): Boolean {
             val musicVideoType = song.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
-            val isOmv = musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_OMV ||
-                        musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_UGC
-            return isOmv || videoTitlePattern.containsMatchIn(song.title)
+            return musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_OMV ||
+                   musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_UGC
         }
-        fun isVideoTrack(t: YouTubeMusicTrack): Boolean = t.isVideo || videoTitlePattern.containsMatchIn(t.title)
-        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !isVideoTrack(t)
+        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !t.isVideo
         fun filterTrack(t: YouTubeMusicTrack): Boolean =
             filterVideoTrack(t) &&
             !ContentFilterUtils.matchesFilterKeywords(t, filterKeywords) &&

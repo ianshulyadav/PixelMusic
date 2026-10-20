@@ -314,6 +314,11 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
             .components {
                 add(localArtworkCoilFetcherFactory.get())
                 add(telegramCoilFetcherFactory.get())
+                if (android.os.Build.VERSION.SDK_INT >= 28) {
+                    add(coil.decode.ImageDecoderDecoder.Factory())
+                } else {
+                    add(coil.decode.GifDecoder.Factory())
+                }
             }
             .build()
     }

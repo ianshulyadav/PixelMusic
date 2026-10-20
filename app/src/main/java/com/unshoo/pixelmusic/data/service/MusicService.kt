@@ -4148,9 +4148,8 @@ class MusicService : MediaLibraryService() {
 
         isApplyingShuffleOrder = true
         try {
-            val shuffledIndices = IntArray(count) { it }
             (player as? androidx.media3.exoplayer.ExoPlayer)?.setShuffleOrder(
-                androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis())
+                androidx.media3.exoplayer.source.ShuffleOrder.UnshuffledShuffleOrder(count)
             )
         } finally {
             isApplyingShuffleOrder = false

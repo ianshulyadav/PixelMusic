@@ -218,8 +218,10 @@ fun ExploreScreen(
     quickPicksViewModel: QuickPicksViewModel = hiltViewModel(),
     exploreViewModel: ExploreViewModel = hiltViewModel(),
 ) {
-    val sheetState by playerViewModel.sheetState.collectAsStateWithLifecycle()
-    androidx.activity.compose.BackHandler(enabled = sheetState == PlayerSheetState.COLLAPSED) {
+    val isSheetCollapsed by remember(playerViewModel) {
+        playerViewModel.sheetState.map { it == PlayerSheetState.COLLAPSED }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.sheetState.value == PlayerSheetState.COLLAPSED)
+    androidx.activity.compose.BackHandler(enabled = isSheetCollapsed) {
         navController.navigateToTopLevelSafely(Screen.Home.route)
     }
 
@@ -2727,7 +2729,6 @@ private fun SpotlightHeroCard(
                         .graphicsLayer {
                             scaleX = 1.08f
                             scaleY = 1.08f
-                            translationY = (scrollOffsetProvider() * 0.08f).coerceIn(-24f, 24f)
                             alpha = 0.22f
                         }
                 )

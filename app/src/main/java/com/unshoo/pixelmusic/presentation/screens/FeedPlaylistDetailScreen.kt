@@ -178,6 +178,7 @@ fun FeedPlaylistDetailScreen(
                             onBackClick = navigateBackToExplore,
                             albumArtQuality = s.albumArtQuality,
                             filterKeywords = s.filterKeywords,
+                            onPlayAlbumsClick = { viewModel.playFirst15Albums(playerViewModel) },
                             onShuffleAlbumsClick = { viewModel.shuffleFirst15Albums(playerViewModel) }
                         )
                     }

@@ -6392,7 +6392,7 @@ class PlayerViewModel @Inject constructor(
                             player.shuffleModeEnabled = isShuffle
                             if (isShuffle) {
                                 (player as? androidx.media3.exoplayer.ExoPlayer)?.setShuffleOrder(
-                                    androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder(IntArray(items.size) { it }, System.currentTimeMillis())
+                                    androidx.media3.exoplayer.source.ShuffleOrder.UnshuffledShuffleOrder(items.size)
                                 )
                             }
                             player.prepare()
