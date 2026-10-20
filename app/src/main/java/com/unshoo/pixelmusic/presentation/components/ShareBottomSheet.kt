@@ -1287,49 +1287,59 @@ private fun ShareableCard(
 
             // ── PixelMusic pill — OUTSIDE mini card, in outer column ─────────
             val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(3.dp)
+            Row(
+                modifier = Modifier
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        ambientColor = Color.Black.copy(alpha = 0.40f),
+                        spotColor = Color.Black.copy(alpha = 0.30f)
+                    )
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.52f),
+                                Color.Black.copy(alpha = 0.38f)
+                            )
+                        )
+                    )
+                    .border(
+                        width = 1.dp,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.28f),
+                                Color.White.copy(alpha = 0.10f)
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+                    .clickable {
+                        try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 6.5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color.Black.copy(alpha = 0.35f))
-                        .border(1.dp, Color.White.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
-                        .clickable {
-                            try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
-                        }
-                        .padding(horizontal = 10.dp, vertical = 3.5.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Link,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(10.dp)
-                    )
-                    Text(
-                        text = "PixelMusic",
-                        fontFamily = GoogleSansRounded,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 9.5.sp,
-                        color = Color.White
-                    )
-                    Icon(
-                        imageVector = Icons.Rounded.ChevronRight,
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.size(11.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Rounded.Link,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.95f),
+                    modifier = Modifier.size(13.dp)
+                )
                 Text(
-                    text = "github.com/ianshulyadav",
+                    text = "PixelMusic",
                     fontFamily = GoogleSansRounded,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 7.sp,
-                    color = Color.White.copy(alpha = 0.45f),
-                    textAlign = TextAlign.Center
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    letterSpacing = 0.2.sp,
+                    color = Color.White
+                )
+                Icon(
+                    imageVector = Icons.Rounded.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.70f),
+                    modifier = Modifier.size(13.dp)
                 )
             }
         }
