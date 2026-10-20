@@ -80,16 +80,22 @@ class FeedPlaylistDetailViewModel @Inject constructor(
             val liked = playlistId == "yt_liked"
             val recent = playlistId == "yt_recent"
             val isNewReleases = playlistId == "new_releases"
+            val isCharts = playlistId == "charts"
+            val isPodcasts = playlistId == "podcasts"
             val title = when {
                 liked -> "Liked on YouTube"
                 recent -> "Recently played"
                 isNewReleases -> "New Releases"
+                isCharts -> "Top Charts"
+                isPodcasts -> "Podcasts"
                 else -> "Playlist"
             }
             val author = when {
                 liked -> "Your favorites"
                 recent -> "Recently played tracks"
                 isNewReleases -> "Latest releases"
+                isCharts -> "Top trending tracks"
+                isPodcasts -> "Shows & episodes"
                 else -> "YouTube Music"
             }
 
@@ -123,6 +129,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
 
             if (liked) showTracks(feedRepository.getCachedFeed()?.ytLikedSongs.orEmpty())
             if (recent) showTracks(feedRepository.getCachedFeed()?.ytRecentSongs.orEmpty())
+            if (isCharts) showTracks(feedRepository.getCachedFeed()?.charts.orEmpty())
 
             try {
                 val result = when {
@@ -276,6 +283,46 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                             tracks = distinctTracks
                         )
                     }
+                    isCharts -> {
+                        val cachedCharts = feedRepository.getCachedFeed()?.charts.orEmpty()
+                        val charts = if (cachedCharts.isNotEmpty()) cachedCharts else innerTube.fetchCharts()
+                        val filtered = charts.filter(::filterTrack)
+                        if (filtered.isEmpty()) {
+                            throw java.io.IOException("No chart tracks found.")
+                        }
+                        YouTubePlaylistResult(
+                            id = playlistId,
+                            title = title,
+                            author = author,
+                            artworkUrl = filtered.firstOrNull()?.artworkUrl,
+                            trackCount = filtered.size,
+                            tracks = filtered
+                        )
+                    }
+                    isPodcasts -> {
+                        val podcastSections = withContext(Dispatchers.IO) {
+                            runCatching {
+                                innerTube.fetchPlaylist("VLSE", progressive = false)?.tracks.orEmpty()
+                            }.getOrDefault(emptyList())
+                        }
+                        val finalPodcasts = if (podcastSections.isNotEmpty()) {
+                            podcastSections
+                        } else {
+                            innerTube.searchSongs("podcast")
+                        }
+                        val filtered = finalPodcasts.filter(::filterTrack)
+                        if (filtered.isEmpty()) {
+                            throw java.io.IOException("No podcasts found.")
+                        }
+                        YouTubePlaylistResult(
+                            id = playlistId,
+                            title = title,
+                            author = author,
+                            artworkUrl = filtered.firstOrNull()?.artworkUrl,
+                            trackCount = filtered.size,
+                            tracks = filtered
+                        )
+                    }
                     else -> {
                         val pl = innerTube.fetchPlaylist(if (liked) "LM" else playlistId, progressive = true, onPageLoaded = ::showTracks)
                         if (pl != null) {
@@ -303,7 +350,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                 _uiState.value = FeedPlaylistDetailUiState.Success(
                     result.copy(
                         id = playlistId,
-                        title = if (liked || recent || isNewReleases) title else result.title.ifBlank { title },
+                        title = if (liked || recent || isNewReleases || isCharts || isPodcasts) title else result.title.ifBlank { title },
                         author = result.author?.takeIf(String::isNotBlank) ?: author,
                         tracks = finalTracks,
                         trackCount = finalTracks.size

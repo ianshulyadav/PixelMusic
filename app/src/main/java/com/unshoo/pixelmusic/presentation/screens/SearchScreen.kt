@@ -157,6 +157,10 @@ import com.unshoo.pixelmusic.presentation.screens.search.components.MoodGenreCat
 import com.unshoo.pixelmusic.presentation.screens.search.components.MoodGenreItem
 import com.unshoo.pixelmusic.presentation.screens.search.components.MoodGenreContentView
 import com.unshoo.pixelmusic.presentation.screens.search.components.MoodsAndGenresBrowseView
+import com.unshoo.pixelmusic.presentation.screens.search.components.BrowseDiscoverSection
+import com.unshoo.pixelmusic.presentation.screens.search.components.RecentSearchesSection
+import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 
 private enum class SearchScreenMode {
     BROWSE_GENRES,
@@ -183,6 +187,7 @@ fun SearchScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedMoodGenre by remember { mutableStateOf<MoodGenreItem?>(null) }
     var lastSelectedMoodGenre by remember { mutableStateOf<MoodGenreItem?>(null) }
+    var isBrowsingAllMoodsAndGenres by rememberSaveable { mutableStateOf(false) }
     if (selectedMoodGenre != null) {
         lastSelectedMoodGenre = selectedMoodGenre
     }
@@ -195,6 +200,9 @@ fun SearchScreen(
         when {
             selectedMoodGenre != null -> {
                 selectedMoodGenre = null
+            }
+            isBrowsingAllMoodsAndGenres -> {
+                isBrowsingAllMoodsAndGenres = false
             }
             searchQuery.isNotEmpty() -> {
                 searchQuery = ""
@@ -263,11 +271,12 @@ fun SearchScreen(
     val searchListState = rememberLazyListState()
 
     // On every visit to the search screen, clear the query + results so we
-    // always land on the Moods & Genres browse page.
+    // always land on the clean Browse & Discover page.
     LaunchedEffect(Unit) {
         onSearchBarActiveChange(false)
         searchQuery = ""
         selectedMoodGenre = null
+        isBrowsingAllMoodsAndGenres = false
         playerViewModel.performSearch("")
         playerViewModel.loadSearchHistory()
         browseListState.scrollToItem(0, 0)
@@ -367,32 +376,129 @@ fun SearchScreen(
                     label = "search_query_mode_transition"
                 ) { isSearchActive ->
                     if (!isSearchActive) {
-                        MoodsAndGenresBrowseView(
-                            searchHistory = searchUiState.searchHistory,
-                            bottomBarHeight = bottomBarHeightDp,
-                            topPadding = statusBarTopInset + 62.dp,
-                            listState = browseListState,
-                            onMoodGenreClick = { item ->
-                                focusManager.clearFocus(force = true)
-                                keyboardController?.hide()
-                                selectedMoodGenre = item
-                            },
-                            onHistoryItemClick = { query ->
-                                searchQuery = query
-                                selectedMoodGenre = null
-                                playerViewModel.updateSearchQuery(query)
-                                playerViewModel.performSearch(query)
-                                playerViewModel.onSearchQuerySubmitted(query)
-                                keyboardController?.hide()
-                                focusManager.clearFocus(force = true)
-                            },
-                            onHistoryItemDelete = { query ->
-                                playerViewModel.deleteSearchHistoryItem(query)
-                            },
-                            onClearAllHistory = {
-                                playerViewModel.clearSearchHistory()
+                        if (isBrowsingAllMoodsAndGenres) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = statusBarTopInset + 62.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    IconButton(
+                                        onClick = { isBrowsingAllMoodsAndGenres = false },
+                                        modifier = Modifier.size(40.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                            contentDescription = "Back",
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    Text(
+                                        text = "Moods & Genres",
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                MoodsAndGenresBrowseView(
+                                    searchHistory = emptyList(),
+                                    bottomBarHeight = bottomBarHeightDp,
+                                    topPadding = 0.dp,
+                                    listState = browseListState,
+                                    onMoodGenreClick = { item ->
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                        selectedMoodGenre = item
+                                    },
+                                    onHistoryItemClick = { query ->
+                                        searchQuery = query
+                                        selectedMoodGenre = null
+                                        isBrowsingAllMoodsAndGenres = false
+                                        playerViewModel.updateSearchQuery(query)
+                                        playerViewModel.performSearch(query)
+                                        playerViewModel.onSearchQuerySubmitted(query)
+                                        keyboardController?.hide()
+                                        focusManager.clearFocus(force = true)
+                                    },
+                                    onHistoryItemDelete = { query ->
+                                        playerViewModel.deleteSearchHistoryItem(query)
+                                    },
+                                    onClearAllHistory = {
+                                        playerViewModel.clearSearchHistory()
+                                    }
+                                )
                             }
-                        )
+                        } else {
+                            val cachedCover = remember(playerViewModel) {
+                                playerViewModel.stablePlayerState.value.currentSong?.albumArtUriString
+                            }
+
+                            LazyColumn(
+                                state = browseListState,
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(
+                                    top = statusBarTopInset + 66.dp,
+                                    bottom = bottomBarHeightDp + MiniPlayerHeight + 36.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                item(key = "browse_discover_grid", contentType = "browse_discover") {
+                                    BrowseDiscoverSection(
+                                        onNewReleasesClick = {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases"))
+                                        },
+                                        onChartsClick = {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("charts"))
+                                        },
+                                        onMoodsGenresClick = {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            isBrowsingAllMoodsAndGenres = true
+                                        },
+                                        onPodcastsClick = {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("podcasts"))
+                                        },
+                                        newReleaseCoverUrl = cachedCover
+                                    )
+                                }
+
+                                if (searchUiState.searchHistory.isNotEmpty()) {
+                                    item(key = "recent_searches_section", contentType = "recent_searches") {
+                                        RecentSearchesSection(
+                                            searchHistory = searchUiState.searchHistory,
+                                            onItemClick = { query ->
+                                                searchQuery = query
+                                                selectedMoodGenre = null
+                                                playerViewModel.updateSearchQuery(query)
+                                                playerViewModel.performSearch(query)
+                                                playerViewModel.onSearchQuerySubmitted(query)
+                                                keyboardController?.hide()
+                                                focusManager.clearFocus(force = true)
+                                            },
+                                            onItemDelete = { query ->
+                                                playerViewModel.deleteSearchHistoryItem(query)
+                                            },
+                                            onClearAll = {
+                                                playerViewModel.clearSearchHistory()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     } else {
                         Column(
                             modifier = Modifier
