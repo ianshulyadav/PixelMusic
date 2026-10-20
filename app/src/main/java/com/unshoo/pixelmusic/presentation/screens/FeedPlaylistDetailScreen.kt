@@ -1,6 +1,9 @@
 package com.unshoo.pixelmusic.presentation.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import com.unshoo.pixelmusic.presentation.screens.expressive.ExpressiveChartsContent
+import com.unshoo.pixelmusic.presentation.screens.expressive.ExpressiveNewReleasesContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -101,7 +104,68 @@ fun FeedPlaylistDetailScreen(
     val favoriteSongIds by playerViewModel.favoriteSongIds.collectAsStateWithLifecycle()
     val playlistViewModel: PlaylistViewModel = hiltViewModel()
 
-    Scaffold(
+    val isCustomExpressive = playlistId == "charts" || playlistId == "new_releases"
+
+    if (isCustomExpressive) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            when (val s = state) {
+                is FeedPlaylistDetailUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                is FeedPlaylistDetailUiState.Error -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = s.message,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = GoogleSansRounded,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.retry() }) {
+                            Icon(Icons.Rounded.Refresh, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Retry", fontFamily = GoogleSansRounded)
+                        }
+                    }
+                }
+                is FeedPlaylistDetailUiState.Success -> {
+                    if (playlistId == "charts") {
+                        ExpressiveChartsContent(
+                            playlist = s.playlist,
+                            chartsPage = s.chartsPage,
+                            selectedCountry = s.selectedCountryCode,
+                            onCountrySelected = { viewModel.setChartsCountry(it) },
+                            playerViewModel = playerViewModel,
+                            navController = navController,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    } else {
+                        ExpressiveNewReleasesContent(
+                            playlist = s.playlist,
+                            newReleaseAlbums = s.newReleaseAlbums,
+                            playerViewModel = playerViewModel,
+                            navController = navController,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
+                }
+            }
+        }
+    } else {
+        Scaffold(
         topBar = {
             TopAppBar(
                 title = {
@@ -486,6 +550,7 @@ fun FeedPlaylistDetailScreen(
                 removeFromListTrigger = {}
             )
         }
+    }
     }
 
     if (showPlaylistBottomSheet) {

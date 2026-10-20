@@ -102,6 +102,7 @@ import androidx.compose.runtime.produceState
 import com.unshoo.pixelmusic.data.model.SearchResultItem
 import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
+import com.unshoo.pixelmusic.presentation.components.bounceClick
 import com.unshoo.pixelmusic.presentation.components.SmartImage
 import com.unshoo.pixelmusic.presentation.components.SmartImageListTargetSize
 import com.unshoo.pixelmusic.presentation.components.SongInfoBottomSheet
@@ -470,8 +471,7 @@ fun SearchScreen(
                                             focusManager.clearFocus(force = true)
                                             keyboardController?.hide()
                                             navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("podcasts"))
-                                        },
-                                        newReleaseCoverUrl = cachedCover
+                                        }
                                     )
                                 }
 

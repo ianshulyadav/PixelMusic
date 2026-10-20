@@ -1,0 +1,534 @@
+package com.unshoo.pixelmusic.presentation.screens.expressive
+
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.unshoo.pixelmusic.data.feed.YouTubePlaylistResult
+import com.unshoo.pixelmusic.data.feed.toSong
+import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
+import com.unshoo.pixelmusic.presentation.components.SmartImage
+import com.unshoo.pixelmusic.presentation.components.bounceClick
+import com.unshoo.pixelmusic.presentation.navigation.Screen
+import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
+import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
+import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+import com.unshoo.pixelmusic.ui.theme.LocalPixelMusicDarkTheme
+import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
+import unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem
+
+enum class NewReleasesFilter(val label: String) {
+    ALL("All"),
+    ALBUMS("Albums"),
+    SINGLES("Singles"),
+    MIXES("Mixes")
+}
+
+private data class AlbumCardItem(
+    val id: String,
+    val title: String,
+    val artist: String,
+    val artwork: String?
+)
+
+
+@Composable
+fun ExpressiveNewReleasesContent(
+    playlist: YouTubePlaylistResult,
+    newReleaseAlbums: List<AlbumItem>,
+    playerViewModel: PlayerViewModel,
+    navController: NavController,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val isDark = LocalPixelMusicDarkTheme.current
+    var selectedFilter by remember { mutableStateOf(NewReleasesFilter.ALL) }
+
+    val statusBarInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val navBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomContentPadding = navBarInset + MiniPlayerHeight + 24.dp
+
+    val songs: List<Song> = remember(playlist.tracks) {
+        playlist.tracks.map { it.toSong() }
+    }
+
+    // Hero items for the 2 large top cards (Screenshot 2)
+    val heroItems = remember(songs, newReleaseAlbums) {
+        if (songs.size >= 2) {
+            listOf(
+                Triple(songs[0].title, songs[0].artist, songs[0].albumArtUriString),
+                Triple(songs[1].title, "Mix • YouTube Music", songs[1].albumArtUriString)
+            )
+        } else if (newReleaseAlbums.size >= 2) {
+            listOf(
+                Triple(newReleaseAlbums[0].title, newReleaseAlbums[0].artists?.firstOrNull()?.name ?: "Artist", newReleaseAlbums[0].thumbnail),
+                Triple(newReleaseAlbums[1].title, "Mix • YouTube Music", newReleaseAlbums[1].thumbnail)
+            )
+        } else {
+            emptyList()
+        }
+    }
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(
+            top = statusBarInset + 8.dp,
+            bottom = bottomContentPadding
+        ),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        // 1. Top Bar with back arrow and "New releases" title
+        item(key = "new_releases_top_bar") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = "New releases",
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
+        // 2. Hero Featured Releases (2 large portrait cards side by side - Screenshot 2)
+        if (heroItems.isNotEmpty()) {
+            item(key = "new_releases_hero_cards") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    heroItems.forEachIndexed { index, (title, subtitle, artwork) ->
+                        val cardShape = remember { AbsoluteSmoothCornerShape(22.dp, 60) }
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(220.dp)
+                                .bounceClick(scaleDown = 0.96f) {
+                                    if (songs.isNotEmpty()) {
+                                        playerViewModel.playSongs(songs, songs[index % songs.size], queueName = "New Releases")
+                                    }
+                                },
+                            shape = cardShape,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            shadowElevation = 0.dp
+                        ) {
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                // Full-bleed background image
+                                SmartImage(
+                                    model = artwork,
+                                    contentDescription = title,
+                                    shape = cardShape,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+
+                                // Dark gradient scrim for text legibility
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                colorStops = arrayOf(
+                                                    0.0f to Color.Transparent,
+                                                    0.35f to Color.Transparent,
+                                                    0.65f to Color.Black.copy(alpha = 0.55f),
+                                                    1.0f to Color.Black.copy(alpha = 0.90f)
+                                                )
+                                            )
+                                        )
+                                )
+
+                                // Optional RELEASED pill badge on first card
+                                if (index == 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .padding(start = 14.dp, bottom = 40.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.White)
+                                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "RELEASED",
+                                            fontFamily = GoogleSansRounded,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp,
+                                            color = Color.Black,
+                                            letterSpacing = 0.5.sp
+                                        )
+                                    }
+                                }
+
+                                // Bottom Titles
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = title,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        color = Color.White,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = subtitle,
+                                        fontFamily = GoogleSansRounded,
+                                        fontWeight = FontWeight.Normal,
+                                        fontSize = 12.sp,
+                                        color = Color.White.copy(alpha = 0.82f),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Filter Pills: All | Albums | Singles | Mixes
+        item(key = "new_releases_filter_pills") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                NewReleasesFilter.entries.forEach { filter ->
+                    val isSelected = selectedFilter == filter
+                    val pillBgColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        },
+                        animationSpec = tween(durationMillis = 200),
+                        label = "pill_bg_filter"
+                    )
+                    val pillTextColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        animationSpec = tween(durationMillis = 200),
+                        label = "pill_text_filter"
+                    )
+
+                    Surface(
+                        onClick = { selectedFilter = filter },
+                        shape = CircleShape,
+                        color = pillBgColor,
+                        shadowElevation = 0.dp,
+                        modifier = Modifier.bounceClick(scaleDown = 0.95f) { selectedFilter = filter }
+                    ) {
+                        Text(
+                            text = filter.label,
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.5.sp,
+                            color = pillTextColor,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 4. "Albums & singles" Section (Screenshot 2 Middle)
+        item(key = "new_releases_albums_section") {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Albums & singles",
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    // Trailing circular arrow button
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                            .clickable {
+                                if (songs.isNotEmpty()) {
+                                    playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
+                                }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                            contentDescription = "View all",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                // Horizontal row of square album art cards
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    val albumCards: List<AlbumCardItem> = if (newReleaseAlbums.isNotEmpty()) {
+                        newReleaseAlbums.map {
+                            AlbumCardItem(
+                                id = it.browseId,
+                                title = it.title,
+                                artist = it.artists?.firstOrNull()?.name ?: "Artist",
+                                artwork = it.thumbnail
+                            )
+                        }
+                    } else {
+                        songs.take(10).map {
+                            AlbumCardItem(
+                                id = it.id,
+                                title = it.title,
+                                artist = it.artist,
+                                artwork = it.albumArtUriString
+                            )
+                        }
+                    }
+
+                    items(albumCards) { item ->
+                        Column(
+                            modifier = Modifier
+                                .width(135.dp)
+                                .bounceClick(scaleDown = 0.96f) {
+                                    if (item.id.startsWith("MPREb_") || item.id.startsWith("OLAK")) {
+                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(item.id))
+                                    } else {
+                                        val songMatch = songs.firstOrNull { it.id == item.id }
+                                        if (songMatch != null) {
+                                            playerViewModel.playSongs(songs, songMatch, queueName = "Albums & singles")
+                                        }
+                                    }
+                                },
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // Square artwork with rounded corners
+                            Box(
+                                modifier = Modifier
+                                    .size(135.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                            ) {
+                                SmartImage(
+                                    model = item.artwork,
+                                    contentDescription = item.title,
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+
+                            Text(
+                                text = item.title,
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+
+                            Text(
+                                text = "Album • ${item.artist}",
+                                fontFamily = GoogleSansRounded,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. "More to explore" Section (Screenshot 2 Bottom)
+        item(key = "new_releases_more_to_explore_section") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = "More to explore",
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+
+                songs.drop(2).take(15).forEach { song ->
+                    val pillShape = remember { AbsoluteSmoothCornerShape(18.dp, 60) }
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+                            .bounceClick(scaleDown = 0.98f) {
+                                playerViewModel.playSongs(songs, song, queueName = "More to explore")
+                            },
+                        shape = pillShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        shadowElevation = 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Artwork square
+                            Box(
+                                modifier = Modifier
+                                    .size(46.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            ) {
+                                SmartImage(
+                                    model = song.albumArtUriString,
+                                    contentDescription = song.title,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            // Song title & artist
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    text = song.title,
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    text = song.artist,
+                                    fontFamily = GoogleSansRounded,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+
+                            // Trailing Play Icon
+                            IconButton(
+                                onClick = {
+                                    playerViewModel.playSongs(songs, song, queueName = "More to explore")
+                                },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.PlayArrow,
+                                    contentDescription = "Play",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
