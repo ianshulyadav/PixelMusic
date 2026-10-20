@@ -53,7 +53,15 @@ class FeedRepository @Inject constructor(
         val pureYtMusicOnly = runCatching { userPreferencesRepository.pureYtMusicOnlyFlow.first() }.getOrDefault(false)
         val filterCoverAndLofi = runCatching { userPreferencesRepository.filterCoverAndLofiFlow.first() }.getOrDefault(true)
         val filterKeywords = runCatching { userPreferencesRepository.filterKeywordsFlow.first() }.getOrDefault(ContentFilterUtils.DEFAULT_FILTER_KEYWORDS)
-        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !t.isVideo
+        val videoTitlePattern = Regex("""(?i)\b(official\s+video|official\s+music\s+video|music\s+video|lyric\s+video|visualizer|video\s+song)\b|\((video|music\s+video)\)|\[(video|music\s+video)\]""")
+        fun isSongItemVideo(song: unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem): Boolean {
+            val musicVideoType = song.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
+            val isOmv = musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_OMV ||
+                        musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_UGC
+            return isOmv || videoTitlePattern.containsMatchIn(song.title)
+        }
+        fun isVideoTrack(t: YouTubeMusicTrack): Boolean = t.isVideo || videoTitlePattern.containsMatchIn(t.title)
+        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !isVideoTrack(t)
         fun filterTrack(t: YouTubeMusicTrack): Boolean =
             filterVideoTrack(t) &&
             !ContentFilterUtils.matchesFilterKeywords(t, filterKeywords) &&
@@ -109,7 +117,8 @@ class FeedRepository @Inject constructor(
                     title = song.title,
                     artist = song.artists.firstOrNull()?.name ?: "Unknown artist",
                     album = song.album?.name,
-                    artworkUrl = song.thumbnail
+                    artworkUrl = song.thumbnail,
+                    isVideo = isSongItemVideo(song)
                 )
             }.filter(::filterTrack)
 
@@ -121,12 +130,15 @@ class FeedRepository @Inject constructor(
                     author = item.artists?.firstOrNull()?.name ?: "Album",
                     artworkUrl = item.thumbnail
                 )
-                is unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem -> YouTubePlaylistSummary(
-                    id = item.id,
-                    title = item.title,
-                    author = item.artists.firstOrNull()?.name ?: "Single",
-                    artworkUrl = item.thumbnail
-                )
+                is unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem -> {
+                    if (pureYtMusicOnly && isSongItemVideo(item)) null
+                    else YouTubePlaylistSummary(
+                        id = item.id,
+                        title = item.title,
+                        author = item.artists.firstOrNull()?.name ?: "Single",
+                        artworkUrl = item.thumbnail
+                    )
+                }
                 else -> null
             }
         }.filterNot {
@@ -143,7 +155,8 @@ class FeedRepository @Inject constructor(
                 title = song.title,
                 artist = song.artists.firstOrNull()?.name ?: "Unknown artist",
                 album = song.album?.name,
-                artworkUrl = song.thumbnail
+                artworkUrl = song.thumbnail,
+                isVideo = isSongItemVideo(song)
             )
         }.filter(::filterTrack)
 
@@ -195,7 +208,8 @@ class FeedRepository @Inject constructor(
                 title = song.title,
                 artist = song.artists.firstOrNull()?.name ?: "Unknown artist",
                 album = song.album?.name,
-                artworkUrl = song.thumbnail
+                artworkUrl = song.thumbnail,
+                isVideo = isSongItemVideo(song)
             )
         }.filter(::filterTrack)
 

@@ -33,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import com.unshoo.pixelmusic.ui.theme.ExpressiveSprings
 import com.unshoo.pixelmusic.ui.theme.fastSpatial
 import com.unshoo.pixelmusic.ui.theme.defaultEffects
+import com.unshoo.pixelmusic.utils.ContentFilterUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -483,7 +484,20 @@ fun ExploreScreen(
     }
 
     val blockedReleaseIds by feedViewModel.blockedReleaseIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    val pureYtMusicOnly by feedViewModel.pureYtMusicOnly.collectAsStateWithLifecycle(initialValue = false)
+    val filterKeywords by feedViewModel.filterKeywords.collectAsStateWithLifecycle(initialValue = emptyList())
     var releaseToBlock by remember { mutableStateOf<YouTubePlaylistSummary?>(null) }
+
+    val videoTitlePattern = remember {
+        Regex("""(?i)\b(official\s+video|official\s+music\s+video|music\s+video|lyric\s+video|visualizer|video\s+song)\b|\((video|music\s+video)\)|\[(video|music\s+video)\]""")
+    }
+
+    val freshFindsToDisplay = remember(state.feedData.freshFinds, pureYtMusicOnly, filterKeywords) {
+        state.feedData.freshFinds.filter { track ->
+            (!pureYtMusicOnly || (!track.isVideo && !videoTitlePattern.containsMatchIn(track.title))) &&
+            !ContentFilterUtils.matchesFilterKeywords(track, filterKeywords)
+        }
+    }
 
     val newReleases = remember(exploreUiState.newReleaseAlbums, state.feedData.newReleases, blockedReleaseIds) {
         val rawList = if (exploreUiState.newReleaseAlbums.isNotEmpty()) {
@@ -1010,7 +1024,7 @@ fun ExploreScreen(
                                 }
                             }
 
-                            if (state.feedData.freshFinds.isNotEmpty()) {
+                            if (freshFindsToDisplay.isNotEmpty()) {
                                 item(key = "feed_fresh_finds", contentType = "section") {
                                     FeedSectionHeader(
                                         title = stringResource(R.string.explore_section_fresh_finds),
@@ -1018,14 +1032,14 @@ fun ExploreScreen(
                                         actionText = stringResource(R.string.action_play_all),
                                         actionIcon = Icons.Filled.PlayArrow,
                                         onActionClick = {
-                                            feedViewModel.playTracksQueue(state.feedData.freshFinds, 0, playerViewModel, "Fresh Finds")
+                                            feedViewModel.playTracksQueue(freshFindsToDisplay, 0, playerViewModel, "Fresh Finds")
                                         },
                                         onShuffleClick = {
-                                            feedViewModel.shuffleTracksQueue(state.feedData.freshFinds, playerViewModel, "Fresh Finds")
+                                            feedViewModel.shuffleTracksQueue(freshFindsToDisplay, playerViewModel, "Fresh Finds")
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(state.feedData.freshFinds, key = { _, t -> "fresh_${t.videoId}" }, contentType = { _, _ -> "track_card" }) { index, track ->
+                                        itemsIndexed(freshFindsToDisplay, key = { _, t -> "fresh_${t.videoId}" }, contentType = { _, _ -> "track_card" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.title,
                                                 subtitle = track.artist,
@@ -1033,10 +1047,10 @@ fun ExploreScreen(
                                                 badgeText = stringResource(R.string.badge_new),
                                                 isCurrentPlaying = isPlaying && currentSongId == "youtube_${track.videoId}",
                                                 onClick = {
-                                                    feedViewModel.playTracksQueue(state.feedData.freshFinds, index, playerViewModel, "Fresh Finds")
+                                                    feedViewModel.playTracksQueue(freshFindsToDisplay, index, playerViewModel, "Fresh Finds")
                                                 },
                                                 onPlayClick = {
-                                                    feedViewModel.playTracksQueue(state.feedData.freshFinds, index, playerViewModel, "Fresh Finds")
+                                                    feedViewModel.playTracksQueue(freshFindsToDisplay, index, playerViewModel, "Fresh Finds")
                                                 },
                                                 onMoreClick = {
                                                     playerViewModel.selectSongForInfo(track.toSong())
@@ -1048,61 +1062,7 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // 8. New Releases Section or Recently Added Fallback
-                            if (newReleases.isNotEmpty()) {
-                                item(key = "feed_new_releases", contentType = "section") {
-                                    FeedSectionHeader(
-                                        title = stringResource(R.string.explore_section_new_releases),
-                                        subtitle = stringResource(R.string.explore_section_new_releases_desc),
-                                        actionText = stringResource(R.string.action_see_all),
-                                        actionIcon = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                        onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
-                                    )
-                                    FeedMediaRow {
-                                        items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }, contentType = { "playlist_card" }) { release ->
-                                            FeedPlaylistCard(
-                                                title = release.title,
-                                                subtitle = release.author ?: "Artist",
-                                                artworkUrl = release.artworkUrl,
-                                                badgeText = "NEW",
-                                                onLongClick = {
-                                                    releaseToBlock = release
-                                                },
-                                                onClick = {
-                                                    if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
-                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
-                                                    } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
-                                                        navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
-                                                    } else {
-                                                        val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                                            videoId = release.id,
-                                                            title = release.title,
-                                                            artist = release.author ?: "Artist",
-                                                            artworkUrl = release.artworkUrl
-                                                        ).toSong()
-                                                        playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
-                                                    }
-                                                },
-                                                onPlayClick = {
-                                                    if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
-                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
-                                                    } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
-                                                        navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
-                                                    } else {
-                                                        val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                                            videoId = release.id,
-                                                            title = release.title,
-                                                            artist = release.author ?: "Artist",
-                                                            artworkUrl = release.artworkUrl
-                                                        ).toSong()
-                                                        playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            } else if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
+                            if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
                                 val recentSongs = exploreUiState.localRecentlyAddedSongs
                                 item(key = "feed_recently_added", contentType = "section") {
                                     FeedSectionHeader(
@@ -1366,7 +1326,61 @@ fun ExploreScreen(
                             }
                         }
 
-
+                        // 14. New Releases Section (Combined Live + Feed)
+                        if (newReleases.isNotEmpty()) {
+                            item(key = "feed_new_releases", contentType = "section") {
+                                FeedSectionHeader(
+                                    title = stringResource(R.string.explore_section_new_releases),
+                                    subtitle = stringResource(R.string.explore_section_new_releases_desc),
+                                    actionText = stringResource(R.string.action_see_all),
+                                    actionIcon = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                    onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
+                                )
+                                FeedMediaRow {
+                                    items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }, contentType = { "playlist_card" }) { release ->
+                                        FeedPlaylistCard(
+                                            title = release.title,
+                                            subtitle = release.author ?: "Artist",
+                                            artworkUrl = release.artworkUrl,
+                                            badgeText = "NEW",
+                                            onLongClick = {
+                                                releaseToBlock = release
+                                            },
+                                            onClick = {
+                                                if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
+                                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
+                                                } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
+                                                    navController.navigateSafely(Screen.PlaylistDetail.createRoute(release.id))
+                                                } else {
+                                                    val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                                                        videoId = release.id,
+                                                        title = release.title,
+                                                        artist = release.author ?: "Artist",
+                                                        artworkUrl = release.artworkUrl
+                                                    ).toSong()
+                                                    playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
+                                                }
+                                            },
+                                            onPlayClick = {
+                                                if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
+                                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
+                                                } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
+                                                    navController.navigateSafely(Screen.PlaylistDetail.createRoute(release.id))
+                                                } else {
+                                                    val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                                                        videoId = release.id,
+                                                        title = release.title,
+                                                        artist = release.author ?: "Artist",
+                                                        artworkUrl = release.artworkUrl
+                                                    ).toSong()
+                                                    playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
 
                         // 15. All real YouTube Home Shelves
                         if (otherHomeSections.isNotEmpty()) {

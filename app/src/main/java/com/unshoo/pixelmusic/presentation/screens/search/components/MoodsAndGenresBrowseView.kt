@@ -1,11 +1,16 @@
 package com.unshoo.pixelmusic.presentation.screens.search.components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.unshoo.pixelmusic.data.model.SearchHistoryItem
 import com.unshoo.pixelmusic.presentation.components.MiniPlayerHeight
+import com.unshoo.pixelmusic.presentation.components.bounceClick
+import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+
+enum class MoodGenreFilter(val label: String) {
+    ALL("All"),
+    MOODS("Moods & moments"),
+    GENRES("Genres")
+}
 
 /**
  * Musify-style pure YouTube Music Moods & Moments and Genres browse grid.
@@ -62,6 +75,7 @@ fun MoodsAndGenresBrowseView(
     val context = androidx.compose.ui.platform.LocalContext.current
     var liveMoods by remember { mutableStateOf(MoodGenreCatalog.cachedMoods) }
     var liveGenres by remember { mutableStateOf(MoodGenreCatalog.cachedGenres) }
+    var selectedFilter by remember { mutableStateOf(MoodGenreFilter.ALL) }
 
     LaunchedEffect(Unit) {
         CategoryPlaylistImageCache.init(context)
@@ -78,17 +92,19 @@ fun MoodsAndGenresBrowseView(
         }
     }
 
+    val navBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             top = topPadding,
-            bottom = bottomBarHeight + MiniPlayerHeight + 32.dp
+            bottom = bottomBarHeight + MiniPlayerHeight + navBarInset + 36.dp
         )
     ) {
         // Recent Searches Section (if history exists)
         if (searchHistory.isNotEmpty()) {
-            item(key = "history_header") {
+            item(key = "history_header", contentType = "history_header") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -113,7 +129,7 @@ fun MoodsAndGenresBrowseView(
                 }
             }
 
-            item(key = "history_chips") {
+            item(key = "history_chips", contentType = "history_chips") {
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 18.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -165,85 +181,184 @@ fun MoodsAndGenresBrowseView(
             }
         }
 
-        // Section: Moods & moments (Matching Image 3)
-        val moodsTopPadding = if (searchHistory.isEmpty()) 14.dp else 8.dp
-        item(key = "moods_header") {
-            Text(
-                text = "Moods & moments",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
-                    letterSpacing = (-0.3).sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 20.dp, top = moodsTopPadding, bottom = 12.dp)
-            )
-        }
-
-        items(
-            items = liveMoods.chunked(2),
-            key = { "mood_row_${it.first().id}" }
-        ) { pair ->
+        // Material 3 Expressive Filter Pills: All | Moods & moments | Genres
+        item(key = "mood_genre_filter_pills", contentType = "filter_pills") {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                MoodGenreCard(
-                    item = pair[0],
-                    onClick = { onMoodGenreClick(pair[0]) },
-                    modifier = Modifier.weight(1f)
-                )
-                if (pair.size > 1) {
+                MoodGenreFilter.entries.forEach { filter ->
+                    val isSelected = selectedFilter == filter
+                    val pillBgColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerHigh
+                        },
+                        animationSpec = tween(durationMillis = 200),
+                        label = "mood_pill_bg"
+                    )
+                    val pillTextColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        animationSpec = tween(durationMillis = 200),
+                        label = "mood_pill_text"
+                    )
+
+                    Surface(
+                        shape = CircleShape,
+                        color = pillBgColor,
+                        shadowElevation = 0.dp,
+                        modifier = Modifier.bounceClick(scaleDown = 0.95f) { selectedFilter = filter }
+                    ) {
+                        Text(
+                            text = filter.label,
+                            fontFamily = GoogleSansRounded,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.5.sp,
+                            color = pillTextColor,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // Section: Moods & moments (Matching Image 3)
+        if (selectedFilter == MoodGenreFilter.ALL || selectedFilter == MoodGenreFilter.MOODS) {
+            val moodsTopPadding = if (searchHistory.isEmpty()) 12.dp else 8.dp
+            item(key = "moods_header", contentType = "section_header") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 20.dp, top = moodsTopPadding, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Moods & moments",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            letterSpacing = (-0.3).sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ) {
+                        Text(
+                            text = "${liveMoods.size}",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+
+            items(
+                items = liveMoods.chunked(2),
+                key = { "mood_row_${it.first().id}" },
+                contentType = { "mood_row" }
+            ) { pair ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     MoodGenreCard(
-                        item = pair[1],
-                        onClick = { onMoodGenreClick(pair[1]) },
+                        item = pair[0],
+                        onClick = { onMoodGenreClick(pair[0]) },
                         modifier = Modifier.weight(1f)
                     )
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
+                    if (pair.size > 1) {
+                        MoodGenreCard(
+                            item = pair[1],
+                            onClick = { onMoodGenreClick(pair[1]) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
 
         // Section: Genres (Matching Image 2)
-        item(key = "genres_header") {
-            Text(
-                text = "Genres",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
-                    letterSpacing = (-0.3).sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 20.dp, top = 26.dp, bottom = 14.dp)
-            )
-        }
+        if (selectedFilter == MoodGenreFilter.ALL || selectedFilter == MoodGenreFilter.GENRES) {
+            item(key = "genres_header", contentType = "section_header") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 20.dp,
+                            end = 20.dp,
+                            top = if (selectedFilter == MoodGenreFilter.GENRES) 12.dp else 24.dp,
+                            bottom = 12.dp
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Genres",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 22.sp,
+                            letterSpacing = (-0.3).sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh
+                    ) {
+                        Text(
+                            text = "${liveGenres.size}",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
 
-        items(
-            items = liveGenres.chunked(2),
-            key = { "genre_row_${it.first().id}" }
-        ) { pair ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                MoodGenreCard(
-                    item = pair[0],
-                    onClick = { onMoodGenreClick(pair[0]) },
-                    modifier = Modifier.weight(1f)
-                )
-                if (pair.size > 1) {
+            items(
+                items = liveGenres.chunked(2),
+                key = { "genre_row_${it.first().id}" },
+                contentType = { "genre_row" }
+            ) { pair ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     MoodGenreCard(
-                        item = pair[1],
-                        onClick = { onMoodGenreClick(pair[1]) },
+                        item = pair[0],
+                        onClick = { onMoodGenreClick(pair[0]) },
                         modifier = Modifier.weight(1f)
                     )
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
+                    if (pair.size > 1) {
+                        MoodGenreCard(
+                            item = pair[1],
+                            onClick = { onMoodGenreClick(pair[1]) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }

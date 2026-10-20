@@ -476,7 +476,7 @@ fun ExpressiveChartsContent(
                                 thumbnail = videoChart.thumbnail,
                                 albumArtQuality = albumArtQuality,
                                 onClick = {
-                                    navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(videoChart.id))
+                                    navController.navigateSafely(Screen.PlaylistDetail.createRoute(videoChart.id))
                                 }
                             )
                         }

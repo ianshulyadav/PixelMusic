@@ -1,6 +1,7 @@
 package com.unshoo.pixelmusic.presentation.screens.search.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,12 +68,14 @@ fun MoodGenreCard(
             colors = if (isDark) {
                 listOf(
                     baseColor,
+                    baseColor.copy(alpha = 0.88f),
                     baseColor.copy(alpha = 0.72f)
                 )
             } else {
                 listOf(
                     baseColor,
-                    baseColor.copy(alpha = 0.88f)
+                    baseColor.copy(alpha = 0.94f),
+                    baseColor.copy(alpha = 0.86f)
                 )
             },
             start = androidx.compose.ui.geometry.Offset.Zero,
@@ -85,6 +88,11 @@ fun MoodGenreCard(
             .height(112.dp)
             .clip(cardShape)
             .background(surfaceBrush)
+            .border(
+                1.dp,
+                if (isDark) Color.White.copy(alpha = 0.08f) else Color.Black.copy(alpha = 0.05f),
+                cardShape
+            )
             .bounceClick(scaleDown = 0.95f) { onClick() }
     ) {
         // Two Overlapping Rotated Featured Playlist Covers (Bottom Right Corner)

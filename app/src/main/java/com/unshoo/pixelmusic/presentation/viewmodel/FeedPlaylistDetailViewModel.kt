@@ -459,7 +459,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                             val filteredTracks = pl.tracks.filter(::filterTrack)
                             pl.copy(tracks = filteredTracks, trackCount = filteredTracks.size)
                         } else {
-                            // Fallback to fetchAlbumPage for album/single browse IDs
+                            // 1. Fallback to fetchAlbumPage for album/single browse IDs
                             innerTube.fetchAlbumPage(playlistId)?.let { album ->
                                 val songs = album.songs.filter(::filterTrack)
                                 YouTubePlaylistResult(
@@ -470,6 +470,51 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                                     trackCount = songs.size,
                                     tracks = songs
                                 )
+                            } ?: run {
+                                // 2. Fallback to YouTube.playlist
+                                val ytPlaylistResult = runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.playlist(playlistId).getOrNull() }.getOrNull()
+                                if (ytPlaylistResult != null && ytPlaylistResult.songs.isNotEmpty()) {
+                                    val tracks = ytPlaylistResult.songs.map { songItem ->
+                                        YouTubeMusicTrack(
+                                            videoId = songItem.id,
+                                            title = songItem.title,
+                                            artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
+                                            album = songItem.album?.name,
+                                            artworkUrl = songItem.thumbnail
+                                        )
+                                    }.filter(::filterTrack)
+                                    YouTubePlaylistResult(
+                                        id = playlistId,
+                                        title = ytPlaylistResult.playlist.title,
+                                        author = ytPlaylistResult.playlist.author?.name ?: "YouTube Music",
+                                        artworkUrl = ytPlaylistResult.playlist.thumbnail,
+                                        trackCount = tracks.size,
+                                        tracks = tracks
+                                    )
+                                } else {
+                                    // 3. Fallback to YouTube.album
+                                    val ytAlbum = runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.album(playlistId).getOrNull() }.getOrNull()
+                                    if (ytAlbum != null && ytAlbum.songs.isNotEmpty()) {
+                                        val albumArtist = ytAlbum.album.artists?.firstOrNull()?.name ?: "Artist"
+                                        val songs = ytAlbum.songs.map { s ->
+                                            YouTubeMusicTrack(
+                                                videoId = s.id,
+                                                title = s.title,
+                                                artist = s.artists.firstOrNull()?.name ?: albumArtist,
+                                                album = ytAlbum.album.title,
+                                                artworkUrl = ytAlbum.album.thumbnail
+                                            )
+                                        }.filter(::filterTrack)
+                                        YouTubePlaylistResult(
+                                            id = playlistId,
+                                            title = ytAlbum.album.title,
+                                            author = albumArtist,
+                                            artworkUrl = ytAlbum.album.thumbnail,
+                                            trackCount = songs.size,
+                                            tracks = songs
+                                        )
+                                    } else null
+                                }
                             }
                         }
                     }

@@ -80,10 +80,12 @@ fun Long.toM3ExpressiveDarkTone(): Color {
     val r = ((this shr 16) and 0xFF).toFloat() / 255f
     val g = ((this shr 8) and 0xFF).toFloat() / 255f
     val b = (this and 0xFF).toFloat() / 255f
+    val max = maxOf(r, g, b).coerceAtLeast(0.001f)
+    val boost = (0.50f / max).coerceIn(0.8f, 1.6f)
     return Color(
-        red = (r * 0.40f + 0.12f).coerceIn(0f, 1f),
-        green = (g * 0.40f + 0.12f).coerceIn(0f, 1f),
-        blue = (b * 0.40f + 0.12f).coerceIn(0f, 1f),
+        red = (r * boost * 0.72f + 0.08f).coerceIn(0f, 1f),
+        green = (g * boost * 0.72f + 0.08f).coerceIn(0f, 1f),
+        blue = (b * boost * 0.72f + 0.08f).coerceIn(0f, 1f),
         alpha = 1f
     )
 }
@@ -93,9 +95,9 @@ fun Long.toM3ExpressiveLightTone(): Color {
     val g = ((this shr 8) and 0xFF).toFloat() / 255f
     val b = (this and 0xFF).toFloat() / 255f
     return Color(
-        red = (r * 0.22f + 0.78f).coerceIn(0f, 1f),
-        green = (g * 0.22f + 0.78f).coerceIn(0f, 1f),
-        blue = (b * 0.22f + 0.78f).coerceIn(0f, 1f),
+        red = (r * 0.18f + 0.82f).coerceIn(0f, 1f),
+        green = (g * 0.18f + 0.82f).coerceIn(0f, 1f),
+        blue = (b * 0.18f + 0.82f).coerceIn(0f, 1f),
         alpha = 1f
     )
 }
@@ -132,7 +134,7 @@ object MoodGenreCatalog {
             id = "chill",
             title = "Chill",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2B3A4C),
+            darkCardColor = Color(0xFF1E3A5F),
             lightCardColor = Color(0xFFD6E4F0),
             playlistImage1 = "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/DWcJFNfaw9c/hqdefault.jpg"
@@ -141,7 +143,7 @@ object MoodGenreCatalog {
             id = "commute",
             title = "Commute",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF483F28),
+            darkCardColor = Color(0xFF5A4418),
             lightCardColor = Color(0xFFF2E8CD),
             playlistImage1 = "https://i.ytimg.com/vi/fJ9rUzIMcZQ/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/k4V3Mo61fJM/hqdefault.jpg"
@@ -150,7 +152,7 @@ object MoodGenreCatalog {
             id = "energize",
             title = "Energize",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF464227),
+            darkCardColor = Color(0xFF6B3A14),
             lightCardColor = Color(0xFFF1ECD0),
             playlistImage1 = "https://i.ytimg.com/vi/btPJPFnesV4/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/2vjPBrBU-TM/hqdefault.jpg"
@@ -159,7 +161,7 @@ object MoodGenreCatalog {
             id = "feel_good",
             title = "Feel good",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2B4437),
+            darkCardColor = Color(0xFF1B5330),
             lightCardColor = Color(0xFFD4EBDC),
             playlistImage1 = "https://i.ytimg.com/vi/ZbZSe6N_BXs/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/09R8_2nJtjg/hqdefault.jpg"
@@ -168,7 +170,7 @@ object MoodGenreCatalog {
             id = "focus",
             title = "Focus",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2D383D),
+            darkCardColor = Color(0xFF1D3E4E),
             lightCardColor = Color(0xFFD8E4EA),
             playlistImage1 = "https://i.ytimg.com/vi/jfKfPfyJRdk/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/lTRiuFIWV54/hqdefault.jpg"
@@ -177,7 +179,7 @@ object MoodGenreCatalog {
             id = "gaming",
             title = "Gaming",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2A2E33),
+            darkCardColor = Color(0xFF3B1E63),
             lightCardColor = Color(0xFFDCE0E6),
             playlistImage1 = "https://i.ytimg.com/vi/K4DyBUG242c/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/y6120QOlsfU/hqdefault.jpg"
@@ -186,7 +188,7 @@ object MoodGenreCatalog {
             id = "party",
             title = "Party",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF3B2A48),
+            darkCardColor = Color(0xFF5E1B6B),
             lightCardColor = Color(0xFFE8D7F5),
             playlistImage1 = "https://i.ytimg.com/vi/pRpeEdMmmQ0/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/hT_nvWreIhg/hqdefault.jpg"
@@ -195,7 +197,7 @@ object MoodGenreCatalog {
             id = "romance",
             title = "Romance",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF48252B),
+            darkCardColor = Color(0xFF6A1729),
             lightCardColor = Color(0xFFF6D8DC),
             playlistImage1 = "https://i.ytimg.com/vi/4xDzrJKXOOY/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/JGwWNGJdvx8/hqdefault.jpg"
@@ -204,7 +206,7 @@ object MoodGenreCatalog {
             id = "sad",
             title = "Sad",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2E2D32),
+            darkCardColor = Color(0xFF233148),
             lightCardColor = Color(0xFFE0DEE4),
             playlistImage1 = "https://i.ytimg.com/vi/RgKAFK5djSk/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/hLQl3WQQoQ0/hqdefault.jpg"
@@ -213,7 +215,7 @@ object MoodGenreCatalog {
             id = "sleep",
             title = "Sleep",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF2C283F),
+            darkCardColor = Color(0xFF2B225E),
             lightCardColor = Color(0xFFDDD7F3),
             playlistImage1 = "https://i.ytimg.com/vi/1ZYbU82GVz4/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/WPni755-Krg/hqdefault.jpg"
@@ -222,7 +224,7 @@ object MoodGenreCatalog {
             id = "workout",
             title = "Workout",
             category = MoodGenreCategory.MOOD_MOMENT,
-            darkCardColor = Color(0xFF422638),
+            darkCardColor = Color(0xFF6E1818),
             lightCardColor = Color(0xFFF3D5E7),
             playlistImage1 = "https://i.ytimg.com/vi/SlPhMPnQ550/hqdefault.jpg",
             playlistImage2 = "https://i.ytimg.com/vi/HCq1OcGAmLg/hqdefault.jpg"

@@ -192,6 +192,12 @@ fun SearchScreen(
     if (selectedMoodGenre != null) {
         lastSelectedMoodGenre = selectedMoodGenre
     }
+
+    LaunchedEffect(isBrowsingAllMoodsAndGenres, selectedMoodGenre) {
+        val shouldHideNav = isBrowsingAllMoodsAndGenres || selectedMoodGenre != null
+        onSearchBarActiveChange(shouldHideNav)
+    }
+
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val searchInputFocusRequester = remember { FocusRequester() }
@@ -381,12 +387,12 @@ fun SearchScreen(
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(top = statusBarTopInset + 62.dp)
+                                    .padding(top = statusBarTopInset)
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                                        .padding(start = 12.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
@@ -404,13 +410,13 @@ fun SearchScreen(
                                         text = "Moods & Genres",
                                         fontFamily = GoogleSansRounded,
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 20.sp,
+                                        fontSize = 22.sp,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
                                 MoodsAndGenresBrowseView(
                                     searchHistory = emptyList(),
-                                    bottomBarHeight = bottomBarHeightDp,
+                                    bottomBarHeight = 0.dp,
                                     topPadding = 0.dp,
                                     listState = browseListState,
                                     onMoodGenreClick = { item ->
@@ -617,11 +623,12 @@ fun SearchScreen(
 
                 val headerBgColor = MaterialTheme.colorScheme.background
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.TopCenter)
-                ) {
+                if (!isBrowsingAllMoodsAndGenres && selectedMoodGenre == null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                    ) {
                     Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -776,6 +783,7 @@ fun SearchScreen(
                     }
                 }
             }
+        }
         }
 
         // Full Screen Musify Mood & Genre View - Overlay with fluid spring exit and retained model

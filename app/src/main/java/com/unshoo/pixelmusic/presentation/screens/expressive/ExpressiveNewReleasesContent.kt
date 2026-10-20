@@ -32,8 +32,10 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -371,23 +373,22 @@ fun ExpressiveNewReleasesContent(
                             }
 
                             // Play All Button
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    .clickable {
-                                        if (songs.isNotEmpty()) {
-                                            playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
+                            FilledIconButton(
+                                onClick = {
+                                    if (songs.isNotEmpty()) {
+                                        playerViewModel.playSongs(songs, songs.first(), queueName = "Albums & singles")
+                                    }
+                                },
+                                modifier = Modifier.size(36.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    imageVector = Icons.Rounded.PlayArrow,
                                     contentDescription = "Play all albums & singles",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(16.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
@@ -537,23 +538,22 @@ fun ExpressiveNewReleasesContent(
                             }
 
                             // Play All Songs List Button
-                            Box(
-                                modifier = Modifier
-                                    .size(34.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    .clickable {
-                                        if (exploreTracks.isNotEmpty()) {
-                                            playerViewModel.playSongs(exploreTracks, exploreTracks.first(), queueName = "More to explore")
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
+                            FilledIconButton(
+                                onClick = {
+                                    if (exploreTracks.isNotEmpty()) {
+                                        playerViewModel.playSongs(exploreTracks, exploreTracks.first(), queueName = "More to explore")
+                                    }
+                                },
+                                modifier = Modifier.size(36.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                                    imageVector = Icons.Rounded.PlayArrow,
                                     contentDescription = "Play all songs list",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(17.dp)
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }

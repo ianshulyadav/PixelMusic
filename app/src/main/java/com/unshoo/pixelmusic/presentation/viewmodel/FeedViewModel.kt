@@ -57,6 +57,8 @@ class FeedViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(FeedUiState())
     val uiState: StateFlow<FeedUiState> = _uiState.asStateFlow()
     val blockedReleaseIds = userPreferencesRepository.blockedReleaseIdsFlow
+    val pureYtMusicOnly = userPreferencesRepository.pureYtMusicOnlyFlow
+    val filterKeywords = userPreferencesRepository.filterKeywordsFlow
     private var feedJob: Job? = null
     private var lastLoadedMillis: Long = 0L
 

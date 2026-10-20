@@ -20,6 +20,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -350,9 +351,11 @@ class ExploreViewModel @Inject constructor(
             val isAdvancedExploreEnabled = userPreferencesRepository.advancedExplorePageFlow.first()
             _uiState.update { it.copy(isAdvancedExploreEnabled = isAdvancedExploreEnabled) }
 
-            // Stage 1: Fast initial fetch for YouTube Home (single-call)
-            val initialHome = withContext(Dispatchers.IO) {
-                runCatching { YouTube.home().getOrNull() }.getOrNull()
+            // Stage 1: Fast concurrent initial fetch for YouTube Home & New Release Albums
+            val (initialHome, ytNewReleases) = withContext(Dispatchers.IO) {
+                val homeDeferred = async { runCatching { YouTube.home().getOrNull() }.getOrNull() }
+                val newReleasesDeferred = async { runCatching { YouTube.newReleaseAlbums().getOrNull().orEmpty() }.getOrDefault(emptyList()) }
+                Pair(homeDeferred.await(), newReleasesDeferred.await())
             }
 
             if (initialHome != null) {
@@ -406,7 +409,8 @@ class ExploreViewModel @Inject constructor(
                     }
                 }.distinctBy { it.browseId }
 
-                val resolvedNewReleases = personalizedNewReleases
+                // Combine personalized home releases with official YouTube Music new release albums
+                val resolvedNewReleases = (personalizedNewReleases + ytNewReleases).distinctBy { it.browseId }
 
                 // Extract personalized albums directly from user's authenticated YouTube Home feed
                 val personalizedAlbums = rawSections.filter { section ->
@@ -458,7 +462,6 @@ class ExploreViewModel @Inject constructor(
                 }
 
                 initialHomeContinuation = currentContinuation
-                prefetchThumbnails(rawSections)
                 persistToCache(rawSections)
                 hasFetchedFromNetwork = true
             } else if (_sectionsState.value.isEmpty()) {
@@ -478,28 +481,6 @@ class ExploreViewModel @Inject constructor(
         }
     }
 
-    private fun prefetchThumbnails(sections: List<HomePage.Section>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            kotlinx.coroutines.delay(500) // Defer prefetching until after initial UI layout render
-            val loader = context.imageLoader
-            sections.flatMap { it.items }.take(4).forEach { item ->
-                val url = when (item) {
-                    is SongItem -> item.thumbnail
-                    is AlbumItem -> item.thumbnail
-                    is PlaylistItem -> item.thumbnail
-                    is ArtistItem -> item.thumbnail
-                    else -> null
-                }
-                if (!url.isNullOrBlank()) {
-                    val req = ImageRequest.Builder(context)
-                        .data(url)
-                        .size(64)
-                        .build()
-                    loader.enqueue(req)
-                }
-            }
-        }
-    }
 
     fun loadChartsIfNeeded(forceRefresh: Boolean = false) {
         if (!forceRefresh && (_uiState.value.chartsPage != null || _uiState.value.isChartsLoading)) return
@@ -631,7 +612,6 @@ class ExploreViewModel @Inject constructor(
                                 homePageContinuation = homeResult.continuation
                             )
                         }
-                        prefetchThumbnails(rawSections)
                         return@withContext
                     }
                 }
@@ -653,7 +633,6 @@ class ExploreViewModel @Inject constructor(
                                 homePageContinuation = null
                             )
                         }
-                        prefetchThumbnails(rawSections)
                         return@withContext
                     }
                 }
@@ -707,7 +686,6 @@ class ExploreViewModel @Inject constructor(
                 explorePageSections = sections
             )
         }
-        prefetchThumbnails(sections)
     }
 
     private suspend fun loadOfflineExploreData() = withContext(Dispatchers.IO) {
