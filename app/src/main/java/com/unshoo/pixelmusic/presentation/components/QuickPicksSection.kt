@@ -112,6 +112,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.snapshotFlow
+import com.unshoo.pixelmusic.presentation.components.SmartImageCompactListTargetSize
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 private val QuickPicksPillHeight = 56.dp
 private val QuickPicksPillSpacing = 8.dp
@@ -141,10 +144,14 @@ fun QuickPicksSection(
 ) {
     if (songs.isEmpty()) return
     val context = LocalContext.current
-    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
-    val isPlaybackActive = stablePlayerState.isPlaying
+    val isPlaybackActive by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.isPlaying }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.isPlaying)
+    val currentPlayingId by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.currentSong?.id }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.currentSong?.id)
     val activePlayingSongId = if (isPlaybackActive) {
-        stablePlayerState.currentSong?.id ?: currentSongId
+        currentPlayingId ?: currentSongId
     } else null
 
     val handlePlayNext: (Song) -> Unit = onPlayNext ?: { song ->
@@ -941,6 +948,7 @@ private fun QuickPickPill(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 shape = CircleShape,
+                targetSize = SmartImageCompactListTargetSize,
                 modifier = Modifier.size(QuickPicksPillArtSize)
             )
             Column(modifier = Modifier.weight(1f)) {

@@ -1,5 +1,6 @@
 package com.unshoo.pixelmusic.presentation.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import com.unshoo.pixelmusic.presentation.screens.expressive.ExpressiveChartsContent
@@ -142,6 +143,18 @@ fun FeedPlaylistDetailScreen(
                     }
                 }
                 is FeedPlaylistDetailUiState.Success -> {
+                    val navigateBackToExplore = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(Screen.Explore.route) {
+                                popUpTo(Screen.Explore.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                    BackHandler(enabled = true) {
+                        navigateBackToExplore()
+                    }
+
                     if (playlistId == "charts") {
                         ExpressiveChartsContent(
                             playlist = s.playlist,
@@ -150,7 +163,7 @@ fun FeedPlaylistDetailScreen(
                             onCountrySelected = { viewModel.setChartsCountry(it) },
                             playerViewModel = playerViewModel,
                             navController = navController,
-                            onBackClick = { navController.popBackStack() },
+                            onBackClick = navigateBackToExplore,
                             albumArtQuality = s.albumArtQuality
                         )
                     } else {
@@ -159,9 +172,10 @@ fun FeedPlaylistDetailScreen(
                             newReleaseAlbums = s.newReleaseAlbums,
                             playerViewModel = playerViewModel,
                             navController = navController,
-                            onBackClick = { navController.popBackStack() },
+                            onBackClick = navigateBackToExplore,
                             albumArtQuality = s.albumArtQuality,
-                            filterKeywords = s.filterKeywords
+                            filterKeywords = s.filterKeywords,
+                            onShuffleAlbumsClick = { viewModel.shuffleFirst15Albums(playerViewModel) }
                         )
                     }
                 }

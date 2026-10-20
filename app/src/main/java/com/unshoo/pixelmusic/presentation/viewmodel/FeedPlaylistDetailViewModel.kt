@@ -88,6 +88,26 @@ class FeedPlaylistDetailViewModel @Inject constructor(
         }
     }
 
+    fun shuffleFirst15Albums(playerViewModel: PlayerViewModel) {
+        val state = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return
+        val albums = state.newReleaseAlbums.take(15)
+        val albumBrowseIds = albums.map { it.browseId }.toSet()
+        val albumTitles = albums.map { it.title.lowercase().trim() }.toSet()
+
+        val matchingTracks = state.playlist.tracks.filter { track ->
+            val albumName = track.album?.lowercase()?.trim()
+            (albumName != null && albumTitles.any { it.contains(albumName) || albumName.contains(it) }) ||
+            track.videoId in albumBrowseIds
+        }
+
+        val finalTracks = if (matchingTracks.isNotEmpty()) matchingTracks else state.playlist.tracks
+        val songsToPlay = finalTracks.map { it.toSong() }
+
+        if (songsToPlay.isNotEmpty()) {
+            playerViewModel.playSongsShuffled(songsToPlay, queueName = "Albums & singles (First 15)")
+        }
+    }
+
     fun load(playlistId: String, force: Boolean = false) {
         if (playlistId.isBlank()) {
             _uiState.value = FeedPlaylistDetailUiState.Error("This playlist is unavailable.")

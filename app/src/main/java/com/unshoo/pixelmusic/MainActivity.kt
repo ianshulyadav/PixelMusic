@@ -27,8 +27,10 @@ import androidx.annotation.CallSuper
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -721,50 +723,24 @@ class MainActivity : ComponentActivity() {
         val currentRoute = navBackStackEntry?.destination?.route
         var isSearchBarActive by remember { mutableStateOf(false) }
 
-        val routesWithHiddenNavigationBar = remember {
-            setOf(
-                Screen.Settings.route,
-                Screen.Accounts.route,
-                Screen.PlaylistDetail.route,
-                Screen.DailyMixScreen.route,
-                Screen.RecentlyPlayed.route,
-                Screen.SmartMix.route,
-                Screen.QuickPicksAll.route,
-
-                Screen.AlbumDetail.route,
-                Screen.ArtistDetail.route,
-                Screen.DJSpace.route,
-                Screen.NavBarCrRad.route,
-                Screen.About.route,
-                Screen.Stats.route,
-                Screen.EditTransition.route,
-                Screen.Experimental.route,
-                Screen.ArtistSettings.route,
-                Screen.Equalizer.route,
-                Screen.SettingsCategory.route,
-                Screen.DelimiterConfig.route,
-                Screen.PaletteStyle.route,
-                Screen.BlurSettings.route,
-                Screen.RecentlyPlayed.route,
-                Screen.DeviceCapabilities.route,
-                Screen.EasterEgg.route,
-                Screen.WordDelimiterConfig.route
+        // Positive whitelist. The nav bar is shown ONLY on the four root tabs;
+        // everywhere else it is hidden. The previous version enumerated 28 hidden
+        // routes and did `hiddenRoute.substringBefore("{")` for each of them on
+        // every route change, allocating up to 28 Strings on the transition frame.
+        val mainRoutesWithNavigationBar = remember {
+            persistentListOf(
+                Screen.Home.route,
+                Screen.Explore.route,
+                Screen.Search.route,
+                Screen.Library.route
             )
         }
         val shouldHideNavigationBar by remember(currentRoute, isSearchBarActive) {
             derivedStateOf {
-                if (currentRoute == Screen.Search.route && isSearchBarActive) {
-                    true
-                } else {
-                    currentRoute?.let { route ->
-                        routesWithHiddenNavigationBar.any { hiddenRoute ->
-                            if (hiddenRoute.contains("{")) {
-                                route.startsWith(hiddenRoute.substringBefore("{"))
-                            } else {
-                                route == hiddenRoute
-                            }
-                        }
-                    } ?: false
+                when {
+                    currentRoute == null -> false
+                    currentRoute == Screen.Search.route && isSearchBarActive -> true
+                    else -> currentRoute !in mainRoutesWithNavigationBar
                 }
             }
         }
@@ -826,12 +802,26 @@ class MainActivity : ComponentActivity() {
         val navBarOccupiedHeight by remember(systemNavBarInset, navBarCompactMode, navBarStyle, navBarHeightOffset) {
             derivedStateOf { resolveNavBarOccupiedHeight(navBarStyle, systemNavBarInset, navBarCompactMode, navBarHeightOffset) }
         }
+        // Cold boot: hold the bar off-screen for one frame, then spring it up.
+        // Without this the bar pops in instantly on launch and the app feels
+        // "assembled" rather than "opened". Leaving a route still uses the fast
+        // 150 ms tween so navigation never feels sluggish.
+        var isNavBarMounted by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            delay(90)
+            isNavBarMounted = true
+        }
+        val navBarTargetVisible = isNavBarMounted && !shouldHideNavigationBar
         val navBarVisibilityProgress by animateFloatAsState(
-            targetValue = if (shouldHideNavigationBar) 0f else 1f,
-            animationSpec = tween(
-                durationMillis = 220,
-                easing = LinearOutSlowInEasing
-            ),
+            targetValue = if (navBarTargetVisible) 1f else 0f,
+            animationSpec = if (navBarTargetVisible) {
+                spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow
+                )
+            } else {
+                tween(durationMillis = 150, easing = LinearOutSlowInEasing)
+            },
             label = "NavBarVisibilityProgress"
         )
         val visibleNavBarOccupiedHeight by remember(navBarOccupiedHeight, navBarVisibilityProgress) {

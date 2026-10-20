@@ -335,15 +335,20 @@ class FeedRepository @Inject constructor(
         val discoverySeeds = (ytLikedSongs + ytRecentSongs + quickPicks).filter { it.videoId.isNotBlank() }
             .shuffled(random).distinctBy { it.artist.lowercase() }.take(3)
 
+        val artistSearchSemaphore = Semaphore(2)
+        val discoverySemaphore = Semaphore(2)
+
         val discoveryDef = async(Dispatchers.IO) {
             discoverySeeds.map { seed ->
                 async {
-                    try {
-                        innerTube.fetchRelatedSongs(seed.videoId, limit = 30)
-                    } catch (cancellation: CancellationException) {
-                        throw cancellation
-                    } catch (_: Exception) {
-                        emptyList()
+                    discoverySemaphore.withPermit {
+                        try {
+                            innerTube.fetchRelatedSongs(seed.videoId, limit = 30)
+                        } catch (cancellation: CancellationException) {
+                            throw cancellation
+                        } catch (_: Exception) {
+                            emptyList()
+                        }
                     }
                 }
             }.awaitAll()
@@ -356,10 +361,12 @@ class FeedRepository @Inject constructor(
                     ?.artworkUrl
                 previous?.topArtists?.firstOrNull { it.name.equals(name, ignoreCase = true) && it.browseId != null }
                     ?.let { return@async it }
-                val entity = runCatching {
-                    innerTube.searchArtists(name, limit = 3)
-                        .firstOrNull { it.name.trim().equals(name, ignoreCase = true) }
-                }.getOrNull()
+                val entity = artistSearchSemaphore.withPermit {
+                    runCatching {
+                        innerTube.searchArtists(name, limit = 3)
+                            .firstOrNull { it.name.trim().equals(name, ignoreCase = true) }
+                    }.getOrNull()
+                }
                 FeedArtist(
                     name = name,
                     browseId = entity?.browseId,
@@ -381,18 +388,26 @@ class FeedRepository @Inject constructor(
         val discoveryResults = discoverySeeds.zip(discoveryDef.await())
         val discoveryTracks = discoveryResults.flatMap { it.second }.filter(::filterTrack).distinctBy { it.videoId }
         val familiarIds = (ytLikedSongs + ytRecentSongs + regularPicks).mapTo(mutableSetOf()) { it.videoId }
-        val freshPool = (discoveryTracks + charts + homeSongs + ytQuickPicks + newReleaseSongTracks)
-            .filter { it.videoId.isNotBlank() && it.videoId !in familiarIds && filterTrack(it) }
-            .distinctBy { it.videoId }.shuffled(random)
+        val freshPool = if (newReleaseSongTracks.isNotEmpty()) {
+            newReleaseSongTracks.filter { it.videoId.isNotBlank() && filterTrack(it) }
+        } else {
+            (discoveryTracks + charts + homeSongs + ytQuickPicks)
+                .filter { it.videoId.isNotBlank() && it.videoId !in familiarIds && filterTrack(it) }
+                .distinctBy { it.videoId }.shuffled(random)
+        }
         val previousFreshIds = previous?.freshFinds.orEmpty().mapTo(mutableSetOf()) { it.videoId }
-        val freshFinds = diversify(
-            freshPool.sortedWith(
-                compareBy<YouTubeMusicTrack> { it.videoId in previousFreshIds }
-                    .thenBy { track -> ArtistHelper.splitArtists(track.artist).any { it.trim().lowercase() in knownArtists } }
-            ),
-            YouTubeMusicTrack::artist,
-            maxPerArtist = 1,
-        ).take(20)
+        val freshFinds = if (newReleaseSongTracks.isNotEmpty()) {
+            freshPool.distinctBy { it.videoId }.take(20)
+        } else {
+            diversify(
+                freshPool.sortedWith(
+                    compareBy<YouTubeMusicTrack> { it.videoId in previousFreshIds }
+                        .thenBy { track -> ArtistHelper.splitArtists(track.artist).any { it.trim().lowercase() in knownArtists } }
+                ),
+                YouTubeMusicTrack::artist,
+                maxPerArtist = 1,
+            ).take(20)
+        }
 
         val previousMixIds = previous?.mixes.orEmpty().mapTo(mutableSetOf()) { it.seed.videoId }
         val mixes = (quickPicks + ytLikedSongs + discoveryTracks)

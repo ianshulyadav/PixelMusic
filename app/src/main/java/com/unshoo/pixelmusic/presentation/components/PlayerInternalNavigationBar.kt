@@ -471,7 +471,10 @@ private fun PlayerInternalNavigationItemsRow(
                 selectedIcon = selectedIconLambda,
                 label = labelLambda,
                 contentDescription = item.label,
-                alwaysShowLabel = true,
+                // Label only the selected tab, and drop labels entirely on compact
+                // bars / large font scales. Previously every tab kept its label
+                // composed permanently.
+                alwaysShowLabel = false,
                 selectedIconColor = selectedColor,
                 unselectedIconColor = unselectedColor,
                 selectedTextColor = selectedColor,

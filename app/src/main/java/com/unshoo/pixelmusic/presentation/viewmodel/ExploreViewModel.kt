@@ -358,22 +358,7 @@ class ExploreViewModel @Inject constructor(
             if (initialHome != null) {
                 val combinedSections = ArrayList<HomePage.Section>()
                 combinedSections.addAll(initialHome.sections)
-                var currentContinuation = initialHome.continuation
-                var continuationCount = 0
-
-                // Only eagerly fetch continuation batches if advanced explore page is enabled
-                while (isAdvancedExploreEnabled && !currentContinuation.isNullOrBlank() && continuationCount < 2) {
-                    continuationCount++
-                    val continuationBatch = withContext(Dispatchers.IO) {
-                        runCatching { YouTube.home(continuation = currentContinuation).getOrNull() }.getOrNull()
-                    }
-                    if (continuationBatch != null && continuationBatch.sections.isNotEmpty()) {
-                        combinedSections.addAll(continuationBatch.sections)
-                        currentContinuation = continuationBatch.continuation
-                    } else {
-                        break
-                    }
-                }
+                val currentContinuation = initialHome.continuation
 
                 val cookies = runCatching { datastoreRepository.cookies.first() }.getOrNull()
                 val isYtConnected = cookies?.toRawCookie()?.let {

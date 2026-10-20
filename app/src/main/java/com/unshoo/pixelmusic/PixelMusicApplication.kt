@@ -307,7 +307,10 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     }
 
     override fun newImageLoader(): ImageLoader {
-        return imageLoader.get().newBuilder()
+        val base = imageLoader.get()
+        return base.newBuilder()
+            .memoryCache(base.memoryCache)
+            .diskCache(base.diskCache)
             .components {
                 add(localArtworkCoilFetcherFactory.get())
                 add(telegramCoilFetcherFactory.get())

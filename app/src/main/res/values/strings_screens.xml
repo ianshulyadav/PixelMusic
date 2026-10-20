@@ -331,7 +331,7 @@
     <string name="explore_section_artists_for_you">Artists for you</string>
     <string name="explore_section_fresh_finds">Fresh finds</string>
     <string name="explore_section_fresh_finds_desc">New tracks matched to your listening vibe</string>
-    <string name="explore_section_jump_back_in">Jump back in</string>
+    <string name="explore_section_jump_back_in">Jump Back In</string>
     <string name="explore_section_mixes_to_explore">Mixes to explore</string>
     <string name="explore_section_mixes_to_explore_desc">Familiar favorites &amp; fresh combinations</string>
     <string name="explore_section_favorites_to_revisit">Favorites to revisit</string>
@@ -456,8 +456,8 @@
     <string name="explore_btn_view_artist">View artist</string>
     <string name="explore_subtitle_most_replayed_musicians">Your most replayed musicians</string>
     <string name="explore_subtitle_most_played_artists">Most played artists from your library</string>
-    <string name="explore_subtitle_recent_history">From your recent history</string>
-    <string name="explore_subtitle_rotatory_history">From your highly rotatory history</string>
+    <string name="explore_subtitle_recent_history">Your recent song history and favorites</string>
+    <string name="explore_subtitle_rotatory_history">Your recent song history rotated songs</string>
     <string name="explore_subtitle_artist_radio_station">Artist radio station</string>
     <string name="explore_subtitle_high_affinity_rotation">From your high-affinity rotation</string>
     <string name="explore_section_albums_for_you">Albums for you</string>

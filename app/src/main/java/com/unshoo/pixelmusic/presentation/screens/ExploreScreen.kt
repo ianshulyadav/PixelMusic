@@ -181,6 +181,7 @@ import com.unshoo.pixelmusic.presentation.utils.itemsUnique
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import com.unshoo.pixelmusic.presentation.viewmodel.ExploreViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.FeedUiState
 import com.unshoo.pixelmusic.presentation.viewmodel.FeedViewModel
@@ -291,9 +292,12 @@ fun ExploreScreen(
     val localAlbums by playerViewModel.albumsFlow.collectAsStateWithLifecycle()
     val localArtists by playerViewModel.artistsFlow.collectAsStateWithLifecycle()
 
-    val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
-    val isPlaying by remember { derivedStateOf { stablePlayerState.isPlaying } }
-    val currentSongId by remember { derivedStateOf { stablePlayerState.currentSong?.id } }
+    val isPlaying by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.isPlaying }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.isPlaying)
+    val currentSongId by remember(playerViewModel) {
+        playerViewModel.stablePlayerState.map { it.currentSong?.id }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(initialValue = playerViewModel.stablePlayerState.value.currentSong?.id)
 
     val selectedSongForInfo by playerViewModel.selectedSongForInfo.collectAsStateWithLifecycle()
     var showSongInfoBottomSheet by remember { mutableStateOf(false) }
@@ -428,12 +432,22 @@ fun ExploreScreen(
         }
     }
 
-    // Jump back in: Remote jumpBackIn -> Local highly rotatory history
-    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks) {
+    // Jump back in: Remote jumpBackIn -> Local highly rotatory history -> Local recently added
+    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, exploreUiState.localRecentlyAddedSongs) {
         if (state.feedData.jumpBackIn.isNotEmpty()) {
             state.feedData.jumpBackIn
         } else if (exploreUiState.localHighlyRotatoryTracks.isNotEmpty()) {
             exploreUiState.localHighlyRotatoryTracks
+        } else if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
+            exploreUiState.localRecentlyAddedSongs.take(15).map { song ->
+                RecentTrack(
+                    name = song.title,
+                    artist = RecentTrackArtistRef(name = song.displayArtist),
+                    album = RecentTrackArtistRef(name = song.album),
+                    image = song.albumArtUriString?.let { listOf(com.unshoo.pixelmusic.data.feed.ImageDto(it, "extralarge")) }.orEmpty(),
+                    url = song.id
+                )
+            }
         } else emptyList()
     }
 
@@ -662,7 +676,7 @@ fun ExploreScreen(
                         if (isLocalSelected) {
                         // 1. Local Quick Picks
                         if (quickPicks.isNotEmpty()) {
-                            item(key = "local_quick_picks") {
+                            item(key = "local_quick_picks", contentType = "quick_picks") {
                                 QuickPicksSection(
                                     songs = quickPicks,
                                     onSongClick = { song ->
@@ -680,13 +694,13 @@ fun ExploreScreen(
 
                         // 2. Local Albums
                         if (albumsForYou.isNotEmpty()) {
-                            item(key = "local_albums") {
+                            item(key = "local_albums", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_albums_for_you),
                                     subtitle = stringResource(R.string.explore_subtitle_local_albums)
                                 )
                                 FeedMediaRow {
-                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { a -> "local_album_${a.browseId ?: a.title}" }) { album ->
+                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { a -> "local_album_${a.browseId ?: a.title}" }, contentType = { "album_card" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -712,7 +726,7 @@ fun ExploreScreen(
 
                         // 3. Local Artists
                         if (artistsForYou.isNotEmpty()) {
-                            item(key = "local_artists") {
+                            item(key = "local_artists", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_artists_for_you),
                                     subtitle = stringResource(R.string.explore_subtitle_most_played_artists)
@@ -722,7 +736,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(artistsForYou, key = { _, a -> "local_artist_${a.browseId ?: a.name}" }) { index, artist ->
+                                    itemsIndexed(artistsForYou, key = { _, a -> "local_artist_${a.browseId ?: a.name}" }, contentType = { _, _ -> "artist_avatar" }) { index, artist ->
                                         ArtistAvatarCard(
                                             artist = artist,
                                             isTop = index < 3,
@@ -740,7 +754,7 @@ fun ExploreScreen(
                         // 4. Recently Added Songs
                         if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
                             val recentSongs = exploreUiState.localRecentlyAddedSongs
-                            item(key = "local_recently_added") {
+                            item(key = "local_recently_added", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_recently_added),
                                     subtitle = stringResource(R.string.explore_subtitle_recently_added_desc),
@@ -754,7 +768,7 @@ fun ExploreScreen(
                                     }
                                 )
                                 FeedMediaRow {
-                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }) { song ->
+                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
                                         FeedTrackCard(
                                             title = song.title,
                                             subtitle = song.displayArtist,
@@ -779,7 +793,7 @@ fun ExploreScreen(
 
                         // 5. Library Playlists
                         if (exploreUiState.libraryPlaylists.isNotEmpty()) {
-                            item(key = "local_library_playlists") {
+                            item(key = "local_library_playlists", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_your_library),
                                     subtitle = stringResource(R.string.explore_section_your_library_desc),
@@ -792,7 +806,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    items(exploreUiState.libraryPlaylists, key = { p -> "lib_${p.id}" }) { playlist ->
+                                    items(exploreUiState.libraryPlaylists, key = { p -> "lib_${p.id}" }, contentType = { "playlist_card" }) { playlist ->
                                         LibraryPlaylistCard(
                                             playlist = playlist,
                                             playerViewModel = playerViewModel,
@@ -807,7 +821,7 @@ fun ExploreScreen(
                     } else if (!selectedCategory.equals("All", ignoreCase = true)) {
                         // Filtered Mood Feed (e.g. Romance, Relax, Workout, Focus, Party, Podcasts, Feel good, etc.)
                         if (quickPicks.isNotEmpty()) {
-                            item(key = "mood_quick_picks") {
+                            item(key = "mood_quick_picks", contentType = "quick_picks") {
                                 QuickPicksSection(
                                     songs = quickPicks,
                                     onSongClick = { song ->
@@ -823,7 +837,7 @@ fun ExploreScreen(
                             }
                         }
 
-                        items(currentSections, key = { s -> "mood_section_${s.title}" }) { section ->
+                        items(currentSections, key = { s -> "mood_section_${s.title}" }, contentType = { "mood_section" }) { section ->
                             val isSimilar = section.title.startsWith("Similar to", ignoreCase = true) ||
                                 section.title.contains("Fans also like", ignoreCase = true) ||
                                 section.title.contains("Similar", ignoreCase = true) ||
@@ -865,7 +879,7 @@ fun ExploreScreen(
                         }
 
                         if (exploreUiState.isContinuationLoading) {
-                            item(key = "home_continuation_loader") {
+                            item(key = "home_continuation_loader", contentType = "loader") {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -884,7 +898,7 @@ fun ExploreScreen(
                         // Complete YouTube Home feed ("All")
                         // 1. Quick Picks Section (from YouTube Home / personalized)
                         if (quickPicks.isNotEmpty()) {
-                            item(key = "quick_picks_section") {
+                            item(key = "quick_picks_section", contentType = "quick_picks") {
                                 QuickPicksSection(
                                     songs = quickPicks,
                                     onSongClick = { song ->
@@ -902,7 +916,7 @@ fun ExploreScreen(
 
                         // 2. Artist Spotlight Hero Card
                         spotlight?.let { spot ->
-                            item(key = "feed_spotlight") {
+                            item(key = "feed_spotlight", contentType = "spotlight") {
                                 SpotlightHeroCard(
                                     spotlight = spot,
                                     scrollOffsetProvider = { listState.firstVisibleItemScrollOffset },
@@ -921,7 +935,7 @@ fun ExploreScreen(
 
                         // 3. Top Artists Carousel
                         if (artistsForYou.isNotEmpty()) {
-                            item(key = "feed_top_artists") {
+                            item(key = "feed_top_artists", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_artists_for_you),
                                     subtitle = if (state.feedData.topArtists.isNotEmpty()) stringResource(R.string.explore_subtitle_most_replayed_musicians) else stringResource(R.string.explore_subtitle_most_played_artists)
@@ -931,7 +945,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(artistsForYou, key = { _, a -> "artist_${a.browseId ?: a.name}" }) { index, artist ->
+                                    itemsIndexed(artistsForYou, key = { _, a -> "artist_${a.browseId ?: a.name}" }, contentType = { _, _ -> "artist_avatar" }) { index, artist ->
                                         ArtistAvatarCard(
                                             artist = artist,
                                             isTop = index < 3,
@@ -949,7 +963,7 @@ fun ExploreScreen(
                         // 4. Feed Content (Taste Tags, Because You Listen To, Fresh Finds)
                         if (isAdvancedExplore) {
                             if (state.feedData.tasteTags.isNotEmpty()) {
-                                item(key = "feed_taste_strip") {
+                                item(key = "feed_taste_strip", contentType = "taste_strip") {
                                     TasteStrip(
                                         tags = state.feedData.tasteTags,
                                         onTagClick = { _ ->
@@ -960,7 +974,7 @@ fun ExploreScreen(
                             }
 
                             state.feedData.becauseYouListenTo?.takeIf { it.items.isNotEmpty() }?.let { section ->
-                                item(key = "because_you_listen_to") {
+                                item(key = "because_you_listen_to", contentType = "section") {
                                     FeedSectionHeader(
                                         title = section.title,
                                         subtitle = section.subtitle,
@@ -974,7 +988,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(section.items, key = { _, t -> "because_${t.videoId}" }) { index, track ->
+                                        itemsIndexed(section.items, key = { _, t -> "because_${t.videoId}" }, contentType = { _, _ -> "track_card" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.title,
                                                 subtitle = track.artist,
@@ -997,7 +1011,7 @@ fun ExploreScreen(
                             }
 
                             if (state.feedData.freshFinds.isNotEmpty()) {
-                                item(key = "feed_fresh_finds") {
+                                item(key = "feed_fresh_finds", contentType = "section") {
                                     FeedSectionHeader(
                                         title = stringResource(R.string.explore_section_fresh_finds),
                                         subtitle = stringResource(R.string.explore_section_fresh_finds_desc),
@@ -1011,7 +1025,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(state.feedData.freshFinds, key = { _, t -> "fresh_${t.videoId}" }) { index, track ->
+                                        itemsIndexed(state.feedData.freshFinds, key = { _, t -> "fresh_${t.videoId}" }, contentType = { _, _ -> "track_card" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.title,
                                                 subtitle = track.artist,
@@ -1034,12 +1048,136 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // Jump Back In Section
+                            // 8. New Releases Section or Recently Added Fallback
+                            if (newReleases.isNotEmpty()) {
+                                item(key = "feed_new_releases", contentType = "section") {
+                                    FeedSectionHeader(
+                                        title = stringResource(R.string.explore_section_new_releases),
+                                        subtitle = stringResource(R.string.explore_section_new_releases_desc),
+                                        actionText = stringResource(R.string.action_see_all),
+                                        actionIcon = Icons.AutoMirrored.Rounded.ArrowForwardIos,
+                                        onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
+                                    )
+                                    FeedMediaRow {
+                                        items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }, contentType = { "playlist_card" }) { release ->
+                                            FeedPlaylistCard(
+                                                title = release.title,
+                                                subtitle = release.author ?: "Artist",
+                                                artworkUrl = release.artworkUrl,
+                                                badgeText = "NEW",
+                                                onLongClick = {
+                                                    releaseToBlock = release
+                                                },
+                                                onClick = {
+                                                    if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
+                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
+                                                    } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
+                                                        navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
+                                                    } else {
+                                                        val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                                                            videoId = release.id,
+                                                            title = release.title,
+                                                            artist = release.author ?: "Artist",
+                                                            artworkUrl = release.artworkUrl
+                                                        ).toSong()
+                                                        playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
+                                                    }
+                                                },
+                                                onPlayClick = {
+                                                    if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
+                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
+                                                    } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
+                                                        navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
+                                                    } else {
+                                                        val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                                                            videoId = release.id,
+                                                            title = release.title,
+                                                            artist = release.author ?: "Artist",
+                                                            artworkUrl = release.artworkUrl
+                                                        ).toSong()
+                                                        playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            } else if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
+                                val recentSongs = exploreUiState.localRecentlyAddedSongs
+                                item(key = "feed_recently_added", contentType = "section") {
+                                    FeedSectionHeader(
+                                        title = stringResource(R.string.explore_section_recently_added),
+                                        subtitle = stringResource(R.string.explore_subtitle_recently_added_desc),
+                                        actionText = stringResource(R.string.action_play_all),
+                                        actionIcon = Icons.Filled.PlayArrow,
+                                        onActionClick = {
+                                            playerViewModel.playSongs(recentSongs, recentSongs.first(), queueName = "Recently Added")
+                                        },
+                                        onShuffleClick = {
+                                            playerViewModel.playSongsShuffled(recentSongs, queueName = "Recently Added")
+                                        }
+                                    )
+                                    FeedMediaRow {
+                                        items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
+                                            FeedTrackCard(
+                                                title = song.title,
+                                                subtitle = song.displayArtist,
+                                                artworkUrl = song.albumArtUriString,
+                                                badgeText = stringResource(R.string.badge_recent),
+                                                isCurrentPlaying = isPlaying && currentSongId == song.id,
+                                                onClick = {
+                                                    playerViewModel.showAndPlaySong(song, recentSongs, "Recently Added")
+                                                },
+                                                onPlayClick = {
+                                                    playerViewModel.showAndPlaySong(song, recentSongs, "Recently Added")
+                                                },
+                                                onMoreClick = {
+                                                    playerViewModel.selectSongForInfo(song)
+                                                    showSongInfoBottomSheet = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 9. Mixes to Explore
+                            if (mixesToDisplay.isNotEmpty()) {
+                                item(key = "feed_mixes", contentType = "section") {
+                                    FeedSectionHeader(
+                                        title = stringResource(R.string.explore_section_mixes_to_explore),
+                                        subtitle = stringResource(R.string.explore_section_mixes_to_explore_desc),
+                                        actionText = stringResource(R.string.action_shuffle),
+                                        actionIcon = Icons.Filled.Shuffle,
+                                        onActionClick = {
+                                            mixesToDisplay.randomOrNull()?.let { feedViewModel.playMix(it, playerViewModel) }
+                                        }
+                                    )
+                                    FeedMediaRow {
+                                        items(mixesToDisplay.distinctBy { it.seed.videoId }, key = { mix -> "mix_${mix.seed.videoId}" }, contentType = { "playlist_card" }) { mix ->
+                                            FeedPlaylistCard(
+                                                title = mix.title,
+                                                subtitle = stringResource(R.string.explore_subtitle_artist_radio_station),
+                                                artworkUrl = mix.seed.artworkUrl,
+                                                badgeText = "MIX",
+                                                onClick = { feedViewModel.playMix(mix, playerViewModel) },
+                                                onPlayClick = { feedViewModel.playMix(mix, playerViewModel) }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 10. Jump Back In Section
                             if (jumpBackInTracks.isNotEmpty()) {
-                                item(key = "feed_jump_back_in") {
+                                item(key = "feed_jump_back_in", contentType = "section") {
                                     FeedSectionHeader(
                                         title = stringResource(R.string.explore_section_jump_back_in),
-                                        subtitle = if (isYtConnected && state.feedData.jumpBackIn.isNotEmpty()) stringResource(R.string.explore_subtitle_recent_history) else stringResource(R.string.explore_subtitle_rotatory_history),
+                                        subtitle = if (isYtConnected && state.feedData.jumpBackIn.isNotEmpty()) {
+                                            stringResource(R.string.explore_subtitle_recent_history)
+                                        } else {
+                                            stringResource(R.string.explore_subtitle_rotatory_history)
+                                        },
                                         actionText = stringResource(R.string.action_play_all),
                                         actionIcon = Icons.Filled.PlayArrow,
                                         onActionClick = {
@@ -1051,10 +1189,20 @@ fun ExploreScreen(
                                             } else {
                                                 feedViewModel.playRecentQueue(jumpBackInTracks, 0, playerViewModel)
                                             }
+                                        },
+                                        onShuffleClick = {
+                                            val allLocal = jumpBackInTracks.mapNotNull {
+                                                exploreUiState.localSongs[it.url] ?: playerViewModel.findSongById(it.url)
+                                            }
+                                            if (allLocal.isNotEmpty()) {
+                                                playerViewModel.playSongsShuffled(allLocal, queueName = "Jump Back In")
+                                            } else {
+                                                feedViewModel.playRecentQueue(jumpBackInTracks.shuffled(), 0, playerViewModel)
+                                            }
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(jumpBackInTracks, key = { _, t -> "jump_${t.url.ifBlank { t.name }}" }) { index, track ->
+                                        itemsIndexed(jumpBackInTracks, key = { _, t -> "jump_${t.url.ifBlank { t.name }}" }, contentType = { _, _ -> "track_card" }) { index, track ->
                                             RecentTrackCard(
                                                 track = track,
                                                 onClick = {
@@ -1082,36 +1230,9 @@ fun ExploreScreen(
                                 }
                             }
 
-                            // Mixes to Explore
-                            if (mixesToDisplay.isNotEmpty()) {
-                                item(key = "feed_mixes") {
-                                    FeedSectionHeader(
-                                        title = stringResource(R.string.explore_section_mixes_to_explore),
-                                        subtitle = stringResource(R.string.explore_section_mixes_to_explore_desc),
-                                        actionText = stringResource(R.string.action_shuffle),
-                                        actionIcon = Icons.Filled.Shuffle,
-                                        onActionClick = {
-                                            mixesToDisplay.randomOrNull()?.let { feedViewModel.playMix(it, playerViewModel) }
-                                        }
-                                    )
-                                    FeedMediaRow {
-                                        items(mixesToDisplay.distinctBy { it.seed.videoId }, key = { mix -> "mix_${mix.seed.videoId}" }) { mix ->
-                                            FeedPlaylistCard(
-                                                title = mix.title,
-                                                subtitle = stringResource(R.string.explore_subtitle_artist_radio_station),
-                                                artworkUrl = mix.seed.artworkUrl,
-                                                badgeText = "MIX",
-                                                onClick = { feedViewModel.playMix(mix, playerViewModel) },
-                                                onPlayClick = { feedViewModel.playMix(mix, playerViewModel) }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
                             // Heavy Rotation Section
                             if (heavyToDisplay.isNotEmpty()) {
-                                item(key = "feed_heavy_rotation") {
+                                item(key = "feed_heavy_rotation", contentType = "section") {
                                     FeedSectionHeader(
                                         title = stringResource(R.string.explore_section_favorites_to_revisit),
                                         subtitle = stringResource(R.string.explore_subtitle_high_affinity_rotation),
@@ -1122,7 +1243,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        itemsIndexed(heavyToDisplay, key = { _, t -> "heavy_${t.key}" }) { index, track ->
+                                        itemsIndexed(heavyToDisplay, key = { _, t -> "heavy_${t.key}" }, contentType = { _, _ -> "track_card" }) { index, track ->
                                             FeedTrackCard(
                                                 title = track.name,
                                                 subtitle = track.artist,
@@ -1148,13 +1269,13 @@ fun ExploreScreen(
                         // Albums for You
                         if (albumsForYou.isNotEmpty()) {
                             val isLocal = exploreUiState.albumsForYou.isEmpty() && state.feedData.recentAlbums.isEmpty()
-                            item(key = "feed_albums") {
+                            item(key = "feed_albums", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_albums_for_you),
                                     subtitle = if (isLocal) stringResource(R.string.explore_subtitle_local_albums) else stringResource(R.string.explore_subtitle_verified_records)
                                 )
                                 FeedMediaRow {
-                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { album -> "album_${album.browseId ?: album.title}" }) { album ->
+                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { album -> "album_${album.browseId ?: album.title}" }, contentType = { "album_card" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -1181,7 +1302,7 @@ fun ExploreScreen(
                         // Your Library Section
                         val libraryPlaylists = exploreUiState.libraryPlaylists
                         if (libraryPlaylists.isNotEmpty()) {
-                            item(key = "feed_your_library") {
+                            item(key = "feed_your_library", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_your_library),
                                     subtitle = stringResource(R.string.explore_section_your_library_desc),
@@ -1194,7 +1315,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    items(libraryPlaylists, key = { p -> "lib_${p.id}" }) { playlist ->
+                                    items(libraryPlaylists, key = { p -> "lib_${p.id}" }, contentType = { "playlist_card" }) { playlist ->
                                         LibraryPlaylistCard(
                                             playlist = playlist,
                                             playerViewModel = playerViewModel,
@@ -1209,7 +1330,7 @@ fun ExploreScreen(
 
                         // Trending & Charts Section
                         if (chartTracks.isNotEmpty()) {
-                            item(key = "feed_charts") {
+                            item(key = "feed_charts", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_trending_now),
                                     subtitle = stringResource(R.string.explore_section_trending_now_desc),
@@ -1227,7 +1348,7 @@ fun ExploreScreen(
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                     modifier = Modifier.padding(top = 10.dp)
                                 ) {
-                                    itemsIndexed(chartTracks.take(15), key = { _, t -> "chart_${t.videoId}" }) { index, track ->
+                                    itemsIndexed(chartTracks.take(15), key = { _, t -> "chart_${t.videoId}" }, contentType = { _, _ -> "chart_track" }) { index, track ->
                                         ChartTrackCard(
                                             rank = index + 1,
                                             track = track,
@@ -1245,102 +1366,11 @@ fun ExploreScreen(
                             }
                         }
 
-                        // New Releases Section or Recently Added Fallback
-                        if (newReleases.isNotEmpty()) {
-                            item(key = "feed_new_releases") {
-                                FeedSectionHeader(
-                                    title = stringResource(R.string.explore_section_new_releases),
-                                    subtitle = stringResource(R.string.explore_section_new_releases_desc),
-                                    actionText = stringResource(R.string.action_see_all),
-                                    actionIcon = Icons.AutoMirrored.Rounded.ArrowForwardIos,
-                                    onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
-                                )
-                                FeedMediaRow {
-                                    items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }) { release ->
-                                        FeedPlaylistCard(
-                                            title = release.title,
-                                            subtitle = release.author ?: "Artist",
-                                            artworkUrl = release.artworkUrl,
-                                            badgeText = "NEW",
-                                            onLongClick = {
-                                                releaseToBlock = release
-                                            },
-                                            onClick = {
-                                                if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
-                                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
-                                                } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
-                                                    navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
-                                                } else {
-                                                    val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                                        videoId = release.id,
-                                                        title = release.title,
-                                                        artist = release.author ?: "Artist",
-                                                        artworkUrl = release.artworkUrl
-                                                    ).toSong()
-                                                    playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
-                                                }
-                                            },
-                                            onPlayClick = {
-                                                if (release.id.startsWith("MPRE") || release.id.startsWith("FEmusic_album")) {
-                                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(release.id))
-                                                } else if (release.id.startsWith("VL") || release.id.startsWith("PL") || release.id.startsWith("RD")) {
-                                                    navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(release.id))
-                                                } else {
-                                                    val song = com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                                        videoId = release.id,
-                                                        title = release.title,
-                                                        artist = release.author ?: "Artist",
-                                                        artworkUrl = release.artworkUrl
-                                                    ).toSong()
-                                                    playerViewModel.showAndPlaySong(song, listOf(song), "New Releases")
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        } else if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
-                            val recentSongs = exploreUiState.localRecentlyAddedSongs
-                            item(key = "feed_recently_added") {
-                                FeedSectionHeader(
-                                    title = stringResource(R.string.explore_section_recently_added),
-                                    subtitle = stringResource(R.string.explore_subtitle_recently_added_desc),
-                                    actionText = stringResource(R.string.action_play_all),
-                                    actionIcon = Icons.Filled.PlayArrow,
-                                    onActionClick = {
-                                        playerViewModel.playSongs(recentSongs, recentSongs.first(), queueName = "Recently Added")
-                                    },
-                                    onShuffleClick = {
-                                        playerViewModel.playSongsShuffled(recentSongs, queueName = "Recently Added")
-                                    }
-                                )
-                                FeedMediaRow {
-                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }) { song ->
-                                        FeedTrackCard(
-                                            title = song.title,
-                                            subtitle = song.displayArtist,
-                                            artworkUrl = song.albumArtUriString,
-                                            badgeText = stringResource(R.string.badge_recent),
-                                            isCurrentPlaying = isPlaying && currentSongId == song.id,
-                                            onClick = {
-                                                playerViewModel.showAndPlaySong(song, recentSongs, "Recently Added")
-                                            },
-                                            onPlayClick = {
-                                                playerViewModel.showAndPlaySong(song, recentSongs, "Recently Added")
-                                            },
-                                            onMoreClick = {
-                                                playerViewModel.selectSongForInfo(song)
-                                                showSongInfoBottomSheet = true
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
+
 
                         // 15. All real YouTube Home Shelves
                         if (otherHomeSections.isNotEmpty()) {
-                            items(otherHomeSections, key = { s -> "yt_section_${s.title}" }) { section ->
+                            items(otherHomeSections, key = { s -> "yt_section_${s.title}" }, contentType = { "yt_section" }) { section ->
                                 val isSimilar = section.title.startsWith("Similar to", ignoreCase = true) ||
                                     section.title.contains("Fans also like", ignoreCase = true) ||
                                     section.title.contains("Similar", ignoreCase = true) ||
@@ -1383,7 +1413,7 @@ fun ExploreScreen(
                         }
 
                         if (exploreUiState.isContinuationLoading) {
-                            item(key = "home_continuation_loader") {
+                            item(key = "home_continuation_loader", contentType = "loader") {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -1766,7 +1796,7 @@ private fun TasteStrip(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 10.dp)
         ) {
-            itemsUnique(tags, key = { it }) { tag ->
+            itemsUnique(tags, key = { it }, contentType = { "taste_tag" }) { tag ->
                 Surface(
                     onClick = { onTagClick(tag) },
                     shape = CircleShape,
@@ -2705,8 +2735,8 @@ private fun SpotlightHeroCard(
                             scaleX = 1.08f
                             scaleY = 1.08f
                             translationY = (scrollOffsetProvider() * 0.08f).coerceIn(-24f, 24f)
+                            alpha = 0.22f
                         }
-                        .alpha(0.22f)
                 )
             }
             Box(
@@ -3312,7 +3342,7 @@ private fun SimilarArtistsCarousel(
         horizontalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier.padding(top = 8.dp)
     ) {
-        items(artists, key = { artist -> "sim_${section.title}_${artist.id}" }) { artist ->
+        items(artists, key = { artist -> "sim_${section.title}_${artist.id}" }, contentType = { "artist_avatar" }) { artist ->
             ArtistAvatarCard(
                 artist = FeedArtist(
                     name = artist.title,
@@ -3758,7 +3788,18 @@ private fun RegionalExploreSection(
     }
 
     FeedMediaRow {
-        itemsIndexed(filteredItems, key = { _, item -> "regional_${section.title}_${item.id}" }) { index, item ->
+        itemsIndexed(
+            filteredItems,
+            key = { _, item -> "regional_${section.title}_${item.id}" },
+            contentType = { _, item ->
+                when (item) {
+                    is SongItem -> "regional_song"
+                    is AlbumItem -> "regional_album"
+                    is PlaylistItem -> "regional_playlist"
+                    is ArtistItem -> "regional_artist"
+                }
+            }
+        ) { index, item ->
             when (item) {
                 is SongItem -> {
                     val track = songTracks.firstOrNull { it.videoId == item.id } ?: YouTubeMusicTrack(
@@ -3864,7 +3905,7 @@ private fun ExploreCategoryChipsRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(categories, key = { it }) { category ->
+        items(categories, key = { it }, contentType = { "category_chip" }) { category ->
             val isSelected = category.equals(selectedCategory, ignoreCase = true)
             val containerColor by animateColorAsState(
                 targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
