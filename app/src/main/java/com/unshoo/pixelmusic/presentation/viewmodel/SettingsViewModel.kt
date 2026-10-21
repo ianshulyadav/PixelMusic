@@ -1878,6 +1878,9 @@ fun setBeta05CleanInstallDisclaimerDismissed(dismissed: Boolean) {
     val useSmoothCorners: StateFlow<Boolean> = userPreferencesRepository.useSmoothCornersFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
+    val highRefreshRate: StateFlow<Boolean> = userPreferencesRepository.highRefreshRateFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), userPreferencesRepository.defaultHighRefreshRate)
+
     val tapBackgroundClosesPlayer: StateFlow<Boolean> = userPreferencesRepository.tapBackgroundClosesPlayerFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
 
@@ -1897,6 +1900,12 @@ fun setBeta05CleanInstallDisclaimerDismissed(dismissed: Boolean) {
     fun setUseSmoothCorners(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setUseSmoothCorners(enabled)
+        }
+    }
+
+    fun setHighRefreshRate(enabled: Boolean) {
+        viewModelScope.launch {
+            userPreferencesRepository.setHighRefreshRate(enabled)
         }
     }
 

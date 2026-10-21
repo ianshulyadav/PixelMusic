@@ -7,7 +7,9 @@ import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -754,9 +756,18 @@ private enum class MainRootDirection {
     BACKWARD
 }
 
-private const val BOTTOM_NAV_TRANSITION_DURATION = 240
-private const val BOTTOM_NAV_FADE_OUT_DURATION = 150
-private const val BOTTOM_NAV_FADE_IN_DURATION = 180
+// Crisp, physical joined-page motion curve (like Instagram / HorizontalPager)
+// Enter and Exit share the EXACT same duration and easing so adjacent pages move
+// in 1:1 lockstep with 0px overlap and 0px gap at the seam.
+private val RootPagerEasing = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+private const val ROOT_PAGE_TRANSITION_DURATION_MS = 280
+
+private fun mainRootRouteIndex(route: String?): Int? = when (route) {
+    Screen.Home.route -> 0
+    Screen.Explore.route -> 1
+    Screen.Library.route -> 2
+    else -> null
+}
 
 private fun mainRootDirection(
     fromRoute: String?,
@@ -764,8 +775,14 @@ private fun mainRootDirection(
 ): MainRootDirection? {
     val fromIndex = mainRootRouteIndex(fromRoute) ?: return null
     val toIndex = mainRootRouteIndex(toRoute) ?: return null
+
     if (fromIndex == toIndex) return null
-    return if (toIndex > fromIndex) MainRootDirection.FORWARD else MainRootDirection.BACKWARD
+
+    return if (toIndex > fromIndex) {
+        MainRootDirection.FORWARD
+    } else {
+        MainRootDirection.BACKWARD
+    }
 }
 
 private fun mainRootEnterTransition(
@@ -773,42 +790,25 @@ private fun mainRootEnterTransition(
     toRoute: String?,
     fallback: EnterTransition
 ): EnterTransition {
-    if (toRoute == Screen.Search.route || fromRoute == Screen.Search.route) {
+    // Keep Search transitions instant, as in your current implementation.
+    if (fromRoute == Screen.Search.route || toRoute == Screen.Search.route) {
         return EnterTransition.None
     }
-    return when (mainRootDirection(fromRoute, toRoute)) {
-        MainRootDirection.FORWARD -> {
-            slideInHorizontally(
-                animationSpec = spring(
-                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
-                    dampingRatio = 0.82f
-                ),
-                initialOffsetX = { (it * 0.04f).toInt() }
-            ) + fadeIn(
-                animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 200,
-                    delayMillis = 75,
-                    easing = EmphasizedDecelerateEasing
-                )
-            )
-        }
-        MainRootDirection.BACKWARD -> {
-            slideInHorizontally(
-                animationSpec = spring(
-                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
-                    dampingRatio = 0.82f
-                ),
-                initialOffsetX = { -(it * 0.04f).toInt() }
-            ) + fadeIn(
-                animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 200,
-                    delayMillis = 75,
-                    easing = EmphasizedDecelerateEasing
-                )
-            )
-        }
-        null -> fallback
+
+    val direction = mainRootDirection(fromRoute, toRoute) ?: return fallback
+
+    val initialOffset: (Int) -> Int = when (direction) {
+        MainRootDirection.FORWARD -> { width -> width }
+        MainRootDirection.BACKWARD -> { width -> -width }
     }
+
+    return slideInHorizontally(
+        initialOffsetX = initialOffset,
+        animationSpec = tween(
+            durationMillis = ROOT_PAGE_TRANSITION_DURATION_MS,
+            easing = RootPagerEasing
+        )
+    )
 }
 
 private fun mainRootExitTransition(
@@ -816,40 +816,25 @@ private fun mainRootExitTransition(
     toRoute: String?,
     fallback: ExitTransition
 ): ExitTransition {
-    if (toRoute == Screen.Search.route || fromRoute == Screen.Search.route) {
+    // Keep Search transitions instant, as in your current implementation.
+    if (fromRoute == Screen.Search.route || toRoute == Screen.Search.route) {
         return ExitTransition.None
     }
-    return when (mainRootDirection(fromRoute, toRoute)) {
-        MainRootDirection.FORWARD -> {
-            slideOutHorizontally(
-                animationSpec = spring(
-                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
-                    dampingRatio = 1f
-                ),
-                targetOffsetX = { -(it * 0.04f).toInt() }
-            ) + fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 90,
-                    easing = EmphasizedAccelerateEasing
-                )
-            )
-        }
-        MainRootDirection.BACKWARD -> {
-            slideOutHorizontally(
-                animationSpec = spring(
-                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
-                    dampingRatio = 1f
-                ),
-                targetOffsetX = { (it * 0.04f).toInt() }
-            ) + fadeOut(
-                animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 90,
-                    easing = EmphasizedAccelerateEasing
-                )
-            )
-        }
-        null -> fallback
+
+    val direction = mainRootDirection(fromRoute, toRoute) ?: return fallback
+
+    val targetOffset: (Int) -> Int = when (direction) {
+        MainRootDirection.FORWARD -> { width -> -width }
+        MainRootDirection.BACKWARD -> { width -> width }
     }
+
+    return slideOutHorizontally(
+        targetOffsetX = targetOffset,
+        animationSpec = tween(
+            durationMillis = ROOT_PAGE_TRANSITION_DURATION_MS,
+            easing = RootPagerEasing
+        )
+    )
 }
 
 

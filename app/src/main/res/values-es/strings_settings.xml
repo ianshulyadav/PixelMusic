@@ -424,4 +424,6 @@
     <string name="setcat_playback_client_desc">Elige el cliente. Android VR es más rápido; Web Client usa YouTube Music.</string>
     <string name="setcat_playback_client_android_vr">Android VR (Predeterminado)</string>
     <string name="setcat_playback_client_web_remix">Web Client</string>
+    <string name="settings_high_refresh_rate_title">High refresh rate</string>
+    <string name="settings_high_refresh_rate_subtitle">Use the High refresh rate for smoother scrolling and animations</string>
 </resources>

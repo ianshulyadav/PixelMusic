@@ -145,6 +145,8 @@
     <string name="setcat_color_palette_grey_desc">Monochrome and gray tones</string>
     <string name="setcat_smooth_corners_title">Use Smooth Corners</string>
     <string name="setcat_smooth_corners_subtitle">Smooth corner curvature. May affect performance on low-end devices.</string>
+    <string name="settings_high_refresh_rate_title">High refresh rate</string>
+    <string name="settings_high_refresh_rate_subtitle">Use the fastest display mode available for smoother scrolling and animations</string>
     <string name="setcat_now_playing">Now Playing</string>
     <string name="setcat_player_theme_label">Player Theme</string>
     <string name="setcat_player_theme_desc">Choose the appearance for the floating player.</string>

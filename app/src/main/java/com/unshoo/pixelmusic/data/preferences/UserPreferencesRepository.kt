@@ -151,7 +151,8 @@ class UserPreferencesRepository
 @Inject
 constructor(
         private val dataStore: DataStore<Preferences>,
-        private val json: Json // Inyectar Json para serialización
+        private val json: Json, // Inyectar Json para serialización
+        @dagger.hilt.android.qualifiers.ApplicationContext private val context: Context? = null
 ) {
 
     private val backupExcludedKeyNames = setOf(
@@ -235,6 +236,7 @@ constructor(
         val FOLDERS_SOURCE = stringPreferencesKey("folders_source")
         val FOLDER_BACK_GESTURE_NAVIGATION = booleanPreferencesKey("folder_back_gesture_navigation")
         val USE_SMOOTH_CORNERS = booleanPreferencesKey("use_smooth_corners")
+        val HIGH_REFRESH_RATE_ENABLED = booleanPreferencesKey("high_refresh_rate_enabled")
         val KEEP_PLAYING_IN_BACKGROUND = booleanPreferencesKey("keep_playing_in_background")
         val IS_CROSSFADE_ENABLED = booleanPreferencesKey("is_crossfade_enabled")
         val HI_FI_MODE_ENABLED = booleanPreferencesKey("hi_fi_mode_enabled")
@@ -2140,6 +2142,21 @@ constructor(
     suspend fun setUseSmoothCorners(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.USE_SMOOTH_CORNERS] = enabled
+        }
+    }
+
+    val defaultHighRefreshRate: Boolean
+        get() = !com.unshoo.pixelmusic.utils.DevicePerformanceUtils.isLowEndDevice(context)
+
+    val highRefreshRateFlow: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.HIGH_REFRESH_RATE_ENABLED] ?: defaultHighRefreshRate
+        }
+        .distinctUntilChanged()
+
+    suspend fun setHighRefreshRate(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.HIGH_REFRESH_RATE_ENABLED] = enabled
         }
     }
 

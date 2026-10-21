@@ -106,6 +106,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -126,6 +128,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -346,7 +349,7 @@ fun ExploreScreen(
     val bottomPadding = if (currentSongId != null) MiniPlayerHeight + 16.dp else 16.dp
 
     val currentSections = remember(exploreUiState.activeMoodChip, exploreUiState.explorePageSections, exploreUiState.homePageSections) {
-        if (exploreUiState.activeMoodChip != null && exploreUiState.explorePageSections.isNotEmpty()) {
+        if (exploreUiState.activeMoodChip != null) {
             exploreUiState.explorePageSections
         } else {
             exploreUiState.homePageSections
@@ -666,44 +669,124 @@ fun ExploreScreen(
                 )
             }
         ) {
-            val showExploreLoading = if (isLocalSelected) {
-                !exploreUiState.isSettled || (exploreUiState.isLoading && quickPicks.isEmpty() && albumsForYou.isEmpty() && artistsForYou.isEmpty())
-            } else {
-                !exploreUiState.isSettled || (exploreUiState.isLoading && currentSections.isEmpty())
+            val isMoodFilter = !isLocalSelected && !selectedCategory.equals("All", ignoreCase = true)
+            val hasExploreContent = remember(
+                isLocalSelected,
+                isMoodFilter,
+                currentSections,
+                quickPicks,
+                albumsForYou,
+                artistsForYou,
+                recentlyAddedToDisplay,
+                exploreUiState.libraryPlaylists,
+                newReleases,
+                heavyToDisplay
+            ) {
+                if (isLocalSelected) {
+                    quickPicks.isNotEmpty() ||
+                    albumsForYou.isNotEmpty() ||
+                    artistsForYou.isNotEmpty() ||
+                    recentlyAddedToDisplay.isNotEmpty() ||
+                    exploreUiState.libraryPlaylists.isNotEmpty()
+                } else if (isMoodFilter) {
+                    currentSections.isNotEmpty() || quickPicks.isNotEmpty()
+                } else {
+                    currentSections.isNotEmpty() ||
+                    quickPicks.isNotEmpty() ||
+                    newReleases.isNotEmpty() ||
+                    albumsForYou.isNotEmpty() ||
+                    heavyToDisplay.isNotEmpty()
+                }
             }
 
+            val showExploreLoading = (!hasExploreContent && exploreUiState.error == null) ||
+                (exploreUiState.isLoading && !hasExploreContent) ||
+                (!exploreUiState.isSettled && !hasExploreContent)
+
             Crossfade(
-                targetState = showExploreLoading,
+                targetState = when {
+                    showExploreLoading -> "loading"
+                    exploreUiState.error != null && !hasExploreContent -> "error"
+                    else -> "content"
+                },
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
                     stiffness = ExpressiveSprings.DefaultEffectsStiffness
                 ),
-                label = "explore_loading_crossfade"
-            ) { isLoading ->
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                top = innerPadding.calculateTopPadding() + 32.dp,
-                                bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        ContainedLoadingIndicator()
+                label = "explore_screen_crossfade"
+            ) { stateKey ->
+                when (stateKey) {
+                    "loading" -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    top = innerPadding.calculateTopPadding() + 32.dp,
+                                    bottom = bottomPadding + paddingValuesParent.calculateBottomPadding()
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            ContainedLoadingIndicator()
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(MaterialTheme.colorScheme.background),
-                        contentPadding = PaddingValues(
-                            top = innerPadding.calculateTopPadding() + 8.dp,
-                            bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(22.dp)
-                    ) {
+                    "error" -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 24.dp)
+                                .padding(
+                                    top = innerPadding.calculateTopPadding(),
+                                    bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text(
+                                    text = exploreUiState.error ?: "Unable to load content",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontFamily = GoogleSansRounded,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                FilledTonalButton(
+                                    onClick = {
+                                        scope.launch {
+                                            if (isMoodFilter) {
+                                                exploreViewModel.setSelectedFilter(selectedCategory)
+                                            } else {
+                                                exploreViewModel.loadData(forceRefresh = true)
+                                                quickPicksViewModel.refresh(force = true)
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Refresh,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = "Retry", fontFamily = GoogleSansRounded)
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background),
+                            contentPadding = PaddingValues(
+                                top = innerPadding.calculateTopPadding() + 8.dp,
+                                bottom = paddingValuesParent.calculateBottomPadding() + bottomPadding + 24.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(22.dp)
+                        ) {
                         // 0. Floating Category Chips (Scrolls up with the page, NO black container sheet)
                         if (effectiveCategories.size > 1) {
                             item(key = "explore_category_chips", contentType = "category_chips") {
@@ -1509,6 +1592,7 @@ fun ExploreScreen(
         }
     }
 }
+}
 
     if (showSongInfoBottomSheet && selectedSongForInfo != null) {
         val currentSong = selectedSongForInfo
@@ -1688,46 +1772,61 @@ fun ExploreTopBar(
         shadowElevation = 0.dp,
         tonalElevation = if (isScrolled) 3.dp else 0.dp
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(start = 24.dp, top = 12.dp, end = 20.dp, bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.tab_explore),
-                fontFamily = GoogleSansRounded,
-                fontWeight = FontWeight.Black,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 40.sp,
-                letterSpacing = 1.sp
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AnimatedSparklesIconButton(onClick = onCreateClick)
-
+        TopAppBar(
+            title = {
+                val exploreTitle = stringResource(R.string.tab_explore)
+                val titleFontSize = remember(exploreTitle) {
+                    when {
+                        exploreTitle.length > 9 -> 28.sp
+                        exploreTitle.length > 7 -> 32.sp
+                        else -> 38.sp
+                    }
+                }
+                Text(
+                    modifier = Modifier.padding(start = 8.dp),
+                    text = exploreTitle,
+                    fontFamily = GoogleSansRounded,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = titleFontSize,
+                    letterSpacing = 0.5.sp,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            actions = {
                 FilledIconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.size(40.dp),
-                    shape = CircleShape,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    ),
+                    onClick = onCreateClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AutoAwesome,
+                        contentDescription = "Smart Mix Studio"
+                    )
+                }
+                FilledIconButton(
+                    modifier = Modifier.padding(end = 14.dp),
                     colors = IconButtonDefaults.filledIconButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    ),
+                    onClick = onSettingsClick
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.rounded_settings_24),
-                        contentDescription = stringResource(R.string.settings_top_bar_title),
-                        modifier = Modifier.size(20.dp)
+                        contentDescription = stringResource(R.string.presentation_batch_d_open_settings_cd)
                     )
                 }
-            }
-        }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent,
+                scrolledContainerColor = Color.Transparent
+            )
+        )
     }
 }
 

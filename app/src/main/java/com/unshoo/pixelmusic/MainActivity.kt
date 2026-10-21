@@ -132,6 +132,8 @@ import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.unshoo.pixelmusic.ui.theme.PixelMusicTheme
 
 import com.unshoo.pixelmusic.utils.CrashHandler
+import com.unshoo.pixelmusic.utils.DevicePerformanceUtils
+import com.unshoo.pixelmusic.utils.AdaptiveRefreshRateManager
 import com.unshoo.pixelmusic.utils.AppLocaleManager
 import com.unshoo.pixelmusic.utils.LogUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -221,7 +223,7 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
         super.onCreate(savedInstanceState)
-        enableHighRefreshRate()
+        lifecycle.addObserver(AdaptiveRefreshRateManager(this, userPreferencesRepository))
 
         // LEER SEÑAL DE BENCHMARK
         val isBenchmarkMode = intent.getBooleanExtra("is_benchmark", false)
@@ -1279,35 +1281,6 @@ class MainActivity : ComponentActivity() {
         // for runtime state. We drop the dead listener entirely.
     }
 
-    /**
-     * Expresses a preference for high refresh rate (e.g. 90Hz / 120Hz) via preferredRefreshRate,
-     * allowing Android to adaptively ramp up during animations and interactions while preserving
-     * LTPO variable refresh rate (VRR) battery optimizations.
-     */
-    private fun enableHighRefreshRate() {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val targetDisplay = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    display
-                } else {
-                    @Suppress("DEPRECATION")
-                    windowManager.defaultDisplay
-                }
-                val modes = targetDisplay?.supportedModes
-                // Find highest available refresh rate, capping at 120Hz to prevent excessive power drain on 144Hz+ displays
-                val candidateRate = modes?.map { it.refreshRate }?.filter { it > 60f }?.maxOrNull()
-                if (candidateRate != null) {
-                    val targetRate = candidateRate.coerceAtMost(120f)
-                    val params = window.attributes
-                    params.preferredRefreshRate = targetRate
-                    window.attributes = params
-                    LogUtils.d(this, "Preferred refresh rate set to: ${targetRate}Hz")
-                }
-            }
-        } catch (e: Throwable) {
-            LogUtils.w(this, "Failed to set preferred refresh rate: ${e.message}")
-        }
-    }
 
 }
 
