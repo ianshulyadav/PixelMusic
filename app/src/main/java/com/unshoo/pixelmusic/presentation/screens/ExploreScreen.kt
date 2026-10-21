@@ -427,14 +427,33 @@ fun ExploreScreen(
         }
     }
 
+    val blockedReleaseIds by feedViewModel.blockedReleaseIds.collectAsStateWithLifecycle(initialValue = emptySet())
+    val pureYtMusicOnly by feedViewModel.pureYtMusicOnly.collectAsStateWithLifecycle(initialValue = false)
+    val filterKeywords by feedViewModel.filterKeywords.collectAsStateWithLifecycle(initialValue = emptyList())
+    var releaseToBlock by remember { mutableStateOf<YouTubePlaylistSummary?>(null) }
+
+    val freshFindsToDisplay = remember(state.feedData.freshFinds, pureYtMusicOnly, filterKeywords) {
+        state.feedData.freshFinds.filter { track ->
+            (!pureYtMusicOnly || (!track.isVideo && !ContentFilterUtils.isVideoTitle(track.title))) &&
+            !ContentFilterUtils.matchesFilterKeywords(track, filterKeywords)
+        }
+    }
+
+    val recentlyAddedToDisplay = remember(exploreUiState.localRecentlyAddedSongs, pureYtMusicOnly, filterKeywords) {
+        exploreUiState.localRecentlyAddedSongs.filter { song ->
+            (!pureYtMusicOnly || !ContentFilterUtils.isVideoSong(song)) &&
+            !ContentFilterUtils.matchesFilterKeywords(song, filterKeywords)
+        }
+    }
+
     // Jump back in: Remote jumpBackIn -> Local highly rotatory history -> Local recently added
-    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, exploreUiState.localRecentlyAddedSongs) {
-        if (state.feedData.jumpBackIn.isNotEmpty()) {
+    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, recentlyAddedToDisplay, pureYtMusicOnly) {
+        val tracks = if (state.feedData.jumpBackIn.isNotEmpty()) {
             state.feedData.jumpBackIn
         } else if (exploreUiState.localHighlyRotatoryTracks.isNotEmpty()) {
             exploreUiState.localHighlyRotatoryTracks
-        } else if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
-            exploreUiState.localRecentlyAddedSongs.take(15).map { song ->
+        } else if (recentlyAddedToDisplay.isNotEmpty()) {
+            recentlyAddedToDisplay.take(15).map { song ->
                 RecentTrack(
                     name = song.title,
                     artist = RecentTrackArtistRef(name = song.displayArtist),
@@ -444,6 +463,11 @@ fun ExploreScreen(
                 )
             }
         } else emptyList()
+        if (pureYtMusicOnly) {
+            tracks.filterNot { ContentFilterUtils.isVideoTitle(it.name) }
+        } else {
+            tracks
+        }
     }
 
     val spotlight = remember(state.feedData.spotlight, artistsForYou, quickPicks) {
@@ -474,22 +498,6 @@ fun ExploreScreen(
                         artworkUrl = songItem.thumbnail
                     )
                 }.orEmpty()
-        }
-    }
-
-    val blockedReleaseIds by feedViewModel.blockedReleaseIds.collectAsStateWithLifecycle(initialValue = emptySet())
-    val pureYtMusicOnly by feedViewModel.pureYtMusicOnly.collectAsStateWithLifecycle(initialValue = false)
-    val filterKeywords by feedViewModel.filterKeywords.collectAsStateWithLifecycle(initialValue = emptyList())
-    var releaseToBlock by remember { mutableStateOf<YouTubePlaylistSummary?>(null) }
-
-    val videoTitlePattern = remember {
-        Regex("""(?i)\b(official\s+video|official\s+music\s+video|music\s+video|lyric\s+video|visualizer|video\s+song)\b|\((video|music\s+video)\)|\[(video|music\s+video)\]""")
-    }
-
-    val freshFindsToDisplay = remember(state.feedData.freshFinds, pureYtMusicOnly, filterKeywords) {
-        state.feedData.freshFinds.filter { track ->
-            (!pureYtMusicOnly || (!track.isVideo && !videoTitlePattern.containsMatchIn(track.title))) &&
-            !ContentFilterUtils.matchesFilterKeywords(track, filterKeywords)
         }
     }
 
@@ -574,12 +582,13 @@ fun ExploreScreen(
         } else emptyList()
     }
 
-    val otherHomeSections = remember(currentSections, albumsForYou, newReleases) {
+    val otherHomeSections = remember(currentSections, albumsForYou, newReleases, pureYtMusicOnly) {
         currentSections.filter { section ->
             val t = section.title.lowercase()
             !t.contains("quick pick") &&
             !(albumsForYou.isNotEmpty() && t.contains("albums for you")) &&
-            !(newReleases.isNotEmpty() && (t.contains("new release") || t.contains("new for you")))
+            !(newReleases.isNotEmpty() && (t.contains("new release") || t.contains("new for you"))) &&
+            !(pureYtMusicOnly && t.contains("video"))
         }
     }
 
@@ -755,8 +764,8 @@ fun ExploreScreen(
                         }
 
                         // 4. Recently Added Songs
-                        if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
-                            val recentSongs = exploreUiState.localRecentlyAddedSongs
+                        if (recentlyAddedToDisplay.isNotEmpty()) {
+                            val recentSongs = recentlyAddedToDisplay
                             item(key = "local_recently_added", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_recently_added),
@@ -1047,8 +1056,8 @@ fun ExploreScreen(
                                 }
                             }
 
-                            if (exploreUiState.localRecentlyAddedSongs.isNotEmpty()) {
-                                val recentSongs = exploreUiState.localRecentlyAddedSongs
+                            if (recentlyAddedToDisplay.isNotEmpty()) {
+                                val recentSongs = recentlyAddedToDisplay
                                 item(key = "feed_recently_added", contentType = "section") {
                                     FeedSectionHeader(
                                         title = stringResource(R.string.explore_section_recently_added),
@@ -3666,11 +3675,18 @@ private fun RegionalExploreSection(
         onAvatarClick = navigationAction
     )
 
+    val pureYtMusicOnly by feedViewModel.pureYtMusicOnly.collectAsStateWithLifecycle(initialValue = false)
     val isVideoSection = remember(section.title) {
         section.title.contains("video", ignoreCase = true)
     }
-    val filteredItems = remember(section.items, isVideoSection) {
-        if (isVideoSection) section.items else section.items.filterVideo(true)
+    val filteredItems = remember(section.items, isVideoSection, pureYtMusicOnly) {
+        if (pureYtMusicOnly) {
+            section.items.filterVideo(true)
+        } else if (isVideoSection) {
+            section.items
+        } else {
+            section.items.filterVideo(true)
+        }
     }
 
     FeedMediaRow {

@@ -1,6 +1,7 @@
 package com.unshoo.pixelmusic.data.feed
 
 import com.unshoo.pixelmusic.data.remote.youtube.upgradeThumbnailUrlToHighQuality
+import com.unshoo.pixelmusic.utils.ContentFilterUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -237,12 +238,16 @@ class FeedInnerTubeApi @Inject constructor(
             chartsPage?.sections?.flatMap { it.items }
                 ?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
                 ?.map { songItem ->
+                    val musicVideoType = songItem.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
+                    val isVideo = (musicVideoType != null && musicVideoType != unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_ATV) ||
+                        ContentFilterUtils.isVideoTitle(songItem.title)
                     YouTubeMusicTrack(
                         videoId = songItem.id,
                         title = songItem.title,
                         artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
                         album = songItem.album?.name,
-                        artworkUrl = songItem.thumbnail
+                        artworkUrl = songItem.thumbnail,
+                        isVideo = isVideo
                     )
                 }.orEmpty()
         }.getOrDefault(emptyList())
@@ -644,7 +649,7 @@ class FeedInnerTubeApi @Inject constructor(
             val txt = run.string("text")?.trim().orEmpty()
             txt.equals("Video", ignoreCase = true) || txt.equals("Music video", ignoreCase = true)
         }
-        val isVideo = musicVideoType == "MUSIC_VIDEO_TYPE_OMV" || musicVideoType == "MUSIC_VIDEO_TYPE_UGC" || hasVideoBadge
+        val isVideo = (musicVideoType != null && musicVideoType != "MUSIC_VIDEO_TYPE_ATV") || hasVideoBadge || ContentFilterUtils.isVideoTitle(title)
         return YouTubeMusicTrack(videoId, title, artist, album, artwork, duration, isVideo)
     }
 
@@ -690,7 +695,7 @@ class FeedInnerTubeApi @Inject constructor(
             val txt = run.string("text")?.trim().orEmpty()
             txt.equals("Video", ignoreCase = true) || txt.equals("Music video", ignoreCase = true)
         }
-        val isVideo = musicVideoType == "MUSIC_VIDEO_TYPE_OMV" || musicVideoType == "MUSIC_VIDEO_TYPE_UGC" || hasVideoBadge
+        val isVideo = (musicVideoType != null && musicVideoType != "MUSIC_VIDEO_TYPE_ATV") || hasVideoBadge || ContentFilterUtils.isVideoTitle(title)
         return YouTubeMusicTrack(videoId, title, artist, album, artwork, duration, isVideo)
     }
 
@@ -722,7 +727,15 @@ class FeedInnerTubeApi @Inject constructor(
         }?.string("text")
         val duration = renderer.obj("lengthText")?.array("runs")?.mapNotNull { it.asObject()?.string("text") }?.firstNotNullOfOrNull(::parseDuration)
         val artwork = extractArtwork(renderer)
-        return YouTubeMusicTrack(videoId, title, artist, album, artwork, duration)
+        val watchConfig = renderer.obj("navigationEndpoint")?.obj("watchEndpoint")
+            ?.obj("watchEndpointMusicSupportedConfigs")?.obj("watchEndpointMusicConfig")
+        val musicVideoType = watchConfig?.string("musicVideoType")
+        val hasVideoBadge = detailRuns.any { run ->
+            val txt = run.string("text")?.trim().orEmpty()
+            txt.equals("Video", ignoreCase = true) || txt.equals("Music video", ignoreCase = true)
+        }
+        val isVideo = (musicVideoType != null && musicVideoType != "MUSIC_VIDEO_TYPE_ATV") || hasVideoBadge || ContentFilterUtils.isVideoTitle(title)
+        return YouTubeMusicTrack(videoId, title, artist, album, artwork, duration, isVideo)
     }
 
     private fun parsePlaylistVideoRenderer(renderer: JsonObject): YouTubeMusicTrack? {
@@ -740,7 +753,8 @@ class FeedInnerTubeApi @Inject constructor(
             } ?: "Unknown artist"
         val duration = renderer.string("lengthSeconds")?.toIntOrNull()
         val artwork = extractArtwork(renderer)
-        return YouTubeMusicTrack(videoId, title, artist, null, artwork, duration)
+        val isVideo = ContentFilterUtils.isVideoTitle(title) || true
+        return YouTubeMusicTrack(videoId, title, artist, null, artwork, duration, isVideo)
     }
 
     private fun parsePlaylistRenderers(root: JsonElement): List<YouTubePlaylistSummary> {

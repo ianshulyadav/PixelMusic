@@ -3,6 +3,7 @@ package com.unshoo.pixelmusic.data.feed
 import androidx.compose.runtime.Immutable
 import com.unshoo.pixelmusic.data.model.ArtistRef
 import com.unshoo.pixelmusic.data.model.Song
+import com.unshoo.pixelmusic.utils.ContentFilterUtils
 
 @Immutable
 data class FeedQuickTile(
@@ -78,33 +79,34 @@ data class YouTubeMusicTrack(
             )
         }
         val albumTitle = album?.takeIf { it.isNotBlank() } ?: "YouTube Music"
-        return Song(
-            id = "youtube_$videoId",
-            title = title,
-            artist = cleanArtist,
-            artistId = artistsList.firstOrNull()?.id ?: 0L,
-            artists = artistsList,
-            album = albumTitle,
-            albumId = -(16_000_000_000_000L + kotlin.math.abs(albumTitle.lowercase().hashCode().toLong())),
-            albumArtist = cleanArtist,
-            path = "",
-            contentUriString = "youtube://$videoId",
-            albumArtUriString = artworkUrl,
-            duration = (durationSeconds ?: 0) * 1000L,
-            genre = "YouTube",
-            lyrics = null,
-            isFavorite = false,
-            trackNumber = 0,
-            discNumber = null,
-            year = 0,
-            dateAdded = System.currentTimeMillis(),
-            dateModified = System.currentTimeMillis(),
-            mimeType = "audio/opus",
-            bitrate = 128000,
-            sampleRate = 44100,
-            youtubeId = videoId
-        )
-    }
+            val isVid = isVideo || ContentFilterUtils.isVideoTitle(title)
+            return Song(
+                id = "youtube_$videoId",
+                title = title,
+                artist = cleanArtist,
+                artistId = artistsList.firstOrNull()?.id ?: 0L,
+                artists = artistsList,
+                album = albumTitle,
+                albumId = -(16_000_000_000_000L + kotlin.math.abs(albumTitle.lowercase().hashCode().toLong())),
+                albumArtist = cleanArtist,
+                path = "",
+                contentUriString = "youtube://$videoId",
+                albumArtUriString = artworkUrl,
+                duration = (durationSeconds ?: 0) * 1000L,
+                genre = "YouTube",
+                lyrics = null,
+                isFavorite = false,
+                trackNumber = 0,
+                discNumber = null,
+                year = 0,
+                dateAdded = System.currentTimeMillis(),
+                dateModified = System.currentTimeMillis(),
+                mimeType = if (isVid) "video/mp4" else "audio/opus",
+                bitrate = 128000,
+                sampleRate = 44100,
+                youtubeId = videoId
+            )
+        }
 }
 
 @Immutable

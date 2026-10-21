@@ -148,7 +148,10 @@ fun <T : YTItem> List<T>.filterVideo(enabled: Boolean = true) =
             when (it) {
                 is SongItem -> {
                     val musicVideoType = it.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
-                    val isMusicVideo = musicVideoType == MUSIC_VIDEO_TYPE_OMV || musicVideoType == MUSIC_VIDEO_TYPE_UGC
+                    val isMusicVideo = musicVideoType == MUSIC_VIDEO_TYPE_OMV ||
+                        musicVideoType == MUSIC_VIDEO_TYPE_UGC ||
+                        (musicVideoType != null && musicVideoType != WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_ATV) ||
+                        com.unshoo.pixelmusic.utils.ContentFilterUtils.isVideoTitle(it.title)
                     !isMusicVideo
                 }
                 else -> true

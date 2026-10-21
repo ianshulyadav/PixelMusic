@@ -195,10 +195,12 @@ class ExploreViewModel @Inject constructor(
                     allowedParentDirs = emptyList(),
                     applyDirectoryFilter = false
                 ).collect { localEntities ->
+                    val pureYtMusic = runCatching { userPreferencesRepository.pureYtMusicOnlyFlow.first() }.getOrDefault(false)
                     val localSongsList = localEntities.map { it.toSong() }
-                    val combinedRecent = (downloadedSongs + localSongsList)
+                    val rawRecent = (downloadedSongs + localSongsList)
                         .distinctBy { it.id }
                         .sortedByDescending { it.dateAdded }
+                    val combinedRecent = (if (pureYtMusic) rawRecent.filterNot(com.unshoo.pixelmusic.utils.ContentFilterUtils::isVideoSong) else rawRecent)
                         .take(20)
 
                     val localMap = combinedRecent.associateBy { it.id }
@@ -803,7 +805,9 @@ class ExploreViewModel @Inject constructor(
             com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it)
         }
 
-        val allOfflineSongs = com.unshoo.pixelmusic.utils.OfflineAudioResolver.deduplicateQueue(downloadedSongs + localSongs).first
+        val pureYtMusic = runCatching { userPreferencesRepository.pureYtMusicOnlyFlow.first() }.getOrDefault(false)
+        val rawOfflineSongs = com.unshoo.pixelmusic.utils.OfflineAudioResolver.deduplicateQueue(downloadedSongs + localSongs).first
+        val allOfflineSongs = if (pureYtMusic) rawOfflineSongs.filterNot(com.unshoo.pixelmusic.utils.ContentFilterUtils::isVideoSong) else rawOfflineSongs
         val localMap = allOfflineSongs.associateBy { it.id }
 
         val offlineSongItems = allOfflineSongs.take(30).map { song ->

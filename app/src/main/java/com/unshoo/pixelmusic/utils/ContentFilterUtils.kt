@@ -11,6 +11,31 @@ object ContentFilterUtils {
 
     private val LOFI_REGEX = Regex("""(?i)\b(lo-?fi|lo\s+fi|chillhop)\b|\b(slowed\s*(\+|&|and)\s*reverb|slowed\s+down)\b""")
 
+    private val VIDEO_TITLE_REGEX = Regex(
+        """(?i)\b(official\s+video|official\s+music\s+video|music\s+video|lyric\s+video|lyrics\s+video|lyrical\s+video|visualizer|visualiser|video\s+song|clip\s+officiel|video\s+oficial|videoclip|dance\s+video|performance\s+video|vertical\s+video|live\s+video|full\s+video|special\s+clip|music\s+clip|official\s+m[/／]?v)\b|[\(\[\{]\s*(official\s+)?(music\s+)?(video|m[/／]?v|visualizer|visualiser|lyrics?\s+video|lyrical\s+video|clip)\s*[\)\]\}]|[\(\[\{]\s*(4k|hd)?\s*video\s*[\)\]\}]|[-|/／]\s*(official\s+)?(music\s+)?(video|m[/／]?v)\s*$"""
+    )
+
+    fun isVideoTitle(title: String?): Boolean {
+        if (title.isNullOrBlank()) return false
+        return VIDEO_TITLE_REGEX.containsMatchIn(title)
+    }
+
+    fun isVideoSong(song: Song): Boolean {
+        if (isVideoTitle(song.title)) return true
+        if (song.mimeType?.startsWith("video/", ignoreCase = true) == true) return true
+        val path = song.path.lowercase()
+        if (path.endsWith(".mp4") || path.endsWith(".mkv") || path.endsWith(".webm") || path.endsWith(".avi") || path.endsWith(".mov") || path.endsWith(".flv") || path.endsWith(".3gp") || path.endsWith(".m4v")) {
+            return true
+        }
+        return false
+    }
+
+    fun isVideoTrack(track: YouTubeMusicTrack): Boolean {
+        if (track.isVideo) return true
+        if (isVideoTitle(track.title)) return true
+        return false
+    }
+
     private val COVER_CONTAINED_REGEX = Regex(
         """(?i)(\(([^)]*?\bcovers?\b[^)]*?)\)|\[([^\]]*?\bcovers?\b[^\]]*?)\])"""
     )

@@ -54,19 +54,24 @@ class FeedRepository @Inject constructor(
         val filterCoverAndLofi = runCatching { userPreferencesRepository.filterCoverAndLofiFlow.first() }.getOrDefault(true)
         val filterKeywords = runCatching { userPreferencesRepository.filterKeywordsFlow.first() }.getOrDefault(ContentFilterUtils.DEFAULT_FILTER_KEYWORDS)
         fun isSongItemVideo(song: unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem): Boolean {
+            if (ContentFilterUtils.isVideoTitle(song.title)) return true
             val musicVideoType = song.endpoint?.watchEndpointMusicSupportedConfigs?.watchEndpointMusicConfig?.musicVideoType
-            return musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_OMV ||
-                   musicVideoType == unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_UGC
+            if (musicVideoType != null && musicVideoType != unshoo.ianshulyadav.pixelmusic.innertube.models.WatchEndpoint.WatchEndpointMusicSupportedConfigs.WatchEndpointMusicConfig.MUSIC_VIDEO_TYPE_ATV) {
+                return true
+            }
+            return false
         }
-        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || !t.isVideo
+        fun filterVideoTrack(t: YouTubeMusicTrack): Boolean = !pureYtMusicOnly || (!t.isVideo && !ContentFilterUtils.isVideoTitle(t.title))
         fun filterTrack(t: YouTubeMusicTrack): Boolean =
             filterVideoTrack(t) &&
             !ContentFilterUtils.matchesFilterKeywords(t, filterKeywords) &&
             (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
         fun filterRecent(t: RecentTrack): Boolean =
+            (!pureYtMusicOnly || !ContentFilterUtils.isVideoTitle(t.name)) &&
             !ContentFilterUtils.matchesFilterKeywords(t.name, t.artist.displayName, t.album.displayName, filterKeywords) &&
             (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
         fun filterGenerated(t: GeneratedTrack): Boolean =
+            (!pureYtMusicOnly || !ContentFilterUtils.isVideoTitle(t.name)) &&
             !ContentFilterUtils.matchesFilterKeywords(t.name, t.artist, t.album, filterKeywords) &&
             (!filterCoverAndLofi || !ContentFilterUtils.isCoverOrLofi(t, filterKeywords))
 
@@ -343,8 +348,9 @@ class FeedRepository @Inject constructor(
             .take(8)
             .shuffled(random)
 
-        val discoverySeeds = (ytLikedSongs + ytRecentSongs + quickPicks).filter { it.videoId.isNotBlank() }
-            .shuffled(random).distinctBy { it.artist.lowercase() }.take(3)
+        val discoverySeeds = (ytLikedSongs + ytRecentSongs + quickPicks)
+            .filter { it.videoId.isNotBlank() && filterVideoTrack(it) }
+            .shuffled(random).distinctBy { it.artist.lowercase() }.take(5)
 
         val artistSearchSemaphore = Semaphore(2)
         val discoverySemaphore = Semaphore(2)
@@ -399,26 +405,25 @@ class FeedRepository @Inject constructor(
         val discoveryResults = discoverySeeds.zip(discoveryDef.await())
         val discoveryTracks = discoveryResults.flatMap { it.second }.filter(::filterTrack).distinctBy { it.videoId }
         val familiarIds = (ytLikedSongs + ytRecentSongs + regularPicks).mapTo(mutableSetOf()) { it.videoId }
-        val freshPool = if (newReleaseSongTracks.isNotEmpty()) {
-            newReleaseSongTracks.filter { it.videoId.isNotBlank() && filterTrack(it) }
+        val freshCandidates = (newReleaseSongTracks + discoveryTracks)
+            .filter { it.videoId.isNotBlank() && it.videoId !in familiarIds && filterTrack(it) }
+            .distinctBy { it.videoId }
+        val freshPool = if (freshCandidates.isNotEmpty()) {
+            freshCandidates
         } else {
-            (discoveryTracks + charts + homeSongs + ytQuickPicks)
+            homeSongs
                 .filter { it.videoId.isNotBlank() && it.videoId !in familiarIds && filterTrack(it) }
-                .distinctBy { it.videoId }.shuffled(random)
-        }
+                .distinctBy { it.videoId }
+        }.shuffled(random)
         val previousFreshIds = previous?.freshFinds.orEmpty().mapTo(mutableSetOf()) { it.videoId }
-        val freshFinds = if (newReleaseSongTracks.isNotEmpty()) {
-            freshPool.distinctBy { it.videoId }.take(20)
-        } else {
-            diversify(
-                freshPool.sortedWith(
-                    compareBy<YouTubeMusicTrack> { it.videoId in previousFreshIds }
-                        .thenBy { track -> ArtistHelper.splitArtists(track.artist).any { it.trim().lowercase() in knownArtists } }
-                ),
-                YouTubeMusicTrack::artist,
-                maxPerArtist = 1,
-            ).take(20)
-        }
+        val freshFinds = diversify(
+            freshPool.sortedWith(
+                compareBy<YouTubeMusicTrack> { it.videoId in previousFreshIds }
+                    .thenBy { track -> ArtistHelper.splitArtists(track.artist).any { it.trim().lowercase() in knownArtists } }
+            ),
+            YouTubeMusicTrack::artist,
+            maxPerArtist = 1,
+        ).take(20)
 
         val previousMixIds = previous?.mixes.orEmpty().mapTo(mutableSetOf()) { it.seed.videoId }
         val mixes = (quickPicks + ytLikedSongs + discoveryTracks)
