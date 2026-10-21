@@ -167,7 +167,8 @@ fun FeedPlaylistDetailScreen(
                             playerViewModel = playerViewModel,
                             navController = navController,
                             onBackClick = navigateBackToExplore,
-                            albumArtQuality = s.albumArtQuality
+                            albumArtQuality = s.albumArtQuality,
+                            isLoading = s.isLoadingMore
                         )
                     } else {
                         ExpressiveNewReleasesContent(
@@ -179,7 +180,8 @@ fun FeedPlaylistDetailScreen(
                             albumArtQuality = s.albumArtQuality,
                             filterKeywords = s.filterKeywords,
                             onPlayAlbumsClick = { viewModel.playFirst15Albums(playerViewModel) },
-                            onShuffleAlbumsClick = { viewModel.shuffleFirst15Albums(playerViewModel) }
+                            onShuffleAlbumsClick = { viewModel.shuffleFirst15Albums(playerViewModel) },
+                            isLoadingMore = s.isLoadingMore
                         )
                     }
                 }
@@ -465,25 +467,13 @@ fun FeedPlaylistDetailScreen(
 
                         if (s.isLoadingMore) {
                             item(key = "loading_more") {
-                                Row(
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(18.dp),
-                                        strokeWidth = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "Loading more releases…",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        fontFamily = GoogleSansRounded
-                                    )
+                                    ContainedLoadingIndicator()
                                 }
                             }
                         }

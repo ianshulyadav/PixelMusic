@@ -53,6 +53,7 @@ data class ExploreUiState(
     val isRefreshing: Boolean = false,
     val isContinuationLoading: Boolean = false,
     val isChartsLoading: Boolean = false,
+    val isSettled: Boolean = false,
     val homePageSections: List<HomePage.Section> = emptyList(),
     val homePageContinuation: String? = null,
     val newReleaseAlbums: List<AlbumItem> = emptyList(),
@@ -100,6 +101,9 @@ class ExploreViewModel @Inject constructor(
     private val _isRefreshingState = MutableStateFlow(false)
     val isRefreshingState: StateFlow<Boolean> = _isRefreshingState.asStateFlow()
 
+    private val _isSettledState = MutableStateFlow(false)
+    val isSettledState: StateFlow<Boolean> = _isSettledState.asStateFlow()
+
     private val _errorState = MutableStateFlow<String?>(null)
     val errorState: StateFlow<String?> = _errorState.asStateFlow()
 
@@ -115,7 +119,9 @@ class ExploreViewModel @Inject constructor(
     private var initialHomeContinuation: String? = null
 
     companion object {
-        private const val EXPLORE_CACHE_EXPIRATION_MS = 30 * 60 * 1000L // 30 minutes
+        private const val CACHE_TIER_FRESH_MS = 30 * 60 * 1000L        // 0–30 min: Fresh -> No network request
+        private const val CACHE_TIER_STALE_MS = 4 * 60 * 60 * 1000L    // 30 min–4 hours: Stale -> Refresh silently
+        private const val CACHE_TIER_EXPIRED_MS = 24 * 60 * 60 * 1000L  // 4–24 hours: Old; > 24 hours: Expired
     }
 
     private val gson by lazy {
@@ -133,9 +139,25 @@ class ExploreViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 restoreFromCache()
             }
-            val isCacheFresh = (System.currentTimeMillis() - lastFetchTimestamp) < EXPLORE_CACHE_EXPIRATION_MS
-            if (_sectionsState.value.isEmpty() || !isCacheFresh) {
-                loadDataInternal(forceRefresh = false)
+            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
+            val hasData = _sectionsState.value.isNotEmpty()
+            when {
+                // Tier 1: 0–30 min: Fresh -> Use cache, no network request
+                hasData && cacheAge < CACHE_TIER_FRESH_MS -> {
+                    // Cache is fresh. Do not trigger network request.
+                }
+                // Tier 2: 30 min–4 hours: Stale -> Show cache immediately, refresh silently in background
+                hasData && cacheAge < CACHE_TIER_STALE_MS -> {
+                    loadDataInternal(forceRefresh = false, silent = true)
+                }
+                // Tier 3: 4–24 hours: Old -> Show cache immediately, fully refresh with visible indicator
+                hasData && cacheAge < CACHE_TIER_EXPIRED_MS -> {
+                    loadDataInternal(forceRefresh = true, silent = false)
+                }
+                // Tier 4: > 24 hours: Expired (or cold start without cache) -> Fetch fresh Home, show loading indicator
+                else -> {
+                    loadDataInternal(forceRefresh = true, silent = false)
+                }
             }
         }
         viewModelScope.launch {
@@ -280,17 +302,54 @@ class ExploreViewModel @Inject constructor(
             if (cacheFile.exists()) {
                 if (userPreferencesRepository.localModeEnabledFlow.first() || !connectivityStateHolder.isOnline.value) {
                     loadOfflineExploreData()
+                    _isSettledState.value = true
+                    _uiState.update { it.copy(isSettled = true) }
                     return
                 }
-                if (System.currentTimeMillis() - cacheFile.lastModified() > 24 * 60 * 60 * 1000L) {
-                    cacheFile.delete()
+                val fileAge = System.currentTimeMillis() - cacheFile.lastModified()
+                if (fileAge >= CACHE_TIER_EXPIRED_MS) {
+                    // > 24 hours: Cache is expired. Do NOT show old cache. Invalidate completely.
+                    try { cacheFile.delete() } catch (_: Exception) {}
+                    _sectionsState.value = emptyList()
+                    _moodChipsState.value = emptyList()
+                    _isLoadingState.value = true
+                    _isRefreshingState.value = false
+                    _isSettledState.value = false
+                    _uiState.update {
+                        it.copy(
+                            isLoading = true,
+                            isRefreshing = false,
+                            isSettled = false,
+                            homePageSections = emptyList(),
+                            moodChips = emptyList()
+                        )
+                    }
                     return
                 }
                 val json = cacheFile.readText()
                 val cache = gson.fromJson(json, ExploreCacheModel::class.java)
                 if (cache != null && cache.sections.isNotEmpty()) {
                     val age = System.currentTimeMillis() - cache.timestamp
-                    val isFresh = age < EXPLORE_CACHE_EXPIRATION_MS
+                    if (age >= CACHE_TIER_EXPIRED_MS) {
+                        // > 24 hours: Cache is expired. Invalidate completely.
+                        try { cacheFile.delete() } catch (_: Exception) {}
+                        _sectionsState.value = emptyList()
+                        _moodChipsState.value = emptyList()
+                        _isLoadingState.value = true
+                        _isRefreshingState.value = false
+                        _isSettledState.value = false
+                        _uiState.update {
+                            it.copy(
+                                isLoading = true,
+                                isRefreshing = false,
+                                isSettled = false,
+                                homePageSections = emptyList(),
+                                moodChips = emptyList()
+                            )
+                        }
+                        return
+                    }
+
                     val uiSections = cache.sections.map { it.toUiModel() }
                     val uiChips = cache.moodChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
                     _sectionsState.value = uiSections
@@ -298,40 +357,73 @@ class ExploreViewModel @Inject constructor(
                     lastFetchTimestamp = cache.timestamp
                     hasFetchedFromNetwork = true
 
-                    if (isFresh) {
-                        _isLoadingState.value = false
-                        _isRefreshingState.value = false
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isRefreshing = false,
-                                homePageSections = cache.sections,
-                                moodChips = cache.moodChips,
-                                newReleaseAlbums = cache.newReleaseAlbums,
-                                albumsForYou = cache.albumsForYou
-                            )
+                    when {
+                        // Tier 1: 0–30 min (Fresh) -> Show cache, no network request
+                        age < CACHE_TIER_FRESH_MS -> {
+                            _isLoadingState.value = false
+                            _isRefreshingState.value = false
+                            _isSettledState.value = true
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    isSettled = true,
+                                    homePageSections = cache.sections,
+                                    moodChips = cache.moodChips,
+                                    newReleaseAlbums = cache.newReleaseAlbums,
+                                    albumsForYou = cache.albumsForYou
+                                )
+                            }
                         }
-                    } else {
-                        // Expired (> 30 min): keep cached content visible so page isn't blank,
-                        // and show refreshing indicator when expiration happens!
-                        _isLoadingState.value = false
-                        _isRefreshingState.value = true
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isRefreshing = true,
-                                homePageSections = cache.sections,
-                                moodChips = cache.moodChips,
-                                newReleaseAlbums = cache.newReleaseAlbums,
-                                albumsForYou = cache.albumsForYou
-                            )
+                        // Tier 2: 30 min–4 hours (Stale) -> Show cache immediately, refresh silently
+                        age < CACHE_TIER_STALE_MS -> {
+                            _isLoadingState.value = false
+                            _isRefreshingState.value = false
+                            _isSettledState.value = true
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = false,
+                                    isSettled = true,
+                                    homePageSections = cache.sections,
+                                    moodChips = cache.moodChips,
+                                    newReleaseAlbums = cache.newReleaseAlbums,
+                                    albumsForYou = cache.albumsForYou
+                                )
+                            }
+                        }
+                        // Tier 3: 4–24 hours (Old) -> Show cache immediately, full refresh with visible indicator
+                        else -> {
+                            _isLoadingState.value = false
+                            _isRefreshingState.value = true
+                            _isSettledState.value = true
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isRefreshing = true,
+                                    isSettled = true,
+                                    homePageSections = cache.sections,
+                                    moodChips = cache.moodChips,
+                                    newReleaseAlbums = cache.newReleaseAlbums,
+                                    albumsForYou = cache.albumsForYou
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                _isLoadingState.value = true
+                _isRefreshingState.value = false
+                _isSettledState.value = false
+                _uiState.update { it.copy(isLoading = true, isRefreshing = false, isSettled = false) }
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to restore explore data from cache")
             try { cacheFile.delete() } catch (_: Exception) {}
+            _isLoadingState.value = true
+            _isRefreshingState.value = false
+            _isSettledState.value = false
+            _uiState.update { it.copy(isLoading = true, isRefreshing = false, isSettled = false) }
         }
     }
 
@@ -365,33 +457,52 @@ class ExploreViewModel @Inject constructor(
 
     fun loadData(forceRefresh: Boolean = false) {
         viewModelScope.launch {
-            loadDataInternal(forceRefresh)
+            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
+            val hasData = _sectionsState.value.isNotEmpty()
+            if (!forceRefresh && hasData && cacheAge < CACHE_TIER_FRESH_MS) {
+                return@launch
+            }
+            val silent = !forceRefresh && hasData && cacheAge < CACHE_TIER_STALE_MS
+            loadDataInternal(forceRefresh = forceRefresh, silent = silent)
         }
     }
 
-    private suspend fun loadDataInternal(forceRefresh: Boolean) {
+    private suspend fun loadDataInternal(forceRefresh: Boolean, silent: Boolean = false) {
         val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
         if (isLocalMode || !connectivityStateHolder.isOnline.value) {
             loadOfflineExploreData()
+            _isSettledState.value = true
+            _uiState.update { it.copy(isSettled = true) }
             return
         }
-        val isCacheFresh = (System.currentTimeMillis() - lastFetchTimestamp) < EXPLORE_CACHE_EXPIRATION_MS
-        if (!forceRefresh && isCacheFresh && _sectionsState.value.isNotEmpty()) {
+        val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
+        val hasData = _sectionsState.value.isNotEmpty()
+        if (!forceRefresh && hasData && cacheAge < CACHE_TIER_FRESH_MS) {
+            _isSettledState.value = true
+            _uiState.update { it.copy(isSettled = true) }
             return
         }
         stage2Job?.cancel()
 
-        val hasData = _sectionsState.value.isNotEmpty()
-        if (forceRefresh || (hasData && !isCacheFresh)) {
+        if (silent) {
+            // Tier 2: Stale (30m-4h) -> Silent background refresh
+            _isRefreshingState.value = false
+            _isLoadingState.value = false
+            _errorState.value = null
+            _uiState.update { it.copy(isRefreshing = false, isLoading = false, error = null) }
+        } else if (hasData && cacheAge < CACHE_TIER_EXPIRED_MS) {
+            // Tier 3: Old (4-24h) or manual pull refresh -> Show refreshing indicator, keep cached content visible
             _isRefreshingState.value = true
             _isLoadingState.value = false
             _errorState.value = null
             _uiState.update { it.copy(isRefreshing = true, isLoading = false, error = null) }
         } else {
+            // Tier 4: Expired (>24h) or initial empty cold start -> Show contained loading indicator
             _isLoadingState.value = true
             _isRefreshingState.value = false
+            _isSettledState.value = false
             _errorState.value = null
-            _uiState.update { it.copy(isLoading = true, isRefreshing = false, error = null) }
+            _uiState.update { it.copy(isLoading = true, isRefreshing = false, isSettled = false, error = null) }
         }
 
         try {
@@ -513,11 +624,13 @@ class ExploreViewModel @Inject constructor(
                 _moodChipsState.value = uiChips
                 _isLoadingState.value = false
                 _isRefreshingState.value = false
+                _isSettledState.value = true
 
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
+                        isSettled = true,
                         isContinuationLoading = false,
                         homePageSections = rawSections,
                         homePageContinuation = currentContinuation,
@@ -551,10 +664,12 @@ class ExploreViewModel @Inject constructor(
                     _sectionsState.value = uiSections
                     _isLoadingState.value = false
                     _isRefreshingState.value = false
+                    _isSettledState.value = true
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             isRefreshing = false,
+                            isSettled = true,
                             homePageSections = fallbackCache.sections
                         )
                     }
@@ -563,7 +678,8 @@ class ExploreViewModel @Inject constructor(
                     _errorState.value = msg
                     _isLoadingState.value = false
                     _isRefreshingState.value = false
-                    _uiState.update { it.copy(isLoading = false, isRefreshing = false, error = msg) }
+                    _isSettledState.value = true
+                    _uiState.update { it.copy(isLoading = false, isRefreshing = false, isSettled = true, error = msg) }
                 }
             }
         } catch (e: Exception) {
@@ -572,7 +688,8 @@ class ExploreViewModel @Inject constructor(
             _errorState.value = msg
             _isLoadingState.value = false
             _isRefreshingState.value = false
-            _uiState.update { it.copy(isLoading = false, isRefreshing = false, error = msg) }
+            _isSettledState.value = true
+            _uiState.update { it.copy(isLoading = false, isRefreshing = false, isSettled = true, error = msg) }
         }
     }
 
@@ -838,10 +955,12 @@ class ExploreViewModel @Inject constructor(
 
         _sectionsState.value = uiSections
         _moodChipsState.value = emptyList()
+        _isSettledState.value = true
         _uiState.update {
             it.copy(
                 isLoading = false,
                 isRefreshing = false,
+                isSettled = true,
                 homePageSections = rawSections,
                 explorePageSections = emptyList(),
                 newReleaseAlbums = emptyList(),

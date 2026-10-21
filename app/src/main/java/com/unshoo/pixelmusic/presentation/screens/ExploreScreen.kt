@@ -319,6 +319,7 @@ fun ExploreScreen(
                     exploreViewModel.setSelectedFilter("Local")
                 } else {
                     exploreViewModel.loadData()
+                    exploreViewModel.loadChartsIfNeeded()
                     quickPicksViewModel.refreshIfStale()
                 }
             }
@@ -439,19 +440,72 @@ fun ExploreScreen(
         }
     }
 
-    val recentlyAddedToDisplay = remember(exploreUiState.localRecentlyAddedSongs, pureYtMusicOnly, filterKeywords) {
+    val chartTracks = remember(state.feedData.charts, exploreUiState.chartsPage) {
+        if (state.feedData.charts.isNotEmpty()) {
+            state.feedData.charts
+        } else {
+            exploreUiState.chartsPage?.sections?.flatMap { it.items }
+                ?.filterIsInstance<SongItem>()
+                ?.map { songItem ->
+                    com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                        videoId = songItem.id,
+                        title = songItem.title,
+                        artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
+                        album = songItem.album?.name,
+                        artworkUrl = songItem.thumbnail
+                    )
+                }.orEmpty()
+        }
+    }
+
+    val chartPlaylistsAndAlbums = remember(exploreUiState.chartsPage) {
+        val page = exploreUiState.chartsPage ?: return@remember emptyList<YouTubePlaylistSummary>()
+        val summaries = mutableListOf<YouTubePlaylistSummary>()
+        for (section in page.sections) {
+            for (item in section.items) {
+                when (item) {
+                    is PlaylistItem -> summaries.add(
+                        YouTubePlaylistSummary(
+                            id = item.id,
+                            title = item.title,
+                            author = item.author?.name ?: "Top Chart",
+                            artworkUrl = item.thumbnail
+                        )
+                    )
+                    is AlbumItem -> summaries.add(
+                        YouTubePlaylistSummary(
+                            id = item.browseId,
+                            title = item.title,
+                            author = item.artists?.firstOrNull()?.name ?: "Chart Album",
+                            artworkUrl = item.thumbnail
+                        )
+                    )
+                    else -> {}
+                }
+            }
+        }
+        summaries.distinctBy { it.id }
+    }
+
+    val chartVideoIds = remember(chartTracks) {
+        chartTracks.mapNotNull { it.videoId.takeIf(String::isNotBlank) }.toSet()
+    }
+
+    val recentlyAddedToDisplay = remember(exploreUiState.localRecentlyAddedSongs, pureYtMusicOnly, filterKeywords, chartVideoIds) {
         exploreUiState.localRecentlyAddedSongs.filter { song ->
+            val ytId = song.youtubeId ?: song.id.removePrefix("youtube_")
+            ytId !in chartVideoIds &&
             (!pureYtMusicOnly || !ContentFilterUtils.isVideoSong(song)) &&
             !ContentFilterUtils.matchesFilterKeywords(song, filterKeywords)
         }
     }
 
     // Jump back in: Remote jumpBackIn -> Local highly rotatory history -> Local recently added
-    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, recentlyAddedToDisplay, pureYtMusicOnly) {
+    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, recentlyAddedToDisplay, pureYtMusicOnly, chartVideoIds) {
         val tracks = if (state.feedData.jumpBackIn.isNotEmpty()) {
-            state.feedData.jumpBackIn
+            state.feedData.jumpBackIn.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
         } else if (exploreUiState.localHighlyRotatoryTracks.isNotEmpty()) {
-            exploreUiState.localHighlyRotatoryTracks
+            exploreUiState.localHighlyRotatoryTracks.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
         } else if (recentlyAddedToDisplay.isNotEmpty()) {
             recentlyAddedToDisplay.take(15).map { song ->
                 RecentTrack(
@@ -480,24 +534,6 @@ fun ExploreScreen(
                 description = "Spotlight Artist",
                 topTrackTitle = trackTitle
             )
-        }
-    }
-
-    val chartTracks = remember(state.feedData.charts, exploreUiState.chartsPage) {
-        if (state.feedData.charts.isNotEmpty()) {
-            state.feedData.charts
-        } else {
-            exploreUiState.chartsPage?.sections?.flatMap { it.items }
-                ?.filterIsInstance<SongItem>()
-                ?.map { songItem ->
-                    com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                        videoId = songItem.id,
-                        title = songItem.title,
-                        artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
-                        album = songItem.album?.name,
-                        artworkUrl = songItem.thumbnail
-                    )
-                }.orEmpty()
         }
     }
 
@@ -631,9 +667,9 @@ fun ExploreScreen(
             }
         ) {
             val showExploreLoading = if (isLocalSelected) {
-                exploreUiState.isLoading && quickPicks.isEmpty() && albumsForYou.isEmpty() && artistsForYou.isEmpty()
+                !exploreUiState.isSettled || (exploreUiState.isLoading && quickPicks.isEmpty() && albumsForYou.isEmpty() && artistsForYou.isEmpty())
             } else {
-                exploreUiState.isLoading && currentSections.isEmpty()
+                !exploreUiState.isSettled || (exploreUiState.isLoading && currentSections.isEmpty())
             }
 
             Crossfade(
@@ -1283,7 +1319,7 @@ fun ExploreScreen(
                         }
 
                         // Trending & Charts Section
-                        if (chartTracks.isNotEmpty()) {
+                        if (chartTracks.isNotEmpty() || chartPlaylistsAndAlbums.isNotEmpty()) {
                             item(key = "feed_charts", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_trending_now),
@@ -1291,30 +1327,65 @@ fun ExploreScreen(
                                     actionText = stringResource(R.string.action_play_all),
                                     actionIcon = Icons.Filled.PlayArrow,
                                     onActionClick = {
-                                        feedViewModel.playTracksQueue(chartTracks, 0, playerViewModel, "Top Charts")
+                                        if (chartTracks.isNotEmpty()) {
+                                            feedViewModel.playTracksQueue(chartTracks, 0, playerViewModel, "Top Charts")
+                                        } else {
+                                            navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("charts"))
+                                        }
                                     },
                                     onShuffleClick = {
-                                        feedViewModel.shuffleTracksQueue(chartTracks, playerViewModel, "Top Charts")
+                                        if (chartTracks.isNotEmpty()) {
+                                            feedViewModel.shuffleTracksQueue(chartTracks, playerViewModel, "Top Charts")
+                                        }
                                     }
                                 )
-                                LazyRow(
-                                    contentPadding = PaddingValues(horizontal = 16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    modifier = Modifier.padding(top = 10.dp)
-                                ) {
-                                    itemsIndexed(chartTracks.take(15), key = { _, t -> "chart_${t.videoId}" }, contentType = { _, _ -> "chart_track" }) { index, track ->
-                                        ChartTrackCard(
-                                            rank = index + 1,
-                                            track = track,
-                                            isCurrentPlaying = isPlaying && currentSongId == "youtube_${track.videoId}",
-                                            onClick = {
-                                                feedViewModel.playTracksQueue(chartTracks, index, playerViewModel, "Top Charts")
-                                            },
-                                            onMoreClick = {
-                                                playerViewModel.selectSongForInfo(track.toSong())
-                                                showSongInfoBottomSheet = true
-                                            }
-                                        )
+                                if (chartTracks.isNotEmpty()) {
+                                    LazyRow(
+                                        contentPadding = PaddingValues(horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    ) {
+                                        itemsIndexed(chartTracks.take(15), key = { _, t -> "chart_${t.videoId}" }, contentType = { _, _ -> "chart_track" }) { index, track ->
+                                            ChartTrackCard(
+                                                rank = index + 1,
+                                                track = track,
+                                                isCurrentPlaying = isPlaying && currentSongId == "youtube_${track.videoId}",
+                                                onClick = {
+                                                    feedViewModel.playTracksQueue(chartTracks, index, playerViewModel, "Top Charts")
+                                                },
+                                                onMoreClick = {
+                                                    playerViewModel.selectSongForInfo(track.toSong())
+                                                    showSongInfoBottomSheet = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                                if (chartPlaylistsAndAlbums.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    FeedMediaRow {
+                                        items(chartPlaylistsAndAlbums.take(10), key = { "chart_media_${it.id}" }, contentType = { "playlist_card" }) { item ->
+                                            FeedPlaylistCard(
+                                                title = item.title,
+                                                subtitle = item.author ?: "Top Chart",
+                                                artworkUrl = item.artworkUrl,
+                                                badgeText = "CHART",
+                                                onClick = {
+                                                    if (item.id.startsWith("MPRE") || item.id.startsWith("FEmusic_album")) {
+                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(item.id))
+                                                    } else {
+                                                        navController.navigateSafely(Screen.PlaylistDetail.createRoute(item.id))
+                                                    }
+                                                },
+                                                onPlayClick = {
+                                                    if (item.id.startsWith("MPRE") || item.id.startsWith("FEmusic_album")) {
+                                                        navController.navigateSafely(Screen.AlbumDetail.createRoute(item.id))
+                                                    } else {
+                                                        navController.navigateSafely(Screen.PlaylistDetail.createRoute(item.id))
+                                                    }
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

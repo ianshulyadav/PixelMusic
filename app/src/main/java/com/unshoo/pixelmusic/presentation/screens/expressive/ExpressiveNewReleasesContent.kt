@@ -32,6 +32,8 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -86,6 +88,7 @@ private data class AlbumCardItem(
     val artwork: String?
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExpressiveNewReleasesContent(
     playlist: YouTubePlaylistResult,
@@ -97,6 +100,7 @@ fun ExpressiveNewReleasesContent(
     filterKeywords: List<String> = emptyList(),
     onPlayAlbumsClick: () -> Unit = {},
     onShuffleAlbumsClick: () -> Unit = {},
+    isLoadingMore: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val isDark = LocalPixelMusicDarkTheme.current
@@ -637,6 +641,19 @@ fun ExpressiveNewReleasesContent(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if (isLoadingMore) {
+            item(key = "new_releases_loading_more") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ContainedLoadingIndicator()
                 }
             }
         }

@@ -59,6 +59,7 @@ class FeedPlaylistDetailViewModel @Inject constructor(
     private var currentPlaylistId: String? = null
     private var loadJob: Job? = null
     private var selectedChartsCountry: String = "IN"
+    private val tempChartsCache = mutableMapOf<String, unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage>()
 
     init {
         viewModelScope.launch {
@@ -195,7 +196,12 @@ class FeedPlaylistDetailViewModel @Inject constructor(
 
             if (liked) showTracks(feedRepository.getCachedFeed()?.ytLikedSongs.orEmpty())
             if (recent) showTracks(feedRepository.getCachedFeed()?.ytRecentSongs.orEmpty())
-            if (isCharts) showTracks(feedRepository.getCachedFeed()?.charts.orEmpty())
+            if (isCharts) {
+                tempChartsCache[selectedChartsCountry]?.let { cachedPage ->
+                    val tracks = extractChartTracks(cachedPage)
+                    if (tracks.isNotEmpty()) showTracks(tracks)
+                }
+            }
 
             try {
                 val result = when {
@@ -395,60 +401,21 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         )
                     }
                     isCharts -> {
-                        val chartsPage = withContext(Dispatchers.IO) {
+                        val chartsPage = tempChartsCache[selectedChartsCountry] ?: withContext(Dispatchers.IO) {
                             runCatching {
                                 unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(selectedChartsCountry.takeIf { it != "GLOBAL" }).getOrNull()
                             }.getOrNull()
+                        }?.also {
+                            tempChartsCache[selectedChartsCountry] = it
                         }
                         fetchedChartsPage = chartsPage
-                        val pageTracks = chartsPage?.sections
-                            ?.filter {
-                                it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TRENDING ||
-                                it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TOP ||
-                                it.title.contains("trending", ignoreCase = true) ||
-                                it.title.contains("top", ignoreCase = true) ||
-                                it.title.contains("charts", ignoreCase = true) ||
-                                it.title.contains("songs", ignoreCase = true)
-                            }
-                            ?.flatMap { it.items }
-                            ?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
-                            ?.map {
-                                val s = it.toNativeSong()
-                                com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                    videoId = it.id,
-                                    title = s.title,
-                                    artist = s.artist,
-                                    album = s.album,
-                                    durationSeconds = (s.duration / 1000).toInt(),
-                                    artworkUrl = s.albumArtUriString
-                                )
-                            }.orEmpty()
-
-                        val allSectionTracks = if (pageTracks.isEmpty()) {
-                            chartsPage?.sections?.flatMap { it.items }
-                                ?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
-                                ?.map {
-                                    val s = it.toNativeSong()
-                                    com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                        videoId = it.id,
-                                        title = s.title,
-                                        artist = s.artist,
-                                        album = s.album,
-                                        durationSeconds = (s.duration / 1000).toInt(),
-                                        artworkUrl = s.albumArtUriString
-                                    )
-                                }.orEmpty()
-                        } else pageTracks
-
-                        val cachedCharts = feedRepository.getCachedFeed()?.charts.orEmpty()
-                        val charts = when {
-                            allSectionTracks.isNotEmpty() -> allSectionTracks
-                            cachedCharts.isNotEmpty() -> cachedCharts
-                            else -> {
-                                val innerCharts = innerTube.fetchCharts()
-                                if (innerCharts.isNotEmpty()) innerCharts
-                                else innerTube.searchSongs("top 50 trending songs")
-                            }
+                        val pageTracks = chartsPage?.let(::extractChartTracks).orEmpty()
+                        val charts = if (pageTracks.isNotEmpty()) {
+                            pageTracks
+                        } else {
+                            val innerCharts = innerTube.fetchCharts()
+                            if (innerCharts.isNotEmpty()) innerCharts
+                            else innerTube.searchSongs("top 50 trending songs")
                         }
                         val filtered = charts.filter(::filterTrack).ifEmpty { charts }
                         if (filtered.isEmpty()) {
@@ -582,30 +549,37 @@ class FeedPlaylistDetailViewModel @Inject constructor(
         }
     }
 
-    fun setChartsCountry(countryCode: String) {
-        selectedChartsCountry = countryCode
-        val current = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return
-        viewModelScope.launch {
-            _uiState.value = current.copy(selectedCountryCode = countryCode, isLoadingMore = true)
-            val chartsPage = withContext(Dispatchers.IO) {
-                runCatching {
-                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(countryCode.takeIf { it != "GLOBAL" }).getOrNull()
-                }.getOrNull()
+    private fun extractChartTracks(chartsPage: unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage): List<YouTubeMusicTrack> {
+        val pageTracks = chartsPage.sections
+            .filter {
+                it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TRENDING ||
+                it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TOP ||
+                it.title.contains("trending", ignoreCase = true) ||
+                it.title.contains("top", ignoreCase = true) ||
+                it.title.contains("charts", ignoreCase = true) ||
+                it.title.contains("songs", ignoreCase = true)
             }
-            val trendingSongs = chartsPage?.sections
-                ?.filter {
-                    it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TRENDING ||
-                    it.chartType == unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage.ChartType.TOP ||
-                    it.title.contains("trending", ignoreCase = true) ||
-                    it.title.contains("top", ignoreCase = true) ||
-                    it.title.contains("charts", ignoreCase = true) ||
-                    it.title.contains("songs", ignoreCase = true)
-                }
-                ?.flatMap { it.items }
-                ?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
-                ?.map {
+            .flatMap { it.items }
+            .filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
+            .map {
+                val s = it.toNativeSong()
+                YouTubeMusicTrack(
+                    videoId = it.id,
+                    title = s.title,
+                    artist = s.artist,
+                    album = s.album,
+                    durationSeconds = (s.duration / 1000).toInt(),
+                    artworkUrl = s.albumArtUriString
+                )
+            }
+        return if (pageTracks.isNotEmpty()) {
+            pageTracks
+        } else {
+            chartsPage.sections.flatMap { it.items }
+                .filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
+                .map {
                     val s = it.toNativeSong()
-                    com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
+                    YouTubeMusicTrack(
                         videoId = it.id,
                         title = s.title,
                         artist = s.artist,
@@ -614,22 +588,22 @@ class FeedPlaylistDetailViewModel @Inject constructor(
                         artworkUrl = s.albumArtUriString
                     )
                 }
-                .orEmpty()
-                .ifEmpty {
-                    chartsPage?.sections?.flatMap { it.items }
-                        ?.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
-                        ?.map {
-                            val s = it.toNativeSong()
-                            com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                                videoId = it.id,
-                                title = s.title,
-                                artist = s.artist,
-                                album = s.album,
-                                durationSeconds = (s.duration / 1000).toInt(),
-                                artworkUrl = s.albumArtUriString
-                            )
-                        }.orEmpty()
-                }
+        }
+    }
+
+    fun setChartsCountry(countryCode: String) {
+        selectedChartsCountry = countryCode
+        val current = _uiState.value as? FeedPlaylistDetailUiState.Success ?: return
+        viewModelScope.launch {
+            _uiState.value = current.copy(selectedCountryCode = countryCode, isLoadingMore = true)
+            val chartsPage = tempChartsCache[countryCode] ?: withContext(Dispatchers.IO) {
+                runCatching {
+                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.getChartsPage(countryCode.takeIf { it != "GLOBAL" }).getOrNull()
+                }.getOrNull()
+            }?.also {
+                tempChartsCache[countryCode] = it
+            }
+            val trendingSongs = chartsPage?.let(::extractChartTracks).orEmpty()
             val finalTracks = if (trendingSongs.isNotEmpty()) trendingSongs else current.playlist.tracks
             _uiState.value = current.copy(
                 selectedCountryCode = countryCode,

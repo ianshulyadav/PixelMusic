@@ -18,6 +18,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -549,10 +550,15 @@ fun SearchScreen(
                                 }
                             }
                             if (isSearching) {
+                                val imeBottom = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
+                                val isKeyboardOpen = imeBottom > 0.dp
+
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(top = 48.dp),
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .imePadding()
+                                        .padding(bottom = if (isKeyboardOpen) 0.dp else bottomBarHeightDp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     ContainedLoadingIndicator()

@@ -42,8 +42,10 @@ import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -103,6 +105,7 @@ val chartCountries = listOf(
     ChartCountry("AU", "Australia")
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExpressiveChartsContent(
     playlist: YouTubePlaylistResult,
@@ -113,6 +116,7 @@ fun ExpressiveChartsContent(
     navController: NavController,
     onBackClick: () -> Unit,
     albumArtQuality: AlbumArtQuality = AlbumArtQuality.ORIGINAL,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val isDark = LocalPixelMusicDarkTheme.current
@@ -279,8 +283,20 @@ fun ExpressiveChartsContent(
             }
         }
 
-        // 2. "Trending 20 [Country]" Ranked Section with Shuffle & Play buttons
-        item(key = "charts_trending_20_section", contentType = "trending_section") {
+        if (isLoading) {
+            item(key = "charts_loading_indicator") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(380.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ContainedLoadingIndicator()
+                }
+            }
+        } else {
+            // 2. "Trending 20 [Country]" Ranked Section with Shuffle & Play buttons
+            item(key = "charts_trending_20_section", contentType = "trending_section") {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -518,6 +534,7 @@ fun ExpressiveChartsContent(
                     }
                 }
             }
+        }
         }
     }
 }

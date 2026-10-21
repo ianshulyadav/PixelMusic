@@ -79,10 +79,6 @@ class FeedRepository @Inject constructor(
             runCatching { unshoo.ianshulyadav.pixelmusic.innertube.YouTube.home().getOrNull() }.getOrNull()
         }
 
-        val chartsDef = async(Dispatchers.IO) {
-            runCatching { innerTube.fetchCharts() }.getOrDefault(emptyList())
-        }
-
         val ytTasteDef = async(Dispatchers.IO) {
             if (isYtConnected) {
                 runCatching { innerTube.fetchTasteSignals(recentLimit = 30, likedLimit = 30, feedLimit = 40) }.getOrNull()
@@ -147,22 +143,7 @@ class FeedRepository @Inject constructor(
             ContentFilterUtils.matchesFilterKeywords(it.title, it.author, null, filterKeywords)
         }.distinctBy { it.id }
 
-        val onlineCharts = chartsDef.await().filter(::filterTrack)
-        val sectionCharts = sections.filter { s ->
-            val t = s.title.lowercase()
-            t.contains("trending") || t.contains("chart") || t.contains("top")
-        }.flatMap { it.items }.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>().map { song ->
-            YouTubeMusicTrack(
-                videoId = song.id,
-                title = song.title,
-                artist = song.artists.firstOrNull()?.name ?: "Unknown artist",
-                album = song.album?.name,
-                artworkUrl = song.thumbnail,
-                isVideo = isSongItemVideo(song)
-            )
-        }.filter(::filterTrack)
-
-        val charts = (sectionCharts + onlineCharts).distinctBy { it.videoId }.ifEmpty { onlineCharts }
+        val charts = emptyList<YouTubeMusicTrack>()
 
         val homePlaylists = sections.flatMap { it.items }
             .filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.PlaylistItem>()
@@ -215,7 +196,7 @@ class FeedRepository @Inject constructor(
             )
         }.filter(::filterTrack)
 
-        val homeSongs = if (parsedHomeSongs.isNotEmpty()) parsedHomeSongs else charts
+        val homeSongs = parsedHomeSongs
         val recentTracks = recentTracksDef.await()
         val friends = friendsDef.await()
         val tasteProfile = tasteProfileDef.await()
@@ -312,7 +293,7 @@ class FeedRepository @Inject constructor(
             addAll(recentTracks.flatMap { ArtistHelper.splitArtists(it.artist.displayName) }.map { it.trim().lowercase() })
         }
 
-        val artistSignalTracks = ytRecentSongs + ytLikedSongs + ytQuickPicks + homeSongs + charts
+        val artistSignalTracks = ytRecentSongs + ytLikedSongs + ytQuickPicks + homeSongs
         val ytArtistNames = (ytRecentSongs + ytLikedSongs + ytQuickPicks + homeSongs)
             .flatMap { ArtistHelper.splitArtists(it.artist) }
             .filter { it.isNotBlank() && !it.equals("Unknown artist", ignoreCase = true) }
@@ -539,8 +520,8 @@ class FeedRepository @Inject constructor(
                 }
             }
 
-        val radioSeed = personalRadioSeed ?: (quickPicks + homeSongs + charts).firstOrNull { it.videoId.isNotBlank() }
-            ?: (quickPicks + homeSongs + charts).firstOrNull()
+        val radioSeed = personalRadioSeed ?: (quickPicks + homeSongs).firstOrNull { it.videoId.isNotBlank() }
+            ?: (quickPicks + homeSongs).firstOrNull()
 
         val radioTracks = discoveryResults.firstOrNull { it.first.videoId == radioSeed?.videoId }?.second
             ?.takeIf { it.isNotEmpty() }
