@@ -288,17 +288,21 @@ class ExploreViewModel @Inject constructor(
                 val cache = gson.fromJson(json, ExploreCacheModel::class.java)
                 if (cache != null && cache.sections.isNotEmpty()) {
                     val age = System.currentTimeMillis() - cache.timestamp
-                    if (age < EXPLORE_CACHE_EXPIRATION_MS) {
-                        val uiSections = cache.sections.map { it.toUiModel() }
-                        val uiChips = cache.moodChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
-                        _sectionsState.value = uiSections
-                        _moodChipsState.value = uiChips
+                    val isFresh = age < EXPLORE_CACHE_EXPIRATION_MS
+                    val uiSections = cache.sections.map { it.toUiModel() }
+                    val uiChips = cache.moodChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
+                    _sectionsState.value = uiSections
+                    _moodChipsState.value = uiChips
+                    lastFetchTimestamp = cache.timestamp
+                    hasFetchedFromNetwork = true
+
+                    if (isFresh) {
                         _isLoadingState.value = false
-                        lastFetchTimestamp = cache.timestamp
-                        hasFetchedFromNetwork = true
+                        _isRefreshingState.value = false
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 homePageSections = cache.sections,
                                 moodChips = cache.moodChips,
                                 newReleaseAlbums = cache.newReleaseAlbums,
@@ -306,7 +310,20 @@ class ExploreViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        Timber.d("Explore cache expired (age: ${age / 60000} min > 30 min). Holding calm loading indicator until fresh content arrives.")
+                        // Expired (> 30 min): keep cached content visible so page isn't blank,
+                        // and show refreshing indicator when expiration happens!
+                        _isLoadingState.value = false
+                        _isRefreshingState.value = true
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                isRefreshing = true,
+                                homePageSections = cache.sections,
+                                moodChips = cache.moodChips,
+                                newReleaseAlbums = cache.newReleaseAlbums,
+                                albumsForYou = cache.albumsForYou
+                            )
+                        }
                     }
                 }
             }
@@ -362,15 +379,17 @@ class ExploreViewModel @Inject constructor(
         }
         stage2Job?.cancel()
 
-        if (forceRefresh) {
+        val hasData = _sectionsState.value.isNotEmpty()
+        if (forceRefresh || (hasData && !isCacheFresh)) {
             _isRefreshingState.value = true
+            _isLoadingState.value = false
             _errorState.value = null
-            _uiState.update { it.copy(isRefreshing = true, error = null) }
+            _uiState.update { it.copy(isRefreshing = true, isLoading = false, error = null) }
         } else {
-            val hasData = _sectionsState.value.isNotEmpty()
-            _isLoadingState.value = !hasData
+            _isLoadingState.value = true
+            _isRefreshingState.value = false
             _errorState.value = null
-            _uiState.update { it.copy(isLoading = !hasData, error = null) }
+            _uiState.update { it.copy(isLoading = true, isRefreshing = false, error = null) }
         }
 
         try {

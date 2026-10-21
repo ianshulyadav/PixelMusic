@@ -55,6 +55,9 @@ class DailyMixStateHolder @Inject constructor(
     private val _yourMixSongs = MutableStateFlow<ImmutableList<Song>>(persistentListOf())
     val yourMixSongs: StateFlow<ImmutableList<Song>> = _yourMixSongs.asStateFlow()
 
+    private val _isUpdating = MutableStateFlow(false)
+    val isUpdating: StateFlow<Boolean> = _isUpdating.asStateFlow()
+
     /**
      * Initialize with coroutine scope from ViewModel.
      */
@@ -181,23 +184,28 @@ class DailyMixStateHolder @Inject constructor(
     fun updateDailyMix(favoriteSongIdsFlow: kotlinx.coroutines.flow.Flow<Set<String>>) {
         updateJob?.cancel()
         updateJob = scope?.launch(Dispatchers.IO) {
-            val allSongs = loadMixCandidates()
-            if (allSongs.isNotEmpty()) {
-                val favoriteIds = favoriteSongIdsFlow.first()
+            _isUpdating.value = true
+            try {
+                val allSongs = loadMixCandidates()
+                if (allSongs.isNotEmpty()) {
+                    val favoriteIds = favoriteSongIdsFlow.first()
 
-                // Generate daily mix
-                val mix = dailyMixManager.generateDailyMix(allSongs, favoriteIds)
-                _dailyMixSongs.value = mix.toImmutableList()
-                userPreferencesRepository.saveDailyMixSongIds(mix.map { it.id })
+                    // Generate daily mix
+                    val mix = dailyMixManager.generateDailyMix(allSongs, favoriteIds)
+                    _dailyMixSongs.value = mix.toImmutableList()
+                    userPreferencesRepository.saveDailyMixSongIds(mix.map { it.id })
 
-                // Generate your mix
-                val yourMix = dailyMixManager.generateYourMix(allSongs, favoriteIds)
-                _yourMixSongs.value = yourMix.toImmutableList()
-                userPreferencesRepository.saveYourMixSongIds(yourMix.map { it.id })
-            } else {
-                // BUGFIX: clear BOTH lists on empty library, not just yourMix
-                _yourMixSongs.value = persistentListOf()
-                _dailyMixSongs.value = persistentListOf()
+                    // Generate your mix
+                    val yourMix = dailyMixManager.generateYourMix(allSongs, favoriteIds)
+                    _yourMixSongs.value = yourMix.toImmutableList()
+                    userPreferencesRepository.saveYourMixSongIds(yourMix.map { it.id })
+                } else {
+                    // BUGFIX: clear BOTH lists on empty library, not just yourMix
+                    _yourMixSongs.value = persistentListOf()
+                    _dailyMixSongs.value = persistentListOf()
+                }
+            } finally {
+                _isUpdating.value = false
             }
         }
     }
@@ -239,29 +247,34 @@ class DailyMixStateHolder @Inject constructor(
     fun forceUpdate(favoriteSongIdsFlow: kotlinx.coroutines.flow.Flow<Set<String>>) {
         updateJob?.cancel()
         updateJob = scope?.launch(Dispatchers.IO) {
-            // Immediately purge persisted DataStore IDs and reset timestamp
-            userPreferencesRepository.clearDailyMixData()
+            _isUpdating.value = true
+            try {
+                // Immediately purge persisted DataStore IDs and reset timestamp
+                userPreferencesRepository.clearDailyMixData()
 
-            val allSongs = loadMixCandidates()
-            if (allSongs.isNotEmpty()) {
-                val favoriteIds = favoriteSongIdsFlow.first()
-                val freshnessSalt = System.currentTimeMillis()
+                val allSongs = loadMixCandidates()
+                if (allSongs.isNotEmpty()) {
+                    val favoriteIds = favoriteSongIdsFlow.first()
+                    val freshnessSalt = System.currentTimeMillis()
 
-                // Generate daily mix
-                val mix = dailyMixManager.generateDailyMix(allSongs, favoriteIds, seedSalt = freshnessSalt)
-                _dailyMixSongs.value = mix.toImmutableList()
-                userPreferencesRepository.saveDailyMixSongIds(mix.map { it.id })
+                    // Generate daily mix
+                    val mix = dailyMixManager.generateDailyMix(allSongs, favoriteIds, seedSalt = freshnessSalt)
+                    _dailyMixSongs.value = mix.toImmutableList()
+                    userPreferencesRepository.saveDailyMixSongIds(mix.map { it.id })
 
-                // Generate your mix
-                val yourMix = dailyMixManager.generateYourMix(allSongs, favoriteIds, seedSalt = freshnessSalt + 42L)
-                _yourMixSongs.value = yourMix.toImmutableList()
-                userPreferencesRepository.saveYourMixSongIds(yourMix.map { it.id })
-            } else {
-                _yourMixSongs.value = persistentListOf()
-                _dailyMixSongs.value = persistentListOf()
+                    // Generate your mix
+                    val yourMix = dailyMixManager.generateYourMix(allSongs, favoriteIds, seedSalt = freshnessSalt + 42L)
+                    _yourMixSongs.value = yourMix.toImmutableList()
+                    userPreferencesRepository.saveYourMixSongIds(yourMix.map { it.id })
+                } else {
+                    _yourMixSongs.value = persistentListOf()
+                    _dailyMixSongs.value = persistentListOf()
+                }
+
+                userPreferencesRepository.saveLastDailyMixUpdateTimestamp(System.currentTimeMillis())
+            } finally {
+                _isUpdating.value = false
             }
-
-            userPreferencesRepository.saveLastDailyMixUpdateTimestamp(System.currentTimeMillis())
         }
     }
 

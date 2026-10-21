@@ -142,7 +142,7 @@ import kotlinx.coroutines.launch
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import androidx.compose.ui.res.stringResource
 
-private const val HomeLoadingPlaceholderMinDurationMillis = 1200L
+
 
 // Modern HomeScreen with collapsible top bar and staggered grid layout
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -267,22 +267,7 @@ fun HomeScreen(
             baseList
         }
     }
-    var homePlaceholderRefreshGeneration by rememberSaveable { mutableIntStateOf(0) }
-    var hasHomeLoadingMinimumElapsed by rememberSaveable(homePlaceholderRefreshGeneration) {
-        mutableStateOf(false)
-    }
 
-    LaunchedEffect(homePlaceholderRefreshGeneration, yourMixSongs.isEmpty()) {
-        if (yourMixSongs.isEmpty()) {
-            hasHomeLoadingMinimumElapsed = false
-            delay(HomeLoadingPlaceholderMinDurationMillis)
-            hasHomeLoadingMinimumElapsed = true
-        } else {
-            hasHomeLoadingMinimumElapsed = true
-        }
-    }
-
-    val shouldShowYourMixLoadingPlaceholder = yourMixSongs.isEmpty() && !hasHomeLoadingMinimumElapsed
     val recentSongIds = remember(playbackHistory) {
         collectRecentlyPlayedSongIds(
             playbackHistory = playbackHistory,
@@ -318,10 +303,6 @@ fun HomeScreen(
 
     val recentlyPlayedQueue = remember(recentlyPlayedSongs) {
         recentlyPlayedSongs.map { it.song }.toImmutableList()
-    }
-
-    ReportDrawnWhen {
-        yourMixSongs.isNotEmpty() || hasHomeLoadingMinimumElapsed || isBenchmarkMode
     }
 
     val yourMixSong: String = stringResource(R.string.home_todays_mix_subtitle)
@@ -365,9 +346,16 @@ fun HomeScreen(
             quickPicksRaw
         }
     }
+
+    ReportDrawnWhen {
+        yourMixSongs.isNotEmpty() || quickPicks.isNotEmpty() || isBenchmarkMode
+    }
     val artistReleasesRaw by favoriteArtistReleasesViewModel.releases.collectAsStateWithLifecycle()
     val artistReleases = if (isEffectivelyOnline) artistReleasesRaw else emptyList()
-    var isRefreshing by remember { mutableStateOf(false) }
+    var isManualRefreshing by remember { mutableStateOf(false) }
+    val isQuickPicksLoading by quickPicksViewModel.isLoading.collectAsStateWithLifecycle()
+    val isDailyMixUpdating by playerViewModel.isDailyMixUpdating.collectAsStateWithLifecycle()
+    val isRefreshing = isManualRefreshing || isQuickPicksLoading || isDailyMixUpdating
 
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
     val density = LocalDensity.current
@@ -447,12 +435,16 @@ fun HomeScreen(
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
-                    isRefreshing = true
-                    quickPicksViewModel.refresh()
-                    playerViewModel.forceUpdateDailyMix()
                     scope.launch {
-                        delay(1800)
-                        isRefreshing = false
+                        isManualRefreshing = true
+                        val qpJob = launch { quickPicksViewModel.refresh(force = true) }
+                        playerViewModel.forceUpdateDailyMix()
+                        qpJob.join()
+                        kotlinx.coroutines.delay(200L)
+                        while (playerViewModel.isDailyMixUpdating.value) {
+                            kotlinx.coroutines.delay(100L)
+                        }
+                        isManualRefreshing = false
                     }
                 },
                 state = pullRefreshState,
@@ -469,7 +461,7 @@ fun HomeScreen(
                     )
                 }
             ) {
-                val showHomeLoading = yourMixSongs.isEmpty() && quickPicks.isEmpty() && !hasHomeLoadingMinimumElapsed
+                val showHomeLoading = yourMixSongs.isEmpty() && quickPicks.isEmpty()
                 Crossfade(
                     targetState = showHomeLoading,
                     animationSpec = spring(
@@ -532,38 +524,18 @@ fun HomeScreen(
                                         displayMode = quickPicksDisplayMode
                                     )
                                 }
-                            } else if (shouldShowYourMixLoadingPlaceholder) {
-                                item(
-                                    key = "quick_picks_loading",
-                                    contentType = "quick_picks_loading"
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(160.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        ContainedLoadingIndicator()
-                                    }
-                                }
                             }
-
                             if (yourMixSongs.isEmpty()) {
                                 item(
                                     key = "your_mix_placeholder",
                                     contentType = "your_mix_placeholder"
                                 ) {
-                                    if (shouldShowYourMixLoadingPlaceholder) {
-                                        YourMixLoadingPlaceholder()
-                                    } else {
-                                        YourMixEmptyPlaceholder(
-                                            onRefresh = {
-                                                homePlaceholderRefreshGeneration++
-                                                settingsViewModel.refreshLibrary()
-                                                playerViewModel.forceUpdateDailyMix()
-                                            }
-                                        )
-                                    }
+                                    YourMixEmptyPlaceholder(
+                                        onRefresh = {
+                                            settingsViewModel.refreshLibrary()
+                                            playerViewModel.forceUpdateDailyMix()
+                                        }
+                                    )
                                 }
                             } else {
                                 item(

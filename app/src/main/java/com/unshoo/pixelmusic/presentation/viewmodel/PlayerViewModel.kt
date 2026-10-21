@@ -2078,6 +2078,7 @@ class PlayerViewModel @Inject constructor(
     // Daily mix state is now managed by DailyMixStateHolder
     val dailyMixSongs: StateFlow<ImmutableList<Song>> = dailyMixStateHolder.dailyMixSongs
     val yourMixSongs: StateFlow<ImmutableList<Song>> = dailyMixStateHolder.yourMixSongs
+    val isDailyMixUpdating: StateFlow<Boolean> = dailyMixStateHolder.isUpdating
 
     fun removeFromDailyMix(songId: String) {
         dailyMixStateHolder.removeFromDailyMix(songId)
