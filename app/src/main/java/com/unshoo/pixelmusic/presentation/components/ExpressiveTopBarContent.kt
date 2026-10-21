@@ -161,11 +161,11 @@ fun ExpressiveTopBarContent(
                         color = subtitleColor,
                         maxLines = subtitleMaxLines,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        modifier = Modifier.alpha(subtitleAlpha)
+                        modifier = Modifier.graphicsLayer { alpha = subtitleAlpha }
                     )
                 }
                 if (supportingContent != null) {
-                    Box(modifier = Modifier.alpha(1f - clampedFraction)) {
+                    Box(modifier = Modifier.graphicsLayer { alpha = 1f - clampedFraction }) {
                         supportingContent()
                     }
                 }

@@ -896,16 +896,12 @@ fun PlaylistDetailScreen(
                                     )
 
                                     QueuePlaylistSongItem(
-                                        modifier = if (scale != 1f) {
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .graphicsLayer {
-                                                    scaleX = scale
-                                                    scaleY = scale
-                                                }
-                                        } else {
-                                            Modifier.fillMaxWidth()
-                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .graphicsLayer {
+                                                scaleX = scale
+                                                scaleY = scale
+                                            },
                                         onClick = {
                                             playerViewModel.playSongs(
                                                 displayedSongs,

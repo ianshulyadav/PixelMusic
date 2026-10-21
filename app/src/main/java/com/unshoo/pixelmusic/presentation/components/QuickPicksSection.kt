@@ -299,7 +299,12 @@ fun QuickPicksSection(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                itemsUnique(limitSongs, key = { it.id }) { song ->
+                items(
+                    count = limitSongs.size,
+                    key = { limitSongs[it].id },
+                    contentType = { "quick_pick_classic_card" }
+                ) { classicIndex ->
+                    val song = limitSongs[classicIndex]
                     Column(
                         modifier = Modifier
                             .width(cardSize)
@@ -338,7 +343,6 @@ fun QuickPicksSection(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                val classicIndex = limitSongs.indexOf(song)
                                 val loadArtImmediately = classicIndex in 0..2
                                 val artUri = if (loadArtImmediately) {
                                     song.albumArtUriString
@@ -416,7 +420,12 @@ fun QuickPicksSection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                itemsUnique(limitSongs, key = { it.id }) { song ->
+                items(
+                    count = limitSongs.size,
+                    key = { limitSongs[it].id },
+                    contentType = { "quick_pick_uncontained_card" }
+                ) { uncontainedIndex ->
+                    val song = limitSongs[uncontainedIndex]
                     val uncontainedCardSize = 150.dp
                     Column(
                         modifier = Modifier
@@ -437,7 +446,7 @@ fun QuickPicksSection(
                                         
                                         // dynamic Material 3 uncontained scale
                                         val scale = if (fraction > 0.6f) {
-                                            1f - (fraction - 0.6f) * 0.3f
+                                             1f - (fraction - 0.6f) * 0.3f
                                         } else {
                                             1f
                                         }
@@ -466,7 +475,6 @@ fun QuickPicksSection(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                val uncontainedIndex = limitSongs.indexOf(song)
                                 val loadArtImmediately = uncontainedIndex in 0..2
                                 val artUri = if (loadArtImmediately) {
                                     song.albumArtUriString
@@ -592,11 +600,13 @@ private fun EqualizerAnimation(
             ),
             label = "bar_$index"
         )
-        if (isPlaying) animatedHeight else when(index % 3) {
-            0 -> 0.35f
-            1 -> 0.55f
-            else -> 0.35f
-        }
+        if (isPlaying) ({ animatedHeight }) else ({
+            when(index % 3) {
+                0 -> 0.35f
+                1 -> 0.55f
+                else -> 0.35f
+            }
+        })
     }
     
     Row(
@@ -604,11 +614,15 @@ private fun EqualizerAnimation(
         horizontalArrangement = Arrangement.spacedBy(3.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        heights.forEach { heightVal ->
+        heights.forEach { heightProvider ->
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxHeight(heightVal)
+                    .fillMaxHeight()
+                    .graphicsLayer {
+                        scaleY = heightProvider()
+                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
+                    }
                     .clip(RoundedCornerShape(2.dp))
                     .background(color)
             )
@@ -631,6 +645,7 @@ private fun rememberAlbumVibrantColor(
 
     if (initialArgb == null && !imageUrl.isNullOrBlank()) {
         LaunchedEffect(imageUrl, fallbackColor) {
+            delay(150L)
             val argb = CardColorExtractor.extractColorArgb(context, imageUrl)
             if (argb != null) {
                 targetColor = Color(argb)

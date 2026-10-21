@@ -9,6 +9,10 @@ import com.unshoo.pixelmusic.presentation.navigation.navigateSafelyReplacing
 
 import android.content.Intent
 import androidx.activity.compose.ReportDrawnWhen
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import com.unshoo.pixelmusic.ui.theme.ExpressiveSprings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -343,6 +347,12 @@ fun HomeScreen(
     val navBarHeightOffset = navBarHeightOffsetRaw.dp
     val bottomGradientHeight = resolveMainScreenBottomGradientHeight(navBarCompactMode, navBarHeightOffset)
 
+    var isHomeInitialSettling by rememberSaveable { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(HomeLoadingPlaceholderMinDurationMillis)
+        isHomeInitialSettling = false
+    }
+
     var showOptionsBottomSheet by remember { mutableStateOf(false) }
     var showChangelogBottomSheet by remember { mutableStateOf(false) }
     var showBetaInfoBottomSheet by remember { mutableStateOf(false) }
@@ -351,7 +361,6 @@ fun HomeScreen(
     val sheetState = rememberModalBottomSheetState()
     val betaSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    LocalContext.current
 
     val homeStatsOverview by statsViewModel.homeOverview.collectAsStateWithLifecycle()
     val quickPicksRaw by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
@@ -369,7 +378,7 @@ fun HomeScreen(
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
     val density = LocalDensity.current
     val scrollThresholdPx = remember(density) { with(density) { 180.dp.toPx() } } // Adopted from PixelMusic: higher threshold = header flip-flops less
-    val isScrolledPastThreshold = remember {
+    val isScrolledPastThreshold = remember(scrollThresholdPx) {
         derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > scrollThresholdPx }
     }
 
@@ -466,229 +475,253 @@ fun HomeScreen(
                     )
                 }
             ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = paddingValuesParent.calculateBottomPadding()
-                            + 38.dp + bottomPadding
-                ),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                if (quickPicksDisplayMode != QuickPicksDisplayMode.CARD) {
-                    item(
-                        key = "home_greeting",
-                        contentType = "home_greeting"
-                    ) {
-                        HomeGreetingHeader(
-                            userName = userName
-                        )
-                    }
-                }
-
-                // Quick Picks (above Your Mix, shown when there is engagement data)
-                if (quickPicks.isNotEmpty()) {
-                    item(
-                        key = "quick_picks_section",
-                        contentType = "quick_picks_section"
-                    ) {
-                        QuickPicksSection(
-                            songs = quickPicks,
-                            onSongClick = { song ->
-                                playerViewModel.showAndPlaySong(song, quickPicks, "Quick Picks")
-                            },
-                            onSeeAllClick = {
-                                navController.navigateSafely(Screen.QuickPicksAll.route)
-                            },
-                            currentSongId = currentSong?.id,
-                            displayMode = quickPicksDisplayMode
-                        )
-                    }
-                } else if (shouldShowYourMixLoadingPlaceholder) {
-                    item(
-                        key = "quick_picks_loading",
-                        contentType = "quick_picks_loading"
-                    ) {
+                val showHomeLoading = isHomeInitialSettling || (yourMixSongs.isEmpty() && quickPicks.isEmpty() && !hasHomeLoadingMinimumElapsed)
+                Crossfade(
+                    targetState = showHomeLoading,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = ExpressiveSprings.DefaultEffectsStiffness
+                    ),
+                    label = "home_screen_crossfade"
+                ) { isLoading ->
+                    if (isLoading) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp),
+                                .fillMaxSize()
+                                .padding(
+                                    top = innerPadding.calculateTopPadding() + 32.dp,
+                                    bottom = paddingValuesParent.calculateBottomPadding() + 38.dp + bottomPadding
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             ContainedLoadingIndicator()
                         }
-                    }
-                }
-
-                if (yourMixSongs.isEmpty()) {
-                    item(
-                        key = "your_mix_placeholder",
-                        contentType = "your_mix_placeholder"
-                    ) {
-                        if (shouldShowYourMixLoadingPlaceholder) {
-                            YourMixLoadingPlaceholder()
-                        } else {
-                            YourMixEmptyPlaceholder(
-                                onRefresh = {
-                                    homePlaceholderRefreshGeneration++
-                                    settingsViewModel.refreshLibrary()
-                                    playerViewModel.forceUpdateDailyMix()
-                                }
-                            )
-                        }
-                    }
-                } else {
-                    item(
-                        key = "your_mix_header",
-                        contentType = "your_mix_header"
-                    ) {
-                        YourMixHeader(
-                            song = yourMixSong,
-                            isShuffleEnabled = isShuffleEnabled,
-                             onPlayShuffled = {
-                                 val songsToUse = quickPicks.ifEmpty { yourMixSongs }
-                                 if (songsToUse.isNotEmpty()) {
-                                     playerViewModel.playSongsShuffled(songsToUse, "Your Mix")
-                                 }
-                             }
-                        )
-                    }
-                }
-
-                // Collage
-                if (yourMixSongs.isNotEmpty() && settingsUiState.collageEnabled) {
-                    item(
-                        key = "album_art_collage",
-                        contentType = "album_art_collage"
-                    ) {
-                        val basePattern = settingsUiState.collagePattern
-                        val isAutoRotate = settingsUiState.collageAutoRotate
-                        val patterns = remember { CollagePattern.entries }
-
-                        val activePattern = if (isAutoRotate) {
-                            var rotationIndex by rememberSaveable { mutableIntStateOf(-1) }
-                            LaunchedEffect(Unit) { rotationIndex++ }
-                            remember(rotationIndex) {
-                                patterns[rotationIndex.coerceAtLeast(0) % patterns.size]
-                            }
-                        } else {
-                            basePattern
-                        }
-
-                        AlbumArtCollage(
-                            modifier = Modifier.fillMaxWidth(),
-                            songs = yourMixSongs,
-                            padding = 14.dp,
-                            height = 400.dp,
-                            pattern = activePattern,
-                            onSongClick = { song ->
-                                if (usesFallbackHomeMix) {
-                                    playerViewModel.showAndPlaySongFromLibrary(song, queueName = "Your Mix")
-                                } else {
-                                    playerViewModel.showAndPlaySong(song, yourMixSongs, "Your Mix")
-                                }
-                            }
-                        )
-                    }
-                }
-
-                // Daily Mix (with YouTube Daily Discover songs merged)
-                if (mergedDailyMixSongs.isNotEmpty()) {
-                    item(
-                        key = "daily_mix_section",
-                        contentType = "daily_mix_section"
-                    ) {
-                        DailyMixSection(
-                            songs = mergedDailyMixSongs,
-                            onClickOpen = {
-                                navController.navigateSafely(Screen.DailyMixScreen.route)
-                            },
-                            onNavigateToAlbum = { song ->
-                                navController.navigateSafelyReplacing(
-                                    route = Screen.AlbumDetail.createRoute(song.albumId),
-                                    patternToPop = Screen.AlbumDetail.route
-                                )
-                            },
-                            onNavigateToArtist = { song ->
-                                navController.navigateSafelyReplacing(
-                                    route = Screen.ArtistDetail.createRoute(
-                                        song.artists.firstOrNull()?.id?.takeIf { it != 0L && it != -1L }?.toString()
-                                            ?: song.artists.firstOrNull()?.name
-                                            ?: song.artist
-                                    ),
-                                    patternToPop = Screen.ArtistDetail.route
-                                )
-                            },
-                            onNavigateToGenre = {},
-                            playerViewModel = playerViewModel
-                        )
-                    }
-                }
-
-                if (recentlyPlayedSongs.size >= RecentlyPlayedSectionMinSongsToShow) {
-                    item(
-                        key = "recently_played_section",
-                        contentType = "recently_played_section"
-                    ) {
-                        RecentlyPlayedSection(
-                            songs = recentlyPlayedSongs,
-                            onSongClick = { song ->
-                                if (recentlyPlayedQueue.isNotEmpty()) {
-                                    playerViewModel.playSongs(
-                                        songsToPlay = recentlyPlayedQueue,
-                                        startSong = song,
-                                        queueName = "Recently Played"
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.background),
+                            contentPadding = PaddingValues(
+                                top = innerPadding.calculateTopPadding(),
+                                bottom = paddingValuesParent.calculateBottomPadding()
+                                        + 38.dp + bottomPadding
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            if (quickPicksDisplayMode != QuickPicksDisplayMode.CARD) {
+                                item(
+                                    key = "home_greeting",
+                                    contentType = "home_greeting"
+                                ) {
+                                    HomeGreetingHeader(
+                                        userName = userName
                                     )
                                 }
-                            },
-                            onOpenAllClick = {
-                                navController.navigateSafely(Screen.RecentlyPlayed.route)
-                            },
-                            themeStateHolder = playerViewModel.themeStateHolder,
-                            currentSongId = currentSong?.id,
-                            contentPadding = PaddingValues(start = 8.dp, end = 24.dp)
-                        )
-                    }
-                }
+                            }
 
-                if (isOnline && artistReleases.isNotEmpty()) {
-                    item(
-                        key = "favorite_artist_releases_section",
-                        contentType = "favorite_artist_releases_section"
-                    ) {
-                        FavoriteArtistReleasesSection(
-                            releases = artistReleases,
-                            onSongClick = { songItem ->
-                                val nativeSong = songItem.toNativeSong()
-                                playerViewModel.showAndPlaySong(nativeSong)
-                            },
-                            onAlbumClick = { albumItem ->
-                                val routeId = albumItem.browseId?.takeIf { it.isNotBlank() } ?: albumItem.playlistId
-                                if (routeId.startsWith("VL") || routeId.startsWith("PL") || routeId.startsWith("RD")) {
-                                    navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(routeId))
-                                } else {
-                                    navController.navigateSafely(Screen.AlbumDetail.createRoute(routeId))
+                            // Quick Picks (above Your Mix, shown when there is engagement data)
+                            if (quickPicks.isNotEmpty()) {
+                                item(
+                                    key = "quick_picks_section",
+                                    contentType = "quick_picks_section"
+                                ) {
+                                    QuickPicksSection(
+                                        songs = quickPicks,
+                                        onSongClick = { song ->
+                                            playerViewModel.showAndPlaySong(song, quickPicks, "Quick Picks")
+                                        },
+                                        onSeeAllClick = {
+                                            navController.navigateSafely(Screen.QuickPicksAll.route)
+                                        },
+                                        currentSongId = currentSong?.id,
+                                        displayMode = quickPicksDisplayMode
+                                    )
+                                }
+                            } else if (shouldShowYourMixLoadingPlaceholder) {
+                                item(
+                                    key = "quick_picks_loading",
+                                    contentType = "quick_picks_loading"
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(160.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        ContainedLoadingIndicator()
+                                    }
                                 }
                             }
-                        )
-                    }
-                }
 
-                if (homeStatsOverview != null) {
-                    item(
-                        key = "listening_stats_preview",
-                        contentType = "listening_stats_preview"
-                    ) {
-                        StatsOverviewCard(
-                            summary = homeStatsOverview,
-                            onClick = { navController.navigateSafely(Screen.Stats.route) }
-                        )
+                            if (yourMixSongs.isEmpty()) {
+                                item(
+                                    key = "your_mix_placeholder",
+                                    contentType = "your_mix_placeholder"
+                                ) {
+                                    if (shouldShowYourMixLoadingPlaceholder) {
+                                        YourMixLoadingPlaceholder()
+                                    } else {
+                                        YourMixEmptyPlaceholder(
+                                            onRefresh = {
+                                                homePlaceholderRefreshGeneration++
+                                                settingsViewModel.refreshLibrary()
+                                                playerViewModel.forceUpdateDailyMix()
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                item(
+                                    key = "your_mix_header",
+                                    contentType = "your_mix_header"
+                                ) {
+                                    YourMixHeader(
+                                        song = yourMixSong,
+                                        isShuffleEnabled = isShuffleEnabled,
+                                         onPlayShuffled = {
+                                             val songsToUse = quickPicks.ifEmpty { yourMixSongs }
+                                             if (songsToUse.isNotEmpty()) {
+                                                 playerViewModel.playSongsShuffled(songsToUse, "Your Mix")
+                                             }
+                                         }
+                                    )
+                                }
+                            }
+
+                            // Collage
+                            if (yourMixSongs.isNotEmpty() && settingsUiState.collageEnabled) {
+                                item(
+                                    key = "album_art_collage",
+                                    contentType = "album_art_collage"
+                                ) {
+                                    val basePattern = settingsUiState.collagePattern
+                                    val isAutoRotate = settingsUiState.collageAutoRotate
+                                    val patterns = remember { CollagePattern.entries }
+
+                                    val activePattern = if (isAutoRotate) {
+                                        var rotationIndex by rememberSaveable { mutableIntStateOf(-1) }
+                                        LaunchedEffect(Unit) { rotationIndex++ }
+                                        remember(rotationIndex) {
+                                            patterns[rotationIndex.coerceAtLeast(0) % patterns.size]
+                                        }
+                                    } else {
+                                        basePattern
+                                    }
+
+                                    AlbumArtCollage(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        songs = yourMixSongs,
+                                        padding = 14.dp,
+                                        height = 400.dp,
+                                        pattern = activePattern,
+                                        onSongClick = { song ->
+                                            if (usesFallbackHomeMix) {
+                                                playerViewModel.showAndPlaySongFromLibrary(song, queueName = "Your Mix")
+                                            } else {
+                                                playerViewModel.showAndPlaySong(song, yourMixSongs, "Your Mix")
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            // Daily Mix (with YouTube Daily Discover songs merged)
+                            if (mergedDailyMixSongs.isNotEmpty()) {
+                                item(
+                                    key = "daily_mix_section",
+                                    contentType = "daily_mix_section"
+                                ) {
+                                    DailyMixSection(
+                                        songs = mergedDailyMixSongs,
+                                        onClickOpen = {
+                                            navController.navigateSafely(Screen.DailyMixScreen.route)
+                                        },
+                                        onNavigateToAlbum = { song ->
+                                            navController.navigateSafelyReplacing(
+                                                route = Screen.AlbumDetail.createRoute(song.albumId),
+                                                patternToPop = Screen.AlbumDetail.route
+                                            )
+                                        },
+                                        onNavigateToArtist = { song ->
+                                            navController.navigateSafelyReplacing(
+                                                route = Screen.ArtistDetail.createRoute(
+                                                    song.artists.firstOrNull()?.id?.takeIf { it != 0L && it != -1L }?.toString()
+                                                        ?: song.artists.firstOrNull()?.name
+                                                        ?: song.artist
+                                                ),
+                                                patternToPop = Screen.ArtistDetail.route
+                                            )
+                                        },
+                                        onNavigateToGenre = {},
+                                        playerViewModel = playerViewModel
+                                    )
+                                }
+                            }
+
+                            if (recentlyPlayedSongs.size >= RecentlyPlayedSectionMinSongsToShow) {
+                                item(
+                                    key = "recently_played_section",
+                                    contentType = "recently_played_section"
+                                ) {
+                                    RecentlyPlayedSection(
+                                        songs = recentlyPlayedSongs,
+                                        onSongClick = { song ->
+                                            if (recentlyPlayedQueue.isNotEmpty()) {
+                                                playerViewModel.playSongs(
+                                                    songsToPlay = recentlyPlayedQueue,
+                                                    startSong = song,
+                                                    queueName = "Recently Played"
+                                                )
+                                            }
+                                        },
+                                        onOpenAllClick = {
+                                            navController.navigateSafely(Screen.RecentlyPlayed.route)
+                                        },
+                                        themeStateHolder = playerViewModel.themeStateHolder,
+                                        currentSongId = currentSong?.id,
+                                        contentPadding = PaddingValues(start = 8.dp, end = 24.dp)
+                                    )
+                                }
+                            }
+
+                            if (isOnline && artistReleases.isNotEmpty()) {
+                                item(
+                                    key = "favorite_artist_releases_section",
+                                    contentType = "favorite_artist_releases_section"
+                                ) {
+                                    FavoriteArtistReleasesSection(
+                                        releases = artistReleases,
+                                        onSongClick = { songItem ->
+                                            val nativeSong = songItem.toNativeSong()
+                                            playerViewModel.showAndPlaySong(nativeSong)
+                                        },
+                                        onAlbumClick = { albumItem ->
+                                            val routeId = albumItem.browseId.takeIf { it.isNotBlank() } ?: albumItem.playlistId
+                                            if (routeId.startsWith("VL") || routeId.startsWith("PL") || routeId.startsWith("RD")) {
+                                                navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute(routeId))
+                                            } else {
+                                                navController.navigateSafely(Screen.AlbumDetail.createRoute(routeId))
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            if (homeStatsOverview != null) {
+                                item(
+                                    key = "listening_stats_preview",
+                                    contentType = "listening_stats_preview"
+                                ) {
+                                    StatsOverviewCard(
+                                        summary = homeStatsOverview,
+                                        onClick = { navController.navigateSafely(Screen.Stats.route) }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-            }
             } // end PullToRefreshBox
         }
     }

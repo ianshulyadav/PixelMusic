@@ -260,10 +260,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideImageLoader(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        okHttpClient: OkHttpClient
     ): ImageLoader {
-        // Add interceptor for QQ Music images
-        val okHttpClient = OkHttpClient.Builder()
+        // Reuse shared OkHttpClient with shared connection pool and DNS
+        val imageOkHttpClient = okHttpClient.newBuilder()
             .addInterceptor { chain ->
                 val request = chain.request()
                 val url = request.url.toString()
@@ -285,17 +286,18 @@ object AppModule {
         val isLowRamDevice = activityManager?.isLowRamDevice == true
 
         // CALM & OPTIMAL IMAGE PIPELINE:
-        // - crossfade(250): Gentle and calm image settlement instead of popping in abruptly.
-        // - Low decode parallelism (Dispatchers.IO.limitedParallelism(2)) so background IO and main-thread navigation
-        //   transitions are never blocked by sudden bursts of bitmap decoding.
-        // - allowRgb565 for low ram devices to cut texture bandwidth.
-        val cachePercent = if (isLowRamDevice) 0.08 else 0.14
+        // - crossfade(200): Smooth image reveal without visual stutter.
+        // - Dispatchers.IO.limitedParallelism(4): Balanced throughput for fast shelf loads without main thread contention.
+        // - Hardware bitmaps on API 26+ keep bitmap pixels in GPU graphics memory (zero Java heap pressure).
+        // - RGB_565 on low RAM devices cuts memory bandwidth in half.
+        val cachePercent = if (isLowRamDevice) 0.08 else 0.15
 
         return ImageLoader.Builder(context)
-            .okHttpClient(okHttpClient)
-            .dispatcher(Dispatchers.IO.limitedParallelism(2))
-            .allowHardware(true)
-            .crossfade(250)
+            .okHttpClient(imageOkHttpClient)
+            .dispatcher(Dispatchers.IO.limitedParallelism(4))
+            .allowHardware(!isLowRamDevice)
+            .allowRgb565(isLowRamDevice)
+            .crossfade(200)
             .bitmapConfig(
                 if (isLowRamDevice) {
                     android.graphics.Bitmap.Config.RGB_565
@@ -313,7 +315,7 @@ object AppModule {
             .diskCache {
                 DiskCache.Builder()
                     .directory(context.cacheDir.resolve("image_cache"))
-                    .maxSizeBytes(if (isLowRamDevice) 40L * 1024 * 1024 else 80L * 1024 * 1024)
+                    .maxSizeBytes(if (isLowRamDevice) 50L * 1024 * 1024 else 120L * 1024 * 1024)
                     .build()
             }
             .respectCacheHeaders(false)

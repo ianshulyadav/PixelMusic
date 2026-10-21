@@ -306,21 +306,29 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
         ProcessLifecycleOwner.get().lifecycle.addObserver(appLifecycleObserver)
     }
 
+    @Volatile
+    private var customImageLoaderInstance: ImageLoader? = null
+
     override fun newImageLoader(): ImageLoader {
-        val base = imageLoader.get()
-        return base.newBuilder()
-            .memoryCache(base.memoryCache)
-            .diskCache(base.diskCache)
-            .components {
-                add(localArtworkCoilFetcherFactory.get())
-                add(telegramCoilFetcherFactory.get())
-                if (android.os.Build.VERSION.SDK_INT >= 28) {
-                    add(coil.decode.ImageDecoderDecoder.Factory())
-                } else {
-                    add(coil.decode.GifDecoder.Factory())
-                }
+        return customImageLoaderInstance ?: synchronized(this) {
+            customImageLoaderInstance ?: run {
+                val base = imageLoader.get()
+                base.newBuilder()
+                    .memoryCache(base.memoryCache)
+                    .diskCache(base.diskCache)
+                    .components {
+                        add(localArtworkCoilFetcherFactory.get())
+                        add(telegramCoilFetcherFactory.get())
+                        if (android.os.Build.VERSION.SDK_INT >= 28) {
+                            add(coil.decode.ImageDecoderDecoder.Factory())
+                        } else {
+                            add(coil.decode.GifDecoder.Factory())
+                        }
+                    }
+                    .build()
+                    .also { customImageLoaderInstance = it }
             }
-            .build()
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -328,6 +336,7 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
         super.onTrimMemory(level)
 
         imageLoader.get().memoryCache?.trimMemory(level)
+        customImageLoaderInstance?.memoryCache?.trimMemory(level)
 
         val isRunning = level < ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN
         val isUiHidden = level == ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN
@@ -354,6 +363,7 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
         // Tier 3: Critical pressure
         if ((isRunning && level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) || (isBackground && level >= ComponentCallbacks2.TRIM_MEMORY_COMPLETE)) {
             imageLoader.get().memoryCache?.clear()
+            customImageLoaderInstance?.memoryCache?.clear()
         }
     }
 

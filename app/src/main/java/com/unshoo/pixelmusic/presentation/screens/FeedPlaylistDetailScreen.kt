@@ -95,8 +95,8 @@ fun FeedPlaylistDetailScreen(
 
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val stablePlayerState by playerViewModel.stablePlayerState.collectAsStateWithLifecycle()
-    val isPlaying by remember { derivedStateOf { stablePlayerState.isPlaying } }
-    val currentSongId by remember { derivedStateOf { stablePlayerState.currentSong?.id } }
+    val isPlaying = stablePlayerState.isPlaying
+    val currentSongId = stablePlayerState.currentSong?.id
 
     val context = LocalContext.current
     val isNewReleases = playlistId == "new_releases"
@@ -248,7 +248,7 @@ fun FeedPlaylistDetailScreen(
                 }
                 is FeedPlaylistDetailUiState.Success -> {
                     val playlist = s.playlist
-                    val songs = remember(playlist.tracks) { playlist.tracks.map { it.toSong() } }
+                    val songs = remember(playlist.tracks) { playlist.tracks.map { it.toSong() }.distinctBy { it.id } }
                     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                     val bottomPadding = MiniPlayerHeight + navBarPadding + 16.dp
 
@@ -437,8 +437,9 @@ fun FeedPlaylistDetailScreen(
 
                         // Tracks
                         items(
-                            items = songs.distinctBy { it.id },
-                            key = { song -> song.id }
+                            items = songs,
+                            key = { song -> song.id },
+                            contentType = { "feed_track_item" }
                         ) { song ->
                             EnhancedSongListItem(
                                 modifier = Modifier

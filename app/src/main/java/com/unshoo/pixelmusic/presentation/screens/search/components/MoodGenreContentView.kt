@@ -237,6 +237,7 @@ fun MoodGenreContentView(
     val statusBarTopInset = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val headerTextColor = if (isDark) Color.White else MaterialTheme.colorScheme.onSurface
     val subtitleTextColor = if (isDark) Color.White.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val uniqueSongsList = remember(songsList) { songsList.distinctBy { it.id } }
 
     val navBarInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
@@ -434,7 +435,8 @@ fun MoodGenreContentView(
                         ) {
                             items(
                                 items = section.playlists,
-                                key = { "pl_${it.id}_$sIndex" }
+                                key = { "pl_${it.id}_$sIndex" },
+                                contentType = { "mood_playlist_card" }
                             ) { playlist ->
                                 FeaturedPlaylistCard(
                                     title = playlist.title,
@@ -472,7 +474,8 @@ fun MoodGenreContentView(
                         ) {
                             items(
                                 items = section.albums,
-                                key = { "album_${it.id}_$aIndex" }
+                                key = { "album_${it.id}_$aIndex" },
+                                contentType = { "mood_album_card" }
                             ) { album ->
                                 val artistName = album.artists?.firstOrNull()?.name
                                     ?: album.year?.toString()
@@ -491,7 +494,7 @@ fun MoodGenreContentView(
                 }
 
                 // Popular Songs Section
-                if (songsList.isNotEmpty()) {
+                if (uniqueSongsList.isNotEmpty()) {
                     item(key = "songs_header") {
                         Text(
                             text = "Popular in ${moodGenre.title}",
@@ -507,7 +510,7 @@ fun MoodGenreContentView(
                     }
 
                     items(
-                        items = songsList.distinctBy { it.id },
+                        items = uniqueSongsList,
                         key = { song -> "mood_song_${song.id}" },
                         contentType = { "mood_song" }
                     ) { song ->

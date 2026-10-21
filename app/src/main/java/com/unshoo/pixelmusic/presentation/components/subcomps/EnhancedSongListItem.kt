@@ -332,6 +332,10 @@ fun EnhancedSongListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (showAlbumArt) {
+                    val resolvedTargetSize = remember(albumArtTargetSizePx) {
+                        val clamped = albumArtTargetSizePx.coerceIn(48, 160)
+                        Size(clamped, clamped)
+                    }
                     Box(
                         modifier = Modifier
                             .size(albumArtSize)
@@ -341,10 +345,7 @@ fun EnhancedSongListItem(
                             model = song.albumArtUriString,
                             contentDescription = song.title,
                             shape = albumShape,
-                            targetSize = Size(
-                                albumArtTargetSizePx.coerceIn(48, 160),
-                                albumArtTargetSizePx.coerceIn(48, 160)
-                            ),
+                            targetSize = resolvedTargetSize,
                             crossfadeDurationMillis = 0,
                             isThumbnail = true,
                             modifier = Modifier.fillMaxSize()

@@ -509,7 +509,7 @@ fun ExploreScreen(
     }
 
     val albumsForYou = remember(exploreUiState.albumsForYou, state.feedData.recentAlbums, localAlbums) {
-        if (exploreUiState.albumsForYou.isNotEmpty()) {
+        val list = if (exploreUiState.albumsForYou.isNotEmpty()) {
             exploreUiState.albumsForYou.map { album ->
                 FeedAlbum(
                     title = album.title,
@@ -530,6 +530,7 @@ fun ExploreScreen(
                 )
             }
         }
+        list.distinctBy { it.browseId ?: it.title }
     }
 
     val mixesToDisplay = remember(state.feedData.mixes, quickPicks) {
@@ -575,6 +576,12 @@ fun ExploreScreen(
         }
     }
 
+    var isExploreInitialSettling by rememberSaveable { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(1000L)
+        isExploreInitialSettling = false
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -594,7 +601,7 @@ fun ExploreScreen(
                     exploreViewModel.loadChartsIfNeeded(forceRefresh = true)
                     quickPicksViewModel.refresh(force = true)
                     feedViewModel.refresh()
-                    kotlinx.coroutines.delay(800)
+                    kotlinx.coroutines.delay(1100L)
                     isManualRefreshing = false
                 }
             },
@@ -627,8 +634,10 @@ fun ExploreScreen(
                 albumsForYou.isNotEmpty()
             }
 
+            val showExploreLoading = (exploreUiState.isLoading || isExploreInitialSettling) && (!hasFeedContent || isExploreInitialSettling)
+
             Crossfade(
-                targetState = exploreUiState.isLoading && !hasFeedContent,
+                targetState = showExploreLoading,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioNoBouncy,
                     stiffness = ExpressiveSprings.DefaultEffectsStiffness
@@ -703,7 +712,7 @@ fun ExploreScreen(
                                     subtitle = stringResource(R.string.explore_subtitle_local_albums)
                                 )
                                 FeedMediaRow {
-                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { a -> "local_album_${a.browseId ?: a.title}" }, contentType = { "album_card" }) { album ->
+                                    items(albumsForYou, key = { a -> "local_album_${a.browseId ?: a.title}" }, contentType = { "album_card" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -771,7 +780,7 @@ fun ExploreScreen(
                                     }
                                 )
                                 FeedMediaRow {
-                                    items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
+                                    items(recentSongs, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
                                         FeedTrackCard(
                                             title = song.title,
                                             subtitle = song.displayArtist,
