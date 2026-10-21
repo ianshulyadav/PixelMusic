@@ -16,19 +16,15 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.graphics.graphicsLayer
 
 /**
- * High-performance RenderNode-backed bounce click and hover modifier.
- * Runs spring physics purely in the Draw/RenderNode phase via graphicsLayer,
- * guaranteeing zero recomposition of card content and zero layout passes.
+ * High-performance, zero-latency click and long-click modifier.
+ * Completely eliminates elastic spring latency, graphicsLayer scaling on touch-down,
+ * and touch-slop contention during page scrolling across Home, Explore, and Mood & Genre.
  */
 @OptIn(ExperimentalFoundationApi::class)
 fun Modifier.bounceClick(
@@ -38,41 +34,19 @@ fun Modifier.bounceClick(
     onClick: () -> Unit
 ): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) scaleDown else 1f,
-        animationSpec = spring(
-            dampingRatio = if (isPressed) 0.82f else 0.70f,
-            stiffness = Spring.StiffnessMediumLow
-        ),
-        label = "bounce_click_scale"
-    )
-
-    val baseModifier = this.graphicsLayer {
-        if (scale >= 0.999f && !isPressed) {
-            scaleX = 1f
-            scaleY = 1f
-        } else {
-            scaleX = scale
-            scaleY = scale
-        }
-    }
-
     if (onLongClick != null) {
-        baseModifier.combinedClickable(
+        this.combinedClickable(
             interactionSource = interactionSource,
             indication = null,
             onLongClick = onLongClick,
             onClick = onClick
         )
     } else {
-        baseModifier.clickable(
+        this.clickable(
             interactionSource = interactionSource,
-            indication = null
-        ) {
-            onClick()
-        }
+            indication = null,
+            onClick = onClick
+        )
     }
 }
 

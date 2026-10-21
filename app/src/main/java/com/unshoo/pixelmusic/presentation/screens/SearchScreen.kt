@@ -1815,7 +1815,9 @@ fun SwipeActionWrapper(
                             }
                         },
                         onHorizontalDrag = { change, dragAmount ->
-                            change.consume()
+                            if (kotlin.math.abs(dragAmount) > 0.5f) {
+                                change.consume()
+                            }
                             coroutineScope.launch {
                                 val currentOffset = dragOffset.value
                                 val newOffset = currentOffset + dragAmount

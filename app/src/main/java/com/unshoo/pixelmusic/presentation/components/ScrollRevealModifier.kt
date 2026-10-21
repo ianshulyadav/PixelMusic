@@ -35,6 +35,11 @@ fun Modifier.scrollReveal(
 ): Modifier = composed {
     if (!enabled) return@composed this
 
+    var hasAnimated by rememberSaveable(key) { mutableStateOf(false) }
+    if (hasAnimated) {
+        return@composed this
+    }
+
     var isTriggered by remember(key) { mutableStateOf(false) }
 
     LaunchedEffect(key) {
@@ -54,6 +59,9 @@ fun Modifier.scrollReveal(
             dampingRatio = 0.86f,
             stiffness = Spring.StiffnessMediumLow
         ),
+        finishedListener = {
+            hasAnimated = true
+        },
         label = "scroll_reveal_progress"
     )
 

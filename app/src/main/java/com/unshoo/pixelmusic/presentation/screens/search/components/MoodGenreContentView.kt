@@ -74,7 +74,6 @@ import com.unshoo.pixelmusic.presentation.components.SmartImageCardTargetSize
 import com.unshoo.pixelmusic.presentation.components.subcomps.EnhancedSongListItem
 import com.unshoo.pixelmusic.presentation.navigation.Screen
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
-import com.unshoo.pixelmusic.presentation.screens.SwipeActionWrapper
 import com.unshoo.pixelmusic.ui.theme.LocalPixelMusicDarkTheme
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
@@ -509,37 +508,27 @@ fun MoodGenreContentView(
 
                     items(
                         items = songsList.distinctBy { it.id },
-                        key = { song -> "mood_song_${song.id}" }
+                        key = { song -> "mood_song_${song.id}" },
+                        contentType = { "mood_song" }
                     ) { song ->
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 3.dp)
                         ) {
-                            SwipeActionWrapper(
-                                onSwipeRight = {
-                                    playerViewModel.addSongNextToQueue(song)
-                                    playerViewModel.sendToast("Added to Play Next")
-                                },
-                                onSwipeLeft = {
-                                    playerViewModel.addSongToQueue(song)
-                                    playerViewModel.sendToast("Added to Queue")
+                            EnhancedSongListItem(
+                                song = song,
+                                isPlaying = isPlaying,
+                                isCurrentSong = currentPlayingSongId == song.id,
+                                onMoreOptionsClick = onSongMoreOptionsClick,
+                                onClick = {
+                                    playerViewModel.showAndPlaySong(
+                                        song,
+                                        songsList,
+                                        "${moodGenre.title} Mix"
+                                    )
                                 }
-                            ) {
-                                EnhancedSongListItem(
-                                    song = song,
-                                    isPlaying = isPlaying,
-                                    isCurrentSong = currentPlayingSongId == song.id,
-                                    onMoreOptionsClick = onSongMoreOptionsClick,
-                                    onClick = {
-                                        playerViewModel.showAndPlaySong(
-                                            song,
-                                            songsList,
-                                            "${moodGenre.title} Mix"
-                                        )
-                                    }
-                                )
-                            }
+                            )
                         }
                     }
                 }
