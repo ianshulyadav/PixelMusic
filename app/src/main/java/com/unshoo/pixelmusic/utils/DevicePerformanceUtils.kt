@@ -66,7 +66,9 @@ class AdaptiveRefreshRatePolicy(
 
         val allRates = supportedRates?.filter { it > 0f }?.distinct()?.sortedDescending()
             ?: listOf(currentDisplayRate)
-        val peakRate = allRates.maxOrNull() ?: currentDisplayRate
+        // Cap at 120Hz to prevent excessive dropped frames on 144Hz+ displays
+        val peakRate = allRates.filter { it <= 120.5f }.maxOrNull()?.coerceAtMost(120f)
+            ?: (allRates.firstOrNull { it > 60f }?.coerceAtMost(120f) ?: 60f)
         if (peakRate <= 60.5f) {
             currentTier = 1
             return 60f
@@ -112,14 +114,7 @@ class AdaptiveRefreshRatePolicy(
             }
         }
 
-        // 5. Light thermal state:
-        // Use system-adaptive behavior (0f) to preserve battery and allow the OS scheduler to manage rate
-        if (snapshot.thermalStatus == PowerManager.THERMAL_STATUS_LIGHT) {
-            currentTier = 3
-            return 0f
-        }
-
-        // 6. Nominal (NONE): Full peak rate preference
+        // 5. Nominal (NONE) or Light thermal state: Retain smooth peak rate (capped at 120Hz)
         currentTier = 3
         return peakRate
     }
@@ -232,6 +227,9 @@ object DevicePerformanceUtils {
     fun applyAdaptiveRefreshRate(window: Window, targetRate: Float) {
         try {
             val params = window.attributes
+            if (params.preferredRefreshRate == targetRate && params.preferredDisplayModeId == 0) {
+                return
+            }
             params.preferredDisplayModeId = 0
             params.preferredRefreshRate = targetRate
             window.attributes = params

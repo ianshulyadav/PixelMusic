@@ -44,7 +44,7 @@ class DevicePerformanceUtilsTest {
     }
 
     @Test
-    fun resolveTargetRate_whenThermalStatusNone_returnsPeakRate() {
+    fun resolveTargetRate_whenThermalStatusNone_returnsPeakRateCappedAt120Hz() {
         val policy = AdaptiveRefreshRatePolicy()
         val rate = policy.resolveTargetRate(
             snapshot = ThermalSnapshot(thermalStatus = PowerManager.THERMAL_STATUS_NONE),
@@ -52,11 +52,12 @@ class DevicePerformanceUtilsTest {
             currentDisplayRate = 60f,
             highRefreshRateEnabled = true
         )
-        assertEquals(144f, rate, 0.01f)
+        // 144Hz capped at 120Hz to preserve frame rendering budget and prevent frame drops
+        assertEquals(120f, rate, 0.01f)
     }
 
     @Test
-    fun resolveTargetRate_whenThermalStatusLight_returnsZeroForSystemAdaptive() {
+    fun resolveTargetRate_whenThermalStatusLight_returnsPeakRate() {
         val policy = AdaptiveRefreshRatePolicy()
         val rate = policy.resolveTargetRate(
             snapshot = ThermalSnapshot(thermalStatus = PowerManager.THERMAL_STATUS_LIGHT),
@@ -64,8 +65,8 @@ class DevicePerformanceUtilsTest {
             currentDisplayRate = 120f,
             highRefreshRateEnabled = true
         )
-        // System-adaptive behavior: 0f allows OS LTPO scheduler to balance power
-        assertEquals(0f, rate, 0.01f)
+        // Normal operating temperature retains smooth 120Hz without stuttering
+        assertEquals(120f, rate, 0.01f)
     }
 
     @Test

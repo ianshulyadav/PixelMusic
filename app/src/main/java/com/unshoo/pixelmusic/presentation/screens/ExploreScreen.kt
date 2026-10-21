@@ -322,7 +322,6 @@ fun ExploreScreen(
                     exploreViewModel.setSelectedFilter("Local")
                 } else {
                     exploreViewModel.loadData()
-                    exploreViewModel.loadChartsIfNeeded()
                     quickPicksViewModel.refreshIfStale()
                 }
             }
@@ -648,10 +647,9 @@ fun ExploreScreen(
                     isManualRefreshing = true
                     unshoo.ianshulyadav.pixelmusic.innertube.YouTube.invalidateHomeCache()
                     val exploreJob = launch { exploreViewModel.loadData(forceRefresh = true) }
-                    val chartsJob = launch { exploreViewModel.loadChartsIfNeeded(forceRefresh = true) }
                     val quickPicksJob = launch { quickPicksViewModel.refresh(force = true) }
                     val feedJob = launch { feedViewModel.refresh() }
-                    joinAll(exploreJob, chartsJob, quickPicksJob, feedJob)
+                    joinAll(exploreJob, quickPicksJob, feedJob)
                     isManualRefreshing = false
                 }
             },
@@ -670,9 +668,11 @@ fun ExploreScreen(
             }
         ) {
             val isMoodFilter = !isLocalSelected && !selectedCategory.equals("All", ignoreCase = true)
+            val hasSections = currentSections.isNotEmpty() || exploreUiState.homePageSections.isNotEmpty()
             val hasExploreContent = remember(
                 isLocalSelected,
                 isMoodFilter,
+                hasSections,
                 currentSections,
                 quickPicks,
                 albumsForYou,
@@ -689,17 +689,15 @@ fun ExploreScreen(
                     recentlyAddedToDisplay.isNotEmpty() ||
                     exploreUiState.libraryPlaylists.isNotEmpty()
                 } else if (isMoodFilter) {
-                    currentSections.isNotEmpty() || quickPicks.isNotEmpty()
+                    currentSections.isNotEmpty()
                 } else {
-                    currentSections.isNotEmpty() ||
-                    quickPicks.isNotEmpty() ||
-                    newReleases.isNotEmpty() ||
-                    albumsForYou.isNotEmpty() ||
-                    heavyToDisplay.isNotEmpty()
+                    hasSections || (exploreUiState.isSettled && (quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty()))
                 }
             }
 
-            val showExploreLoading = (!hasExploreContent && exploreUiState.error == null) ||
+            val isOnlineColdStarting = !isLocalSelected && !exploreUiState.isSettled && exploreUiState.homePageSections.isEmpty()
+            val showExploreLoading = isOnlineColdStarting ||
+                (!hasExploreContent && exploreUiState.error == null) ||
                 (exploreUiState.isLoading && !hasExploreContent) ||
                 (!exploreUiState.isSettled && !hasExploreContent)
 
