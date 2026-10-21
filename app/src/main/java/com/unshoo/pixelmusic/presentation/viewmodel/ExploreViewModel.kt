@@ -396,22 +396,31 @@ class ExploreViewModel @Inject constructor(
             val isAdvancedExploreEnabled = userPreferencesRepository.advancedExplorePageFlow.first()
             _uiState.update { it.copy(isAdvancedExploreEnabled = isAdvancedExploreEnabled) }
 
-            // Stage 1: Fast concurrent initial fetch for YouTube Home & New Release Albums
-            val (initialHome, ytNewReleases) = withContext(Dispatchers.IO) {
+            val cookies = runCatching { datastoreRepository.cookies.first() }.getOrNull()
+            val isYtConnected = cookies?.toRawCookie()?.let {
+                it.contains("SAPISID=") || it.contains("__Secure-3PAPISID=")
+            } == true
+
+            // Stage 1: Fast concurrent initial fetch for YouTube Home, New Releases & Auth Account Albums
+            val (initialHome, ytNewReleases, authAccountAlbums) = withContext(Dispatchers.IO) {
                 val homeDeferred = async { runCatching { YouTube.home().getOrNull() }.getOrNull() }
                 val newReleasesDeferred = async { runCatching { YouTube.newReleaseAlbums().getOrNull().orEmpty() }.getOrDefault(emptyList()) }
-                Pair(homeDeferred.await(), newReleasesDeferred.await())
+                val authAlbumsDeferred = async {
+                    if (isYtConnected) {
+                        runCatching {
+                            YouTube.library("FEmusic_liked_albums").getOrNull()?.items
+                                ?.filterIsInstance<AlbumItem>()
+                                .orEmpty()
+                        }.getOrDefault(emptyList())
+                    } else emptyList()
+                }
+                Triple(homeDeferred.await(), newReleasesDeferred.await(), authAlbumsDeferred.await())
             }
 
             if (initialHome != null) {
                 val combinedSections = ArrayList<HomePage.Section>()
                 combinedSections.addAll(initialHome.sections)
                 val currentContinuation = initialHome.continuation
-
-                val cookies = runCatching { datastoreRepository.cookies.first() }.getOrNull()
-                val isYtConnected = cookies?.toRawCookie()?.let {
-                    it.contains("SAPISID=") || it.contains("__Secure-3PAPISID=")
-                } == true
 
                 // Preserve video sections (e.g. Music videos for you) while keeping pure audio for other shelves
                 val rawSections = combinedSections.map { section ->
@@ -457,14 +466,16 @@ class ExploreViewModel @Inject constructor(
                 // Combine personalized home releases with official YouTube Music new release albums
                 val resolvedNewReleases = (personalizedNewReleases + ytNewReleases).distinctBy { it.browseId }
 
-                // Extract personalized albums directly from user's authenticated YouTube Home feed
-                val personalizedAlbums = rawSections.filter { section ->
+                // Extract pure YouTube homepage albums (dedicated shelves + home feed album shelves)
+                val dedicatedAlbumSections = rawSections.filter { section ->
                     val t = section.title.lowercase()
                     !t.contains("video") && !t.contains("videos") && (
                         t.contains("album") || section.label?.lowercase()?.contains("album") == true ||
                         (t.contains("for you") && section.items.any { it is AlbumItem })
                     )
-                }.flatMap { it.items }.mapNotNull { item ->
+                }
+
+                val dedicatedAlbums = dedicatedAlbumSections.flatMap { it.items }.mapNotNull { item ->
                     when (item) {
                         is AlbumItem -> item
                         is PlaylistItem -> if (item.title.contains("album", ignoreCase = true) || item.id.startsWith("MPRE")) {
@@ -480,7 +491,16 @@ class ExploreViewModel @Inject constructor(
                         } else null
                         else -> null
                     }
-                }.distinctBy { it.browseId }
+                }
+
+                val otherHomeAlbums = rawSections.filterNot { dedicatedAlbumSections.contains(it) }
+                    .filter { !it.title.contains("video", ignoreCase = true) }
+                    .flatMap { it.items }
+                    .filterIsInstance<AlbumItem>()
+
+                // Pure YouTube homepage + Auth login YouTube Music account albums ONLY (no top artist dependency)
+                val personalizedAlbums = (dedicatedAlbums + otherHomeAlbums + authAccountAlbums)
+                    .distinctBy { it.browseId }
 
                 // Progressive streaming: map to domain UI models once
                 val uiSections = rawSections.map { it.toUiModel() }

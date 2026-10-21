@@ -509,8 +509,17 @@ fun ExploreScreen(
         rawList.filter { it.id !in blockedReleaseIds }
     }
 
-    val albumsForYou = remember(exploreUiState.albumsForYou, state.feedData.recentAlbums, localAlbums) {
-        val list = if (exploreUiState.albumsForYou.isNotEmpty()) {
+    val albumsForYou = remember(exploreUiState.albumsForYou, localAlbums, isLocalMode) {
+        if (isLocalMode) {
+            localAlbums.take(20).map { local ->
+                FeedAlbum(
+                    title = local.title,
+                    artist = local.artist,
+                    artworkUrl = local.albumArtUriString,
+                    browseId = local.id.toString()
+                )
+            }.distinctBy { it.browseId ?: it.title }
+        } else if (exploreUiState.albumsForYou.isNotEmpty()) {
             exploreUiState.albumsForYou.map { album ->
                 FeedAlbum(
                     title = album.title,
@@ -518,20 +527,17 @@ fun ExploreScreen(
                     artworkUrl = album.thumbnail,
                     browseId = album.browseId.takeIf { it.isNotBlank() } ?: album.playlistId
                 )
-            }
-        } else if (state.feedData.recentAlbums.isNotEmpty()) {
-            state.feedData.recentAlbums
+            }.distinctBy { it.browseId ?: it.title }
         } else {
-            localAlbums.take(15).map { local ->
+            localAlbums.take(20).map { local ->
                 FeedAlbum(
                     title = local.title,
                     artist = local.artist,
                     artworkUrl = local.albumArtUriString,
                     browseId = local.id.toString()
                 )
-            }
+            }.distinctBy { it.browseId ?: it.title }
         }
-        list.distinctBy { it.browseId ?: it.title }
     }
 
     val mixesToDisplay = remember(state.feedData.mixes, quickPicks) {
@@ -1207,7 +1213,7 @@ fun ExploreScreen(
 
                         // Albums for You
                         if (albumsForYou.isNotEmpty()) {
-                            val isLocal = exploreUiState.albumsForYou.isEmpty() && state.feedData.recentAlbums.isEmpty()
+                            val isLocal = isLocalMode || exploreUiState.albumsForYou.isEmpty()
                             item(key = "feed_albums", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_albums_for_you),
