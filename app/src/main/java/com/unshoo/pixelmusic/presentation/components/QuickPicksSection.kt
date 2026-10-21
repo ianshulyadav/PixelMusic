@@ -292,7 +292,7 @@ fun QuickPicksSection(
                 }
             }
 
-            val cardShape = remember { AbsoluteSmoothCornerShape(20.dp, 60) }
+            val cardShape = remember { RoundedCornerShape(20.dp) }
             LazyRow(
                 state = lazyListState,
                 contentPadding = PaddingValues(start = 16.dp, end = 60.dp),
@@ -308,7 +308,7 @@ fun QuickPicksSection(
                     Column(
                         modifier = Modifier
                             .width(cardSize)
-                            .bounceClick(scaleDown = 0.96f) { onSongClick(song) }
+                            .clickable { onSongClick(song) }
                     ) {
                         Card(
                             modifier = Modifier
@@ -343,18 +343,8 @@ fun QuickPicksSection(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                val loadArtImmediately = classicIndex in 0..2
-                                val artUri = if (loadArtImmediately) {
-                                    song.albumArtUriString
-                                } else {
-                                    val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
-                                        delay(120L)
-                                        value = song.albumArtUriString
-                                    }
-                                    calmUri
-                                }
                                 SmartImage(
-                                    model = artUri,
+                                    model = song.albumArtUriString,
                                     contentDescription = song.title,
                                     contentScale = ContentScale.Crop,
                                     targetSize = SmartImageCardTargetSize,
@@ -413,6 +403,7 @@ fun QuickPicksSection(
         } else if (displayMode == QuickPicksDisplayMode.UNCONTAINED) {
             val limitSongs = remember(songs) { songs.take(20) }
             val lazyListState = rememberLazyListState()
+            val uncontainedCardShape = remember { AbsoluteSmoothCornerShape(24.dp, 80) }
             
             LazyRow(
                 state = lazyListState,
@@ -453,40 +444,19 @@ fun QuickPicksSection(
                                         scaleX = scale
                                         scaleY = scale
                                         alpha = 0.7f + (1f - 0.7f) * scale
-                                        
-                                        // Dynamic Material 3 shape morphing: squircle corner sizes change on scroll position
-                                        val currentCorner = if (fraction > 0.5f) {
-                                            val morphProgress = (fraction - 0.5f) * 2f
-                                            24.dp + (56.dp - 24.dp) * morphProgress.coerceIn(0f, 1f)
-                                        } else {
-                                            24.dp
-                                        }
-                                        shape = AbsoluteSmoothCornerShape(currentCorner, 80)
-                                        clip = true
                                     } else {
                                         scaleX = 0.88f
                                         scaleY = 0.88f
                                         alpha = 0.7f
-                                        shape = AbsoluteSmoothCornerShape(56.dp, 80)
-                                        clip = true
                                     }
                                 },
+                            shape = uncontainedCardShape,
                             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
                         ) {
                             Box(modifier = Modifier.fillMaxSize()) {
-                                val loadArtImmediately = uncontainedIndex in 0..2
-                                val artUri = if (loadArtImmediately) {
-                                    song.albumArtUriString
-                                } else {
-                                    val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
-                                        delay(120L)
-                                        value = song.albumArtUriString
-                                    }
-                                    calmUri
-                                }
                                 SmartImage(
-                                    model = artUri,
+                                    model = song.albumArtUriString,
                                     contentDescription = song.title,
                                     contentScale = ContentScale.Crop,
                                     targetSize = SmartImageCardTargetSize,
@@ -686,27 +656,18 @@ private fun CarouselItemScope.CenteredHeroCard(
     val cornerRadiusDp = remember((sizeFraction * 12f).toInt()) {
         (16 + (sizeFraction * 12f).toInt()).dp
     }
-    val cardShape = remember(cornerRadiusDp) { AbsoluteSmoothCornerShape(cornerRadiusDp, 60) }
+    val cardShape = remember(cornerRadiusDp) { RoundedCornerShape(cornerRadiusDp) }
 
     // 2. Text opacity: strictly visible for the centered carousel card
     val textAlpha = ((sizeFraction - 0.55f) / 0.45f).coerceIn(0f, 1f)
 
-    // Calm loading of artwork and colors for smooth initial render & scroll
-    val shouldLoadImmediately = loadArtImmediately || textAlpha > 0.05f
-    val artUri = if (shouldLoadImmediately) {
-        song.albumArtUriString
-    } else {
-        val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
-            delay(120L)
-            value = song.albumArtUriString
-        }
-        calmUri
-    }
+    // Direct artwork URL - Coil manages caching seamlessly off the UI thread
+    val artUri = song.albumArtUriString
 
     // Dynamic extracted color directly from the album art
     val defaultColor = MaterialTheme.colorScheme.primary
     val albumColor = rememberAlbumVibrantColor(
-        imageUrl = if (shouldLoadImmediately) song.albumArtUriString else null,
+        imageUrl = song.albumArtUriString,
         fallbackColor = defaultColor
     )
 
@@ -1002,17 +963,8 @@ private fun QuickPickPill(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val artUri = if (loadArtImmediately) {
-                song.albumArtUriString
-            } else {
-                val calmUri by produceState<String?>(initialValue = null, song.albumArtUriString) {
-                    delay(120L)
-                    value = song.albumArtUriString
-                }
-                calmUri
-            }
             SmartImage(
-                model = artUri,
+                model = song.albumArtUriString,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 shape = CircleShape,

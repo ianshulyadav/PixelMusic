@@ -193,6 +193,7 @@ import com.unshoo.pixelmusic.presentation.viewmodel.PlaylistViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.QuickPicksViewModel
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 import com.unshoo.pixelmusic.ui.theme.ShapeCache
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import unshoo.ianshulyadav.pixelmusic.innertube.models.AlbumItem
@@ -329,7 +330,7 @@ fun ExploreScreen(
     val pullRefreshState = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
     var isManualRefreshing by remember { mutableStateOf(false) }
-    val isRefreshing = state.isRefreshing || isManualRefreshing
+    val isRefreshing = state.isRefreshing || exploreUiState.isRefreshing || isManualRefreshing
 
     val listState = rememberLazyListState()
 
@@ -576,12 +577,6 @@ fun ExploreScreen(
         }
     }
 
-    var isExploreInitialSettling by rememberSaveable { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(1000L)
-        isExploreInitialSettling = false
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -597,11 +592,12 @@ fun ExploreScreen(
             onRefresh = {
                 scope.launch {
                     isManualRefreshing = true
-                    exploreViewModel.loadData(forceRefresh = true)
-                    exploreViewModel.loadChartsIfNeeded(forceRefresh = true)
-                    quickPicksViewModel.refresh(force = true)
-                    feedViewModel.refresh()
-                    kotlinx.coroutines.delay(1100L)
+                    unshoo.ianshulyadav.pixelmusic.innertube.YouTube.invalidateHomeCache()
+                    val exploreJob = launch { exploreViewModel.loadData(forceRefresh = true) }
+                    val chartsJob = launch { exploreViewModel.loadChartsIfNeeded(forceRefresh = true) }
+                    val quickPicksJob = launch { quickPicksViewModel.refresh(force = true) }
+                    val feedJob = launch { feedViewModel.refresh() }
+                    joinAll(exploreJob, chartsJob, quickPicksJob, feedJob)
                     isManualRefreshing = false
                 }
             },
@@ -619,22 +615,11 @@ fun ExploreScreen(
                 )
             }
         ) {
-            val hasFeedContent = if (isLocalSelected) {
-                quickPicks.isNotEmpty() || albumsForYou.isNotEmpty() || artistsForYou.isNotEmpty() || exploreUiState.localRecentlyAddedSongs.isNotEmpty()
+            val showExploreLoading = if (isLocalSelected) {
+                exploreUiState.isLoading && quickPicks.isEmpty() && albumsForYou.isEmpty() && artistsForYou.isEmpty()
             } else {
-                quickPicks.isNotEmpty() ||
-                currentSections.isNotEmpty() ||
-                artistsForYou.isNotEmpty() ||
-                jumpBackInTracks.isNotEmpty() ||
-                exploreUiState.libraryPlaylists.isNotEmpty() ||
-                state.feedData.quickPicks.isNotEmpty() ||
-                state.feedData.topArtists.isNotEmpty() ||
-                state.feedData.newReleases.isNotEmpty() ||
-                chartTracks.isNotEmpty() ||
-                albumsForYou.isNotEmpty()
+                exploreUiState.isLoading && currentSections.isEmpty()
             }
-
-            val showExploreLoading = (exploreUiState.isLoading || isExploreInitialSettling) && (!hasFeedContent || isExploreInitialSettling)
 
             Crossfade(
                 targetState = showExploreLoading,

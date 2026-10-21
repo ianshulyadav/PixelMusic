@@ -78,6 +78,8 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -742,11 +744,51 @@ object YouTube {
         playlistContinuationPageFromResponse(response)
     }
 
-    suspend fun home(continuation: String? = null, params: String? = null): Result<HomePage> = runCatching {
+    @Volatile
+    private var inMemoryCachedHome: HomePage? = null
+    @Volatile
+    private var inMemoryCachedHomeTimestamp: Long = 0L
+    private val homeFetchMutex = Mutex()
+
+    fun invalidateHomeCache() {
+        inMemoryCachedHome = null
+        inMemoryCachedHomeTimestamp = 0L
+    }
+
+    suspend fun home(continuation: String? = null, params: String? = null, forceRefresh: Boolean = false): Result<HomePage> = runCatching {
         if (continuation != null) {
             return@runCatching homeContinuation(continuation).getOrThrow()
         }
 
+        // Cache and deduplicate default home feed (continuation == null && params == null)
+        if (params == null) {
+            if (!forceRefresh) {
+                val cached = inMemoryCachedHome
+                val ts = inMemoryCachedHomeTimestamp
+                if (cached != null && (System.currentTimeMillis() - ts) < 60_000L) {
+                    return@runCatching cached
+                }
+            }
+
+            homeFetchMutex.withLock {
+                if (!forceRefresh) {
+                    val cached = inMemoryCachedHome
+                    val ts = inMemoryCachedHomeTimestamp
+                    if (cached != null && (System.currentTimeMillis() - ts) < 60_000L) {
+                        return@runCatching cached
+                    }
+                }
+                val fresh = fetchHomeInternal(null).getOrThrow()
+                inMemoryCachedHome = fresh
+                inMemoryCachedHomeTimestamp = System.currentTimeMillis()
+                fresh
+            }
+        } else {
+            fetchHomeInternal(params).getOrThrow()
+        }
+    }
+
+    private suspend fun fetchHomeInternal(params: String?): Result<HomePage> = runCatching {
         val hasAuth = hasLoginCookie()
         val forceAnon = !hasAuth && !personalizedExploreEnabled
         val setLogin = hasAuth || !forceAnon

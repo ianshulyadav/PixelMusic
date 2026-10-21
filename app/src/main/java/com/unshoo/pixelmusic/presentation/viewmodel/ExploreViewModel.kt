@@ -110,7 +110,13 @@ class ExploreViewModel @Inject constructor(
     private var stage2Job: Job? = null
     @Volatile
     private var hasFetchedFromNetwork = false
+    @Volatile
+    private var lastFetchTimestamp: Long = 0L
     private var initialHomeContinuation: String? = null
+
+    companion object {
+        private const val EXPLORE_CACHE_EXPIRATION_MS = 30 * 60 * 1000L // 30 minutes
+    }
 
     private val gson by lazy {
         com.google.gson.GsonBuilder()
@@ -127,7 +133,8 @@ class ExploreViewModel @Inject constructor(
             withContext(Dispatchers.IO) {
                 restoreFromCache()
             }
-            if (_sectionsState.value.isEmpty()) {
+            val isCacheFresh = (System.currentTimeMillis() - lastFetchTimestamp) < EXPLORE_CACHE_EXPIRATION_MS
+            if (_sectionsState.value.isEmpty() || !isCacheFresh) {
                 loadDataInternal(forceRefresh = false)
             }
         }
@@ -281,15 +288,25 @@ class ExploreViewModel @Inject constructor(
                 val cache = gson.fromJson(json, ExploreCacheModel::class.java)
                 if (cache != null && cache.sections.isNotEmpty()) {
                     val age = System.currentTimeMillis() - cache.timestamp
-                    if (age < 12 * 60 * 60 * 1000L) {
+                    if (age < EXPLORE_CACHE_EXPIRATION_MS) {
                         val uiSections = cache.sections.map { it.toUiModel() }
+                        val uiChips = cache.moodChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
                         _sectionsState.value = uiSections
+                        _moodChipsState.value = uiChips
+                        _isLoadingState.value = false
+                        lastFetchTimestamp = cache.timestamp
+                        hasFetchedFromNetwork = true
                         _uiState.update {
                             it.copy(
-                                isLoading = true,
-                                homePageSections = cache.sections
+                                isLoading = false,
+                                homePageSections = cache.sections,
+                                moodChips = cache.moodChips,
+                                newReleaseAlbums = cache.newReleaseAlbums,
+                                albumsForYou = cache.albumsForYou
                             )
                         }
+                    } else {
+                        Timber.d("Explore cache expired (age: ${age / 60000} min > 30 min). Holding calm loading indicator until fresh content arrives.")
                     }
                 }
             }
@@ -299,18 +316,26 @@ class ExploreViewModel @Inject constructor(
         }
     }
 
-    private fun persistToCache(sections: List<HomePage.Section>) {
+    private fun persistToCache(
+        sections: List<HomePage.Section>,
+        moodChips: List<HomePage.Chip> = emptyList(),
+        newReleases: List<AlbumItem> = emptyList(),
+        albums: List<AlbumItem> = emptyList()
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val cache = ExploreCacheModel(
                     sections = sections.take(20),
-                    albums = emptyList(),
+                    moodChips = moodChips,
+                    newReleaseAlbums = newReleases.take(20),
+                    albumsForYou = albums.take(20),
+                    albums = albums.take(20),
                     charts = null,
                     continuation = null,
                     timestamp = System.currentTimeMillis()
                 )
                 val json = gson.toJson(cache)
-                if (json.length < 400 * 1024) {
+                if (json.length < 500 * 1024) {
                     cacheFile.writeText(json)
                 }
             } catch (e: Exception) {
@@ -331,7 +356,8 @@ class ExploreViewModel @Inject constructor(
             loadOfflineExploreData()
             return
         }
-        if (!forceRefresh && hasFetchedFromNetwork && _sectionsState.value.isNotEmpty()) {
+        val isCacheFresh = (System.currentTimeMillis() - lastFetchTimestamp) < EXPLORE_CACHE_EXPIRATION_MS
+        if (!forceRefresh && isCacheFresh && _sectionsState.value.isNotEmpty()) {
             return
         }
         stage2Job?.cancel()
@@ -462,14 +488,42 @@ class ExploreViewModel @Inject constructor(
                 }
 
                 initialHomeContinuation = currentContinuation
-                persistToCache(rawSections)
+                lastFetchTimestamp = System.currentTimeMillis()
+                persistToCache(
+                    sections = rawSections,
+                    moodChips = rawChips,
+                    newReleases = resolvedNewReleases,
+                    albums = personalizedAlbums
+                )
                 hasFetchedFromNetwork = true
             } else if (_sectionsState.value.isEmpty()) {
-                val msg = "Failed to fetch explore data. Check connection."
-                _errorState.value = msg
-                _isLoadingState.value = false
-                _isRefreshingState.value = false
-                _uiState.update { it.copy(isLoading = false, isRefreshing = false, error = msg) }
+                // Graceful fallback to cached data if network failed and sections are empty
+                val fallbackCache = runCatching {
+                    if (cacheFile.exists()) {
+                        val json = cacheFile.readText()
+                        gson.fromJson(json, ExploreCacheModel::class.java)
+                    } else null
+                }.getOrNull()
+
+                if (fallbackCache != null && fallbackCache.sections.isNotEmpty()) {
+                    val uiSections = fallbackCache.sections.map { it.toUiModel() }
+                    _sectionsState.value = uiSections
+                    _isLoadingState.value = false
+                    _isRefreshingState.value = false
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isRefreshing = false,
+                            homePageSections = fallbackCache.sections
+                        )
+                    }
+                } else {
+                    val msg = "Failed to fetch explore data. Check connection."
+                    _errorState.value = msg
+                    _isLoadingState.value = false
+                    _isRefreshingState.value = false
+                    _uiState.update { it.copy(isLoading = false, isRefreshing = false, error = msg) }
+                }
             }
         } catch (e: Exception) {
             Timber.e(e, "Error loading Explore screen data")
@@ -526,7 +580,12 @@ class ExploreViewModel @Inject constructor(
                         homePageContinuation = continuationHome.continuation
                     )
                 }
-                persistToCache(mergedRaw)
+                persistToCache(
+                    sections = mergedRaw,
+                    moodChips = _uiState.value.moodChips,
+                    newReleases = _uiState.value.newReleaseAlbums,
+                    albums = _uiState.value.albumsForYou
+                )
             } else {
                 _uiState.update { it.copy(isContinuationLoading = false, homePageContinuation = null) }
             }
@@ -772,11 +831,14 @@ class ExploreViewModel @Inject constructor(
 
 @androidx.annotation.Keep
 data class ExploreCacheModel(
-    val sections: List<HomePage.Section>,
-    val albums: List<AlbumItem>,
-    val charts: ChartsPage?,
-    val continuation: String?,
-    val timestamp: Long
+    val sections: List<HomePage.Section> = emptyList(),
+    val moodChips: List<HomePage.Chip> = emptyList(),
+    val newReleaseAlbums: List<AlbumItem> = emptyList(),
+    val albumsForYou: List<AlbumItem> = emptyList(),
+    val albums: List<AlbumItem> = emptyList(),
+    val charts: ChartsPage? = null,
+    val continuation: String? = null,
+    val timestamp: Long = 0L
 )
 
 private class YTItemTypeAdapter : com.google.gson.JsonSerializer<YTItem>, com.google.gson.JsonDeserializer<YTItem> {

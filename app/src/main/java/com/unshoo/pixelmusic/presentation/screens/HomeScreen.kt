@@ -347,12 +347,6 @@ fun HomeScreen(
     val navBarHeightOffset = navBarHeightOffsetRaw.dp
     val bottomGradientHeight = resolveMainScreenBottomGradientHeight(navBarCompactMode, navBarHeightOffset)
 
-    var isHomeInitialSettling by rememberSaveable { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
-        delay(HomeLoadingPlaceholderMinDurationMillis)
-        isHomeInitialSettling = false
-    }
-
     var showOptionsBottomSheet by remember { mutableStateOf(false) }
     var showChangelogBottomSheet by remember { mutableStateOf(false) }
     var showBetaInfoBottomSheet by remember { mutableStateOf(false) }
@@ -475,7 +469,7 @@ fun HomeScreen(
                     )
                 }
             ) {
-                val showHomeLoading = isHomeInitialSettling || (yourMixSongs.isEmpty() && quickPicks.isEmpty() && !hasHomeLoadingMinimumElapsed)
+                val showHomeLoading = yourMixSongs.isEmpty() && quickPicks.isEmpty() && !hasHomeLoadingMinimumElapsed
                 Crossfade(
                     targetState = showHomeLoading,
                     animationSpec = spring(
