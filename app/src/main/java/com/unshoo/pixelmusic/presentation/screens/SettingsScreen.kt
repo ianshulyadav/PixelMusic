@@ -246,6 +246,8 @@ fun SettingsScreen(
                             onClick = {
                                 if (category == SettingsCategory.EQUALIZER) {
                                     navController.navigateSafely(Screen.Equalizer.route)
+                                } else if (category == SettingsCategory.STORAGE) {
+                                    navController.navigateSafely(Screen.SmartStorage.route)
                                 } else {
                                     navController.navigateSafely(Screen.SettingsCategory.createRoute(category.id))
                                 }
@@ -692,6 +694,7 @@ private fun getCategoryColors(category: SettingsCategory, isDark: Boolean): Pair
             SettingsCategory.ABOUT -> Color(0xFF3F474D) to Color(0xFFDEE3EB) 
             SettingsCategory.LASTFM -> Color(0xFF6E1B1B) to Color(0xFFFFDAD9)
             SettingsCategory.LOSSLESS_SOURCES -> Color(0xFF1B4D6E) to Color(0xFFD1ECFF)
+            SettingsCategory.STORAGE -> Color(0xFF5E3F00) to Color(0xFFFFDDB3)
         }
     } else {
         when (category) {
@@ -708,6 +711,7 @@ private fun getCategoryColors(category: SettingsCategory, isDark: Boolean): Pair
             SettingsCategory.ABOUT -> Color(0xFFEFF1F7) to Color(0xFF44474F)
             SettingsCategory.LASTFM -> Color(0xFFFFDAD9) to Color(0xFF6E1B1B)
             SettingsCategory.LOSSLESS_SOURCES -> Color(0xFFD1ECFF) to Color(0xFF1B4D6E)
+            SettingsCategory.STORAGE -> Color(0xFFFFDDB3) to Color(0xFF2A1800)
         }
     }
 }

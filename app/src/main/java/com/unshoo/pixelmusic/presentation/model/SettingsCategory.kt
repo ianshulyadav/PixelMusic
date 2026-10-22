@@ -11,6 +11,7 @@ import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.unshoo.pixelmusic.R
 
@@ -68,6 +69,12 @@ enum class SettingsCategory(
         titleRes = R.string.settings_category_developer_title,
         subtitleRes = R.string.settings_category_developer_subtitle,
         icon = Icons.Rounded.DeveloperMode
+    ),
+    STORAGE(
+        id = "storage",
+        titleRes = R.string.settings_category_storage_title,
+        subtitleRes = R.string.settings_category_storage_subtitle,
+        icon = Icons.Rounded.Storage
     ),
     EQUALIZER(
         id = "equalizer",

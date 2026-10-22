@@ -282,6 +282,9 @@ interface MusicRepository {
     suspend fun getRecentSearchHistory(limit: Int): List<SearchHistoryItem>
     suspend fun deleteSearchHistoryItemByQuery(query: String)
     suspend fun clearSearchHistory()
+    suspend fun pruneSearchHistory(keepCount: Int = 25)
+    suspend fun getSearchHistoryCount(): Int
+    suspend fun getPrunableSearchHistoryCount(keepCount: Int = 25): Int
 
     /**
      * Obtiene la lista de canciones para un género específico (placeholder implementation).

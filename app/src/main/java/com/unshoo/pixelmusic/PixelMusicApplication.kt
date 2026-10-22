@@ -85,6 +85,9 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
     @Inject
     lateinit var exoCache: dagger.Lazy<com.unshoo.pixelmusic.data.remote.youtube.ExoCache>
 
+    @Inject
+    lateinit var streamCacheManager: dagger.Lazy<com.unshoo.pixelmusic.data.storage.StreamCacheManager>
+
     private val startupScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     // BUGFIX (startup strategy): warm-up work (ExoCache, BotGuard) previously ran on the shared
@@ -270,6 +273,12 @@ class PixelMusicApplication : Application(), ImageLoaderFactory, Configuration.P
             }
 
             com.unshoo.pixelmusic.utils.JapaneseDictionaryManager.initAtAppStart(this@PixelMusicApplication)
+
+            try {
+                streamCacheManager.get().performScheduledCleanup()
+            } catch (e: Throwable) {
+                Timber.w(e, "Scheduled stream cache cleanup failed (non-fatal)")
+            }
         }
 
         // Initialize Last.fm client defaults

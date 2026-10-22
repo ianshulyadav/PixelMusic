@@ -322,7 +322,7 @@ class DualPlayerEngine @Inject constructor(
 
                         for (uriToResolve in itemsToPreResolve) {
                             val scheme = uriToResolve.scheme
-                            if (scheme == "telegram" || scheme == "netease" || scheme == "qqmusic" || scheme == "navidrome" || scheme == "jellyfin" || scheme == "gdrive" || scheme == "youtube") {
+                            if (scheme == "telegram" || scheme == "netease" || scheme == "qqmusic" || scheme == "gdrive" || scheme == "youtube") {
                                 resolveCloudUri(uriToResolve)
                             }
                         }
@@ -664,7 +664,7 @@ class DualPlayerEngine @Inject constructor(
         }
 
         // 3. Check cloud downloads directory by SHA-256 ID
-        if (uriString.startsWith("youtube://") || uriString.startsWith("navidrome://") || uriString.startsWith("jellyfin://")) {
+        if (uriString.startsWith("youtube://")) {
             val cloudDir = java.io.File(context.filesDir, "cloud_downloads")
             if (cloudDir.isDirectory) {
                 try {

@@ -130,8 +130,6 @@ fun SongItem.toNativeSong(): Song {
         neteaseId = null,
         gdriveFileId = null,
         qqMusicMid = null,
-        navidromeId = null,
-        jellyfinId = null,
         youtubeId = id,
         albumBrowseId = album?.id
     )
@@ -183,8 +181,6 @@ fun com.unshoo.pixelmusic.data.model.youtube.Song.toNativeSong(): Song {
         neteaseId = null,
         gdriveFileId = null,
         qqMusicMid = null,
-        navidromeId = null,
-        jellyfinId = null,
         youtubeId = youtubeId,
         albumBrowseId = albumBrowseId
     )

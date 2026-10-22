@@ -4424,8 +4424,7 @@ class PlayerViewModel @Inject constructor(
 
                 val scheme = targetItem?.localConfiguration?.uri?.scheme
                 val needsResolve = scheme == "youtube" || scheme == "telegram" ||
-                    scheme == "gdrive" || scheme == "netease" || scheme == "qqmusic" ||
-                    scheme == "navidrome" || scheme == "jellyfin"
+                    scheme == "gdrive" || scheme == "netease" || scheme == "qqmusic"
 
                 val resolvedItem = if (targetItem != null && needsResolve) {
                     withContext(Dispatchers.IO) {
@@ -6292,8 +6291,6 @@ class PlayerViewModel @Inject constructor(
                 scheme == "telegram" ||
                 scheme == "netease" ||
                 scheme == "qqmusic" ||
-                scheme == "navidrome" ||
-                scheme == "jellyfin" ||
                 scheme == "gdrive" ||
                 scheme == "youtube" ||
                 scheme == "monochrome"
@@ -6448,8 +6445,6 @@ class PlayerViewModel @Inject constructor(
             scheme != "telegram" &&
             scheme != "netease" &&
             scheme != "qqmusic" &&
-            scheme != "navidrome" &&
-            scheme != "jellyfin" &&
             scheme != "gdrive" &&
             scheme != "youtube"
         ) {

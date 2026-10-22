@@ -98,12 +98,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import com.unshoo.pixelmusic.data.preferences.ThemePreference
 import com.unshoo.pixelmusic.data.service.auto.AutoMediaBrowseTree
-import com.unshoo.pixelmusic.data.service.wear.buildWearThemePalette
-import com.unshoo.pixelmusic.data.service.wear.WearStatePublisher
 import com.unshoo.pixelmusic.presentation.viewmodel.ColorSchemePair
 import com.unshoo.pixelmusic.utils.ArtworkTransportSanitizer
 import com.unshoo.pixelmusic.utils.MediaItemBuilder
-import com.unshoo.pixelmusic.shared.WearIntents
 import com.unshoo.pixelmusic.di.AppScope
 import com.unshoo.pixelmusic.presentation.viewmodel.ListeningStatsTracker
 import com.unshoo.pixelmusic.data.remote.youtube.AutoQueueManager
@@ -150,8 +147,6 @@ class MusicService : MediaLibraryService() {
     lateinit var colorSchemeProcessor: ColorSchemeProcessor
     @Inject
     lateinit var autoMediaBrowseTree: AutoMediaBrowseTree
-    @Inject
-    lateinit var wearStatePublisher: WearStatePublisher
     @Inject
     lateinit var replayGainManager: com.unshoo.pixelmusic.data.media.ReplayGainManager
     @Inject
@@ -595,7 +590,7 @@ class MusicService : MediaLibraryService() {
         // notification update) has already been queued.
         android.os.Handler(Looper.getMainLooper()).post {
             try {
-                initializeCastWearSync()
+                initializeCastSync()
                 registerHeadsetReconnectMonitor()
             } catch (e: Exception) {
                 Timber.tag(TAG).w(e, "Cast/audio setup failed during deferred init")
@@ -1441,12 +1436,7 @@ class MusicService : MediaLibraryService() {
         return startCommandResult
     }
 
-    private fun getNavidromeId(mediaItem: MediaItem?): String? = null
-    private fun isNavidromeMediaItem(mediaItem: MediaItem?): Boolean = false
-    private fun reportNavidromePlayback(state: String, mediaItem: MediaItem? = engine.masterPlayer.currentMediaItem) {}
-    private var navidromePlaybackReportJob: Job? = null
-    private fun startNavidromePlaybackReporting() {}
-    private fun stopNavidromePlaybackReporting() {}
+
 
     // ==================== FIXED TELEMETRY HELPERS ====================
 
@@ -1678,13 +1668,8 @@ class MusicService : MediaLibraryService() {
             scrobbleManager?.onPlayerStateChanged(isPlaying, player.currentMediaItem, durationMs)
             
             if (isPlaying) {
-                reportNavidromePlayback("playing")
-                startNavidromePlaybackReporting()
                 startTelemetryReporting()
             } else {
-                val state = if (player.playbackState == Player.STATE_ENDED) "stopped" else "paused"
-                reportNavidromePlayback(state)
-                stopNavidromePlaybackReporting()
                 stopTelemetryReporting(isPause = true)
             }
 
@@ -1733,8 +1718,6 @@ class MusicService : MediaLibraryService() {
                 val mediaItem = player.currentMediaItem
 
                 endOfTrackTimerSongId = null
-                reportNavidromePlayback("stopped")
-                stopNavidromePlaybackReporting()
                 
                 scrobbleManager?.onPlayerStateChanged(false, mediaItem, 0)
             } else {
@@ -1775,17 +1758,7 @@ class MusicService : MediaLibraryService() {
             newPosition: Player.PositionInfo,
             reason: Int
         ) {
-            if (reason == Player.DISCONTINUITY_REASON_SEEK) {
-                val state = if (engine.masterPlayer.isPlaying) "playing" else "paused"
-                reportNavidromePlayback(state)
-            }
 
-            if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION) {
-                val finishedItem = oldPosition.mediaItem
-                if (isNavidromeMediaItem(finishedItem)) {
-                    reportNavidromePlayback("stopped", finishedItem)
-                }
-            }
 
             if (reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION ||
                 reason == Player.DISCONTINUITY_REASON_SEEK
@@ -2046,14 +2019,7 @@ class MusicService : MediaLibraryService() {
         }
         scrobbleManager?.onPlayerStateChanged(player.isPlaying, mediaItem, durationMs)
         
-        if (isNavidromeMediaItem(mediaItem)) {
-            reportNavidromePlayback("starting")
-            if (engine.masterPlayer.isPlaying) {
-                startNavidromePlaybackReporting()
-            }
-        } else {
-            stopNavidromePlaybackReporting()
-        }
+
 
         val eotTargetSongId = endOfTrackTimerSongId
         if (!eotTargetSongId.isNullOrBlank()) {
@@ -2254,11 +2220,11 @@ class MusicService : MediaLibraryService() {
         }
     }
 
-    private fun initializeCastWearSync() {
+    private fun initializeCastSync() {
         val sessionManager = runCatching {
             CastContext.getSharedInstance(this).sessionManager
         }.getOrElse { error ->
-            Timber.tag(TAG).w(error, "CastContext unavailable; skipping cast wear sync setup")
+            Timber.tag(TAG).w(error, "CastContext unavailable; skipping cast sync setup")
             return
         }
         castSessionManager = sessionManager
@@ -2610,7 +2576,7 @@ class MusicService : MediaLibraryService() {
         }
     }
 
-    private fun stopCastWearSync() {
+    private fun stopCastSync() {
         castRemoteAttachRetryJob?.cancel()
         castRemoteAttachRetryJob = null
         observedCastRemoteClient?.let { remoteClient ->
@@ -2668,17 +2634,13 @@ class MusicService : MediaLibraryService() {
         isServiceDestroyed = true
         PlaybackActivityTracker.setPlaybackActive(false)
         telemetryManager.destroy()
-        listeningStatsTracker.finalizeCurrentSession(forceSynchronousPersistence = true)
-        reportNavidromePlayback("stopped")
-        stopNavidromePlaybackReporting()
         playbackSnapshotPersistJob?.cancel()
         mediaSessionButtonRefreshJob?.cancel()
         followUpMediaSessionUiRefreshJob?.cancel()
         followUpWidgetUpdateJob?.cancel()
         debouncedWidgetUpdateJob?.cancel()
-        stopCastWearSync()
+        stopCastSync()
         unregisterHeadsetReconnectMonitor()
-        wearStatePublisher.clearState()
         replayGainJob?.cancel()
         scrobbleManager?.destroy()
         scrobbleManager = null
@@ -3093,7 +3055,7 @@ class MusicService : MediaLibraryService() {
         val activeIcon = AppIconManager.getActiveLauncherIcon(this)
         val intent = Intent().apply {
             component = ComponentName(packageName, activeIcon.aliasClassName)
-            action = WearIntents.ACTION_OPEN_PLAYER
+            action = Intent.ACTION_MAIN
             addCategory(Intent.CATEGORY_DEFAULT)
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("ACTION_SHOW_PLAYER", true) // Signal to MainActivity to show the player
@@ -3243,14 +3205,7 @@ class MusicService : MediaLibraryService() {
         )
     }
 
-    private suspend fun resolveCurrentMediaIdForWear(): String? {
-        val remoteSongId = resolveCastRemoteSnapshot()?.songId
-        if (!remoteSongId.isNullOrBlank()) {
-            return remoteSongId
-        }
-        val player = engine.masterPlayer
-        return withContext(Dispatchers.Main) { player.currentMediaItem?.mediaId }
-    }
+
 
     private var lastWidgetPlayerInfo: PlayerInfo? = null
 
@@ -3267,14 +3222,9 @@ class MusicService : MediaLibraryService() {
         if (old.isShuffleEnabled != new.isShuffleEnabled) return true
         if (old.repeatMode != new.repeatMode) return true
         if (old.totalDurationMs != new.totalDurationMs) return true
-        if (old.wearThemePalette != new.wearThemePalette) return true
 
         val drift = kotlin.math.abs(old.currentPositionMs - new.currentPositionMs)
         return drift > 3000L
-    }
-
-    private fun shouldPublishWearState(old: PlayerInfo, new: PlayerInfo): Boolean {
-        return shouldUpdateWidget(old, new) || old.wearQueueRevision != new.wearQueueRevision
     }
 
     private suspend fun processWidgetUpdateInternal() {
@@ -3282,78 +3232,11 @@ class MusicService : MediaLibraryService() {
         val oldInfo = lastWidgetPlayerInfo
 
         val shouldUpdateWidgets = oldInfo == null || shouldUpdateWidget(oldInfo, playerInfo)
-        val shouldPublishWear = oldInfo == null || shouldPublishWearState(oldInfo, playerInfo)
-
-        if (shouldUpdateWidgets || shouldPublishWear) {
-            lastWidgetPlayerInfo = playerInfo
-        }
 
         if (shouldUpdateWidgets) {
+            lastWidgetPlayerInfo = playerInfo
             updateGlanceWidgets(playerInfo)
         }
-
-        if (shouldPublishWear) {
-            val currentMediaId = resolveCurrentMediaIdForWear()
-            // Publish state to Wear OS watch
-            wearStatePublisher.publishState(currentMediaId, playerInfo)
-        }
-    }
-
-    private fun buildWearQueueRevision(
-        timeline: Timeline,
-        currentIndex: Int,
-        currentMediaId: String?,
-    ): String {
-        val remoteClient = observedCastSession?.remoteMediaClient
-            ?: castSessionManager?.currentCastSession?.remoteMediaClient
-        val remoteStatus = remoteClient?.mediaStatus
-        val remoteQueueItems = remoteStatus?.queueItems.orEmpty()
-        if (remoteQueueItems.isNotEmpty()) {
-            val remoteCurrentIndex = remoteQueueItems.indexOfFirst {
-                it.itemId == remoteStatus?.currentItemId
-            }.takeIf { it >= 0 } ?: 0
-            val remoteTokens = remoteQueueItems.map { item ->
-                item.customData
-                    ?.optString("songId")
-                    ?.takeIf { it.isNotBlank() }
-                    ?: item.media?.contentId
-                    ?: item.itemId.toString()
-            }
-            return encodeWearQueueRevision(remoteTokens, remoteStatus?.currentItemId ?: 0)
-        }
-
-        if (timeline.isEmpty) {
-            return currentMediaId.orEmpty()
-        }
-
-        val window = Timeline.Window()
-        val tokens = buildList(timeline.windowCount) {
-            for (index in 0 until timeline.windowCount) {
-                timeline.getWindow(index, window)
-                val mediaItem = window.mediaItem
-                add(
-                    mediaItem.mediaId.ifBlank {
-                        mediaItem.localConfiguration?.uri?.toString()
-                            ?: mediaItem.mediaMetadata.title?.toString()
-                            ?: index.toString()
-                    }
-                )
-            }
-        }
-        val safeCurrentIndex = currentIndex.coerceIn(0, (timeline.windowCount - 1).coerceAtLeast(0))
-        return encodeWearQueueRevision(tokens, safeCurrentIndex)
-    }
-
-    private fun encodeWearQueueRevision(queueTokens: List<String>, currentIndex: Int): String {
-        if (queueTokens.isEmpty()) return ""
-        return buildString {
-            append(currentIndex)
-            append('|')
-            queueTokens.forEachIndexed { index, token ->
-                if (index > 0) append(',')
-                append(token)
-            }
-        }.hashCode().toString()
     }
 
     private suspend fun buildPlayerInfo(): PlayerInfo {
@@ -3506,14 +3389,7 @@ class MusicService : MediaLibraryService() {
                 darkPrevNextIcon = it.dark.primary.toArgb()
             )
         }
-        val wearThemePalette = schemePair?.let { buildWearThemePalette(it.dark) }
-
         val isFavorite = isSongFavorite(mediaId)
-        val wearQueueRevision = buildWearQueueRevision(
-            timeline = snapshotTimeline,
-            currentIndex = snapshotWindowIndex,
-            currentMediaId = mediaId,
-        )
 
         val queueItems = mutableListOf<com.unshoo.pixelmusic.data.model.QueueItem>()
         // Reuse snapshotTimeline / snapshotWindowIndex captured at the top — no extra main-thread hop
@@ -3562,8 +3438,6 @@ class MusicService : MediaLibraryService() {
             themeColors = widgetColors,
             isShuffleEnabled = shuffleEnabled,
             repeatMode = repeatMode,
-            wearThemePalette = wearThemePalette,
-            wearQueueRevision = wearQueueRevision,
         )
     }
 
@@ -3901,8 +3775,6 @@ class MusicService : MediaLibraryService() {
             lyrics = null,
             isLoadingLyrics = false,
             queue = queue.take(WIDGET_QUEUE_PREVIEW_LIMIT),
-            wearThemePalette = null,
-            wearQueueRevision = "",
         )
     }
 

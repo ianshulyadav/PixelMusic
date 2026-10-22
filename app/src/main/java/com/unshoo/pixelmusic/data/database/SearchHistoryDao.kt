@@ -23,6 +23,15 @@ interface SearchHistoryDao {
     @Query("DELETE FROM search_history")
     suspend fun clearAll()
 
+    @Query("DELETE FROM search_history WHERE id NOT IN (SELECT id FROM search_history ORDER BY timestamp DESC LIMIT :keepCount)")
+    suspend fun pruneOldSearches(keepCount: Int = 25)
+
+    @Query("SELECT COUNT(*) FROM search_history")
+    suspend fun getCount(): Int
+
+    @Query("SELECT COUNT(*) FROM search_history WHERE id NOT IN (SELECT id FROM search_history ORDER BY timestamp DESC LIMIT :keepCount)")
+    suspend fun getPrunableCount(keepCount: Int = 25): Int
+
     @Query("SELECT * FROM search_history ORDER BY timestamp DESC")
     suspend fun getAll(): List<SearchHistoryEntity>
 

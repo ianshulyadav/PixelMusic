@@ -164,74 +164,6 @@ fun SongInfoBottomSheet(
     val resolvedArtists by songInfoViewModel.resolvedArtists.collectAsStateWithLifecycle()
     val isDownloaded by songInfoViewModel.isSongDownloaded.collectAsStateWithLifecycle()
     val isDownloading by songInfoViewModel.isSongDownloading.collectAsStateWithLifecycle()
-    val isPixelMusicWatchAvailable by songInfoViewModel.isPixelMusicWatchAvailable.collectAsStateWithLifecycle()
-    val isWatchAvailabilityResolved by songInfoViewModel.isWatchAvailabilityResolved.collectAsStateWithLifecycle()
-    val isSendingToWatch by songInfoViewModel.isSendingToWatch.collectAsStateWithLifecycle()
-    val watchTransfers by songInfoViewModel.watchTransfers.collectAsStateWithLifecycle()
-    val watchSongIds by songInfoViewModel.watchSongIds.collectAsStateWithLifecycle()
-    val reachableWatchNodeIds by songInfoViewModel.reachableWatchNodeIds.collectAsStateWithLifecycle()
-    val latestSongWatchTransfer = remember(song.id, watchTransfers) {
-        watchTransfers.values
-            .asSequence()
-            .filter { it.songId == song.id }
-            .maxByOrNull { it.updatedAtMillis }
-    }
-    val currentSongTransfer = latestSongWatchTransfer?.takeIf {
-        it.status == com.unshoo.pixelmusic.shared.WearTransferProgress.STATUS_TRANSFERRING
-    }
-    val currentSongTransferPercent = ((currentSongTransfer?.progress ?: 0f) * 100f).toInt().coerceIn(0, 100)
-    val isSongSavedOnWatch = remember(
-        song.id,
-        watchSongIds,
-        reachableWatchNodeIds,
-        currentSongTransfer,
-    ) {
-        currentSongTransfer == null && songInfoViewModel.isSongSavedOnAllReachableWatches(song.id)
-    }
-    val canSendToWatch = remember(song.path, song.contentUriString) {
-        songInfoViewModel.isLocalSongForWatchTransfer(song)
-    }
-
-    LaunchedEffect(songInfoViewModel) {
-        songInfoViewModel.refreshWatchAvailability()
-    }
-
-    var lastShownWatchTransferError by remember(song.id) { mutableStateOf<String?>(null) }
-    LaunchedEffect(
-        latestSongWatchTransfer?.requestId,
-        latestSongWatchTransfer?.status,
-        latestSongWatchTransfer?.error,
-    ) {
-        val failedTransfer = latestSongWatchTransfer?.takeIf {
-            it.status == com.unshoo.pixelmusic.shared.WearTransferProgress.STATUS_FAILED &&
-                    !it.error.isNullOrBlank()
-        } ?: return@LaunchedEffect
-        val errorKey = "${failedTransfer.requestId}:${failedTransfer.error}"
-        if (lastShownWatchTransferError == errorKey) return@LaunchedEffect
-        lastShownWatchTransferError = errorKey
-        Toast.makeText(context, failedTransfer.error, Toast.LENGTH_SHORT).show()
-    }
-
-    val shouldOfferWatchTransfer = remember(
-        canSendToWatch,
-        currentSongTransfer,
-        isPixelMusicWatchAvailable,
-        isSongSavedOnWatch,
-        isWatchAvailabilityResolved,
-    ) {
-        currentSongTransfer == null &&
-                canSendToWatch &&
-                isWatchAvailabilityResolved &&
-                isPixelMusicWatchAvailable &&
-                !isSongSavedOnWatch
-    }
-    val shouldShowWatchTransferLoading = remember(
-        canSendToWatch,
-        isWatchAvailabilityResolved,
-    ) {
-        canSendToWatch &&
-                !isWatchAvailabilityResolved
-    }
 
     val evenCornerRadiusElems = 26.dp
 
@@ -295,24 +227,6 @@ fun SongInfoBottomSheet(
     val favoriteButtonContentColor by animateColorAsState(
         targetValue = if (isFavorite) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300), label = "FavoriteContentColorAnimation"
-    )
-    val sendToWatchContainerColor by animateColorAsState(
-        targetValue = if (isSendingToWatch) {
-            MaterialTheme.colorScheme.secondaryContainer
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
-        },
-        animationSpec = tween(durationMillis = 250),
-        label = "SendToWatchContainerColorAnimation"
-    )
-    val sendToWatchContentColor by animateColorAsState(
-        targetValue = if (isSendingToWatch) {
-            MaterialTheme.colorScheme.onSecondaryContainer
-        } else {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        },
-        animationSpec = tween(durationMillis = 250),
-        label = "SendToWatchContentColorAnimation"
     )
 
     val favoriteButtonShape = remember(favoriteButtonCornerRadius) {
@@ -923,85 +837,7 @@ fun SongInfoBottomSheet(
                                                     }
                                                 }
                                             }
-                                        }
-
-                                        val shouldRenderWatchTransferRow =
-                                            currentSongTransfer != null ||
-                                                    shouldOfferWatchTransfer ||
-                                                    shouldShowWatchTransferLoading
-                                        if (shouldRenderWatchTransferRow) {
-                                            item {
-                                                FilledTonalButton(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .heightIn(min = 66.dp),
-                                                    colors = ButtonDefaults.filledTonalButtonColors(
-                                                        containerColor = if (isPixelMusicWatchAvailable) {
-                                                            sendToWatchContainerColor
-                                                        } else {
-                                                            MaterialTheme.colorScheme.surfaceContainerHigh
-                                                        },
-                                                        contentColor = if (isPixelMusicWatchAvailable) {
-                                                            sendToWatchContentColor
-                                                        } else {
-                                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                                        },
-                                                        disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                                        disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                                    ),
-                                                    shape = CircleShape,
-                                                    enabled = shouldOfferWatchTransfer && !isSendingToWatch,
-                                                    onClick = {
-                                                        songInfoViewModel.sendSongToWatch(song) { message ->
-                                                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                                                        }
-                                                    }
-                                                ) {
-                                                    if (shouldShowWatchTransferLoading) {
-                                                        LoadingIndicator(modifier = Modifier.size(18.dp))
-                                                        Spacer(Modifier.width(10.dp))
-                                                        Text(stringResource(R.string.song_info_checking_watch))
-                                                    } else if (isSendingToWatch) {
-                                                        LoadingIndicator(modifier = Modifier.size(18.dp))
-                                                        Spacer(Modifier.width(10.dp))
-                                                        Text(
-                                                            when {
-                                                                currentSongTransfer != null && currentSongTransfer.totalBytes > 0L ->
-                                                                    stringResource(
-                                                                        R.string.song_info_transferring_percent,
-                                                                        currentSongTransferPercent
-                                                                    )
-                                                                currentSongTransfer != null ->
-                                                                    stringResource(R.string.song_info_transferring_to_watch)
-                                                                else ->
-                                                                    stringResource(R.string.song_info_transfer_in_progress)
-                                                            }
-                                                        )
-                                                    } else {
-                                                        Icon(
-                                                            painter = painterResource(R.drawable.rounded_watch_arrow_down_24),
-                                                            contentDescription = stringResource(
-                                                                if (isPixelMusicWatchAvailable) {
-                                                                    R.string.cd_send_song_to_watch
-                                                                } else {
-                                                                    R.string.cd_watch_unavailable
-                                                                }
-                                                            )
-                                                        )
-                                                        Spacer(Modifier.width(8.dp))
-                                                        Text(
-                                                            stringResource(
-                                                                if (isPixelMusicWatchAvailable) {
-                                                                    R.string.song_info_send_to_watch
-                                                                } else {
-                                                                    R.string.song_info_watch_unavailable
-                                                                }
-                                                            )
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
+                                          }
 
                                         item {
                                             Spacer(Modifier.navigationBarsPadding().height(80.dp))

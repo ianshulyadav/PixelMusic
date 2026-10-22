@@ -12,10 +12,6 @@ import com.unshoo.pixelmusic.data.model.Song
 import com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
 import com.unshoo.pixelmusic.data.repository.MusicRepository
 import com.unshoo.pixelmusic.data.telegram.TelegramRepository
-import com.unshoo.pixelmusic.data.service.wear.PhoneWatchTransferState
-import com.unshoo.pixelmusic.data.service.wear.PhoneWatchTransferStateStore
-import com.unshoo.pixelmusic.data.service.wear.WearPhoneTransferSender
-import com.unshoo.pixelmusic.shared.WearTransferProgress
 import com.unshoo.pixelmusic.utils.AudioMeta
 import com.unshoo.pixelmusic.utils.AudioMetaUtils
 import unshoo.ianshulyadav.pixelmusic.innertube.YouTube
@@ -28,7 +24,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -39,8 +34,6 @@ import timber.log.Timber
 @HiltViewModel
 class SongInfoBottomSheetViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val wearPhoneTransferSender: WearPhoneTransferSender,
-    private val transferStateStore: PhoneWatchTransferStateStore,
     private val musicDao: MusicDao,
     private val musicRepository: MusicRepository,
     private val telegramRepository: TelegramRepository,
@@ -74,12 +67,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
 
     private val _resolvedArtists = MutableStateFlow<List<Artist>>(emptyList())
     val resolvedArtists: StateFlow<List<Artist>> = _resolvedArtists.asStateFlow()
-    private val _isPixelMusicWatchAvailable = MutableStateFlow(false)
-    val isPixelMusicWatchAvailable: StateFlow<Boolean> = _isPixelMusicWatchAvailable.asStateFlow()
-    private val _isWatchAvailabilityResolved = MutableStateFlow(false)
-    val isWatchAvailabilityResolved: StateFlow<Boolean> = _isWatchAvailabilityResolved.asStateFlow()
-    private val _isRefreshingWatchAvailability = MutableStateFlow(false)
-
     private val _isSongDownloaded = MutableStateFlow(false)
     val isSongDownloaded: StateFlow<Boolean> = _isSongDownloaded.asStateFlow()
 
@@ -87,35 +74,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
     val isSongDownloading: StateFlow<Boolean> = _isSongDownloading.asStateFlow()
 
     private var downloadJob: Job? = null
-
-    private val _isRequestingToWatch = MutableStateFlow(false)
-    val watchTransfers: StateFlow<Map<String, PhoneWatchTransferState>> = transferStateStore.transfers
-    val watchSongIds: StateFlow<Set<String>> = transferStateStore.watchSongIds
-    val reachableWatchNodeIds: StateFlow<Set<String>> = transferStateStore.reachableWatchNodeIds
-    val isWatchLibraryResolved: StateFlow<Boolean> = transferStateStore.isWatchLibraryResolved
-    val activeWatchTransfer: StateFlow<PhoneWatchTransferState?> = watchTransfers
-        .map { transfers ->
-            transfers.values
-                .asSequence()
-                .filter { it.status == WearTransferProgress.STATUS_TRANSFERRING }
-                .maxByOrNull { it.updatedAtMillis }
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = null,
-        )
-    val isSendingToWatch: StateFlow<Boolean> = combine(
-        _isRequestingToWatch,
-        activeWatchTransfer
-    ) { isRequesting, activeTransfer ->
-        isRequesting || activeTransfer != null
-    }.distinctUntilChanged()
-        .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000L),
-        initialValue = false,
-    )
 
     fun loadArtistsForSong(song: Song) {
         val refs = song.artists
@@ -149,7 +107,10 @@ class SongInfoBottomSheetViewModel @Inject constructor(
         _songLocationInfo.value = getSongLocationInfo(song)
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val localPath = getLocalFilePath(song)
-            val isPureLocal = isLocalSongForWatchTransfer(song) &&
+            val isLocalFile = song.path.isNotBlank() && File(song.path).exists() ||
+                song.contentUriString.startsWith("content://") ||
+                song.contentUriString.startsWith("file://")
+            val isPureLocal = isLocalFile &&
                 !song.id.startsWith("youtube_") && song.youtubeId == null &&
                 getCloudProviderLabel(song.contentUriString) == null
 
@@ -325,82 +286,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
         )
     }
 
-    fun refreshWatchAvailability() {
-        if (_isRefreshingWatchAvailability.value) return
-
-        viewModelScope.launch {
-            _isRefreshingWatchAvailability.value = true
-            val available = wearPhoneTransferSender.isPixelMusicWatchAvailable()
-            _isPixelMusicWatchAvailable.value = available
-            _isWatchAvailabilityResolved.value = true
-            _isRefreshingWatchAvailability.value = false
-            if (available) {
-                viewModelScope.launch {
-                    wearPhoneTransferSender.refreshWatchLibraryState()
-                }
-            }
-        }
-    }
-
-    fun isLocalSongForWatchTransfer(song: Song): Boolean {
-        if (getCloudProviderLabel(song.contentUriString) != null) return false
-
-        if (song.path.isNotBlank()) {
-            return File(song.path).exists()
-        }
-
-        val uri = song.contentUriString
-        return uri.startsWith("content://") || uri.startsWith("file://")
-    }
-
-    fun sendSongToWatch(song: Song, onComplete: (String) -> Unit) {
-        if (_isRequestingToWatch.value) return
-
-        viewModelScope.launch {
-            if (!isLocalSongForWatchTransfer(song)) {
-                onComplete("Only local songs can be sent to watch")
-                return@launch
-            }
-            if (!_isPixelMusicWatchAvailable.value) {
-                onComplete("No reachable watch with PixelMusic")
-                refreshWatchAvailability()
-                return@launch
-            }
-            if (transferStateStore.isSongSavedOnAllReachableWatches(song.id)) {
-                onComplete(WearTransferProgress.ERROR_ALREADY_ON_WATCH)
-                return@launch
-            }
-
-            _isRequestingToWatch.update { true }
-            val result = wearPhoneTransferSender.requestSongTransfer(song.id, song.title)
-            _isRequestingToWatch.update { false }
-
-            if (result.isSuccess) {
-                val nodeCount = result.getOrNull() ?: 1
-                onComplete(
-                    if (nodeCount > 1) {
-                        "Transfer requested on $nodeCount watches"
-                    } else {
-                        "Transfer requested on watch"
-                    }
-                )
-            } else {
-                onComplete(result.exceptionOrNull()?.message ?: "Failed to request transfer")
-                refreshWatchAvailability()
-            }
-        }
-    }
-
-    fun cancelWatchTransfer(requestId: String) {
-        if (requestId.isBlank()) return
-        viewModelScope.launch {
-            wearPhoneTransferSender.cancelTransfer(requestId)
-        }
-    }
-
-    fun isSongSavedOnAllReachableWatches(songId: String): Boolean {
-        return transferStateStore.isSongSavedOnAllReachableWatches(songId)
-    }
 
     fun loadDownloadState(song: Song) {
         _isSongDownloaded.value = false
@@ -493,7 +378,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
 
     fun cancelYoutubeSongDownload(song: Song) {
         val youtubeId = song.youtubeId ?: return
-        cancelWatchTransfer(youtubeId) // also cancel watch if any
         downloadRepository.cancelSongDownload(youtubeId)
         _isSongDownloading.value = false
     }
@@ -502,8 +386,6 @@ class SongInfoBottomSheetViewModel @Inject constructor(
         return when {
             contentUriString.startsWith("telegram://") -> "Telegram"
             contentUriString.startsWith("gdrive://") -> "Google Drive"
-            contentUriString.startsWith("navidrome://") -> "Navidrome"
-            contentUriString.startsWith("jellyfin://") -> "Jellyfin"
             contentUriString.startsWith("netease://") -> "NetEase Cloud Music"
             contentUriString.startsWith("qqmusic://") -> "QQ Music"
             contentUriString.contains("saavn") -> "JioSaavn"

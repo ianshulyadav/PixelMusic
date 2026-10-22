@@ -937,6 +937,7 @@ class MusicRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             searchHistoryDao.deleteByQuery(query)
             searchHistoryDao.insert(SearchHistoryEntity(query = query, timestamp = System.currentTimeMillis()))
+            searchHistoryDao.pruneOldSearches(keepCount = 25)
         }
     }
 
@@ -955,6 +956,24 @@ class MusicRepositoryImpl @Inject constructor(
     override suspend fun clearSearchHistory() {
         withContext(Dispatchers.IO) {
             searchHistoryDao.clearAll()
+        }
+    }
+
+    override suspend fun pruneSearchHistory(keepCount: Int) {
+        withContext(Dispatchers.IO) {
+            searchHistoryDao.pruneOldSearches(keepCount)
+        }
+    }
+
+    override suspend fun getSearchHistoryCount(): Int {
+        return withContext(Dispatchers.IO) {
+            searchHistoryDao.getCount()
+        }
+    }
+
+    override suspend fun getPrunableSearchHistoryCount(keepCount: Int): Int {
+        return withContext(Dispatchers.IO) {
+            searchHistoryDao.getPrunableCount(keepCount)
         }
     }
 

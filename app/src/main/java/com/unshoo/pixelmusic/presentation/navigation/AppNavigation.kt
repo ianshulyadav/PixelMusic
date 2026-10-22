@@ -739,6 +739,20 @@ fun AppNavigation(
                     )
                 }
             }
+
+            composable(
+                Screen.SmartStorage.route,
+                enterTransition = { enterTransition() },
+                exitTransition = { exitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
+            ) {
+                ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
+                    com.unshoo.pixelmusic.presentation.screens.storage.SmartStorageScreen(
+                        navController = navController
+                    )
+                }
+            }
         }
     }
 }

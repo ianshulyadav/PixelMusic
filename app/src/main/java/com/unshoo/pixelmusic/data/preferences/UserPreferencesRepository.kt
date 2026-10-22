@@ -422,6 +422,19 @@ constructor(
         val BOTTOM_SHEET_BLUR_ENABLED = booleanPreferencesKey("bottom_sheet_blur_enabled")
         val STORY_CARD_BLUR_ENABLED = booleanPreferencesKey("story_card_blur_enabled")
         val LYRICS_SCREEN_BLUR_ENABLED = booleanPreferencesKey("lyrics_screen_blur_enabled")
+
+        // Storage Sense & Smart Storage
+        val STREAM_CACHE_TTL_DAYS = intPreferencesKey("stream_cache_ttl_days")
+        val STREAM_CACHE_MAX_SIZE_MB = intPreferencesKey("stream_cache_max_size_mb")
+        val AUTO_PRUNE_SEARCH_HISTORY = booleanPreferencesKey("auto_prune_search_history")
+        val AUTO_CLEAN_INVALID_SONGS = booleanPreferencesKey("auto_clean_invalid_songs")
+        val SMART_STORAGE_ACTIVE_TAB = intPreferencesKey("smart_storage_active_tab")
+        val SMART_STORAGE_ENABLED = booleanPreferencesKey("smart_storage_enabled")
+        val SMART_STORAGE_UNPLAYED_DAYS = intPreferencesKey("smart_storage_unplayed_days")
+        val SMART_STORAGE_INCLUDE_NEVER_PLAYED = booleanPreferencesKey("smart_storage_include_never_played")
+        val SMART_STORAGE_MIN_FILE_SIZE_MB = intPreferencesKey("smart_storage_min_file_size_mb")
+        val SMART_STORAGE_NEVER_SUGGEST_FAVORITES = booleanPreferencesKey("smart_storage_never_suggest_favorites")
+        val SMART_STORAGE_IGNORE_RECENT_DAYS = intPreferencesKey("smart_storage_ignore_recent_days")
     }
 
     val useBlurEffectsFlow: Flow<Boolean> =
@@ -2974,6 +2987,127 @@ constructor(
             } else {
                 preferences.remove(PreferencesKeys.CACHED_RELEASE_INFO)
             }
+        }
+    }
+
+    val streamCacheTtlDaysFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_TTL_DAYS] ?: 14
+        }.distinctUntilChanged()
+
+    suspend fun setStreamCacheTtlDays(days: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_TTL_DAYS] = days
+        }
+    }
+
+    val streamCacheMaxSizeMbFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_MAX_SIZE_MB] ?: 2048
+        }.distinctUntilChanged()
+
+    suspend fun setStreamCacheMaxSizeMb(sizeMb: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.STREAM_CACHE_MAX_SIZE_MB] = sizeMb
+        }
+    }
+
+    val autoPruneSearchHistoryFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.AUTO_PRUNE_SEARCH_HISTORY] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setAutoPruneSearchHistory(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AUTO_PRUNE_SEARCH_HISTORY] = enabled
+        }
+    }
+
+    val autoCleanInvalidSongsFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.AUTO_CLEAN_INVALID_SONGS] ?: false
+        }.distinctUntilChanged()
+
+    suspend fun setAutoCleanInvalidSongs(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AUTO_CLEAN_INVALID_SONGS] = enabled
+        }
+    }
+
+    val smartStorageActiveTabFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_ACTIVE_TAB] ?: 0
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageActiveTab(tabIndex: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_ACTIVE_TAB] = tabIndex
+        }
+    }
+
+    val smartStorageEnabledFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_ENABLED] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageEnabled(enabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_ENABLED] = enabled
+        }
+    }
+
+    val smartStorageUnplayedDaysFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_UNPLAYED_DAYS] ?: 90
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageUnplayedDays(days: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_UNPLAYED_DAYS] = days
+        }
+    }
+
+    val smartStorageIncludeNeverPlayedFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_INCLUDE_NEVER_PLAYED] ?: false
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageIncludeNeverPlayed(include: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_INCLUDE_NEVER_PLAYED] = include
+        }
+    }
+
+    val smartStorageMinFileSizeMbFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_MIN_FILE_SIZE_MB] ?: 0
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageMinFileSizeMb(minMb: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_MIN_FILE_SIZE_MB] = minMb
+        }
+    }
+
+    val smartStorageNeverSuggestFavoritesFlow: Flow<Boolean> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_NEVER_SUGGEST_FAVORITES] ?: true
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageNeverSuggestFavorites(neverSuggest: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_NEVER_SUGGEST_FAVORITES] = neverSuggest
+        }
+    }
+
+    val smartStorageIgnoreRecentDaysFlow: Flow<Int> =
+        dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_IGNORE_RECENT_DAYS] ?: 14
+        }.distinctUntilChanged()
+
+    suspend fun setSmartStorageIgnoreRecentDays(days: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SMART_STORAGE_IGNORE_RECENT_DAYS] = days
         }
     }
 }

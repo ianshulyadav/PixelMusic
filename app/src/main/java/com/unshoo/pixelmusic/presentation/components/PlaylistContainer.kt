@@ -584,7 +584,6 @@ fun PlaylistItem(
                 "TELEGRAM", "TELEGRAM_TOPIC" -> "Telegram"
                 "NETEASE" -> "Netease"
                 "QQMUSIC" -> "QQ Music"
-                "NAVIDROME" -> "Navidrome"
                 "LOCAL", "", null -> "Local"
                 else -> playlist.source?.lowercase()?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.ROOT) else it.toString() } ?: "Local"
             }

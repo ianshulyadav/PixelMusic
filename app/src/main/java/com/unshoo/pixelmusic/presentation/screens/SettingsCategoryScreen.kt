@@ -706,6 +706,16 @@ fun SettingsCategoryScreen(
                                 )
                             }
 
+                            SettingsSubsection(title = stringResource(R.string.smart_storage_title)) {
+                                SettingsItem(
+                                    title = "Smart Storage (Pro)",
+                                    subtitle = "Clean up and manage infrequently heard music",
+                                    leadingIcon = { Icon(Icons.Outlined.Folder, null, tint = MaterialTheme.colorScheme.secondary) },
+                                    trailingIcon = { Icon(Icons.Rounded.ChevronRight, stringResource(R.string.cd_open), tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    onClick = { navController.navigateSafely(Screen.SmartStorage.route) }
+                                )
+                            }
+
                             SettingsSubsection(
                                 title = stringResource(R.string.setcat_lyrics_management),
                                 addBottomSpace = false
@@ -2105,6 +2115,11 @@ fun SettingsCategoryScreen(
                         }
                         SettingsCategory.LOSSLESS_SOURCES -> {
                             com.unshoo.pixelmusic.presentation.screens.lossless.LosslessSourcesSettings(
+                                navController = navController,
+                            )
+                        }
+                        SettingsCategory.STORAGE -> {
+                            com.unshoo.pixelmusic.presentation.screens.storage.SmartStorageScreen(
                                 navController = navController,
                             )
                         }

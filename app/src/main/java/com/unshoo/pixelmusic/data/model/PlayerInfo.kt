@@ -1,6 +1,5 @@
 package com.unshoo.pixelmusic.data.model
 
-import com.unshoo.pixelmusic.shared.WearThemePalette
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -70,8 +69,6 @@ data class PlayerInfo(
     val themeColors: WidgetThemeColors? = null,
     val isShuffleEnabled: Boolean = false,
     val repeatMode: Int = 0, // 0 = OFF, 1 = ONE, 2 = ALL
-    val wearThemePalette: WearThemePalette? = null,
-    val wearQueueRevision: String = "",
 ) {
     // equals y hashCode para ByteArray, ya que el por defecto no es comparando contenido
     override fun equals(other: Any?): Boolean {
@@ -94,8 +91,6 @@ data class PlayerInfo(
         if (themeColors != other.themeColors) return false
         if (isShuffleEnabled != other.isShuffleEnabled) return false
         if (repeatMode != other.repeatMode) return false
-        if (wearThemePalette != other.wearThemePalette) return false
-        if (wearQueueRevision != other.wearQueueRevision) return false
 
         return true
     }
@@ -115,8 +110,6 @@ data class PlayerInfo(
         result = 31 * result + (themeColors?.hashCode() ?: 0)
         result = 31 * result + isShuffleEnabled.hashCode()
         result = 31 * result + repeatMode
-        result = 31 * result + (wearThemePalette?.hashCode() ?: 0)
-        result = 31 * result + wearQueueRevision.hashCode()
         return result
     }
 }

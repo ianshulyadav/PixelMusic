@@ -365,7 +365,7 @@ fun RecentSearchesSection(
         }
 
         // Vertical stack of search pills
-        searchHistory.take(8).forEach { item ->
+        searchHistory.take(15).forEach { item ->
             RecentSearchPillItem(
                 query = item.query,
                 onClick = { onItemClick(item.query) },

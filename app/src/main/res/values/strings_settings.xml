@@ -451,4 +451,37 @@
     <string name="blur_settings_story_card_desc">Apply dynamic album art blur to mini cards and story share cards.</string>
     <string name="blur_settings_lyrics_screen_title">Lyrics Screen Blur</string>
     <string name="blur_settings_lyrics_screen_desc">Apply album art blur background to the lyrics screen.</string>
+
+    <!-- Storage Sense & Smart Storage -->
+    <string name="settings_category_storage_title">Storage Sense</string>
+    <string name="settings_category_storage_subtitle">Manage audio stream caches, forgotten songs, and duplicates</string>
+    <string name="smart_storage_title">Smart Storage</string>
+    <string name="smart_storage_review_tab">Review</string>
+    <string name="smart_storage_trash_tab">Trash</string>
+    <string name="smart_storage_rules_tab">Rules</string>
+    <string name="smart_storage_reclaimable_header">RECLAIMABLE</string>
+    <string name="smart_storage_reclaimable_desc">%1$d track(s) unplayed for long enough to be considered forgotten under your rules.</string>
+    <string name="smart_storage_is_off_title">Smart Storage is off</string>
+    <string name="smart_storage_is_off_desc">Turn it on in Rules to scan your library for tracks you never reach for.</string>
+    <string name="smart_storage_open_rules">Open Rules</string>
+    <string name="smart_storage_move_to_trash">Move to Trash</string>
+    <string name="smart_storage_empty_trash">Empty Trash</string>
+    <string name="smart_storage_restore_all">Restore All</string>
+    <string name="smart_storage_restore">Restore</string>
+    <string name="smart_storage_trash_empty_title">Trash is empty</string>
+    <string name="smart_storage_trash_empty_desc">Items moved to trash will stay here until you empty trash or restore them.</string>
+    <string name="smart_storage_rules_enable_title">Smart Storage</string>
+    <string name="smart_storage_rules_enable_desc">Automatically identify forgotten local tracks that can be safely archived or deleted.</string>
+    <string name="smart_storage_section_what_counts">What counts as forgotten</string>
+    <string name="smart_storage_not_played_for">Not played for</string>
+    <string name="smart_storage_include_never_played">Include never-played tracks</string>
+    <string name="smart_storage_min_file_size">Minimum file size</string>
+    <string name="smart_storage_section_safety">Safety net</string>
+    <string name="smart_storage_never_suggest_favorites">Never suggest favourites</string>
+    <string name="smart_storage_ignore_recently_added">Ignore recently added</string>
+    <string name="smart_storage_section_stream_cache">Stream Cache &amp; Automation</string>
+    <string name="smart_storage_stream_ttl_title">Auto-clear older streams</string>
+    <string name="smart_storage_stream_max_size_title">Stream cache size limit</string>
+    <string name="smart_storage_auto_prune_search_title">Auto-prune search history</string>
+    <string name="smart_storage_auto_clean_invalid_title">Auto-clean invalid tracks</string>
 </resources>

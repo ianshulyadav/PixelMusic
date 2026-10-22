@@ -215,10 +215,7 @@ class CloudOfflineRepository @Inject constructor(
 
     companion object {
         fun canonicalSourceUri(song: Song): String? {
-            if (song.contentUriString.startsWith("youtube://") ||
-                song.contentUriString.startsWith("navidrome://") ||
-                song.contentUriString.startsWith("jellyfin://")
-            ) {
+            if (song.contentUriString.startsWith("youtube://")) {
                 return song.contentUriString
             }
             if (!song.youtubeId.isNullOrBlank()) {
@@ -227,20 +224,12 @@ class CloudOfflineRepository @Inject constructor(
             if (song.id.startsWith("youtube_")) {
                 return "youtube://${song.id.removePrefix("youtube_")}"
             }
-            if (song.id.startsWith("navidrome_")) {
-                return "navidrome://${song.id.removePrefix("navidrome_")}"
-            }
-            if (song.id.startsWith("jellyfin_")) {
-                return "jellyfin://${song.id.removePrefix("jellyfin_")}"
-            }
             return null
         }
 
         fun isCloudSong(song: Song): Boolean = canonicalSourceUri(song) != null
 
         fun providerFor(sourceUri: String): String? = when (sourceUri.substringBefore(':', "").lowercase()) {
-            "navidrome" -> "navidrome"
-            "jellyfin" -> "jellyfin"
             "youtube" -> "youtube"
             else -> null
         }

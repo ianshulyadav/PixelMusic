@@ -26,15 +26,6 @@ object ArtworkTransportSanitizer {
         sourceBytesLimit = 2 * 1024 * 1024,
     )
 
-    val WEAR_CONFIG = Config(
-        maxDimensionPx = 1024,
-        maxBytes = 380 * 1024,
-        initialJpegQuality = 88,
-        minJpegQuality = 60,
-        jpegQualityStep = 7,
-        sourceBytesLimit = 4 * 1024 * 1024,
-    )
-
     fun sanitizeEncodedBytes(
         data: ByteArray?,
         config: Config,

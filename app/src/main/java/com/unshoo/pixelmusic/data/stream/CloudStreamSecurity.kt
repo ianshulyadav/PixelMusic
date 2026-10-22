@@ -17,8 +17,6 @@ object CloudStreamSecurity {
 
     private val GDRIVE_FILE_ID_REGEX = Regex("^[A-Za-z0-9_-]{10,200}$")
     private val QQMUSIC_SONG_MID_REGEX = Regex("^[A-Za-z0-9_-]{6,50}$")
-    private val NAVIDROME_SONG_ID_REGEX = Regex("^[A-Za-z0-9_-]{1,100}$")
-    private val JELLYFIN_ITEM_ID_REGEX = Regex("^[A-Za-z0-9]{1,100}$")
     private val YOUTUBE_VIDEO_ID_REGEX = Regex("^[a-zA-Z0-9_-]{11}$")
     private val FORBIDDEN_HOSTS = setOf("localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]")
     private val EXTRA_ALLOWED_AUDIO_TYPES = setOf(
@@ -44,9 +42,7 @@ object CloudStreamSecurity {
 
     fun validateQqMusicSongMid(songMid: String): Boolean = QQMUSIC_SONG_MID_REGEX.matches(songMid)
 
-    fun validateNavidromeSongId(songId: String): Boolean = NAVIDROME_SONG_ID_REGEX.matches(songId)
 
-    fun validateJellyfinItemId(itemId: String): Boolean = JELLYFIN_ITEM_ID_REGEX.matches(itemId)
 
     fun validateYouTubeVideoId(videoId: String): Boolean = YOUTUBE_VIDEO_ID_REGEX.matches(videoId)
 
@@ -131,15 +127,9 @@ object CloudStreamSecurity {
         val httpUrl = url.toHttpUrlOrNull() ?: return false
         val host = httpUrl.host.lowercase()
 
-        // Allow private IPs and .local for Subsonic/Navidrome/Jellyfin servers which are often self-hosted
-        val isNavidromeStream = httpUrl.pathSegments.contains("stream.view")
-        val isJellyfinStream = httpUrl.pathSegments.contains("Audio") && httpUrl.pathSegments.contains("universal")
-        
-        if (!isNavidromeStream && !isJellyfinStream) {
-            if (host in FORBIDDEN_HOSTS) return false
-            if (host.endsWith(".local")) return false
-            if (isPrivateIpv4Literal(host)) return false
-        }
+        if (host in FORBIDDEN_HOSTS) return false
+        if (host.endsWith(".local")) return false
+        if (isPrivateIpv4Literal(host)) return false
         
         if (httpUrl.username.isNotEmpty() || httpUrl.password.isNotEmpty()) return false
 

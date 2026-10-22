@@ -41,8 +41,6 @@ data class Song(
     val neteaseId: Long? = null, // Netease Cloud Music song ID
     val gdriveFileId: String? = null, // Google Drive file ID
     val qqMusicMid: String? = null, // QQ Music song MID
-    val navidromeId: String? = null, // Navidrome song ID
-    val jellyfinId: String? = null, // Jellyfin item ID
     val youtubeId: String? = null, // YouTube video ID for dynamic streaming
     val albumBrowseId: String? = null, // YouTube album browse ID
     val isDisliked: Boolean = false,
@@ -75,11 +73,9 @@ data class Song(
                 !contentUriString.startsWith("netease://") &&
                 !contentUriString.startsWith("gdrive://") &&
                 !contentUriString.startsWith("qqmusic://") &&
-                !contentUriString.startsWith("navidrome://") &&
-                !contentUriString.startsWith("jellyfin://") &&
                 !contentUriString.startsWith("youtube://") &&
                 telegramFileId == null && neteaseId == null && gdriveFileId == null &&
-                qqMusicMid == null && navidromeId == null && jellyfinId == null && youtubeId == null
+                qqMusicMid == null && youtubeId == null
 
     val isTelegram: Boolean
         get() = contentUriString.startsWith("telegram://") || telegramFileId != null
@@ -118,8 +114,6 @@ data class Song(
                 neteaseId = null,
                 gdriveFileId = null,
                 qqMusicMid = null,
-                navidromeId = null,
-                jellyfinId = null,
                 youtubeId = null,
                 albumBrowseId = null,
                 isDisliked = false

@@ -106,11 +106,6 @@ baselineprofile = "1.5.0-alpha06"
 profileinstaller = "1.4.1"
 pagingCommon = "3.3.6"
 
-# Wear OS
-horologist = "0.7.15"
-wearCompose = "1.6.2"
-playServicesWearable = "20.0.1"
-
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
 
@@ -253,20 +248,6 @@ truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomRuntime" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 
-# Wear OS Compose
-wear-compose-material = { module = "androidx.wear.compose:compose-material", version.ref = "wearCompose" }
-wear-compose-material3 = { module = "androidx.wear.compose:compose-material3", version.ref = "wearCompose" }
-wear-compose-foundation = { module = "androidx.wear.compose:compose-foundation", version.ref = "wearCompose" }
-wear-compose-navigation = { module = "androidx.wear.compose:compose-navigation", version.ref = "wearCompose" }
-
-# Horologist
-horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologist" }
-horologist-media-ui = { module = "com.google.android.horologist:horologist-media-ui", version.ref = "horologist" }
-horologist-audio-ui = { module = "com.google.android.horologist:horologist-audio-ui", version.ref = "horologist" }
-horologist-composables = { module = "com.google.android.horologist:horologist-composables", version.ref = "horologist" }
-
-# Play Services Wearable (Data Layer API)
-play-services-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServicesWearable" }
 
 # Coroutines Play Services (for .await() on GMS Tasks)
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinx-coroutines" }
