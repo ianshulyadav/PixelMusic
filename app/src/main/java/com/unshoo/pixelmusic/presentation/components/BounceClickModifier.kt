@@ -15,10 +15,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.TransformOrigin
 
 /**
@@ -32,22 +29,19 @@ fun Modifier.bounceClick(
     hoverScale: Float = 1.015f,
     onLongClick: (() -> Unit)? = null,
     onClick: () -> Unit
-): Modifier = composed {
-    val interactionSource = remember { MutableInteractionSource() }
-    if (onLongClick != null) {
-        this.combinedClickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onLongClick = onLongClick,
-            onClick = onClick
-        )
-    } else {
-        this.clickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick
-        )
-    }
+): Modifier = if (onLongClick != null) {
+    this.combinedClickable(
+        interactionSource = null,
+        indication = null,
+        onLongClick = onLongClick,
+        onClick = onClick
+    )
+} else {
+    this.clickable(
+        interactionSource = null,
+        indication = null,
+        onClick = onClick
+    )
 }
 
 /**

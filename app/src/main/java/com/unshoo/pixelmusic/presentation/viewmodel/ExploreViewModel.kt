@@ -43,10 +43,15 @@ import unshoo.ianshulyadav.pixelmusic.innertube.models.filterVideo
 import unshoo.ianshulyadav.pixelmusic.innertube.pages.ChartsPage
 import unshoo.ianshulyadav.pixelmusic.innertube.pages.HomePage
 import com.unshoo.pixelmusic.data.database.toSong
+import com.unshoo.pixelmusic.data.feed.FeedAlbum
 import com.unshoo.pixelmusic.data.feed.FeedArtist
+import com.unshoo.pixelmusic.data.feed.FeedSpotlight
 import com.unshoo.pixelmusic.data.feed.ImageDto
 import com.unshoo.pixelmusic.data.feed.RecentTrack
 import com.unshoo.pixelmusic.data.feed.RecentTrackArtistRef
+import com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack
+import com.unshoo.pixelmusic.data.feed.YouTubePlaylistSummary
+import com.unshoo.pixelmusic.data.remote.youtube.toNativeSong
 import javax.inject.Inject
 
 data class ExploreUiState(
@@ -72,6 +77,15 @@ data class ExploreUiState(
     val localHighlyRotatoryTracks: List<RecentTrack> = emptyList(),
     val localRecentlyAddedSongs: List<Song> = emptyList(),
     val isAdvancedExploreEnabled: Boolean = true,
+    val preparedArtistsForYou: List<FeedArtist> = emptyList(),
+    val preparedNewReleases: List<YouTubePlaylistSummary> = emptyList(),
+    val preparedAlbumsForYou: List<FeedAlbum> = emptyList(),
+    val preparedSpotlight: FeedSpotlight? = null,
+    val preparedOtherHomeSections: List<HomePage.Section> = emptyList(),
+    val preparedYtHomeQuickPicks: List<Song> = emptyList(),
+    val preparedDiscoverSongs: List<Song> = emptyList(),
+    val preparedChartTracks: List<YouTubeMusicTrack> = emptyList(),
+    val preparedChartPlaylistsAndAlbums: List<YouTubePlaylistSummary> = emptyList(),
 )
 
 @HiltViewModel
@@ -123,9 +137,12 @@ class ExploreViewModel @Inject constructor(
     private var hasFetchedFromNetwork = false
     @Volatile
     private var lastFetchTimestamp: Long = 0L
+    @Volatile
+    private var isLocalModeCached: Boolean = false
     private var initialHomeContinuation: String? = null
 
     companion object {
+        private const val FRESH_IN_MEMORY_TTL_MS = 5 * 60 * 1000L      // 5 min: In-memory fresh window to prevent network requests on frequent visits
         private const val CACHE_TIER_FRESH_MS = 30 * 60 * 1000L        // 0–30 min: Fresh
         private const val CACHE_TIER_STALE_MS = 4 * 60 * 60 * 1000L    // 30 min–4 hours: Stale
         private const val CACHE_TIER_EXPIRED_MS = 24 * 60 * 60 * 1000L  // 4–24 hours: Old; > 24 hours: Expired
@@ -144,6 +161,11 @@ class ExploreViewModel @Inject constructor(
     init {
         // Observers only in init per Explore Refresh Contract.
         // Online data is fetched fresh upon Explore entry/re-entry through refreshOnEntry().
+        viewModelScope.launch {
+            userPreferencesRepository.localModeEnabledFlow.collect { isLocal ->
+                isLocalModeCached = isLocal
+            }
+        }
         viewModelScope.launch {
             val isLocal = userPreferencesRepository.localModeEnabledFlow.first() || !connectivityStateHolder.isOnline.value
             if (isLocal) {
@@ -349,20 +371,86 @@ class ExploreViewModel @Inject constructor(
                     lastFetchTimestamp = cache.timestamp
                     hasFetchedFromNetwork = true
 
+                    val cachedNewReleases = cache.newReleaseAlbums.map { album ->
+                        YouTubePlaylistSummary(
+                            id = album.browseId,
+                            title = album.title,
+                            author = album.artists?.firstOrNull()?.name ?: "Album",
+                            artworkUrl = album.thumbnail
+                        )
+                    }
+                    val cachedAlbums = cache.albumsForYou.map { album ->
+                        FeedAlbum(
+                            title = album.title,
+                            artist = album.artists?.firstOrNull()?.name ?: "Album",
+                            artworkUrl = album.thumbnail,
+                            browseId = album.browseId.takeIf { it.isNotBlank() } ?: album.playlistId
+                        )
+                    }.distinctBy { it.browseId ?: it.title }
+                    val cachedArtists = cache.sections.flatMap { it.items }
+                        .flatMap { item ->
+                            when (item) {
+                                is ArtistItem -> listOf(FeedArtist(item.title, item.id, item.thumbnail))
+                                is SongItem -> item.artists.map { FeedArtist(it.name, it.id, item.thumbnail) }
+                                is AlbumItem -> item.artists.orEmpty().map { FeedArtist(it.name, it.id, item.thumbnail) }
+                                else -> emptyList()
+                            }
+                        }
+                        .filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
+                        .distinctBy { it.name.trim().lowercase() }
+                        .take(10)
+                    val quickShelf = cache.sections.firstOrNull { 
+                        val t = it.title.lowercase()
+                        (t.contains("quick pick") || t.contains("quick picks")) && !t.contains("start radio")
+                    }
+                    val cachedYtQuickPicks = quickShelf?.items
+                        ?.filterIsInstance<SongItem>()
+                        ?.filterVideo(true)
+                        ?.map { it.toNativeSong() }
+                        .orEmpty()
+                    val cachedOtherSections = cache.sections.filter { section ->
+                        val t = section.title.lowercase()
+                        !t.contains("quick pick") &&
+                        !(cachedAlbums.isNotEmpty() && t.contains("albums for you")) &&
+                        !(cachedNewReleases.isNotEmpty() && (t.contains("new release") || t.contains("new for you"))) &&
+                        !t.contains("video")
+                    }
+                    val cachedDiscoverSongs = cache.sections
+                        .filter { section ->
+                            val title = section.title
+                            title.contains("daily discover", ignoreCase = true) ||
+                            (title.contains("discover", ignoreCase = true) && title.contains("daily", ignoreCase = true))
+                        }
+                        .flatMap { section ->
+                            section.items.filterIsInstance<SongItem>().map { it.toNativeSong() }
+                        }
+                        .distinctBy { it.id }
+
+                    val (cachedChartTracks, cachedChartSummaries) = parseChartData(cache.charts)
+
                     when {
                         // Tier 1: 0–30 min (Fresh) -> Show cache, no network request
                         age < CACHE_TIER_FRESH_MS -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = false
+                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    isSettled = false,
+                                    isSettled = true,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
-                                    albumsForYou = cache.albumsForYou
+                                    albumsForYou = cache.albumsForYou,
+                                    preparedArtistsForYou = cachedArtists,
+                                    preparedNewReleases = cachedNewReleases,
+                                    preparedAlbumsForYou = cachedAlbums,
+                                    preparedOtherHomeSections = cachedOtherSections,
+                                    preparedYtHomeQuickPicks = cachedYtQuickPicks,
+                                    preparedDiscoverSongs = cachedDiscoverSongs,
+                                    preparedChartTracks = cachedChartTracks,
+                                    preparedChartPlaylistsAndAlbums = cachedChartSummaries
                                 )
                             }
                         }
@@ -370,15 +458,24 @@ class ExploreViewModel @Inject constructor(
                         age < CACHE_TIER_STALE_MS -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = false
+                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    isSettled = false,
+                                    isSettled = true,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
-                                    albumsForYou = cache.albumsForYou
+                                    albumsForYou = cache.albumsForYou,
+                                    preparedArtistsForYou = cachedArtists,
+                                    preparedNewReleases = cachedNewReleases,
+                                    preparedAlbumsForYou = cachedAlbums,
+                                    preparedOtherHomeSections = cachedOtherSections,
+                                    preparedYtHomeQuickPicks = cachedYtQuickPicks,
+                                    preparedDiscoverSongs = cachedDiscoverSongs,
+                                    preparedChartTracks = cachedChartTracks,
+                                    preparedChartPlaylistsAndAlbums = cachedChartSummaries
                                 )
                             }
                         }
@@ -386,15 +483,24 @@ class ExploreViewModel @Inject constructor(
                         else -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = true
+                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = true,
-                                    isSettled = false,
+                                    isSettled = true,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
-                                    albumsForYou = cache.albumsForYou
+                                    albumsForYou = cache.albumsForYou,
+                                    preparedArtistsForYou = cachedArtists,
+                                    preparedNewReleases = cachedNewReleases,
+                                    preparedAlbumsForYou = cachedAlbums,
+                                    preparedOtherHomeSections = cachedOtherSections,
+                                    preparedYtHomeQuickPicks = cachedYtQuickPicks,
+                                    preparedDiscoverSongs = cachedDiscoverSongs,
+                                    preparedChartTracks = cachedChartTracks,
+                                    preparedChartPlaylistsAndAlbums = cachedChartSummaries
                                 )
                             }
                         }
@@ -423,7 +529,14 @@ class ExploreViewModel @Inject constructor(
         val uiSections: List<ExploreSectionUiModel>,
         val rawChips: List<HomePage.Chip>,
         val uiChips: List<ExploreChipUiModel>,
-        val currentContinuation: String?
+        val currentContinuation: String?,
+        val artistsForYou: List<FeedArtist>,
+        val newReleasesSummaries: List<YouTubePlaylistSummary>,
+        val preparedAlbums: List<FeedAlbum>,
+        val spotlight: FeedSpotlight?,
+        val otherSections: List<HomePage.Section>,
+        val ytHomeQuickPicks: List<Song>,
+        val discoverSongs: List<Song>
     )
 
     private fun persistToCacheAtomic(
@@ -459,24 +572,60 @@ class ExploreViewModel @Inject constructor(
     }
 
     /**
+     * Synchronously puts the UI into loading state when leaving or entering Explore
+     * ONLY if there is no content already present.
+     */
+    fun prepareForOnlineEntry() {
+        val hasContent = _uiState.value.homePageSections.isNotEmpty()
+        if (!hasContent && !isLocalModeCached && connectivityStateHolder.isOnline.value) {
+            _isLoadingState.value = true
+            _isSettledState.value = false
+            _uiState.update { it.copy(isLoading = true, isSettled = false) }
+        }
+    }
+
+    /**
      * Entry, re-entry and manual refresh coordinator.
      * Guarantees atomic replacement, cancellation of stale jobs, and rejection of out-of-order commits.
+     * Throttles network requests when data is already fresh, preventing redundant calls on frequent visits.
      */
-    fun refreshOnEntry(force: Boolean = true): Job {
+    fun refreshOnEntry(force: Boolean = false): Job? {
+        val now = System.currentTimeMillis()
+        val hasContent = _uiState.value.homePageSections.isNotEmpty()
+        val isFresh = hasFetchedFromNetwork && (now - lastFetchTimestamp < FRESH_IN_MEMORY_TTL_MS)
+
+        // Frequent visit protection: If data is already fresh in memory, do not trigger network or show loader
+        if (!force && hasContent && isFresh) {
+            return null
+        }
+
         val activeJob = refreshCoordinatorJob
         if (!force && activeJob != null && activeJob.isActive) {
             return activeJob
+        }
+
+        // Only show blocking loading state if there is NO content to display.
+        // If content already exists, perform a smooth background refresh without blanking the screen.
+        if (!isLocalModeCached && connectivityStateHolder.isOnline.value) {
+            if (!hasContent) {
+                _isLoadingState.value = true
+                _isSettledState.value = false
+                _uiState.update { it.copy(isLoading = true, isSettled = false) }
+            } else {
+                _isRefreshingState.value = true
+                _uiState.update { it.copy(isRefreshing = true) }
+            }
         }
 
         val generation = ++currentRefreshGeneration
         activeJob?.cancel()
 
         val job = viewModelScope.launch {
-            val isLocalMode = runCatching { userPreferencesRepository.localModeEnabledFlow.first() }.getOrDefault(false)
+            val isLocalMode = isLocalModeCached || runCatching { userPreferencesRepository.localModeEnabledFlow.first() }.getOrDefault(false)
             if (isLocalMode || !connectivityStateHolder.isOnline.value) {
                 loadOfflineExploreData()
                 _isSettledState.value = true
-                _uiState.update { it.copy(isSettled = true, isLoading = false, error = null) }
+                _uiState.update { it.copy(isSettled = true, isLoading = false, isRefreshing = false, error = null) }
                 return@launch
             }
             executeOnlineRefresh(generation)
@@ -490,16 +639,20 @@ class ExploreViewModel @Inject constructor(
     }
 
     private suspend fun executeOnlineRefresh(generation: Long) {
-        // 1. Immediately enter loading state on online entry/refresh
-        _isLoadingState.value = true
-        _isRefreshingState.value = false
-        _isSettledState.value = false
+        val hasContent = _uiState.value.homePageSections.isNotEmpty()
+        if (!hasContent) {
+            _isLoadingState.value = true
+            _isRefreshingState.value = false
+            _isSettledState.value = false
+        } else {
+            _isRefreshingState.value = true
+        }
         _errorState.value = null
         _uiState.update {
             it.copy(
-                isLoading = true,
-                isRefreshing = false,
-                isSettled = false,
+                isLoading = !hasContent,
+                isRefreshing = hasContent,
+                isSettled = hasContent,
                 error = null
             )
         }
@@ -622,6 +775,85 @@ class ExploreViewModel @Inject constructor(
                     val rawChips = initialHome.chips ?: emptyList()
                     val uiChips = rawChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
 
+                    // Quick picks extracted from Home
+                    val quickShelf = rawSections.firstOrNull { 
+                        val t = it.title.lowercase()
+                        (t.contains("quick pick") || t.contains("quick picks")) && !t.contains("start radio")
+                    }
+                    val ytHomeQuickPicks = quickShelf?.items
+                        ?.filterIsInstance<SongItem>()
+                        ?.filterVideo(true)
+                        ?.map { it.toNativeSong() }
+                        .orEmpty()
+
+                    // Artists for you extracted from Home
+                    val artistsForYou = rawSections.flatMap { it.items }
+                        .flatMap { item ->
+                            when (item) {
+                                is ArtistItem -> listOf(FeedArtist(item.title, item.id, item.thumbnail))
+                                is SongItem -> item.artists.map { FeedArtist(it.name, it.id, item.thumbnail) }
+                                is AlbumItem -> item.artists.orEmpty().map { FeedArtist(it.name, it.id, item.thumbnail) }
+                                else -> emptyList()
+                            }
+                        }
+                        .filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
+                        .distinctBy { it.name.trim().lowercase() }
+                        .take(10)
+
+                    // New Releases mapped to YouTubePlaylistSummary
+                    val newReleasesSummaries = resolvedNewReleases.map { album ->
+                        YouTubePlaylistSummary(
+                            id = album.browseId,
+                            title = album.title,
+                            author = album.artists?.firstOrNull()?.name ?: "Album",
+                            artworkUrl = album.thumbnail
+                        )
+                    }
+
+                    // Albums for you mapped to FeedAlbum
+                    val preparedAlbums = personalizedAlbums.map { album ->
+                        FeedAlbum(
+                            title = album.title,
+                            artist = album.artists?.firstOrNull()?.name ?: "Album",
+                            artworkUrl = album.thumbnail,
+                            browseId = album.browseId.takeIf { it.isNotBlank() } ?: album.playlistId
+                        )
+                    }.distinctBy { it.browseId ?: it.title }
+
+                    // Spotlight artist derived from top artist and top quick pick
+                    val topArtist = artistsForYou.firstOrNull()
+                    val spotlight = topArtist?.let { artist ->
+                        val trackTitle = ytHomeQuickPicks.firstOrNull { it.artist.contains(artist.name, ignoreCase = true) }?.title
+                        FeedSpotlight(
+                            artistName = artist.name,
+                            artworkUrl = artist.artworkUrl,
+                            browseId = artist.browseId,
+                            description = "Spotlight Artist",
+                            topTrackTitle = trackTitle
+                        )
+                    }
+
+                    // Other home sections
+                    val otherSections = rawSections.filter { section ->
+                        val t = section.title.lowercase()
+                        !t.contains("quick pick") &&
+                        !(preparedAlbums.isNotEmpty() && t.contains("albums for you")) &&
+                        !(newReleasesSummaries.isNotEmpty() && (t.contains("new release") || t.contains("new for you"))) &&
+                        !t.contains("video")
+                    }
+
+                    // Discover songs for HomeScreen
+                    val discoverSongs = rawSections
+                        .filter { section ->
+                            val title = section.title
+                            title.contains("daily discover", ignoreCase = true) ||
+                            (title.contains("discover", ignoreCase = true) && title.contains("daily", ignoreCase = true))
+                        }
+                        .flatMap { section ->
+                            section.items.filterIsInstance<SongItem>().map { it.toNativeSong() }
+                        }
+                        .distinctBy { it.id }
+
                     PreparedExploreData(
                         rawSections = rawSections,
                         resolvedNewReleases = resolvedNewReleases,
@@ -629,7 +861,14 @@ class ExploreViewModel @Inject constructor(
                         uiSections = uiSections,
                         rawChips = rawChips,
                         uiChips = uiChips,
-                        currentContinuation = continuation
+                        currentContinuation = continuation,
+                        artistsForYou = artistsForYou,
+                        newReleasesSummaries = newReleasesSummaries,
+                        preparedAlbums = preparedAlbums,
+                        spotlight = spotlight,
+                        otherSections = otherSections,
+                        ytHomeQuickPicks = ytHomeQuickPicks,
+                        discoverSongs = discoverSongs
                     )
                 }
 
@@ -655,6 +894,13 @@ class ExploreViewModel @Inject constructor(
                         newReleaseAlbums = prepared.resolvedNewReleases,
                         albumsForYou = prepared.personalizedAlbums,
                         moodChips = prepared.rawChips,
+                        preparedArtistsForYou = prepared.artistsForYou,
+                        preparedNewReleases = prepared.newReleasesSummaries,
+                        preparedAlbumsForYou = prepared.preparedAlbums,
+                        preparedSpotlight = prepared.spotlight,
+                        preparedOtherHomeSections = prepared.otherSections,
+                        preparedYtHomeQuickPicks = prepared.ytHomeQuickPicks,
+                        preparedDiscoverSongs = prepared.discoverSongs,
                         isAdvancedExploreEnabled = isAdvancedExploreEnabled
                     )
                 }
@@ -709,12 +955,66 @@ class ExploreViewModel @Inject constructor(
     }
 
 
+    private fun parseChartData(charts: ChartsPage?): Pair<List<YouTubeMusicTrack>, List<YouTubePlaylistSummary>> {
+        if (charts == null) return emptyList<YouTubeMusicTrack>() to emptyList<YouTubePlaylistSummary>()
+        val tracks = charts.sections.flatMap { it.items }
+            .filterIsInstance<SongItem>()
+            .map { songItem ->
+                YouTubeMusicTrack(
+                    videoId = songItem.id,
+                    title = songItem.title,
+                    artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
+                    album = songItem.album?.name,
+                    artworkUrl = songItem.thumbnail
+                )
+            }
+        val summaries = mutableListOf<YouTubePlaylistSummary>()
+        for (section in charts.sections) {
+            for (item in section.items) {
+                when (item) {
+                    is PlaylistItem -> summaries.add(
+                        YouTubePlaylistSummary(
+                            id = item.id,
+                            title = item.title,
+                            author = item.author?.name ?: "Top Chart",
+                            artworkUrl = item.thumbnail
+                        )
+                    )
+                    is AlbumItem -> summaries.add(
+                        YouTubePlaylistSummary(
+                            id = item.browseId,
+                            title = item.title,
+                            author = item.artists?.firstOrNull()?.name ?: "Chart Album",
+                            artworkUrl = item.thumbnail
+                        )
+                    )
+                    else -> {}
+                }
+            }
+        }
+        return tracks to summaries.distinctBy { it.id }
+    }
+
     fun loadChartsIfNeeded(forceRefresh: Boolean = false) {
         if (!forceRefresh && (_uiState.value.chartsPage != null || _uiState.value.isChartsLoading)) return
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isChartsLoading = true) }
             val charts = runCatching { YouTube.getChartsPage().getOrNull() }.getOrNull()
-            _uiState.update { it.copy(isChartsLoading = false, chartsPage = charts) }
+            if (charts != null) {
+                val (preparedTracks, preparedSummaries) = withContext(Dispatchers.Default) {
+                    parseChartData(charts)
+                }
+                _uiState.update {
+                    it.copy(
+                        isChartsLoading = false,
+                        chartsPage = charts,
+                        preparedChartTracks = preparedTracks,
+                        preparedChartPlaylistsAndAlbums = preparedSummaries
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(isChartsLoading = false) }
+            }
         }
     }
 
@@ -1009,7 +1309,14 @@ class ExploreViewModel @Inject constructor(
                 albumsForYou = emptyList(),
                 moodChips = emptyList(),
                 localSongs = localMap,
-                localRecentlyAddedSongs = allOfflineSongs.take(20)
+                localRecentlyAddedSongs = allOfflineSongs.take(20),
+                preparedArtistsForYou = it.localTopArtists,
+                preparedNewReleases = emptyList(),
+                preparedAlbumsForYou = emptyList(),
+                preparedSpotlight = null,
+                preparedOtherHomeSections = rawSections,
+                preparedYtHomeQuickPicks = allOfflineSongs.take(15),
+                preparedDiscoverSongs = emptyList()
             )
         }
     }
@@ -1021,7 +1328,6 @@ class ExploreViewModel @Inject constructor(
                 is AlbumItem -> ExploreItemUiModel.AlbumModel(item)
                 is PlaylistItem -> ExploreItemUiModel.PlaylistModel(item)
                 is ArtistItem -> ExploreItemUiModel.ArtistModel(item)
-                else -> null
             }
         }
         return ExploreSectionUiModel(

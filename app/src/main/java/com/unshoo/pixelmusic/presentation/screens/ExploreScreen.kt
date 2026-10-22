@@ -236,18 +236,7 @@ fun ExploreScreen(
     val state by feedViewModel.uiState.collectAsStateWithLifecycle()
     val exploreUiState by exploreViewModel.uiState.collectAsStateWithLifecycle()
     val quickPicksRaw by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
-    val ytHomeQuickPicks = remember(exploreUiState.homePageSections) {
-        val quickShelf = exploreUiState.homePageSections
-            .firstOrNull { 
-                val t = it.title.lowercase()
-                (t.contains("quick pick") || t.contains("quick picks")) && !t.contains("start radio")
-            }
-        quickShelf?.items
-            ?.filterIsInstance<SongItem>()
-            ?.filterVideo(true)
-            ?.map { it.toNativeSong() }
-            .orEmpty()
-    }
+    val ytHomeQuickPicks = exploreUiState.preparedYtHomeQuickPicks
     val isYtConnected = state.feedData.isYtConnected
     val effectiveQuickPicks = remember(
         quickPicksRaw,
@@ -325,13 +314,15 @@ fun ExploreScreen(
                 if (isLocalMode) {
                     exploreViewModel.setSelectedFilter("Local")
                 } else {
-                    exploreViewModel.refreshOnEntry(force = true)
+                    exploreViewModel.refreshOnEntry(force = false)
                     quickPicksViewModel.refreshIfStale()
                 }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     val pullRefreshState = rememberPullToRefreshState()
@@ -385,43 +376,19 @@ fun ExploreScreen(
 
     val isAdvancedExplore = exploreUiState.isAdvancedExploreEnabled
 
-    // Artists for you: Remote topArtists / YT home sections / Quick Picks when online -> Local topArtists / library artists strictly when offline
+    // Artists for you: Pre-computed online artists -> Local topArtists / library artists strictly when offline
     val artistsForYou = remember(
         state.feedData.topArtists,
+        exploreUiState.preparedArtistsForYou,
         exploreUiState.localTopArtists,
         localArtists,
-        isEffectivelyOnline,
-        exploreUiState.homePageSections,
-        quickPicks
+        isEffectivelyOnline
     ) {
         if (isEffectivelyOnline) {
             if (state.feedData.topArtists.isNotEmpty()) {
                 state.feedData.topArtists
             } else {
-                val fromHome = exploreUiState.homePageSections.flatMap { it.items }
-                    .flatMap { item ->
-                        when (item) {
-                            is ArtistItem -> listOf(FeedArtist(item.title, item.id, item.thumbnail))
-                            is SongItem -> item.artists.map { FeedArtist(it.name, it.id, item.thumbnail) }
-                            is AlbumItem -> item.artists.orEmpty().map { FeedArtist(it.name, it.id, item.thumbnail) }
-                            else -> emptyList()
-                        }
-                    }
-                    .filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
-                    .distinctBy { it.name.trim().lowercase() }
-                if (fromHome.isNotEmpty()) {
-                    fromHome.take(10)
-                } else {
-                    quickPicks.map { song ->
-                        FeedArtist(
-                            name = song.artist,
-                            browseId = null,
-                            artworkUrl = song.albumArtUriString
-                        )
-                    }.filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
-                    .distinctBy { it.name.lowercase() }
-                    .take(10)
-                }
+                exploreUiState.preparedArtistsForYou
             }
         } else {
             if (exploreUiState.localTopArtists.isNotEmpty()) {
@@ -452,52 +419,15 @@ fun ExploreScreen(
         }
     }
 
-    val chartTracks = remember(state.feedData.charts, exploreUiState.chartsPage) {
+    val chartTracks = remember(state.feedData.charts, exploreUiState.preparedChartTracks) {
         if (state.feedData.charts.isNotEmpty()) {
             state.feedData.charts
         } else {
-            exploreUiState.chartsPage?.sections?.flatMap { it.items }
-                ?.filterIsInstance<SongItem>()
-                ?.map { songItem ->
-                    com.unshoo.pixelmusic.data.feed.YouTubeMusicTrack(
-                        videoId = songItem.id,
-                        title = songItem.title,
-                        artist = songItem.artists.firstOrNull()?.name ?: "Unknown artist",
-                        album = songItem.album?.name,
-                        artworkUrl = songItem.thumbnail
-                    )
-                }.orEmpty()
+            exploreUiState.preparedChartTracks
         }
     }
 
-    val chartPlaylistsAndAlbums = remember(exploreUiState.chartsPage) {
-        val page = exploreUiState.chartsPage ?: return@remember emptyList<YouTubePlaylistSummary>()
-        val summaries = mutableListOf<YouTubePlaylistSummary>()
-        for (section in page.sections) {
-            for (item in section.items) {
-                when (item) {
-                    is PlaylistItem -> summaries.add(
-                        YouTubePlaylistSummary(
-                            id = item.id,
-                            title = item.title,
-                            author = item.author?.name ?: "Top Chart",
-                            artworkUrl = item.thumbnail
-                        )
-                    )
-                    is AlbumItem -> summaries.add(
-                        YouTubePlaylistSummary(
-                            id = item.browseId,
-                            title = item.title,
-                            author = item.artists?.firstOrNull()?.name ?: "Chart Album",
-                            artworkUrl = item.thumbnail
-                        )
-                    )
-                    else -> {}
-                }
-            }
-        }
-        summaries.distinctBy { it.id }
-    }
+    val chartPlaylistsAndAlbums = exploreUiState.preparedChartPlaylistsAndAlbums
 
     val chartVideoIds = remember(chartTracks) {
         chartTracks.mapNotNull { it.videoId.takeIf(String::isNotBlank) }.toSet()
@@ -544,8 +474,8 @@ fun ExploreScreen(
         }
     }
 
-    val spotlight = remember(state.feedData.spotlight, artistsForYou, quickPicks) {
-        state.feedData.spotlight ?: artistsForYou.firstOrNull()?.let { artist ->
+    val spotlight = remember(state.feedData.spotlight, exploreUiState.preparedSpotlight, artistsForYou, quickPicks) {
+        state.feedData.spotlight ?: exploreUiState.preparedSpotlight ?: artistsForYou.firstOrNull()?.let { artist ->
             val trackTitle = quickPicks.firstOrNull { it.artist.contains(artist.name, ignoreCase = true) }?.title
             FeedSpotlight(
                 artistName = artist.name,
@@ -557,23 +487,16 @@ fun ExploreScreen(
         }
     }
 
-    val newReleases = remember(exploreUiState.newReleaseAlbums, state.feedData.newReleases, blockedReleaseIds) {
-        val rawList = if (exploreUiState.newReleaseAlbums.isNotEmpty()) {
-            exploreUiState.newReleaseAlbums.map { album ->
-                YouTubePlaylistSummary(
-                    id = album.browseId,
-                    title = album.title,
-                    author = album.artists?.firstOrNull()?.name ?: "Album",
-                    artworkUrl = album.thumbnail
-                )
-            }
+    val newReleases = remember(exploreUiState.preparedNewReleases, state.feedData.newReleases, blockedReleaseIds) {
+        val rawList = if (exploreUiState.preparedNewReleases.isNotEmpty()) {
+            exploreUiState.preparedNewReleases
         } else if (state.feedData.newReleases.isNotEmpty()) {
             state.feedData.newReleases
         } else emptyList()
-        rawList.filter { it.id !in blockedReleaseIds }
+        if (blockedReleaseIds.isEmpty()) rawList else rawList.filter { it.id !in blockedReleaseIds }
     }
 
-    val albumsForYou = remember(exploreUiState.albumsForYou, localAlbums, isLocalMode, isEffectivelyOnline) {
+    val albumsForYou = remember(exploreUiState.preparedAlbumsForYou, localAlbums, isLocalMode, isEffectivelyOnline) {
         if (isLocalMode || !isEffectivelyOnline) {
             localAlbums.take(20).map { local ->
                 FeedAlbum(
@@ -583,22 +506,13 @@ fun ExploreScreen(
                     browseId = local.id.toString()
                 )
             }.distinctBy { it.browseId ?: it.title }
-        } else if (exploreUiState.albumsForYou.isNotEmpty()) {
-            exploreUiState.albumsForYou.map { album ->
-                FeedAlbum(
-                    title = album.title,
-                    artist = album.artists?.firstOrNull()?.name ?: "Album",
-                    artworkUrl = album.thumbnail,
-                    browseId = album.browseId.takeIf { it.isNotBlank() } ?: album.playlistId
-                )
-            }.distinctBy { it.browseId ?: it.title }
         } else {
-            emptyList()
+            exploreUiState.preparedAlbumsForYou
         }
     }
 
     val mixesToDisplay = remember(state.feedData.mixes, quickPicks) {
-        if (state.feedData.mixes.isNotEmpty()) {
+        val list = if (state.feedData.mixes.isNotEmpty()) {
             state.feedData.mixes
         } else {
             quickPicks.take(6).map { song ->
@@ -613,6 +527,7 @@ fun ExploreScreen(
                 )
             }.filter { it.seed.videoId.isNotBlank() }
         }
+        list.distinctBy { it.seed.videoId }
     }
 
     val heavyToDisplay = remember(state.feedData.heavyRotation, quickPicks) {
@@ -631,13 +546,26 @@ fun ExploreScreen(
         } else emptyList()
     }
 
-    val otherHomeSections = remember(currentSections, albumsForYou, newReleases, pureYtMusicOnly) {
-        currentSections.filter { section ->
-            val t = section.title.lowercase()
-            !t.contains("quick pick") &&
-            !(albumsForYou.isNotEmpty() && t.contains("albums for you")) &&
-            !(newReleases.isNotEmpty() && (t.contains("new release") || t.contains("new for you"))) &&
-            !(pureYtMusicOnly && t.contains("video"))
+    val otherHomeSections = remember(
+        currentSections,
+        exploreUiState.preparedOtherHomeSections,
+        exploreUiState.activeMoodChip,
+        albumsForYou.isNotEmpty(),
+        newReleases.isNotEmpty(),
+        pureYtMusicOnly
+    ) {
+        if (exploreUiState.activeMoodChip != null) {
+            currentSections
+        } else if (exploreUiState.preparedOtherHomeSections.isNotEmpty()) {
+            exploreUiState.preparedOtherHomeSections
+        } else {
+            currentSections.filter { section ->
+                val t = section.title.lowercase()
+                !t.contains("quick pick") &&
+                !(albumsForYou.isNotEmpty() && t.contains("albums for you")) &&
+                !(newReleases.isNotEmpty() && (t.contains("new release") || t.contains("new for you"))) &&
+                !(pureYtMusicOnly && t.contains("video"))
+            }
         }
     }
 
@@ -705,14 +633,12 @@ fun ExploreScreen(
                 } else if (isMoodFilter) {
                     currentSections.isNotEmpty()
                 } else {
-                    exploreUiState.isSettled &&
-                    (!isEffectivelyOnline || exploreUiState.moodChips.isNotEmpty()) &&
-                    (hasSections || quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty())
+                    hasSections || quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty()
                 }
             }
 
-            val isOnlineLoading = !isLocalSelected && (exploreUiState.isLoading || !exploreUiState.isSettled)
-            val showExploreLoading = isOnlineLoading || (!hasExploreContent && exploreUiState.error == null)
+            // Show full screen loader ONLY when there is no content to show yet (e.g. cold start)
+            val showExploreLoading = !hasExploreContent && exploreUiState.error == null
 
             Crossfade(
                 targetState = when {
@@ -1202,7 +1128,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        items(recentSongs.distinctBy { it.id }, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
+                                        items(recentSongs, key = { song -> "recent_added_${song.id}" }, contentType = { "track_card" }) { song ->
                                             FeedTrackCard(
                                                 title = song.title,
                                                 subtitle = song.displayArtist,
@@ -1238,7 +1164,7 @@ fun ExploreScreen(
                                         }
                                     )
                                     FeedMediaRow {
-                                        items(mixesToDisplay.distinctBy { it.seed.videoId }, key = { mix -> "mix_${mix.seed.videoId}" }, contentType = { "playlist_card" }) { mix ->
+                                        items(mixesToDisplay, key = { mix -> "mix_${mix.seed.videoId}" }, contentType = { "playlist_card" }) { mix ->
                                             FeedPlaylistCard(
                                                 title = mix.title,
                                                 subtitle = stringResource(R.string.explore_subtitle_artist_radio_station),
@@ -1359,7 +1285,7 @@ fun ExploreScreen(
                                     subtitle = if (isLocal) stringResource(R.string.explore_subtitle_local_albums) else stringResource(R.string.explore_subtitle_verified_records)
                                 )
                                 FeedMediaRow {
-                                    items(albumsForYou.distinctBy { it.browseId ?: it.title }, key = { album -> "album_${album.browseId ?: album.title}" }, contentType = { "album_card" }) { album ->
+                                    items(albumsForYou, key = { album -> "album_${album.browseId ?: album.title}" }, contentType = { "album_card" }) { album ->
                                         FeedPlaylistCard(
                                             title = album.title,
                                             subtitle = album.artist,
@@ -1496,7 +1422,7 @@ fun ExploreScreen(
                                     onActionClick = { navController.navigateSafely(Screen.FeedPlaylistDetail.createRoute("new_releases")) }
                                 )
                                 FeedMediaRow {
-                                    items(newReleases.distinctBy { it.id }, key = { release -> "release_${release.id}" }, contentType = { "playlist_card" }) { release ->
+                                    items(newReleases, key = { release -> "release_${release.id}" }, contentType = { "playlist_card" }) { release ->
                                         FeedPlaylistCard(
                                             title = release.title,
                                             subtitle = release.author ?: "Artist",

@@ -186,21 +186,11 @@ fun HomeScreen(
     val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val accountsUiState by accountsViewModel.uiState.collectAsStateWithLifecycle()
     val exploreUiState by exploreViewModel.uiState.collectAsStateWithLifecycle()
-    val discoverYoutubeSongs = remember(exploreUiState.homePageSections, isEffectivelyOnline) {
+    val discoverYoutubeSongs = remember(exploreUiState.preparedDiscoverSongs, isEffectivelyOnline) {
         if (!isEffectivelyOnline) {
             emptyList()
         } else {
-            exploreUiState.homePageSections
-                .filter { section ->
-                    val title = section.title
-                    title.contains("daily discover", ignoreCase = true) ||
-                    (title.contains("discover", ignoreCase = true) && title.contains("daily", ignoreCase = true))
-                }
-                .flatMap { section ->
-                    section.items.filterIsInstance<unshoo.ianshulyadav.pixelmusic.innertube.models.SongItem>()
-                        .map { songItem -> songItem.toNativeSong() }
-                }
-                .distinctBy { it.id }
+            exploreUiState.preparedDiscoverSongs
         }
     }
     val dailyMixSongsRaw by playerViewModel.dailyMixSongs.collectAsStateWithLifecycle()
