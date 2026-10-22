@@ -673,6 +673,7 @@ fun ExploreScreen(
                 isLocalSelected,
                 isMoodFilter,
                 hasSections,
+                exploreUiState.isSettled,
                 currentSections,
                 quickPicks,
                 albumsForYou,
@@ -691,11 +692,11 @@ fun ExploreScreen(
                 } else if (isMoodFilter) {
                     currentSections.isNotEmpty()
                 } else {
-                    hasSections || (exploreUiState.isSettled && (quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty()))
+                    exploreUiState.isSettled && (hasSections || quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty())
                 }
             }
 
-            val isOnlineColdStarting = !isLocalSelected && !exploreUiState.isSettled && exploreUiState.homePageSections.isEmpty()
+            val isOnlineColdStarting = !isLocalSelected && !exploreUiState.isSettled
             val showExploreLoading = isOnlineColdStarting ||
                 (!hasExploreContent && exploreUiState.error == null) ||
                 (exploreUiState.isLoading && !hasExploreContent) ||

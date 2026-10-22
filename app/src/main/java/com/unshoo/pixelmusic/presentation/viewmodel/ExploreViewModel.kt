@@ -136,11 +136,22 @@ class ExploreViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            val startTime = System.currentTimeMillis()
             withContext(Dispatchers.IO) {
                 restoreFromCache()
             }
-            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
             val hasData = _sectionsState.value.isNotEmpty()
+            if (hasData) {
+                // Ensure pleasant, non-rushed settle delay (~600ms) so background UI settles smoothly
+                val minSettleDuration = 600L
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed < minSettleDuration) {
+                    kotlinx.coroutines.delay(minSettleDuration - elapsed)
+                }
+                _isSettledState.value = true
+                _uiState.update { it.copy(isSettled = true) }
+            }
+            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
             when {
                 // Tier 1: 0–30 min: Fresh -> Use cache, no network request
                 hasData && cacheAge < CACHE_TIER_FRESH_MS -> {
@@ -362,12 +373,11 @@ class ExploreViewModel @Inject constructor(
                         age < CACHE_TIER_FRESH_MS -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = false
-                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    isSettled = true,
+                                    isSettled = false,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
@@ -379,12 +389,11 @@ class ExploreViewModel @Inject constructor(
                         age < CACHE_TIER_STALE_MS -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = false
-                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    isSettled = true,
+                                    isSettled = false,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
@@ -396,12 +405,11 @@ class ExploreViewModel @Inject constructor(
                         else -> {
                             _isLoadingState.value = false
                             _isRefreshingState.value = true
-                            _isSettledState.value = true
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isRefreshing = true,
-                                    isSettled = true,
+                                    isSettled = false,
                                     homePageSections = cache.sections,
                                     moodChips = cache.moodChips,
                                     newReleaseAlbums = cache.newReleaseAlbums,
