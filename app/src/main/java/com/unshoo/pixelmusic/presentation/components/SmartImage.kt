@@ -143,14 +143,18 @@ fun SmartImage(
     // Handle direct models (Bitmap, Vector, etc) early to avoid ImageRequest overhead
     if (model == null || model is ImageVector || model is Painter || model is ImageBitmap || model is Bitmap) {
         if (model == null) {
-            Placeholder(
-                modifier = clippedModifier,
-                drawableResId = placeholderResId,
-                contentDescription = contentDescription,
-                containerColor = placeHolderBackgroundColor,
-                iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                alpha = alpha
-            )
+            if (placeholderResId != 0) {
+                Placeholder(
+                    modifier = clippedModifier,
+                    drawableResId = placeholderResId,
+                    contentDescription = contentDescription,
+                    containerColor = placeHolderBackgroundColor,
+                    iconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    alpha = alpha
+                )
+            } else {
+                Box(modifier = clippedModifier.background(placeHolderBackgroundColor))
+            }
         } else {
             handleDirectModel(
                 data = model,
@@ -271,8 +275,8 @@ fun SmartImage(
         contentScale = contentScale,
         colorFilter = colorFilter,
         alpha = alpha,
-        placeholder = painterResource(placeholderResId),
-        error = painterResource(errorResId),
+        placeholder = if (placeholderResId != 0) painterResource(placeholderResId) else null,
+        error = if (errorResId != 0) painterResource(errorResId) else null,
         onLoading = { state -> onState?.invoke(state) },
         onSuccess = { state -> onState?.invoke(state) },
         onError = { state -> onState?.invoke(state) }

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### ⚡ Fixes & Improvements
+- **High Refresh Rate Stutter:** Fixed the "High refresh rate" toggle causing shutters/stutter instead of smooth 90/120 Hz animations. The window now pins the concrete same-resolution `preferredDisplayModeId` (the rate-only hint was ignored or repeatedly renegotiated by several OEM display stacks), display-mode switches are dwell-limited (8 s, with battery-saver/severe-thermal safety bypasses) and thermal callbacks are coalesced so the panel no longer reconfigures mid-animation, NaN thermal-headroom readings no longer wedge the rate at 90 Hz, and the preference/policy are no longer reset on every transient `onStop`. Also quantized/cached the full-screen player-expansion blur effect (previously recreated every frame) and decode the heavily blurred player backdrop artwork at 256 px instead of 512 px, so animation frames fit the 8.3 ms budget at 120 Hz.
+- **Explore Feed Calm Image Queue & Zero Local Leaks:** Pipelined image loading to a disciplined queue (`maxRequests = 4, maxRequestsPerHost = 2` on network and 2 concurrent decodes in Coil) with zero-flash empty surface blocks so card metadata renders instantly without burst requests. Extended the exploration loading indicator so mood chips and home sections are collected calmly without category jumps or in-between shifts. Strictly isolated online feeds from local device tracks and albums, displaying local content only when completely offline or in explicit local mode.
+
 ## [1.7.10] - 2026-10-05
 
 ### ✨ What's New

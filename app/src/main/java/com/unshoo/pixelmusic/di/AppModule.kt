@@ -263,8 +263,16 @@ object AppModule {
         @ApplicationContext context: Context,
         okHttpClient: OkHttpClient
     ): ImageLoader {
-        // Reuse shared OkHttpClient with shared connection pool and DNS
+        // CALM & CONTROLLED IMAGE PIPELINE QUEUE:
+        // - maxRequests = 4, maxRequestsPerHost = 2: keeps network requests in a calm queue without bandwidth contention.
+        // - Dispatchers.IO.limitedParallelism(2): decodes images 2 at a time without thrashing CPU or GPU decoders.
+        // - crossfade(200): Smooth image reveal without visual stutter.
+        val imageDispatcher = okhttp3.Dispatcher().apply {
+            maxRequests = 4
+            maxRequestsPerHost = 2
+        }
         val imageOkHttpClient = okHttpClient.newBuilder()
+            .dispatcher(imageDispatcher)
             .addInterceptor { chain ->
                 val request = chain.request()
                 val url = request.url.toString()
@@ -285,16 +293,11 @@ object AppModule {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as? android.app.ActivityManager
         val isLowRamDevice = activityManager?.isLowRamDevice == true
 
-        // CALM & OPTIMAL IMAGE PIPELINE:
-        // - crossfade(200): Smooth image reveal without visual stutter.
-        // - Dispatchers.IO.limitedParallelism(4): Balanced throughput for fast shelf loads without main thread contention.
-        // - Hardware bitmaps on API 26+ keep bitmap pixels in GPU graphics memory (zero Java heap pressure).
-        // - RGB_565 on low RAM devices cuts memory bandwidth in half.
         val cachePercent = if (isLowRamDevice) 0.08 else 0.15
 
         return ImageLoader.Builder(context)
             .okHttpClient(imageOkHttpClient)
-            .dispatcher(Dispatchers.IO.limitedParallelism(4))
+            .dispatcher(Dispatchers.IO.limitedParallelism(2))
             .allowHardware(!isLowRamDevice)
             .allowRgb565(isLowRamDevice)
             .crossfade(200)

@@ -166,6 +166,45 @@ private data class DismissUndoBarSlice(
     val durationMillis: Long = 4000L
 )
 
+/**
+ * Cache for the player-expansion backdrop blur [android.graphics.RenderEffect].
+ *
+ * Creating a blur effect is not free, and assigning a *new* effect instance to
+ * a graphics layer forces the whole (full-screen) layer to be re-rendered
+ * through the blur pipeline. Doing that on every frame of the player
+ * expansion animation — as the previous code did — halves the effective
+ * frame budget and is a prime cause of shutter/stutter at 90/120 Hz, where
+ * a frame is only ~8.3 ms. Quantizing the radius to coarse steps and reusing
+ * the effect instance between steps keeps the visual ramp (steps of 4 px on
+ * a 0–24 dp ramp are imperceptible) while letting most frames reuse the
+ * already-blurred layer.
+ */
+@androidx.annotation.RequiresApi(Build.VERSION_CODES.S)
+private class QuantizedBlurEffectCache {
+    var radiusPx: Float = -1f
+    var effect: androidx.compose.ui.graphics.RenderEffect? = null
+
+    fun effectFor(radiusPx: Float): androidx.compose.ui.graphics.RenderEffect? {
+        // Quantize to 4 px steps: radius changes smaller than this are
+        // visually indistinguishable on a backdrop blur.
+        val quantized = ((radiusPx + 2f) / 4f).toInt() * 4f
+        if (quantized <= 1f) {
+            this.radiusPx = -1f
+            this.effect = null
+            return null
+        }
+        if (quantized != this.radiusPx || effect == null) {
+            this.radiusPx = quantized
+            this.effect = android.graphics.RenderEffect.createBlurEffect(
+                quantized,
+                quantized,
+                android.graphics.Shader.TileMode.CLAMP
+            ).asComposeRenderEffect()
+        }
+        return effect
+    }
+}
+
 @UnstableApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -1122,20 +1161,29 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
+                        // Reused across frames: see QuantizedBlurEffectCache.
+                        // A fresh blur RenderEffect per frame re-blurs the
+                        // entire navigation layer every frame and misses
+                        // the 8.3 ms budget at 120 Hz.
+                        val expansionBlurCache = remember {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                QuantizedBlurEffectCache()
+                            } else null
+                        }
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .graphicsLayer {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isPlayerExpansionBlurActive) {
+                                    renderEffect = if (
+                                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                                        isPlayerExpansionBlurActive
+                                    ) {
                                         val frac = playerViewModel.playerContentExpansionFraction.value
                                         val radiusPx = (frac * 24.dp.toPx()).coerceAtLeast(0f)
-                                        renderEffect = if (radiusPx > 1f) {
-                                            android.graphics.RenderEffect.createBlurEffect(
-                                                radiusPx,
-                                                radiusPx,
-                                                android.graphics.Shader.TileMode.CLAMP
-                                            ).asComposeRenderEffect()
-                                        } else null
+                                        expansionBlurCache?.effectFor(radiusPx)
+                                    } else {
+                                        expansionBlurCache?.effectFor(0f)
+                                        null
                                     }
                                 }
                         ) {

@@ -720,6 +720,8 @@ private fun CarouselItemScope.CenteredHeroCard(
                 model = artUri,
                 contentDescription = song.title,
                 contentScale = ContentScale.Crop,
+                placeholderResId = 0,
+                errorResId = 0,
                 modifier = Modifier.fillMaxSize()
             )
 
@@ -969,6 +971,8 @@ private fun QuickPickPill(
                 contentScale = ContentScale.Crop,
                 shape = CircleShape,
                 targetSize = SmartImageCompactListTargetSize,
+                placeholderResId = 0,
+                errorResId = 0,
                 crossfadeDurationMillis = 200,
                 modifier = Modifier.size(QuickPicksPillArtSize)
             )
@@ -1083,6 +1087,8 @@ private fun QuickPickClassicCard(
                     model = song.albumArtUriString,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    placeholderResId = 0,
+                    errorResId = 0,
                     modifier = Modifier.fillMaxSize()
                 )
                 

@@ -93,6 +93,12 @@ fun FullPlayerAtmosphereBackground(
     ) {
 
         // 2. REAL VIBRANT GAUSSIAN BLURRED ALBUM ARTWORK LAYER WITH LIQUID CROSSFADE
+        // Perf (high refresh rate): the artwork below is blurred by 52-60dp,
+        // which destroys all fine detail, so it is decoded at 256px instead of
+        // 512px. That is ~4x fewer pixels for the GPU to scale/blur on every
+        // frame of the sheet expansion animation — invisible visually, but
+        // the difference between hitting and missing the 8.3ms frame budget
+        // at 120Hz. The sharp (unblurred) artwork elsewhere is unaffected.
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -119,7 +125,7 @@ fun FullPlayerAtmosphereBackground(
                 AsyncImage(
                     model = ImageRequest.Builder(context)
                         .data(previousArtUri)
-                        .size(512, 512)
+                        .size(256, 256)
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
@@ -132,7 +138,7 @@ fun FullPlayerAtmosphereBackground(
                 AsyncImage(
                     model = ImageRequest.Builder(context)
                         .data(displayedArtUri)
-                        .size(512, 512)
+                        .size(256, 256)
                         .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,

@@ -280,17 +280,17 @@ fun ExploreScreen(
     }
     val categories by quickPicksViewModel.categories.collectAsStateWithLifecycle()
     val baselineCategories = remember {
-        listOf("All", "Local", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize")
+        listOf("All", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize")
     }
-    val effectiveCategories = remember(categories, exploreUiState.moodChips, isLocalMode) {
-        if (isLocalMode) {
+    val effectiveCategories = remember(categories, exploreUiState.moodChips, isLocalMode, isEffectivelyOnline) {
+        if (isLocalMode || !isEffectivelyOnline) {
             listOf("Local")
         } else {
             val dynamicTitles = exploreUiState.moodChips.map { it.title }
             if (dynamicTitles.isNotEmpty()) {
-                (listOf("All", "Local") + dynamicTitles).distinctBy { it.lowercase().trim() }
+                (listOf("All") + dynamicTitles).distinctBy { it.lowercase().trim() }
             } else {
-                (baselineCategories + categories).distinctBy { it.lowercase().trim() }
+                listOf("All")
             }
         }
     }
@@ -381,51 +381,57 @@ fun ExploreScreen(
 
     val isAdvancedExplore = exploreUiState.isAdvancedExploreEnabled
 
-    // Artists for you: Remote topArtists -> Local most played topArtists -> Local library artists -> YT home sections -> Quick Picks artists
+    // Artists for you: Remote topArtists / YT home sections / Quick Picks when online -> Local topArtists / library artists strictly when offline
     val artistsForYou = remember(
         state.feedData.topArtists,
         exploreUiState.localTopArtists,
         localArtists,
-        isOnline,
+        isEffectivelyOnline,
         exploreUiState.homePageSections,
         quickPicks
     ) {
-        if (state.feedData.topArtists.isNotEmpty()) {
-            state.feedData.topArtists
-        } else if (exploreUiState.localTopArtists.isNotEmpty()) {
-            exploreUiState.localTopArtists
-        } else if (localArtists.isNotEmpty()) {
-            localArtists.sortedByDescending { it.songCount }.take(10).map { artist ->
-                FeedArtist(
-                    name = artist.name,
-                    browseId = null,
-                    artworkUrl = artist.customImageUri ?: artist.imageUrl
-                )
+        if (isEffectivelyOnline) {
+            if (state.feedData.topArtists.isNotEmpty()) {
+                state.feedData.topArtists
+            } else {
+                val fromHome = exploreUiState.homePageSections.flatMap { it.items }
+                    .flatMap { item ->
+                        when (item) {
+                            is ArtistItem -> listOf(FeedArtist(item.title, item.id, item.thumbnail))
+                            is SongItem -> item.artists.map { FeedArtist(it.name, it.id, item.thumbnail) }
+                            is AlbumItem -> item.artists.orEmpty().map { FeedArtist(it.name, it.id, item.thumbnail) }
+                            else -> emptyList()
+                        }
+                    }
+                    .filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
+                    .distinctBy { it.name.trim().lowercase() }
+                if (fromHome.isNotEmpty()) {
+                    fromHome.take(10)
+                } else {
+                    quickPicks.map { song ->
+                        FeedArtist(
+                            name = song.artist,
+                            browseId = null,
+                            artworkUrl = song.albumArtUriString
+                        )
+                    }.filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
+                    .distinctBy { it.name.lowercase() }
+                    .take(10)
+                }
             }
         } else {
-            val fromHome = exploreUiState.homePageSections.flatMap { it.items }
-                .flatMap { item ->
-                    when (item) {
-                        is ArtistItem -> listOf(FeedArtist(item.title, item.id, item.thumbnail))
-                        is SongItem -> item.artists.map { FeedArtist(it.name, it.id, item.thumbnail) }
-                        is AlbumItem -> item.artists.orEmpty().map { FeedArtist(it.name, it.id, item.thumbnail) }
-                        else -> emptyList()
-                    }
-                }
-                .filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
-                .distinctBy { it.name.trim().lowercase() }
-            if (fromHome.isNotEmpty()) {
-                fromHome.take(10)
-            } else {
-                quickPicks.map { song ->
+            if (exploreUiState.localTopArtists.isNotEmpty()) {
+                exploreUiState.localTopArtists
+            } else if (localArtists.isNotEmpty()) {
+                localArtists.sortedByDescending { it.songCount }.take(10).map { artist ->
                     FeedArtist(
-                        name = song.artist,
+                        name = artist.name,
                         browseId = null,
-                        artworkUrl = song.albumArtUriString
+                        artworkUrl = artist.customImageUri ?: artist.imageUrl
                     )
-                }.filter { it.name.isNotBlank() && !it.name.equals("Unknown artist", ignoreCase = true) }
-                .distinctBy { it.name.lowercase() }
-                .take(10)
+                }
+            } else {
+                emptyList()
             }
         }
     }
@@ -493,32 +499,40 @@ fun ExploreScreen(
         chartTracks.mapNotNull { it.videoId.takeIf(String::isNotBlank) }.toSet()
     }
 
-    val recentlyAddedToDisplay = remember(exploreUiState.localRecentlyAddedSongs, pureYtMusicOnly, filterKeywords, chartVideoIds) {
-        exploreUiState.localRecentlyAddedSongs.filter { song ->
-            val ytId = song.youtubeId ?: song.id.removePrefix("youtube_")
-            ytId !in chartVideoIds &&
-            (!pureYtMusicOnly || !ContentFilterUtils.isVideoSong(song)) &&
-            !ContentFilterUtils.matchesFilterKeywords(song, filterKeywords)
+    val recentlyAddedToDisplay = remember(exploreUiState.localRecentlyAddedSongs, pureYtMusicOnly, filterKeywords, chartVideoIds, isEffectivelyOnline) {
+        if (isEffectivelyOnline) {
+            emptyList()
+        } else {
+            exploreUiState.localRecentlyAddedSongs.filter { song ->
+                val ytId = song.youtubeId ?: song.id.removePrefix("youtube_")
+                ytId !in chartVideoIds &&
+                (!pureYtMusicOnly || !ContentFilterUtils.isVideoSong(song)) &&
+                !ContentFilterUtils.matchesFilterKeywords(song, filterKeywords)
+            }
         }
     }
 
-    // Jump back in: Remote jumpBackIn -> Local highly rotatory history -> Local recently added
-    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, recentlyAddedToDisplay, pureYtMusicOnly, chartVideoIds) {
-        val tracks = if (state.feedData.jumpBackIn.isNotEmpty()) {
-            state.feedData.jumpBackIn.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
-        } else if (exploreUiState.localHighlyRotatoryTracks.isNotEmpty()) {
-            exploreUiState.localHighlyRotatoryTracks.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
-        } else if (recentlyAddedToDisplay.isNotEmpty()) {
-            recentlyAddedToDisplay.take(15).map { song ->
-                RecentTrack(
-                    name = song.title,
-                    artist = RecentTrackArtistRef(name = song.displayArtist),
-                    album = RecentTrackArtistRef(name = song.album),
-                    image = song.albumArtUriString?.let { listOf(com.unshoo.pixelmusic.data.feed.ImageDto(it, "extralarge")) }.orEmpty(),
-                    url = song.id
-                )
-            }
-        } else emptyList()
+    // Jump back in: Remote jumpBackIn when online -> Local rotatory history strictly when offline
+    val jumpBackInTracks = remember(state.feedData.jumpBackIn, exploreUiState.localHighlyRotatoryTracks, recentlyAddedToDisplay, pureYtMusicOnly, chartVideoIds, isEffectivelyOnline) {
+        val tracks = if (isEffectivelyOnline) {
+            if (state.feedData.jumpBackIn.isNotEmpty()) {
+                state.feedData.jumpBackIn.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
+            } else emptyList()
+        } else {
+            if (exploreUiState.localHighlyRotatoryTracks.isNotEmpty()) {
+                exploreUiState.localHighlyRotatoryTracks.filter { it.url !in chartVideoIds && it.name !in chartVideoIds }
+            } else if (recentlyAddedToDisplay.isNotEmpty()) {
+                recentlyAddedToDisplay.take(15).map { song ->
+                    RecentTrack(
+                        name = song.title,
+                        artist = RecentTrackArtistRef(name = song.displayArtist),
+                        album = RecentTrackArtistRef(name = song.album),
+                        image = song.albumArtUriString?.let { listOf(com.unshoo.pixelmusic.data.feed.ImageDto(it, "extralarge")) }.orEmpty(),
+                        url = song.id
+                    )
+                }
+            } else emptyList()
+        }
         if (pureYtMusicOnly) {
             tracks.filterNot { ContentFilterUtils.isVideoTitle(it.name) }
         } else {
@@ -555,8 +569,8 @@ fun ExploreScreen(
         rawList.filter { it.id !in blockedReleaseIds }
     }
 
-    val albumsForYou = remember(exploreUiState.albumsForYou, localAlbums, isLocalMode) {
-        if (isLocalMode) {
+    val albumsForYou = remember(exploreUiState.albumsForYou, localAlbums, isLocalMode, isEffectivelyOnline) {
+        if (isLocalMode || !isEffectivelyOnline) {
             localAlbums.take(20).map { local ->
                 FeedAlbum(
                     title = local.title,
@@ -575,14 +589,7 @@ fun ExploreScreen(
                 )
             }.distinctBy { it.browseId ?: it.title }
         } else {
-            localAlbums.take(20).map { local ->
-                FeedAlbum(
-                    title = local.title,
-                    artist = local.artist,
-                    artworkUrl = local.albumArtUriString,
-                    browseId = local.id.toString()
-                )
-            }.distinctBy { it.browseId ?: it.title }
+            emptyList()
         }
     }
 
@@ -674,6 +681,7 @@ fun ExploreScreen(
                 isMoodFilter,
                 hasSections,
                 exploreUiState.isSettled,
+                exploreUiState.moodChips,
                 currentSections,
                 quickPicks,
                 albumsForYou,
@@ -681,7 +689,8 @@ fun ExploreScreen(
                 recentlyAddedToDisplay,
                 exploreUiState.libraryPlaylists,
                 newReleases,
-                heavyToDisplay
+                heavyToDisplay,
+                isEffectivelyOnline
             ) {
                 if (isLocalSelected) {
                     quickPicks.isNotEmpty() ||
@@ -692,11 +701,13 @@ fun ExploreScreen(
                 } else if (isMoodFilter) {
                     currentSections.isNotEmpty()
                 } else {
-                    exploreUiState.isSettled && (hasSections || quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty())
+                    exploreUiState.isSettled &&
+                    (!isEffectivelyOnline || exploreUiState.moodChips.isNotEmpty()) &&
+                    (hasSections || quickPicks.isNotEmpty() || newReleases.isNotEmpty() || albumsForYou.isNotEmpty())
                 }
             }
 
-            val isOnlineColdStarting = !isLocalSelected && !exploreUiState.isSettled
+            val isOnlineColdStarting = !isLocalSelected && (!exploreUiState.isSettled || (isEffectivelyOnline && exploreUiState.moodChips.isEmpty()))
             val showExploreLoading = isOnlineColdStarting ||
                 (!hasExploreContent && exploreUiState.error == null) ||
                 (exploreUiState.isLoading && !hasExploreContent) ||
@@ -1371,9 +1382,9 @@ fun ExploreScreen(
                             }
                         }
 
-                        // Your Library Section
+                        // Your Library Section (strictly offline / no network)
                         val libraryPlaylists = exploreUiState.libraryPlaylists
-                        if (libraryPlaylists.isNotEmpty()) {
+                        if (libraryPlaylists.isNotEmpty() && !isEffectivelyOnline) {
                             item(key = "feed_your_library", contentType = "section") {
                                 FeedSectionHeader(
                                     title = stringResource(R.string.explore_section_your_library),
@@ -2269,6 +2280,8 @@ private fun FeedTrackCard(
                         contentScale = ContentScale.Crop,
                         shape = cardShape,
                         targetSize = SmartImageCardTargetSize,
+                        placeholderResId = 0,
+                        errorResId = 0,
                         modifier = Modifier.fillMaxSize()
                     )
 
@@ -2412,6 +2425,8 @@ private fun FeedPlaylistCard(
                             contentScale = ContentScale.Crop,
                             shape = cardShape,
                             targetSize = SmartImageCardTargetSize,
+                            placeholderResId = 0,
+                            errorResId = 0,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
@@ -2549,6 +2564,8 @@ private fun ShelfArtistCard(
                         contentScale = ContentScale.Crop,
                         shape = CircleShape,
                         targetSize = SmartImageListTargetSize,
+                        placeholderResId = 0,
+                        errorResId = 0,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -2672,6 +2689,8 @@ private fun RecentTrackCard(
                             contentScale = ContentScale.Crop,
                             shape = ShapeCache.smooth16,
                             targetSize = SmartImageCardTargetSize,
+                            placeholderResId = 0,
+                            errorResId = 0,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
@@ -2825,6 +2844,8 @@ private fun ChartTrackCard(
                             contentScale = ContentScale.Crop,
                             shape = ShapeCache.smooth12,
                             targetSize = SmartImageListTargetSize,
+                            placeholderResId = 0,
+                            errorResId = 0,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -2902,6 +2923,8 @@ private fun SpotlightHeroCard(
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     targetSize = SmartImageLargeCardTargetSize,
+                    placeholderResId = 0,
+                    errorResId = 0,
                     modifier = Modifier
                         .matchParentSize()
                         .graphicsLayer {
@@ -3075,6 +3098,8 @@ private fun ArtistAvatarCard(
                         contentScale = ContentScale.Crop,
                         shape = CircleShape,
                         targetSize = SmartImageListTargetSize,
+                        placeholderResId = 0,
+                        errorResId = 0,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -3728,6 +3753,8 @@ private fun LibraryCarouselCard(
                         model = thumbnail,
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
+                        placeholderResId = 0,
+                        errorResId = 0,
                         contentScale = ContentScale.Crop
                     )
                 } else {
