@@ -6,6 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafely
 import com.unshoo.pixelmusic.presentation.navigation.navigateSafelyReplacing
 import com.unshoo.pixelmusic.presentation.navigation.navigateToTopLevelSafely
+import com.unshoo.pixelmusic.presentation.navigation.enterTransition
+import com.unshoo.pixelmusic.presentation.navigation.exitTransition
+import com.unshoo.pixelmusic.presentation.navigation.popEnterTransition
+import com.unshoo.pixelmusic.presentation.navigation.popExitTransition
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -388,12 +392,24 @@ fun SearchScreen(
                     label = "search_query_mode_transition"
                 ) { isSearchActive ->
                     if (!isSearchActive) {
-                        if (isBrowsingAllMoodsAndGenres) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(top = statusBarTopInset)
-                            ) {
+                        AnimatedContent(
+                            targetState = isBrowsingAllMoodsAndGenres,
+                            transitionSpec = {
+                                if (targetState) {
+                                    enterTransition() togetherWith exitTransition()
+                                } else {
+                                    popEnterTransition() togetherWith popExitTransition()
+                                }
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                            label = "moods_and_genres_browse_transition"
+                        ) { browsingMoods ->
+                            if (browsingMoods) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(top = statusBarTopInset)
+                                ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -510,6 +526,7 @@ fun SearchScreen(
                                 }
                             }
                         }
+                    }
                     } else {
                         Column(
                             modifier = Modifier
@@ -807,22 +824,8 @@ fun SearchScreen(
         val displayedMoodGenre = selectedMoodGenre ?: lastSelectedMoodGenre
         androidx.compose.animation.AnimatedVisibility(
             visible = selectedMoodGenre != null,
-            enter = fadeIn(
-                animationSpec = tween(durationMillis = 260, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-            ) + slideInVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ) { it / 6 },
-            exit = fadeOut(
-                animationSpec = tween(durationMillis = 200, easing = androidx.compose.animation.core.LinearOutSlowInEasing)
-            ) + slideOutVertically(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessMediumLow
-                )
-            ) { it / 5 },
+            enter = enterTransition(),
+            exit = popExitTransition(),
             modifier = Modifier.fillMaxSize()
         ) {
             if (displayedMoodGenre != null) {

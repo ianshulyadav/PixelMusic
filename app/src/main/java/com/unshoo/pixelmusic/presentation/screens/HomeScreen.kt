@@ -371,7 +371,7 @@ fun HomeScreen(
     var isManualRefreshing by remember { mutableStateOf(false) }
     val isQuickPicksLoading by quickPicksViewModel.isLoading.collectAsStateWithLifecycle()
     val isDailyMixUpdating by playerViewModel.isDailyMixUpdating.collectAsStateWithLifecycle()
-    val isRefreshing = isManualRefreshing || isQuickPicksLoading || isDailyMixUpdating
+    val isRefreshing = isManualRefreshing
 
     val listState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
     val density = LocalDensity.current

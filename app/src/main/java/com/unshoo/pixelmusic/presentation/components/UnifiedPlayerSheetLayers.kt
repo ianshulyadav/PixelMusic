@@ -74,34 +74,24 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
             CompositionLocalProvider(
                 LocalMaterialTheme provides readyScheme
             ) {
-                val miniPlayerZIndex by remember {
-                    derivedStateOf {
-                        if (playerContentExpansionFraction.value < 0.5f) 1f else 0f
-                    }
-                }
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
+                        .fillMaxWidth()
+                        .height(MiniPlayerHeight)
                         .graphicsLayer {
                             val exp = playerContentExpansionFraction.value
-                            // Cubic ease-out: clear the mini player faster and more expressively.
-                            // At exp=0.3 alpha=0, so mini is already gone before full player arrives.
                             val rawAlpha = (1f - exp * 3.5f).coerceIn(0f, 1f)
-                            alpha = rawAlpha * rawAlpha // squared = cubic-ish curve
+                            alpha = rawAlpha * rawAlpha
                             val s = lerp(1f, 0.85f, exp)
                             scaleX = s
                             scaleY = s
                         }
-                        .zIndex(miniPlayerZIndex)
+                        .zIndex(if (playerContentExpansionFraction.value < 0.5f) 1f else 0f)
                 ) {
-                    val miniAlbumCornerRadius by remember(overallSheetTopCornerRadiusProvider) {
-                        derivedStateOf {
-                            (overallSheetTopCornerRadiusProvider().value * 0.5f).dp
-                        }
-                    }
                     MiniPlayerContentInternal(
                         song = currentSongNonNull,
-                        cornerRadiusAlb = miniAlbumCornerRadius,
+                        cornerRadiusAlb = 10.dp,
                         isPlaying = infrequentPlayerState.isPlaying,
                         isCastConnecting = isCastConnecting,
                         isPreparingPlayback = isPreparingPlayback,
@@ -124,22 +114,6 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                     derivedStateOf { lerp(1f, 0.972f, bottomSheetOpenFraction) }
                 }
 
-                val fullPlayerZIndex by remember {
-                    derivedStateOf {
-                        if (playerContentExpansionFraction.value >= 0.5f) 1f else 0f
-                    }
-                }
-                val fullPlayerOffset by remember {
-                    derivedStateOf {
-                        // Threshold raised from 0.01f → 0.05f so the full player is
-                        // reliably off-screen during collapse. The 0.01f value was too
-                        // close to zero — spring undershoot could momentarily tick above
-                        // it, leaving the full-player painted (even at near-zero alpha)
-                        // and exposing the window background as a white flash.
-                        if (playerContentExpansionFraction.value <= 0.05f) IntOffset(0, 10000)
-                        else IntOffset.Zero
-                    }
-                }
                 val fullPlayerRuntimePolicy = rememberFullPlayerRuntimePolicy(
                     currentSheetState = currentSheetContentState,
                     expansionFraction = playerContentExpansionFraction,
@@ -165,8 +139,11 @@ internal fun BoxScope.UnifiedPlayerMiniAndFullLayers(
                             scaleX = cs
                             scaleY = cs
                         }
-                        .zIndex(fullPlayerZIndex)
-                        .offset { fullPlayerOffset }
+                        .zIndex(if (playerContentExpansionFraction.value >= 0.5f) 1f else 0f)
+                        .offset {
+                            if (playerContentExpansionFraction.value <= 0.05f) IntOffset(0, 10000)
+                            else IntOffset.Zero
+                        }
                 ) {
                     val latestInfrequentPlayerState = rememberUpdatedState(infrequentPlayerState)
                     val latestIsFavorite = rememberUpdatedState(isFavorite)

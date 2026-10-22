@@ -412,7 +412,7 @@ class MainActivity : ComponentActivity() {
                                 })
                             } else {
                                 val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
-                                var isFreshStartLoading by rememberSaveable { mutableStateOf(true) }
+                                var isFreshStartLoading by rememberSaveable { mutableStateOf(!isInitialFetchFinished) }
 
                                 LaunchedEffect(isInitialFetchFinished) {
                                     if (isInitialFetchFinished) {
@@ -421,6 +421,10 @@ class MainActivity : ComponentActivity() {
                                         com.unshoo.pixelmusic.utils.perf.PerfTracker.markHomeClickable()
                                         com.unshoo.pixelmusic.utils.perf.PerfTracker.markStartupNetworkSettled()
                                     }
+                                }
+                                LaunchedEffect(Unit) {
+                                    delay(2500L)
+                                    isFreshStartLoading = false
                                 }
 
                                 Box(modifier = Modifier.fillMaxSize()) {

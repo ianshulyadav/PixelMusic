@@ -90,22 +90,38 @@ class QuickPicksViewModel @Inject constructor(
     private var lastFetchAttemptMs = 0L
 
     init {
+        // Step 1: Instant cache hydration — immediately show cached/offline songs on frame 1
         viewModelScope.launch(Dispatchers.IO) {
-            AppReadinessSignal.awaitReady()
-            val isOnline = isNetworkAvailable()
-            if (!isOnline) {
-                loadFromCache()
-                if (_quickPicks.value.isEmpty()) {
-                    val offline = loadOfflineQuickPicks()
-                    if (offline.isNotEmpty()) {
-                        _quickPicks.value = offline.toImmutableList()
-                    }
+            loadFromCache()
+            if (_quickPicks.value.isEmpty()) {
+                val offline = loadOfflineQuickPicks()
+                if (offline.isNotEmpty()) {
+                    _quickPicks.value = offline.toImmutableList()
                 }
+            }
+            if (_quickPicks.value.isNotEmpty()) {
                 _isLoading.value = false
                 _isSettled.value = true
-            } else {
+                AppReadinessSignal.markInitialFetchFinished()
+            }
+
+            // Step 2: Background refresh — after first frame readiness, quietly refresh if stale
+            AppReadinessSignal.awaitReady()
+            val isOnline = isNetworkAvailable()
+            if (isOnline) {
                 delay(INITIAL_NETWORK_WARMUP_DELAY_MS)
-                loadQuickPicks(_selectedCategory.value, forceRefresh = isCacheExpired())
+                val expired = isCacheExpired()
+                if (expired || _quickPicks.value.isEmpty()) {
+                    loadQuickPicks(_selectedCategory.value, forceRefresh = expired)
+                } else {
+                    _isLoading.value = false
+                    _isSettled.value = true
+                    AppReadinessSignal.markInitialFetchFinished()
+                }
+            } else {
+                _isLoading.value = false
+                _isSettled.value = true
+                AppReadinessSignal.markInitialFetchFinished()
             }
         }
         // State/Preferences flows replay their current value on collection. Do not cancel
@@ -130,7 +146,7 @@ class QuickPicksViewModel @Inject constructor(
 
     fun refresh(force: Boolean = false): Job {
         // Preserve current recommendations until the fresh list is ready.
-        return loadQuickPicks(_selectedCategory.value, forceRefresh = true)
+        return loadQuickPicks(_selectedCategory.value, forceRefresh = true, isManualRefresh = true)
     }
 
     /**
@@ -288,7 +304,7 @@ class QuickPicksViewModel @Inject constructor(
     // Main load entry point
     // ─────────────────────────────────────────────────────────────────────────
 
-    private fun loadQuickPicks(category: String, forceRefresh: Boolean = false): Job {
+    private fun loadQuickPicks(category: String, forceRefresh: Boolean = false, isManualRefresh: Boolean = false): Job {
         lastFetchAttemptMs = SystemClock.elapsedRealtime()
         quickPicksLoadJob?.cancel()
         val job = viewModelScope.launch(Dispatchers.IO) {
@@ -299,7 +315,7 @@ class QuickPicksViewModel @Inject constructor(
                 _isSettled.value = true
                 return@launch
             }
-            if (forceRefresh || _quickPicks.value.isEmpty()) {
+            if (isManualRefresh || _quickPicks.value.isEmpty()) {
                 _isLoading.value = true
             }
             try {

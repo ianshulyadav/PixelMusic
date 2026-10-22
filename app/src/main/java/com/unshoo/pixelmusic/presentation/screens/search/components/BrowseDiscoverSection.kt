@@ -66,7 +66,7 @@ fun BrowseDiscoverCard(
 
     Surface(
         modifier = modifier
-            .height(112.dp)
+            .height(126.dp)
             .bounceClick(scaleDown = 0.96f) { onClick() },
         shape = cardShape,
         color = Color.Transparent,
@@ -76,7 +76,7 @@ fun BrowseDiscoverCard(
             modifier = Modifier
                 .fillMaxSize()
                 .background(brush = Brush.verticalGradient(cardBgGradient))
-                .padding(horizontal = 14.dp, vertical = 12.dp)
+                .padding(horizontal = 14.dp, vertical = 11.dp)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -100,13 +100,14 @@ fun BrowseDiscoverCard(
 
                 // Bottom Titles
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     Text(
                         text = title,
                         fontFamily = GoogleSansRounded,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.5.sp,
+                        lineHeight = 19.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -116,6 +117,7 @@ fun BrowseDiscoverCard(
                         fontFamily = GoogleSansRounded,
                         fontWeight = FontWeight.Normal,
                         fontSize = 12.sp,
+                        lineHeight = 16.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis

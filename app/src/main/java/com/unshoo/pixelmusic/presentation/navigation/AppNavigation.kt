@@ -175,10 +175,34 @@ fun AppNavigation(
             }
             composable(
                 Screen.Search.route,
-                enterTransition = { EnterTransition.None },
-                exitTransition = { ExitTransition.None },
-                popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None },
+                enterTransition = {
+                    mainRootEnterTransition(
+                        fromRoute = initialState.destination.route,
+                        toRoute = targetState.destination.route,
+                        fallback = enterTransition()
+                    )
+                },
+                exitTransition = {
+                    mainRootExitTransition(
+                        fromRoute = initialState.destination.route,
+                        toRoute = targetState.destination.route,
+                        fallback = exitTransition()
+                    )
+                },
+                popEnterTransition = {
+                    mainRootEnterTransition(
+                        fromRoute = initialState.destination.route,
+                        toRoute = targetState.destination.route,
+                        fallback = popEnterTransition()
+                    )
+                },
+                popExitTransition = {
+                    mainRootExitTransition(
+                        fromRoute = initialState.destination.route,
+                        toRoute = targetState.destination.route,
+                        fallback = popExitTransition()
+                    )
+                },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     SearchScreen(
@@ -229,7 +253,7 @@ fun AppNavigation(
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
                 popEnterTransition = { popEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     SettingsScreen(
@@ -245,8 +269,8 @@ fun AppNavigation(
                 Screen.Accounts.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     AccountsScreen(
@@ -265,8 +289,8 @@ fun AppNavigation(
                 arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) { backStackEntry ->
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     val categoryId = backStackEntry.arguments?.getString("categoryId")
@@ -286,8 +310,8 @@ fun AppNavigation(
                 Screen.PaletteStyle.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     PaletteStyleSettingsScreen(
@@ -300,8 +324,8 @@ fun AppNavigation(
                 Screen.BlurSettings.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     BlurSettingsScreen(
@@ -314,8 +338,8 @@ fun AppNavigation(
                 Screen.Experimental.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     ExperimentalSettingsScreen(
@@ -559,8 +583,8 @@ fun AppNavigation(
                 Screen.About.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     AboutScreen(
@@ -574,8 +598,8 @@ fun AppNavigation(
                 Screen.EasterEgg.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     EasterEggScreen(
@@ -588,8 +612,8 @@ fun AppNavigation(
                 Screen.ArtistSettings.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     ArtistSettingsScreen(navController = navController)
@@ -599,8 +623,8 @@ fun AppNavigation(
                 Screen.DelimiterConfig.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     DelimiterConfigScreen(navController = navController)
@@ -610,8 +634,8 @@ fun AppNavigation(
                 Screen.WordDelimiterConfig.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     WordDelimiterConfigScreen(navController = navController)
@@ -621,8 +645,8 @@ fun AppNavigation(
                 Screen.FilterKeywordsConfig.route,
                 enterTransition = { enterTransition() },
                 exitTransition = { exitTransition() },
-                popEnterTransition = { settingsPopEnterTransition() },
-                popExitTransition = { settingsPopExitTransition() },
+                popEnterTransition = { popEnterTransition() },
+                popExitTransition = { popExitTransition() },
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     FilterKeywordsConfigScreen(navController = navController)
@@ -788,9 +812,6 @@ private fun mainRootEnterTransition(
     toRoute: String?,
     fallback: EnterTransition
 ): EnterTransition {
-    if (toRoute == Screen.Search.route || fromRoute == Screen.Search.route) {
-        return EnterTransition.None
-    }
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideInHorizontally(
@@ -845,9 +866,6 @@ private fun mainRootExitTransition(
     toRoute: String?,
     fallback: ExitTransition
 ): ExitTransition {
-    if (toRoute == Screen.Search.route || fromRoute == Screen.Search.route) {
-        return ExitTransition.None
-    }
     return when (mainRootDirection(fromRoute, toRoute)) {
         MainRootDirection.FORWARD -> {
             slideOutHorizontally(

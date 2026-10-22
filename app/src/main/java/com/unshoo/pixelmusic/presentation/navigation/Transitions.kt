@@ -102,31 +102,11 @@ fun popExitTransition(): ExitTransition = slideOutVertically(
     animationSpec = tween(durationMillis = 160, easing = EmphasizedAccelerateEasing)
 )
 
-// Responsive settings transitions with M3 Expressive easing curves
-private const val SETTINGS_TOTAL_MS = 260
-private const val SETTINGS_FADE_MS = 160
+// Responsive settings transitions match Storage Sense's M3 Expressive container transform
+fun settingsPopExitTransition(): ExitTransition = popExitTransition()
 
-fun settingsPopExitTransition(): ExitTransition = slideOutHorizontally(
-    animationSpec = tween(durationMillis = SETTINGS_TOTAL_MS, easing = EmphasizedAccelerateEasing),
-    targetOffsetX = { (it * 0.12f).toInt() }
-) + scaleOut(
-    animationSpec = tween(durationMillis = SETTINGS_TOTAL_MS, easing = EmphasizedAccelerateEasing),
-    targetScale = 0.92f,
-    transformOrigin = TransformOrigin.Center
-) + fadeOut(
-    animationSpec = tween(durationMillis = SETTINGS_FADE_MS, easing = EmphasizedAccelerateEasing)
-)
+fun settingsPopEnterTransition(): EnterTransition = popEnterTransition()
 
-fun settingsPopEnterTransition(): EnterTransition = slideInHorizontally(
-    animationSpec = tween(durationMillis = SETTINGS_TOTAL_MS, easing = EmphasizedDecelerateEasing),
-    initialOffsetX = { -(it * 0.08f).toInt() }
-) + scaleIn(
-    animationSpec = tween(durationMillis = SETTINGS_TOTAL_MS, easing = EmphasizedDecelerateEasing),
-    initialScale = 0.92f,
-    transformOrigin = TransformOrigin.Center
-) + fadeIn(
-    animationSpec = tween(durationMillis = 300, delayMillis = 80, easing = EmphasizedDecelerateEasing)
-)
 
 
 
