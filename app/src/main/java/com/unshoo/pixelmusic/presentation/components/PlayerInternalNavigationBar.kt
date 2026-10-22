@@ -475,23 +475,24 @@ private fun PlayerInternalNavigationItemsRow(
             val selectedTextColor = MaterialTheme.colorScheme.onSurface
             val unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-            val iconPainterResId = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
+            val unselectedIconResId = item.iconResId
+            val selectedIconResId = if (item.selectedIconResId != null && item.selectedIconResId != 0) {
                 item.selectedIconResId
             } else {
                 item.iconResId
             }
-            val iconLambda: @Composable () -> Unit = remember(iconPainterResId, item.label) {
+            val iconLambda: @Composable () -> Unit = remember(unselectedIconResId, item.label) {
                 {
                     Icon(
-                        painter = painterResource(id = iconPainterResId),
+                        painter = painterResource(id = unselectedIconResId),
                         contentDescription = item.label
                     )
                 }
             }
-            val selectedIconLambda: @Composable () -> Unit = remember(iconPainterResId, item.label) {
+            val selectedIconLambda: @Composable () -> Unit = remember(selectedIconResId, item.label) {
                 {
                     Icon(
-                        painter = painterResource(id = iconPainterResId),
+                        painter = painterResource(id = selectedIconResId),
                         contentDescription = item.label
                     )
                 }

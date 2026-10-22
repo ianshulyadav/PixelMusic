@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -17,7 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.Role
@@ -43,12 +45,12 @@ import com.unshoo.pixelmusic.ui.theme.fastEffects
 import com.unshoo.pixelmusic.ui.theme.fastSpatial
 
 /**
- * Material 3 Expressive Navigation Bar Item adhering strictly to official M3 guidelines:
- * - Active indicator: 64dp × 32dp pill shape (56dp in compact mode) with horizontal spatial expansion & bounce
+ * Material 3 Expressive Navigation Bar Item:
+ * - Active indicator: 68dp × 38dp stadium pill (60dp × 32dp in compact mode) with full zoom-in / zoom-out transformation
+ * - Touch & Ripple: Contained strictly inside the selection pill shape (CircleShape), with no external ghost halos
  * - Active icon: 24dp with 1.15x spatial bounce and smooth crossfade between unselected and selected icons
- * - Tactile press compression (0.92x spring) & responsive hover feedback (1.04x scale + hover pill)
+ * - Tactile press compression (0.92x spring) & responsive hover feedback (1.04x scale)
  * - M3 Expressive typography and role-based contrast tokens
- * - Centered unbounded Material ripple indication
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -76,35 +78,52 @@ fun RowScope.CustomNavigationBarItem(
     val isPressed by interactionSource.collectIsPressedAsState()
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Tactile press & hover transformation (spatial spring with subtle physical bounce)
-    val itemScale by animateFloatAsState(
+    // Tactile press & hover scale for the entire interactive item
+    val pressScale by animateFloatAsState(
         targetValue = when {
             isPressed -> 0.92f
             isHovered -> 1.04f
             else -> 1.0f
         },
         animationSpec = motionScheme.fastSpatial(),
-        label = "nav_item_scale"
+        label = "nav_item_press_scale"
     )
 
     // Active Indicator transformation:
-    // Spatial spring expands horizontally with expressive overshoot; opacity is critically damped
-    val indicatorProgress by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = motionScheme.fastSpatial(),
-        label = "nav_indicator_progress"
-    )
-    val indicatorAlpha by animateFloatAsState(
-        targetValue = if (selected) 1f else 0f,
-        animationSpec = motionScheme.fastEffects(),
-        label = "nav_indicator_alpha"
-    )
+    // Full zoom-in / zoom-out selection container resizing transformation with M3 Expressive physics
+    val targetPillAlpha = when {
+        selected -> 1.0f
+        isPressed -> 0.35f
+        isHovered -> 0.15f
+        else -> 0.0f
+    }
+    val targetPillScaleX = when {
+        selected -> 1.0f
+        isPressed -> 0.65f
+        isHovered -> 0.85f
+        else -> 0.25f
+    }
+    val targetPillScaleY = when {
+        selected -> 1.0f
+        isPressed -> 0.75f
+        isHovered -> 0.90f
+        else -> 0.40f
+    }
 
-    // Hover state pill for unselected items
-    val hoverAlpha by animateFloatAsState(
-        targetValue = if (isHovered && !selected) 1f else 0f,
+    val pillScaleX by animateFloatAsState(
+        targetValue = targetPillScaleX,
+        animationSpec = motionScheme.fastSpatial(),
+        label = "nav_pill_scale_x"
+    )
+    val pillScaleY by animateFloatAsState(
+        targetValue = targetPillScaleY,
+        animationSpec = motionScheme.fastSpatial(),
+        label = "nav_pill_scale_y"
+    )
+    val pillAlpha by animateFloatAsState(
+        targetValue = targetPillAlpha,
         animationSpec = motionScheme.fastEffects(),
-        label = "nav_hover_alpha"
+        label = "nav_pill_alpha"
     )
 
     // Icon scale: lively spring bounce on selection (fast spatial token)
@@ -152,10 +171,11 @@ fun RowScope.CustomNavigationBarItem(
         label = "nav_label_scale"
     )
 
-    // M3 Navigation Bar Standard Dimensions
-    val indicatorWidth = if (compactMode) 56.dp else 64.dp
-    val indicatorHeight = if (compactMode) 28.dp else 32.dp
-    val indicatorShape = RoundedCornerShape(16.dp)
+    // Material 3 Expressive Dimensions
+    // Enlarged for comfortable, expressive M3 look
+    val indicatorWidth = if (compactMode) 60.dp else 68.dp
+    val indicatorHeight = if (compactMode) 32.dp else 38.dp
+    val indicatorShape = CircleShape
     val iconSize = 24.dp
 
     Column(
@@ -167,7 +187,7 @@ fun RowScope.CustomNavigationBarItem(
                 enabled = enabled,
                 role = Role.Tab,
                 interactionSource = interactionSource,
-                indication = ripple(bounded = false, radius = 34.dp)
+                indication = null // Column handles tap without drawing any separated ripple
             )
             .semantics {
                 if (contentDescription != null) {
@@ -177,60 +197,50 @@ fun RowScope.CustomNavigationBarItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Icon & Indicator Container with responsive press / hover scale
+        // Icon & Indicator Container
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
                 .width(indicatorWidth)
                 .height(indicatorHeight)
-                .graphicsLayer {
-                    scaleX = itemScale
-                    scaleY = itemScale
-                }
         ) {
-            // 1. Subtle Hover Pill (when hovered and unselected)
-            if (hoverAlpha > 0.01f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer { alpha = hoverAlpha }
-                        .background(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                            shape = indicatorShape
+            // 1. Selection Pill Container with Zoom-In / Zoom-Out Resizing Transformation & Contained Ripple
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = pillScaleX * pressScale
+                        scaleY = pillScaleY * pressScale
+                        alpha = pillAlpha
+                    }
+                    .clip(indicatorShape)
+                    .background(
+                        color = indicatorColor,
+                        shape = indicatorShape
+                    )
+                    .indication(
+                        interactionSource = interactionSource,
+                        indication = ripple(
+                            bounded = true,
+                            color = selectedIconColor.copy(alpha = 0.28f)
                         )
-                )
-            }
+                    )
+            )
 
-            // 2. Active Indicator Pill (M3 Expressive horizontal spring stretch & overshoot)
-            if (indicatorAlpha > 0.01f) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            scaleX = 0.35f + (0.65f * indicatorProgress)
-                            scaleY = 0.85f + (0.15f * indicatorProgress)
-                            alpha = indicatorAlpha
-                        }
-                        .background(
-                            color = indicatorColor,
-                            shape = indicatorShape
-                        )
-                )
-            }
-
-            // 3. Icon with Transformation, Scale, and Crossfade Morphing
+            // 2. Icon with Transformation, Scale, and Crossfade Morphing
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(iconSize)
                     .graphicsLayer {
-                        scaleX = iconScale
-                        scaleY = iconScale
+                        val combinedScale = iconScale * pressScale
+                        scaleX = combinedScale
+                        scaleY = combinedScale
                     }
             ) {
                 CompositionLocalProvider(LocalContentColor provides iconColor) {
                     // Unselected icon
-                    if (unselectedIconAlpha > 0.01f) {
+                    if (unselectedIconAlpha > 0.005f) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -247,7 +257,7 @@ fun RowScope.CustomNavigationBarItem(
                     }
 
                     // Selected icon
-                    if (selectedIconAlpha > 0.01f) {
+                    if (selectedIconAlpha > 0.005f) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -291,4 +301,5 @@ fun RowScope.CustomNavigationBarItem(
         }
     }
 }
+
 
