@@ -586,7 +586,7 @@ fun ExploreScreen(
                     isManualRefreshing = true
                     unshoo.ianshulyadav.pixelmusic.innertube.YouTube.invalidateHomeCache()
                     val exploreJob = launch { exploreViewModel.refreshOnEntry(force = true) }
-                    val quickPicksJob = launch { quickPicksViewModel.refresh(force = true) }
+                    val quickPicksJob = quickPicksViewModel.refresh(force = true)
                     val feedJob = launch { feedViewModel.refresh() }
                     joinAll(exploreJob, quickPicksJob, feedJob)
                     isManualRefreshing = false
@@ -649,7 +649,7 @@ fun ExploreScreen(
                 }
             }
             LaunchedEffect(Unit) {
-                kotlinx.coroutines.delay(3500L)
+                kotlinx.coroutines.delay(4500L)
                 com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
             }
 

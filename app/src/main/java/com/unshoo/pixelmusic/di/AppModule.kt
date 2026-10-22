@@ -475,6 +475,11 @@ object AppModule {
                 chain.proceed(requestWithUserAgent)
             }
             .addInterceptor(loggingInterceptor)
+            .apply {
+                if (BuildConfig.DEBUG) {
+                    addInterceptor(com.unshoo.pixelmusic.utils.perf.PerfNetworkInterceptor())
+                }
+            }
             .build()
     }
 

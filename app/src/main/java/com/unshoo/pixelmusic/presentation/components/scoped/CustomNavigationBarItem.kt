@@ -239,38 +239,34 @@ fun RowScope.CustomNavigationBarItem(
                     }
             ) {
                 CompositionLocalProvider(LocalContentColor provides iconColor) {
-                    // Unselected icon
-                    if (unselectedIconAlpha > 0.005f) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    alpha = unselectedIconAlpha
-                                    val scale = 0.85f + (0.15f * unselectedIconAlpha)
-                                    scaleX = scale
-                                    scaleY = scale
-                                }
-                                .clearAndSetSemantics {}
-                        ) {
-                            icon()
-                        }
+                    // Unselected icon: deferred to Draw phase to eliminate recomposition churn
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                alpha = unselectedIconAlpha
+                                val scale = 0.85f + (0.15f * unselectedIconAlpha)
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                            .clearAndSetSemantics {}
+                    ) {
+                        icon()
                     }
 
-                    // Selected icon
-                    if (selectedIconAlpha > 0.005f) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    alpha = selectedIconAlpha
-                                    val scale = 0.85f + (0.15f * selectedIconAlpha)
-                                    scaleX = scale
-                                    scaleY = scale
-                                }
-                                .clearAndSetSemantics {}
-                        ) {
-                            selectedIcon()
-                        }
+                    // Selected icon: deferred to Draw phase to eliminate recomposition churn
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                alpha = selectedIconAlpha
+                                val scale = 0.85f + (0.15f * selectedIconAlpha)
+                                scaleX = scale
+                                scaleY = scale
+                            }
+                            .clearAndSetSemantics {}
+                    ) {
+                        selectedIcon()
                     }
                 }
             }

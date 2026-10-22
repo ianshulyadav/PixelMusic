@@ -245,6 +245,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalPermissionsApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        com.unshoo.pixelmusic.utils.perf.PerfTracker.recordAppStart()
         LogUtils.d(this, "onCreate")
         val activeIcon = AppIconManager.getActiveLauncherIcon(this)
         setTheme(activeIcon.splashThemeRes)
@@ -375,6 +376,7 @@ class MainActivity : ComponentActivity() {
                     // hand the UI back the moment a real frame is committed.
                     androidx.compose.runtime.withFrameNanos { /* first frame callback */ }
                     contentVisible = true
+                    com.unshoo.pixelmusic.utils.perf.PerfTracker.markFirstFrame()
                     // Signal ViewModels that defer work until UI is ready.
                     // This fires after the first frame has been committed, giving
                     // QuickPicks and other deferred loaders an event-driven trigger
@@ -406,6 +408,7 @@ class MainActivity : ComponentActivity() {
                             if (shouldShowSetup) {
                                 SetupScreen(onSetupComplete = {
                                     // Repository-backed setup completion updates the gate automatically.
+                                    com.unshoo.pixelmusic.utils.perf.PerfTracker.markFirstMeaningfulUi()
                                 })
                             } else {
                                 val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
@@ -414,6 +417,9 @@ class MainActivity : ComponentActivity() {
                                 LaunchedEffect(isInitialFetchFinished) {
                                     if (isInitialFetchFinished) {
                                         isFreshStartLoading = false
+                                        com.unshoo.pixelmusic.utils.perf.PerfTracker.markFirstMeaningfulUi()
+                                        com.unshoo.pixelmusic.utils.perf.PerfTracker.markHomeClickable()
+                                        com.unshoo.pixelmusic.utils.perf.PerfTracker.markStartupNetworkSettled()
                                     }
                                 }
 

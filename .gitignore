@@ -21,6 +21,8 @@ keystore.properties
 .externalNativeBuild
 .cxx
 benchmark-results/
+benchmark_results/
+scripts/
 
 app/build/
 app/release/

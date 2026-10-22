@@ -453,12 +453,13 @@ fun HomeScreen(
                 onRefresh = {
                     scope.launch {
                         isManualRefreshing = true
-                        val qpJob = launch { quickPicksViewModel.refresh(force = true) }
+                        val qpJob = quickPicksViewModel.refresh(force = true)
                         playerViewModel.forceUpdateDailyMix()
-                        qpJob.join()
-                        kotlinx.coroutines.delay(200L)
-                        while (playerViewModel.isDailyMixUpdating.value) {
-                            kotlinx.coroutines.delay(100L)
+                        kotlinx.coroutines.withTimeoutOrNull(15_000L) {
+                            qpJob.join()
+                            while (playerViewModel.isDailyMixUpdating.value) {
+                                kotlinx.coroutines.delay(100L)
+                            }
                         }
                         isManualRefreshing = false
                     }
@@ -478,22 +479,34 @@ fun HomeScreen(
                 }
             ) {
                 val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
+                val isQuickPicksSettled by quickPicksViewModel.isSettled.collectAsStateWithLifecycle()
 
-                LaunchedEffect(isEffectivelyOnline, isQuickPicksLoading, isDailyMixUpdating, quickPicks.size, dailyMixSongs.size) {
+                LaunchedEffect(isEffectivelyOnline, isQuickPicksSettled, isDailyMixUpdating) {
                     if (!isEffectivelyOnline) {
                         com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
                         return@LaunchedEffect
                     }
-                    if (!isQuickPicksLoading && !isDailyMixUpdating && (quickPicks.isNotEmpty() || dailyMixSongs.isNotEmpty() || yourMixSongs.isNotEmpty())) {
+                    if (isQuickPicksSettled && !isDailyMixUpdating) {
                         com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
                     }
                 }
                 LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(3500L)
+                    kotlinx.coroutines.delay(4500L)
                     com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
                 }
 
-                val showHomeLoading = (yourMixSongs.isEmpty() && quickPicks.isEmpty()) || (isEffectivelyOnline && !isInitialFetchFinished)
+                LaunchedEffect(quickPicks.isNotEmpty()) {
+                    if (quickPicks.isNotEmpty()) {
+                        com.unshoo.pixelmusic.utils.perf.PerfTracker.markQuickPicksAppeared()
+                        com.unshoo.pixelmusic.utils.perf.PerfTracker.markFirstYouTubeData()
+                    }
+                }
+
+                val showHomeLoading = if (isEffectivelyOnline) {
+                    !isInitialFetchFinished || !isQuickPicksSettled
+                } else {
+                    yourMixSongs.isEmpty() && quickPicks.isEmpty()
+                }
                 Crossfade(
                     targetState = showHomeLoading,
                     animationSpec = spring(

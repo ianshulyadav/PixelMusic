@@ -195,6 +195,9 @@ class InnerTube {
         engine {
             config {
                 dns(this@InnerTube.dns)
+                if (com.unshoo.pixelmusic.BuildConfig.DEBUG) {
+                    addInterceptor(com.unshoo.pixelmusic.utils.perf.PerfNetworkInterceptor())
+                }
                 if (this@InnerTube.proxy != null && !proxyUsername.isNullOrBlank() && !proxyPassword.isNullOrBlank()) {
                     proxyAuthenticator { _, response ->
                         val credential = okhttp3.Credentials.basic(proxyUsername!!, proxyPassword!!)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,7 +33,8 @@ class FeedRepository @Inject constructor(
         username: String? = null,
         forceRefresh: Boolean = false,
         onUpdate: (FeedData) -> Unit = {},
-    ): FeedData = coroutineScope {
+    ): FeedData = withContext(Dispatchers.Default) {
+        coroutineScope {
         val exploreLastFmEnabled = runCatching { userPreferencesRepository.exploreLastfmEnabledFlow.first() }.getOrDefault(true)
         val resolvedUsername = if (!exploreLastFmEnabled) "" else (username ?: runCatching { userPreferencesRepository.lastfmUsernameFlow.first() }.getOrDefault(""))
         val cookies = runCatching { datastoreRepository.cookies.first() }.getOrNull()
@@ -639,5 +641,6 @@ class FeedRepository @Inject constructor(
         cachedFeed = result
         cachedKey = cacheKey
         result
+        }
     }
 }

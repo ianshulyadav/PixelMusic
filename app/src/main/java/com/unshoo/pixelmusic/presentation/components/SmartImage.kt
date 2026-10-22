@@ -278,7 +278,10 @@ fun SmartImage(
         placeholder = if (placeholderResId != 0) painterResource(placeholderResId) else null,
         error = if (errorResId != 0) painterResource(errorResId) else null,
         onLoading = { state -> onState?.invoke(state) },
-        onSuccess = { state -> onState?.invoke(state) },
+        onSuccess = { state ->
+            com.unshoo.pixelmusic.utils.perf.PerfTracker.markFirstAlbumArt()
+            onState?.invoke(state)
+        },
         onError = { state -> onState?.invoke(state) }
     )
 }

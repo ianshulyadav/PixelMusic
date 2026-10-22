@@ -543,6 +543,9 @@ fun QuickPicksSection(
     }
 }
 
+private val EQUALIZER_DURATIONS = intArrayOf(550, 750, 450, 650)
+private val EQUALIZER_DELAYS = intArrayOf(0, 120, 240, 360)
+
 @Composable
 private fun EqualizerAnimation(
     modifier: Modifier = Modifier,
@@ -550,54 +553,80 @@ private fun EqualizerAnimation(
     color: Color = MaterialTheme.colorScheme.primary,
     barCount: Int = 3
 ) {
-    val transition = rememberInfiniteTransition(label = "equalizer")
-    
-    val heights = (0 until barCount).map { index ->
-        val duration = when(index) {
-            0 -> 550
-            1 -> 750
-            2 -> 450
-            3 -> 650
-            else -> 550
-        }
-        val delay = index * 120
-        val animatedHeight by transition.animateFloat(
-            initialValue = 0.2f,
-            targetValue = 1.0f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = duration, delayMillis = delay, easing = LinearEasing),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "bar_$index"
-        )
-        if (isPlaying) ({ animatedHeight }) else ({
-            when(index % 3) {
-                0 -> 0.35f
-                1 -> 0.55f
-                else -> 0.35f
+    if (!isPlaying) {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            repeat(barCount) { index ->
+                val staticScale = when (index % 3) {
+                    0 -> 0.35f
+                    1 -> 0.55f
+                    else -> 0.35f
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .graphicsLayer {
+                            scaleY = staticScale
+                            transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
+                        }
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(color)
+                )
             }
-        })
+        }
+        return
     }
-    
+
+    val transition = rememberInfiniteTransition(label = "equalizer")
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(3.dp),
         verticalAlignment = Alignment.Bottom
     ) {
-        heights.forEach { heightProvider ->
-            Box(
+        repeat(barCount) { index ->
+            EqualizerBar(
+                transition = transition,
+                index = index,
+                color = color,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .graphicsLayer {
-                        scaleY = heightProvider()
-                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
-                    }
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(color)
             )
         }
     }
+}
+
+@Composable
+private fun EqualizerBar(
+    transition: androidx.compose.animation.core.InfiniteTransition,
+    index: Int,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    val duration = EQUALIZER_DURATIONS.getOrElse(index) { 550 }
+    val delay = EQUALIZER_DELAYS.getOrElse(index) { index * 120 }
+    val animatedHeight by transition.animateFloat(
+        initialValue = 0.2f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = duration, delayMillis = delay, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "bar_$index"
+    )
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleY = animatedHeight
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0.5f, 1f)
+            }
+            .clip(RoundedCornerShape(2.dp))
+            .background(color)
+    )
 }
 
 @Composable
