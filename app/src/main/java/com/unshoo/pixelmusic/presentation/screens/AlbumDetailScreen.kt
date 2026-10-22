@@ -300,17 +300,17 @@ fun AlbumDetailScreen(
                     )
                 }
 
-                val topBarHeight = remember { Animatable(maxTopBarHeightPx) }
+                var topBarHeightPx by remember { mutableFloatStateOf(maxTopBarHeightPx) }
                 val collapseFraction by remember(minTopBarHeightPx, maxTopBarHeightPx) {
                     derivedStateOf {
-                        1f - ((topBarHeight.value - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(
+                        1f - ((topBarHeightPx - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(
                             0f,
                             1f
                         )
                     }
                 }
 
-                var topBarSnapJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+                var topBarSettleJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
                 val nestedScrollConnection = remember {
                     object : NestedScrollConnection {
                         override fun onPreScroll(
@@ -324,17 +324,12 @@ fun AlbumDetailScreen(
                                 return Offset.Zero
                             }
 
-                            val previousHeight = topBarHeight.value
+                            topBarSettleJob?.cancel()
+                            val previousHeight = topBarHeightPx
                             val newHeight =
                                 (previousHeight + delta).coerceIn(minTopBarHeightPx, maxTopBarHeightPx)
                             val consumed = newHeight - previousHeight
-
-                            if (consumed.roundToInt() != 0) {
-                                topBarSnapJob?.cancel()
-                                topBarSnapJob = coroutineScope.launch {
-                                    topBarHeight.snapTo(newHeight)
-                                }
-                            }
+                            topBarHeightPx = newHeight
 
                             val canConsumeScroll = !(isScrollingDown && newHeight == minTopBarHeightPx)
                             return if (canConsumeScroll) Offset(0f, consumed) else Offset.Zero
@@ -352,7 +347,7 @@ fun AlbumDetailScreen(
                 LaunchedEffect(lazyListState.isScrollInProgress) {
                     if (!lazyListState.isScrollInProgress) {
                         val shouldExpand =
-                            topBarHeight.value > (minTopBarHeightPx + maxTopBarHeightPx) / 2
+                            topBarHeightPx > (minTopBarHeightPx + maxTopBarHeightPx) / 2
                         val canExpand =
                             lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0
 
@@ -362,12 +357,16 @@ fun AlbumDetailScreen(
                             minTopBarHeightPx
                         }
 
-                        if (topBarHeight.value != targetValue) {
-                            coroutineScope.launch {
-                                topBarHeight.animateTo(
-                                    targetValue,
-                                    spring(stiffness = Spring.StiffnessMedium)
-                                )
+                        if (topBarHeightPx != targetValue) {
+                            topBarSettleJob?.cancel()
+                            topBarSettleJob = coroutineScope.launch {
+                                androidx.compose.animation.core.animate(
+                                    initialValue = topBarHeightPx,
+                                    targetValue = targetValue,
+                                    animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                                ) { value, _ ->
+                                    topBarHeightPx = value
+                                }
                             }
                         }
                     }
@@ -381,7 +380,7 @@ fun AlbumDetailScreen(
                         )
                         .nestedScroll(nestedScrollConnection)
                 ) {
-                    val currentTopBarHeightDp = with(density) { topBarHeight.value.toDp() }
+                    val currentTopBarHeightDp = with(density) { topBarHeightPx.toDp() }
                     val showScrollBar =
                         collapseFraction > 0.95f &&
                             (lazyListState.canScrollForward || lazyListState.canScrollBackward)
@@ -392,7 +391,7 @@ fun AlbumDetailScreen(
                             .fillMaxSize()
                             .offset {
                                 val extraHeight =
-                                    (topBarHeight.value - minTopBarHeightPx).roundToInt()
+                                    (topBarHeightPx - minTopBarHeightPx).roundToInt()
                                 IntOffset(0, extraHeight)
                             },
                         contentPadding = PaddingValues(

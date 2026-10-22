@@ -60,6 +60,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -135,10 +136,12 @@ import com.unshoo.pixelmusic.ui.theme.ExpTitleTypography
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
 import androidx.compose.ui.res.stringResource
 
@@ -194,9 +197,15 @@ fun HomeScreen(
         }
     }
     val dailyMixSongsRaw by playerViewModel.dailyMixSongs.collectAsStateWithLifecycle()
-    val dailyMixSongs = remember(dailyMixSongsRaw, isEffectivelyOnline) {
-        if (!isEffectivelyOnline) {
-            dailyMixSongsRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
+    val dailyMixSongs by produceState(
+        initialValue = if (isEffectivelyOnline) dailyMixSongsRaw else persistentListOf(),
+        key1 = dailyMixSongsRaw,
+        key2 = isEffectivelyOnline
+    ) {
+        value = if (!isEffectivelyOnline) {
+            withContext(Dispatchers.IO) {
+                dailyMixSongsRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
+            }
         } else {
             dailyMixSongsRaw
         }
@@ -245,14 +254,21 @@ fun HomeScreen(
     val usesFallbackHomeMix = remember(curatedYourMixSongs, dailyMixSongs) {
         curatedYourMixSongs.isEmpty() && dailyMixSongs.isEmpty()
     }
-    val yourMixSongs = remember(curatedYourMixSongs, dailyMixSongs, homeMixPreviewSongs, isEffectivelyOnline) {
+    val yourMixSongs by produceState(
+        initialValue = if (isEffectivelyOnline) dailyMixSongs else persistentListOf(),
+        key1 = dailyMixSongs,
+        key2 = curatedYourMixSongs,
+        key3 = isEffectivelyOnline
+    ) {
         val baseList = when {
             dailyMixSongs.isNotEmpty() -> dailyMixSongs
             curatedYourMixSongs.isNotEmpty() -> curatedYourMixSongs
             else -> homeMixPreviewSongs
         }
-        if (!isEffectivelyOnline) {
-            baseList.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
+        value = if (!isEffectivelyOnline) {
+            withContext(Dispatchers.IO) {
+                baseList.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }.toImmutableList()
+            }
         } else {
             baseList
         }
@@ -283,9 +299,15 @@ fun HomeScreen(
             maxItems = 64
         )
     }
-    val recentlyPlayedSongs = remember(latestRecentlyPlayedSongs, isEffectivelyOnline) {
-        if (!isEffectivelyOnline) {
-            latestRecentlyPlayedSongs.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it.song) }
+    val recentlyPlayedSongs by produceState(
+        initialValue = if (isEffectivelyOnline) latestRecentlyPlayedSongs else emptyList(),
+        key1 = latestRecentlyPlayedSongs,
+        key2 = isEffectivelyOnline
+    ) {
+        value = if (!isEffectivelyOnline) {
+            withContext(Dispatchers.IO) {
+                latestRecentlyPlayedSongs.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it.song) }
+            }
         } else {
             latestRecentlyPlayedSongs
         }
@@ -323,15 +345,19 @@ fun HomeScreen(
     var showBetaInfoBottomSheet by remember { mutableStateOf(false) }
     var showStreamingProviderSheet by remember { mutableStateOf(false) }
     var cleanInstallDisclaimerDismissedThisSession by rememberSaveable { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState()
-    val betaSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
 
     val homeStatsOverview by statsViewModel.homeOverview.collectAsStateWithLifecycle()
     val quickPicksRaw by quickPicksViewModel.quickPicks.collectAsStateWithLifecycle()
-    val quickPicks = remember(quickPicksRaw, isEffectivelyOnline) {
-        if (!isEffectivelyOnline) {
-            quickPicksRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }
+    val quickPicks by produceState(
+        initialValue = if (isEffectivelyOnline) quickPicksRaw else emptyList(),
+        key1 = quickPicksRaw,
+        key2 = isEffectivelyOnline
+    ) {
+        value = if (!isEffectivelyOnline) {
+            withContext(Dispatchers.IO) {
+                quickPicksRaw.filter { com.unshoo.pixelmusic.utils.OfflineAudioResolver.hasOfflineAudio(context, it) }
+            }
         } else {
             quickPicksRaw
         }
@@ -451,7 +477,23 @@ fun HomeScreen(
                     )
                 }
             ) {
-                val showHomeLoading = yourMixSongs.isEmpty() && quickPicks.isEmpty()
+                val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
+
+                LaunchedEffect(isEffectivelyOnline, isQuickPicksLoading, isDailyMixUpdating, quickPicks.size, dailyMixSongs.size) {
+                    if (!isEffectivelyOnline) {
+                        com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+                        return@LaunchedEffect
+                    }
+                    if (!isQuickPicksLoading && !isDailyMixUpdating && (quickPicks.isNotEmpty() || dailyMixSongs.isNotEmpty() || yourMixSongs.isNotEmpty())) {
+                        com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+                    }
+                }
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(3500L)
+                    com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+                }
+
+                val showHomeLoading = (yourMixSongs.isEmpty() && quickPicks.isEmpty()) || (isEffectivelyOnline && !isInitialFetchFinished)
                 Crossfade(
                     targetState = showHomeLoading,
                     animationSpec = spring(
@@ -682,6 +724,7 @@ fun HomeScreen(
         }
     }
     if (showOptionsBottomSheet) {
+        val sheetState = rememberModalBottomSheetState()
         ModalBottomSheet(
             onDismissRequest = { showOptionsBottomSheet = false },
             sheetState = sheetState
@@ -701,6 +744,7 @@ fun HomeScreen(
         }
     }
     if (showChangelogBottomSheet) {
+        val sheetState = rememberModalBottomSheetState()
         ModalBottomSheet(
             onDismissRequest = { showChangelogBottomSheet = false },
             sheetState = sheetState
@@ -709,6 +753,7 @@ fun HomeScreen(
         }
     }
     if (showBetaInfoBottomSheet) {
+        val betaSheetState = rememberModalBottomSheetState()
         ModalBottomSheet(
             onDismissRequest = { showBetaInfoBottomSheet = false },
             sheetState = betaSheetState,

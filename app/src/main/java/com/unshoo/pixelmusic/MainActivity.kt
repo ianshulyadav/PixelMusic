@@ -53,6 +53,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +71,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -78,6 +80,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -405,7 +408,26 @@ class MainActivity : ComponentActivity() {
                                     // Repository-backed setup completion updates the gate automatically.
                                 })
                             } else {
-                                MainAppContent(playerViewModel, mainViewModel)
+                                val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
+                                var isFreshStartLoading by rememberSaveable { mutableStateOf(true) }
+
+                                LaunchedEffect(isInitialFetchFinished) {
+                                    if (isInitialFetchFinished) {
+                                        isFreshStartLoading = false
+                                    }
+                                }
+
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    MainAppContent(playerViewModel, mainViewModel)
+
+                                    AnimatedVisibility(
+                                        visible = isFreshStartLoading,
+                                        enter = fadeIn(),
+                                        exit = fadeOut(animationSpec = tween(400))
+                                    ) {
+                                        FreshStartLoadingScreen()
+                                    }
+                                }
                             }
                         }
                     }
@@ -688,6 +710,19 @@ class MainActivity : ComponentActivity() {
                     textAlign = TextAlign.Center
                 )
             }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    @Composable
+    private fun FreshStartLoadingScreen() {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
+        ) {
+            ContainedLoadingIndicator()
         }
     }
 
@@ -1106,9 +1141,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 ) { innerPadding ->
-                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.fillMaxSize()) {
                         val density = LocalDensity.current
-                        val containerHeight = this.maxHeight
+                        val configuration = LocalConfiguration.current
+                        val containerHeight = configuration.screenHeightDp.dp
                         val screenHeightPx = remember(containerHeight, density) {
                             with(density) { containerHeight.toPx() }
                         }

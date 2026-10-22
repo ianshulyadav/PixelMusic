@@ -203,6 +203,9 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val searchInputFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+    }
 
     val sheetState by playerViewModel.sheetState.collectAsStateWithLifecycle()
     androidx.activity.compose.BackHandler(enabled = sheetState == com.unshoo.pixelmusic.presentation.viewmodel.PlayerSheetState.COLLAPSED) {

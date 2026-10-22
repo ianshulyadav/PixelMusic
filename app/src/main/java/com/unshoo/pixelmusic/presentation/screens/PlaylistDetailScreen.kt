@@ -103,6 +103,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -455,14 +456,14 @@ fun PlaylistDetailScreen(
                 )
             }
 
-            val topBarHeight = remember { Animatable(maxTopBarHeightPx) }
+            var topBarHeightPx by remember { mutableFloatStateOf(maxTopBarHeightPx) }
             val collapseFraction by remember(minTopBarHeightPx, maxTopBarHeightPx) {
                 derivedStateOf {
-                    1f - ((topBarHeight.value - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(0f, 1f)
+                    1f - ((topBarHeightPx - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(0f, 1f)
                 }
             }
 
-            var topBarSnapJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+            var topBarSettleJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
             val nestedScrollConnection = remember {
                 object : NestedScrollConnection {
                     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -473,16 +474,11 @@ fun PlaylistDetailScreen(
                             return Offset.Zero
                         }
 
-                        val previousHeight = topBarHeight.value
+                        topBarSettleJob?.cancel()
+                        val previousHeight = topBarHeightPx
                         val newHeight = (previousHeight + delta).coerceIn(minTopBarHeightPx, maxTopBarHeightPx)
                         val consumed = newHeight - previousHeight
-
-                        if (consumed.roundToInt() != 0) {
-                            topBarSnapJob?.cancel()
-                            topBarSnapJob = coroutineScope.launch {
-                                topBarHeight.snapTo(newHeight)
-                            }
-                        }
+                        topBarHeightPx = newHeight
 
                         val canConsumeScroll = !(isScrollingDown && newHeight == minTopBarHeightPx)
                         return if (canConsumeScroll) Offset(0f, consumed) else Offset.Zero
@@ -492,15 +488,21 @@ fun PlaylistDetailScreen(
 
             LaunchedEffect(lazyListState.isScrollInProgress) {
                 if (!lazyListState.isScrollInProgress) {
-                    val shouldExpand = topBarHeight.value > (minTopBarHeightPx + maxTopBarHeightPx) / 2
+                    val shouldExpand = topBarHeightPx > (minTopBarHeightPx + maxTopBarHeightPx) / 2
                     val canExpand = lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0
 
                     val targetValue = if (shouldExpand && canExpand) maxTopBarHeightPx else minTopBarHeightPx
 
-                    if (topBarHeight.value != targetValue) {
-                        topBarSnapJob?.cancel()
-                        topBarSnapJob = coroutineScope.launch {
-                            topBarHeight.animateTo(targetValue, spring(stiffness = Spring.StiffnessMedium))
+                    if (topBarHeightPx != targetValue) {
+                        topBarSettleJob?.cancel()
+                        topBarSettleJob = coroutineScope.launch {
+                            androidx.compose.animation.core.animate(
+                                initialValue = topBarHeightPx,
+                                targetValue = targetValue,
+                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                            ) { value, _ ->
+                                topBarHeightPx = value
+                            }
                         }
                     }
                 }
@@ -517,7 +519,7 @@ fun PlaylistDetailScreen(
                         .background(MaterialTheme.colorScheme.background)
                         .nestedScroll(nestedScrollConnection)
                 ) {
-                val currentTopBarHeightDp = with(density) { topBarHeight.value.toDp() }
+                val currentTopBarHeightDp = with(density) { topBarHeightPx.toDp() }
 
                 CollapsingPlaylistTopBar(
                     playlist = currentPlaylist,

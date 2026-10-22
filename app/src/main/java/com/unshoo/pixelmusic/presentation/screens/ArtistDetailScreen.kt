@@ -190,13 +190,14 @@ fun ArtistDetailScreen(
         )
     }
 
-    val topBarHeight = remember { Animatable(maxTopBarHeightPx) }
+    var topBarHeightPx by remember { mutableFloatStateOf(maxTopBarHeightPx) }
     val collapseFraction by remember(minTopBarHeightPx, maxTopBarHeightPx) {
         derivedStateOf {
-            1f - ((topBarHeight.value - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(0f, 1f)
+            1f - ((topBarHeightPx - minTopBarHeightPx) / (maxTopBarHeightPx - minTopBarHeightPx)).coerceIn(0f, 1f)
         }
     }
 
+    var topBarSettleJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -209,15 +210,11 @@ fun ArtistDetailScreen(
                     return Offset.Zero
                 }
 
-                val previousHeight = topBarHeight.value
+                topBarSettleJob?.cancel()
+                val previousHeight = topBarHeightPx
                 val newHeight = (previousHeight + delta).coerceIn(minTopBarHeightPx, maxTopBarHeightPx)
                 val consumed = newHeight - previousHeight
-
-                if (consumed.roundToInt() != 0) {
-                    coroutineScope.launch {
-                        topBarHeight.snapTo(newHeight)
-                    }
-                }
+                topBarHeightPx = newHeight
 
                 // Si estamos en el tope y scrolleamos hacia arriba, la lista no debe moverse.
                 val canConsumeScroll = !(isScrollingDown && newHeight == minTopBarHeightPx)
@@ -232,7 +229,7 @@ fun ArtistDetailScreen(
 
     LaunchedEffect(lazyListState.isScrollInProgress) {
         if (!lazyListState.isScrollInProgress) {
-            val shouldExpand = topBarHeight.value > (minTopBarHeightPx + maxTopBarHeightPx) / 2
+            val shouldExpand = topBarHeightPx > (minTopBarHeightPx + maxTopBarHeightPx) / 2
             val canExpand = lazyListState.firstVisibleItemIndex == 0 && lazyListState.firstVisibleItemScrollOffset == 0
 
             val targetValue = if (shouldExpand && canExpand) {
@@ -241,9 +238,16 @@ fun ArtistDetailScreen(
                 minTopBarHeightPx
             }
 
-            if (topBarHeight.value != targetValue) {
-                coroutineScope.launch {
-                    topBarHeight.animateTo(targetValue, spring(stiffness = Spring.StiffnessMedium))
+            if (topBarHeightPx != targetValue) {
+                topBarSettleJob?.cancel()
+                topBarSettleJob = coroutineScope.launch {
+                    androidx.compose.animation.core.animate(
+                        initialValue = topBarHeightPx,
+                        targetValue = targetValue,
+                        animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                    ) { value, _ ->
+                        topBarHeightPx = value
+                    }
                 }
             }
         }
@@ -286,7 +290,7 @@ fun ArtistDetailScreen(
                     val albumSections = uiState.albumSections
                     val singlesAndEPs = uiState.singlesAndEPs
                     val isOnlineArtist = uiState.isOnlineArtist
-                    val currentTopBarHeightDp = with(density) { topBarHeight.value.toDp() }
+                    val currentTopBarHeightDp = with(density) { topBarHeightPx.toDp() }
 
                     val expandedSections = remember { mutableStateMapOf<String, Boolean>() }
                     val effectiveLocalSections = if (!isOnlineArtist) albumSections else uiState.localAlbumSections
@@ -315,7 +319,7 @@ fun ArtistDetailScreen(
                             .fillMaxSize()
                             .offset {
                                 val extraHeight =
-                                    (topBarHeight.value - minTopBarHeightPx).roundToInt()
+                                    (topBarHeightPx - minTopBarHeightPx).roundToInt()
                                 IntOffset(0, extraHeight)
                             },
                         contentPadding = PaddingValues(

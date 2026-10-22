@@ -29,6 +29,11 @@ object AppReadinessSignal {
     /** Emits true once [markReady] has been called. Never resets. */
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
+    private val _isInitialFetchFinished = MutableStateFlow(false)
+
+    /** Emits true once the initial fresh-start network fetch has completed or timed out. */
+    val isInitialFetchFinished: StateFlow<Boolean> = _isInitialFetchFinished.asStateFlow()
+
     /**
      * Mark the app UI as ready. Should be called once from [MainActivity]
      * after the content fade-in animation has been triggered.
@@ -44,5 +49,19 @@ object AppReadinessSignal {
      */
     suspend fun awaitReady() {
         isReady.filter { it }.first()
+    }
+
+    /**
+     * Mark the initial fresh-start network fetch as complete.
+     */
+    fun markInitialFetchFinished() {
+        _isInitialFetchFinished.compareAndSet(expect = false, update = true)
+    }
+
+    /**
+     * Suspends until the initial network fetch is finished, then returns.
+     */
+    suspend fun awaitInitialFetchFinished() {
+        isInitialFetchFinished.filter { it }.first()
     }
 }

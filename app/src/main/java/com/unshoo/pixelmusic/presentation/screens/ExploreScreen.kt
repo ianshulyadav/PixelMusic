@@ -637,8 +637,28 @@ fun ExploreScreen(
                 }
             }
 
-            // Show full screen loader ONLY when there is no content to show yet (e.g. cold start)
-            val showExploreLoading = !hasExploreContent && exploreUiState.error == null
+            val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
+
+            LaunchedEffect(isEffectivelyOnline, exploreUiState.isSettled, exploreUiState.error) {
+                if (!isEffectivelyOnline) {
+                    com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+                    return@LaunchedEffect
+                }
+                if (exploreUiState.isSettled || exploreUiState.error != null) {
+                    com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+                }
+            }
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(3500L)
+                com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
+            }
+
+            // Show full screen loader until network fetch is fully finished on cold start
+            val showExploreLoading = if (isEffectivelyOnline) {
+                (!isInitialFetchFinished || !exploreUiState.isSettled) && exploreUiState.error == null
+            } else {
+                !hasExploreContent && exploreUiState.error == null
+            }
 
             Crossfade(
                 targetState = when {
