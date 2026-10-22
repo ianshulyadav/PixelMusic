@@ -3,11 +3,9 @@ package com.unshoo.pixelmusic.presentation.screens.storage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,8 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -182,18 +177,14 @@ fun SmartStorageScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Connected Button Group tab bar (Material 3 Expressive)
-            ConnectedButtonGroupTabBar(
+            // Triple pill tab switcher matching screenshots
+            SeparatePillTabBar(
                 selectedTab = uiState.selectedTab,
                 onTabSelected = { viewModel.setSelectedTab(it) },
-                reviewCount = uiState.candidates.size,
-                trashCount = uiState.trashItems.size,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                isDark = isDark
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(14.dp))
 
             when (uiState.selectedTab) {
                 0 -> ReviewTabContent(
@@ -275,170 +266,55 @@ private fun SmartStorageTopBar(
     }
 }
 
-private data class ConnectedTabItem(
-    val title: String,
-    val icon: ImageVector,
-    val badgeCount: Int = 0
-)
-
 @Composable
-private fun ConnectedButtonGroupTabBar(
+private fun SeparatePillTabBar(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
-    reviewCount: Int,
-    trashCount: Int,
-    modifier: Modifier = Modifier
+    isDark: Boolean
 ) {
-    val haptics = LocalHapticFeedback.current
-    val reviewTitle = stringResource(R.string.smart_storage_review_tab)
-    val trashTitle = stringResource(R.string.smart_storage_trash_tab)
-    val rulesTitle = stringResource(R.string.smart_storage_rules_tab)
+    val tabs = listOf(
+        stringResource(R.string.smart_storage_review_tab),
+        stringResource(R.string.smart_storage_trash_tab),
+        stringResource(R.string.smart_storage_rules_tab)
+    )
 
-    val tabs = remember(reviewCount, trashCount, reviewTitle, trashTitle, rulesTitle) {
-        listOf(
-            ConnectedTabItem(
-                title = reviewTitle,
-                icon = Icons.Rounded.CleaningServices,
-                badgeCount = reviewCount
-            ),
-            ConnectedTabItem(
-                title = trashTitle,
-                icon = Icons.Rounded.DeleteOutline,
-                badgeCount = trashCount
-            ),
-            ConnectedTabItem(
-                title = rulesTitle,
-                icon = Icons.Rounded.Tune,
-                badgeCount = 0
-            )
-        )
-    }
+    val activeColor = if (isDark) Color(0xFF3E4756) else Color(0xFF4C566A)
+    val inactiveColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color(0xFFF3F4F7)
 
-    Surface(
-        modifier = modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
-            .height(52.dp),
-        shape = RoundedCornerShape(26.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-        tonalElevation = 1.dp
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(3.dp),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            tabs.forEachIndexed { index, tab ->
-                val isSelected = selectedTab == index
+        tabs.forEachIndexed { index, title ->
+            val isSelected = selectedTab == index
+            val animatedBg by animateColorAsState(
+                targetValue = if (isSelected) activeColor else inactiveColor,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                label = "tabBg"
+            )
+            val animatedTextColor by animateColorAsState(
+                targetValue = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                label = "tabText"
+            )
 
-                val targetStart = if (isSelected || index == 0) 23.dp else 6.dp
-                val targetEnd = if (isSelected || index == tabs.size - 1) 23.dp else 6.dp
-
-                val animatedStartCorner by animateDpAsState(
-                    targetValue = targetStart,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    ),
-                    label = "tabStartCorner_$index"
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(animatedBg)
+                    .clickable { onTabSelected(index) },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                    color = animatedTextColor
                 )
-                val animatedEndCorner by animateDpAsState(
-                    targetValue = targetEnd,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMediumLow
-                    ),
-                    label = "tabEndCorner_$index"
-                )
-
-                val segmentShape = RoundedCornerShape(
-                    topStart = animatedStartCorner,
-                    bottomStart = animatedStartCorner,
-                    topEnd = animatedEndCorner,
-                    bottomEnd = animatedEndCorner
-                )
-
-                val containerColor by animateColorAsState(
-                    targetValue = if (isSelected) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        Color.Transparent
-                    },
-                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                    label = "tabContainer_$index"
-                )
-
-                val contentColor by animateColorAsState(
-                    targetValue = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                    label = "tabContent_$index"
-                )
-
-                Surface(
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                        onTabSelected(index)
-                    },
-                    shape = segmentShape,
-                    color = containerColor,
-                    contentColor = contentColor,
-                    shadowElevation = if (isSelected) 1.dp else 0.dp,
-                    tonalElevation = if (isSelected) 3.dp else 0.dp,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 6.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = tab.icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = tab.title,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        if (tab.badgeCount > 0) {
-                            Spacer(Modifier.width(5.dp))
-                            Surface(
-                                shape = CircleShape,
-                                color = if (isSelected) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceContainerHighest
-                                },
-                                contentColor = if (isSelected) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            ) {
-                                Text(
-                                    text = if (tab.badgeCount > 99) "99+" else tab.badgeCount.toString(),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.5.dp)
-                                )
-                            }
-                        }
-                    }
-                }
             }
         }
     }
