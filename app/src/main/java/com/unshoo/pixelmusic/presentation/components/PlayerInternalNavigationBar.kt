@@ -11,10 +11,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -202,27 +206,43 @@ private fun ExpressiveFloatingPillNavigationBar(
         ) {
             mainItems.forEachIndexed { index, item ->
                 val isSelected = selectedIndex == index
+                val itemInteractionSource = remember { MutableInteractionSource() }
+                val isItemPressed by itemInteractionSource.collectIsPressedAsState()
+                val isItemHovered by itemInteractionSource.collectIsHoveredAsState()
+
+                val itemTactileScale by animateFloatAsState(
+                    targetValue = when {
+                        isItemPressed -> 0.93f
+                        isItemHovered -> 1.03f
+                        else -> 1.0f
+                    },
+                    animationSpec = motionScheme.fastSpatialSpec(),
+                    label = "pill_item_tactile_$index"
+                )
 
                 val dynamicActiveWeight = 1.4f + (item.label.length * 0.20f)
                 val itemWeight by animateFloatAsState(
                     targetValue = if (isSelected && !shouldHideLabel) dynamicActiveWeight else 1.0f,
-                    animationSpec = androidx.compose.animation.core.spring(
-                        dampingRatio = 0.82f,
-                        stiffness = 320f
-                    ),
+                    animationSpec = motionScheme.fastSpatialSpec(),
                     label = "pill_item_weight_$index"
                 )
 
                 val animColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    animationSpec = tween(durationMillis = 300, easing = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)),
+                    animationSpec = motionScheme.defaultEffectsSpec(),
                     label = "pill_bg_$index"
                 )
 
                 val animContentColor by animateColorAsState(
                     targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    animationSpec = tween(durationMillis = 300, easing = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)),
+                    animationSpec = motionScheme.defaultEffectsSpec(),
                     label = "pill_content_$index"
+                )
+
+                val iconBounceScale by animateFloatAsState(
+                    targetValue = if (isSelected) 1.15f else 1.0f,
+                    animationSpec = motionScheme.fastSpatialSpec(),
+                    label = "pill_icon_bounce_$index"
                 )
 
                 Surface(
@@ -234,10 +254,15 @@ private fun ExpressiveFloatingPillNavigationBar(
                     },
                     modifier = Modifier
                         .weight(itemWeight)
-                        .height(44.dp),
+                        .height(44.dp)
+                        .graphicsLayer {
+                            scaleX = itemTactileScale
+                            scaleY = itemTactileScale
+                        },
                     shape = CircleShape,
                     color = animColor,
-                    contentColor = animContentColor
+                    contentColor = animContentColor,
+                    interactionSource = itemInteractionSource
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -255,7 +280,12 @@ private fun ExpressiveFloatingPillNavigationBar(
                         Icon(
                             painter = painterResource(id = iconRes),
                             contentDescription = item.label,
-                            modifier = Modifier.size(23.dp)
+                            modifier = Modifier
+                                .size(23.dp)
+                                .graphicsLayer {
+                                    scaleX = iconBounceScale
+                                    scaleY = iconBounceScale
+                                }
                         )
 
                         AnimatedVisibility(
@@ -290,11 +320,52 @@ private fun ExpressiveFloatingPillNavigationBar(
         // Disconnected Search FAB — M3 Expressive floating action button
         if (searchItem != null) {
             val isSearchSelected = latestCurrentRoute == searchItem.screen.route
+            val searchInteractionSource = remember { MutableInteractionSource() }
+            val isSearchPressed by searchInteractionSource.collectIsPressedAsState()
+            val isSearchHovered by searchInteractionSource.collectIsHoveredAsState()
+
+            val fabScale by animateFloatAsState(
+                targetValue = when {
+                    isSearchPressed -> 0.92f
+                    isSearchHovered -> 1.06f
+                    isSearchSelected -> 1.03f
+                    else -> 1.0f
+                },
+                animationSpec = motionScheme.fastSpatialSpec(),
+                label = "search_fab_scale"
+            )
+
+            val searchIconBounce by animateFloatAsState(
+                targetValue = if (isSearchSelected) 1.15f else 1.0f,
+                animationSpec = motionScheme.fastSpatialSpec(),
+                label = "search_icon_bounce"
+            )
+
             val searchIconRes = if (isSearchSelected && searchItem.selectedIconResId != null && searchItem.selectedIconResId != 0) {
                 searchItem.selectedIconResId
             } else {
                 searchItem.iconResId
             }
+
+            val searchColor by animateColorAsState(
+                targetValue = if (isSearchSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    solidTintedColor
+                },
+                animationSpec = motionScheme.defaultEffectsSpec(),
+                label = "search_fab_bg"
+            )
+
+            val searchContentColor by animateColorAsState(
+                targetValue = if (isSearchSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
+                animationSpec = motionScheme.defaultEffectsSpec(),
+                label = "search_fab_content"
+            )
 
             Surface(
                 onClick = {
@@ -313,26 +384,29 @@ private fun ExpressiveFloatingPillNavigationBar(
                         onSearchIconDoubleTap()
                     }
                 },
-                modifier = Modifier.size(56.dp),
+                modifier = Modifier
+                    .size(56.dp)
+                    .graphicsLayer {
+                        scaleX = fabScale
+                        scaleY = fabScale
+                    },
                 shape = CircleShape,
-                color = if (isSearchSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    solidTintedColor
-                },
-                contentColor = if (isSearchSelected) {
-                    MaterialTheme.colorScheme.onPrimary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-                tonalElevation = 2.dp,
-                shadowElevation = 6.dp
+                color = searchColor,
+                contentColor = searchContentColor,
+                tonalElevation = if (isSearchHovered) 4.dp else 2.dp,
+                shadowElevation = if (isSearchHovered) 8.dp else 6.dp,
+                interactionSource = searchInteractionSource
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
                         painter = painterResource(id = searchIconRes),
                         contentDescription = searchItem.label,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier
+                            .size(26.dp)
+                            .graphicsLayer {
+                                scaleX = searchIconBounce
+                                scaleY = searchIconBounce
+                            }
                     )
                 }
             }
@@ -377,8 +451,6 @@ private fun PlayerInternalNavigationItemsRow(
         var lastSearchTapTimestamp by remember { mutableStateOf(0L) }
         navItems.forEach { item ->
             val isSelected = currentRoute != null && currentRoute == item.screen.route
-            val selectedColor = MaterialTheme.colorScheme.primary
-            val unselectedColor = MaterialTheme.colorScheme.primary
             val baseContainerColor = MaterialTheme.colorScheme.primaryContainer
             val surfaceColor = MaterialTheme.colorScheme.surface
             val solidTintedColor = remember(baseContainerColor, surfaceColor) {
@@ -389,7 +461,19 @@ private fun PlayerInternalNavigationItemsRow(
                     alpha = 1f
                 )
             }
-            val indicatorColorFromTheme = solidTintedColor
+            val indicatorColorFromTheme = if (navBarStyle == NavBarStyle.FULL_WIDTH) {
+                MaterialTheme.colorScheme.secondaryContainer
+            } else {
+                solidTintedColor
+            }
+            val selectedIconColor = if (navBarStyle == NavBarStyle.FULL_WIDTH) {
+                MaterialTheme.colorScheme.onSecondaryContainer
+            } else {
+                MaterialTheme.colorScheme.primary
+            }
+            val unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            val selectedTextColor = MaterialTheme.colorScheme.onSurface
+            val unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
             val iconPainterResId = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
                 item.selectedIconResId
@@ -475,10 +559,10 @@ private fun PlayerInternalNavigationItemsRow(
                 // bars / large font scales. Previously every tab kept its label
                 // composed permanently.
                 alwaysShowLabel = false,
-                selectedIconColor = selectedColor,
-                unselectedIconColor = unselectedColor,
-                selectedTextColor = selectedColor,
-                unselectedTextColor = unselectedColor,
+                selectedIconColor = selectedIconColor,
+                unselectedIconColor = unselectedIconColor,
+                selectedTextColor = selectedTextColor,
+                unselectedTextColor = unselectedTextColor,
                 indicatorColor = indicatorColorFromTheme
             )
         }
