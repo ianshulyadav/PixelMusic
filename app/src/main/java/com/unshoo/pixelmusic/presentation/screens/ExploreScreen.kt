@@ -325,7 +325,7 @@ fun ExploreScreen(
                 if (isLocalMode) {
                     exploreViewModel.setSelectedFilter("Local")
                 } else {
-                    exploreViewModel.loadData()
+                    exploreViewModel.refreshOnEntry(force = true)
                     quickPicksViewModel.refreshIfStale()
                 }
             }
@@ -657,7 +657,7 @@ fun ExploreScreen(
                 scope.launch {
                     isManualRefreshing = true
                     unshoo.ianshulyadav.pixelmusic.innertube.YouTube.invalidateHomeCache()
-                    val exploreJob = launch { exploreViewModel.loadData(forceRefresh = true) }
+                    val exploreJob = launch { exploreViewModel.refreshOnEntry(force = true) }
                     val quickPicksJob = launch { quickPicksViewModel.refresh(force = true) }
                     val feedJob = launch { feedViewModel.refresh() }
                     joinAll(exploreJob, quickPicksJob, feedJob)
@@ -711,11 +711,8 @@ fun ExploreScreen(
                 }
             }
 
-            val isOnlineColdStarting = !isLocalSelected && (!exploreUiState.isSettled || (isEffectivelyOnline && exploreUiState.moodChips.isEmpty()))
-            val showExploreLoading = isOnlineColdStarting ||
-                (!hasExploreContent && exploreUiState.error == null) ||
-                (exploreUiState.isLoading && !hasExploreContent) ||
-                (!exploreUiState.isSettled && !hasExploreContent)
+            val isOnlineLoading = !isLocalSelected && (exploreUiState.isLoading || !exploreUiState.isSettled)
+            val showExploreLoading = isOnlineLoading || (!hasExploreContent && exploreUiState.error == null)
 
             Crossfade(
                 targetState = when {

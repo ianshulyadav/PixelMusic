@@ -18,6 +18,7 @@ import com.unshoo.pixelmusic.presentation.model.ExploreItemUiModel
 import com.unshoo.pixelmusic.presentation.model.ExploreSectionUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -112,6 +113,12 @@ class ExploreViewModel @Inject constructor(
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
 
     private var stage2Job: Job? = null
+    private var refreshCoordinatorJob: Job? = null
+    @Volatile
+    private var currentRefreshGeneration: Long = 0L
+    @Volatile
+    private var currentMoodGeneration: Long = 0L
+
     @Volatile
     private var hasFetchedFromNetwork = false
     @Volatile
@@ -119,8 +126,8 @@ class ExploreViewModel @Inject constructor(
     private var initialHomeContinuation: String? = null
 
     companion object {
-        private const val CACHE_TIER_FRESH_MS = 30 * 60 * 1000L        // 0–30 min: Fresh -> No network request
-        private const val CACHE_TIER_STALE_MS = 4 * 60 * 60 * 1000L    // 30 min–4 hours: Stale -> Refresh silently
+        private const val CACHE_TIER_FRESH_MS = 30 * 60 * 1000L        // 0–30 min: Fresh
+        private const val CACHE_TIER_STALE_MS = 4 * 60 * 60 * 1000L    // 30 min–4 hours: Stale
         private const val CACHE_TIER_EXPIRED_MS = 24 * 60 * 60 * 1000L  // 4–24 hours: Old; > 24 hours: Expired
     }
 
@@ -135,40 +142,14 @@ class ExploreViewModel @Inject constructor(
     }
 
     init {
+        // Observers only in init per Explore Refresh Contract.
+        // Online data is fetched fresh upon Explore entry/re-entry through refreshOnEntry().
         viewModelScope.launch {
-            val startTime = System.currentTimeMillis()
-            withContext(Dispatchers.IO) {
-                restoreFromCache()
-            }
-            val hasData = _sectionsState.value.isNotEmpty()
-            if (hasData) {
-                // Ensure pleasant, non-rushed settle delay (~600ms) so background UI settles smoothly
-                val minSettleDuration = 600L
-                val elapsed = System.currentTimeMillis() - startTime
-                if (elapsed < minSettleDuration) {
-                    kotlinx.coroutines.delay(minSettleDuration - elapsed)
-                }
+            val isLocal = userPreferencesRepository.localModeEnabledFlow.first() || !connectivityStateHolder.isOnline.value
+            if (isLocal) {
+                loadOfflineExploreData()
                 _isSettledState.value = true
-                _uiState.update { it.copy(isSettled = true) }
-            }
-            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
-            when {
-                // Tier 1: 0–30 min: Fresh -> Use cache, no network request
-                hasData && cacheAge < CACHE_TIER_FRESH_MS -> {
-                    // Cache is fresh. Do not trigger network request.
-                }
-                // Tier 2: 30 min–4 hours: Stale -> Show cache immediately, refresh silently in background
-                hasData && cacheAge < CACHE_TIER_STALE_MS -> {
-                    loadDataInternal(forceRefresh = false, silent = true)
-                }
-                // Tier 3: 4–24 hours: Old -> Show cache immediately, fully refresh with visible indicator
-                hasData && cacheAge < CACHE_TIER_EXPIRED_MS -> {
-                    loadDataInternal(forceRefresh = true, silent = false)
-                }
-                // Tier 4: > 24 hours: Expired (or cold start without cache) -> Fetch fresh Home, show loading indicator
-                else -> {
-                    loadDataInternal(forceRefresh = true, silent = false)
-                }
+                _uiState.update { it.copy(isSettled = true, isLoading = false) }
             }
         }
         viewModelScope.launch {
@@ -435,7 +416,17 @@ class ExploreViewModel @Inject constructor(
         }
     }
 
-    private fun persistToCache(
+    private data class PreparedExploreData(
+        val rawSections: List<HomePage.Section>,
+        val resolvedNewReleases: List<AlbumItem>,
+        val personalizedAlbums: List<AlbumItem>,
+        val uiSections: List<ExploreSectionUiModel>,
+        val rawChips: List<HomePage.Chip>,
+        val uiChips: List<ExploreChipUiModel>,
+        val currentContinuation: String?
+    )
+
+    private fun persistToCacheAtomic(
         sections: List<HomePage.Section>,
         moodChips: List<HomePage.Chip> = emptyList(),
         newReleases: List<AlbumItem> = emptyList(),
@@ -455,7 +446,11 @@ class ExploreViewModel @Inject constructor(
                 )
                 val json = gson.toJson(cache)
                 if (json.length < 500 * 1024) {
-                    cacheFile.writeText(json)
+                    val tempFile = java.io.File(context.cacheDir, "explore_cache.json.tmp")
+                    tempFile.writeText(json)
+                    if (tempFile.exists()) {
+                        tempFile.renameTo(cacheFile)
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to persist explore data to cache")
@@ -463,55 +458,53 @@ class ExploreViewModel @Inject constructor(
         }
     }
 
-    fun loadData(forceRefresh: Boolean = false) {
-        viewModelScope.launch {
-            val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
-            val hasData = _sectionsState.value.isNotEmpty()
-            if (!forceRefresh && hasData && cacheAge < CACHE_TIER_FRESH_MS) {
+    /**
+     * Entry, re-entry and manual refresh coordinator.
+     * Guarantees atomic replacement, cancellation of stale jobs, and rejection of out-of-order commits.
+     */
+    fun refreshOnEntry(force: Boolean = true): Job {
+        val activeJob = refreshCoordinatorJob
+        if (!force && activeJob != null && activeJob.isActive) {
+            return activeJob
+        }
+
+        val generation = ++currentRefreshGeneration
+        activeJob?.cancel()
+
+        val job = viewModelScope.launch {
+            val isLocalMode = runCatching { userPreferencesRepository.localModeEnabledFlow.first() }.getOrDefault(false)
+            if (isLocalMode || !connectivityStateHolder.isOnline.value) {
+                loadOfflineExploreData()
+                _isSettledState.value = true
+                _uiState.update { it.copy(isSettled = true, isLoading = false, error = null) }
                 return@launch
             }
-            val silent = !forceRefresh && hasData && cacheAge < CACHE_TIER_STALE_MS
-            loadDataInternal(forceRefresh = forceRefresh, silent = silent)
+            executeOnlineRefresh(generation)
         }
+        refreshCoordinatorJob = job
+        return job
     }
 
-    private suspend fun loadDataInternal(forceRefresh: Boolean, silent: Boolean = false) {
-        val isLocalMode = userPreferencesRepository.localModeEnabledFlow.first()
-        if (isLocalMode || !connectivityStateHolder.isOnline.value) {
-            loadOfflineExploreData()
-            _isSettledState.value = true
-            _uiState.update { it.copy(isSettled = true) }
-            return
-        }
-        val cacheAge = System.currentTimeMillis() - lastFetchTimestamp
-        val hasData = _sectionsState.value.isNotEmpty()
-        if (!forceRefresh && hasData && cacheAge < CACHE_TIER_FRESH_MS) {
-            _isSettledState.value = true
-            _uiState.update { it.copy(isSettled = true) }
-            return
-        }
-        stage2Job?.cancel()
+    fun loadData(forceRefresh: Boolean = false) {
+        refreshOnEntry(force = forceRefresh)
+    }
 
-        if (silent) {
-            // Tier 2: Stale (30m-4h) -> Silent background refresh
-            _isRefreshingState.value = false
-            _isLoadingState.value = false
-            _errorState.value = null
-            _uiState.update { it.copy(isRefreshing = false, isLoading = false, error = null) }
-        } else if (hasData && cacheAge < CACHE_TIER_EXPIRED_MS) {
-            // Tier 3: Old (4-24h) or manual pull refresh -> Show refreshing indicator, keep cached content visible
-            _isRefreshingState.value = true
-            _isLoadingState.value = false
-            _errorState.value = null
-            _uiState.update { it.copy(isRefreshing = true, isLoading = false, error = null) }
-        } else {
-            // Tier 4: Expired (>24h) or initial empty cold start -> Show contained loading indicator
-            _isLoadingState.value = true
-            _isRefreshingState.value = false
-            _isSettledState.value = false
-            _errorState.value = null
-            _uiState.update { it.copy(isLoading = true, isRefreshing = false, isSettled = false, error = null) }
+    private suspend fun executeOnlineRefresh(generation: Long) {
+        // 1. Immediately enter loading state on online entry/refresh
+        _isLoadingState.value = true
+        _isRefreshingState.value = false
+        _isSettledState.value = false
+        _errorState.value = null
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                isRefreshing = false,
+                isSettled = false,
+                error = null
+            )
         }
+
+        stage2Job?.cancel()
 
         try {
             val isAdvancedExploreEnabled = userPreferencesRepository.advancedExplorePageFlow.first()
@@ -522,7 +515,7 @@ class ExploreViewModel @Inject constructor(
                 it.contains("SAPISID=") || it.contains("__Secure-3PAPISID=")
             } == true
 
-            // Stage 1: Fast concurrent initial fetch for YouTube Home, New Releases & Auth Account Albums
+            // Stage 1: Fetch source payloads on IO dispatcher
             val (initialHome, ytNewReleases, authAccountAlbums) = withContext(Dispatchers.IO) {
                 val homeDeferred = async { runCatching { YouTube.home().getOrNull() }.getOrNull() }
                 val newReleasesDeferred = async { runCatching { YouTube.newReleaseAlbums().getOrNull().orEmpty() }.getOrDefault(emptyList()) }
@@ -538,101 +531,117 @@ class ExploreViewModel @Inject constructor(
                 Triple(homeDeferred.await(), newReleasesDeferred.await(), authAlbumsDeferred.await())
             }
 
-            if (initialHome != null) {
-                val combinedSections = ArrayList<HomePage.Section>()
-                combinedSections.addAll(initialHome.sections)
-                val currentContinuation = initialHome.continuation
+            if (generation != currentRefreshGeneration) return
 
-                // Preserve video sections (e.g. Music videos for you) while keeping pure audio for other shelves
-                val rawSections = combinedSections.map { section ->
-                    val isVideoSection = section.title.contains("video", ignoreCase = true)
-                    if (isVideoSection) section else section.copy(items = section.items.filterVideo(true))
-                }.filter { section ->
-                    val title = section.title.lowercase()
-                    !title.contains("trending") &&
-                    !title.contains("long listens") &&
-                    !title.contains("local") &&
-                    section.items.isNotEmpty()
-                }.distinctBy { it.title }
+            // 2. Validate primary Home response
+            if (initialHome != null && initialHome.sections.isNotEmpty()) {
+                val prepared = withContext(Dispatchers.Default) {
+                    val combinedSections = ArrayList<HomePage.Section>()
+                    combinedSections.addAll(initialHome.sections)
+                    val continuation = initialHome.continuation
 
-                // Extract personalized new releases directly from user's YouTube Home feed (or fallback to authenticated new releases)
-                val personalizedNewReleases = rawSections.filter { section ->
-                    val t = section.title.lowercase()
-                    !t.contains("video") && !t.contains("videos") && (
-                        t.contains("released") ||
-                        t.contains("new release") || t.contains("new releases") ||
-                        t.contains("new album") || t.contains("latest release") ||
-                        t.contains("new music") || t.contains("recent release") ||
-                        t.contains("novedades") || t.contains("nouveautés") ||
-                        t.contains("veröffentlichungen") || t.contains("release radar") ||
-                        t.contains("new for you") ||
-                        section.label?.lowercase()?.contains("release") == true
-                    )
-                }.flatMap { it.items }.mapNotNull { item ->
-                    when (item) {
-                        is AlbumItem -> item
-                        is SongItem -> AlbumItem(
-                            browseId = item.id,
-                            playlistId = "",
-                            title = item.title,
-                            artists = item.artists,
-                            year = null,
-                            thumbnail = item.thumbnail,
-                            explicit = item.explicit
+                    // Preserve video sections (e.g. Music videos for you) while keeping pure audio for other shelves
+                    val rawSections = combinedSections.map { section ->
+                        val isVideoSection = section.title.contains("video", ignoreCase = true)
+                        if (isVideoSection) section else section.copy(items = section.items.filterVideo(true))
+                    }.filter { section ->
+                        val title = section.title.lowercase()
+                        !title.contains("trending") &&
+                        !title.contains("long listens") &&
+                        !title.contains("local") &&
+                        section.items.isNotEmpty()
+                    }.distinctBy { it.title }
+
+                    // Extract personalized new releases directly from user's YouTube Home feed
+                    val personalizedNewReleases = rawSections.filter { section ->
+                        val t = section.title.lowercase()
+                        !t.contains("video") && !t.contains("videos") && (
+                            t.contains("released") ||
+                            t.contains("new release") || t.contains("new releases") ||
+                            t.contains("new album") || t.contains("latest release") ||
+                            t.contains("new music") || t.contains("recent release") ||
+                            t.contains("novedades") || t.contains("nouveautés") ||
+                            t.contains("veröffentlichungen") || t.contains("release radar") ||
+                            t.contains("new for you") ||
+                            section.label?.lowercase()?.contains("release") == true
                         )
-                        else -> null
+                    }.flatMap { it.items }.mapNotNull { item ->
+                        when (item) {
+                            is AlbumItem -> item
+                            is SongItem -> AlbumItem(
+                                browseId = item.id,
+                                playlistId = "",
+                                title = item.title,
+                                artists = item.artists,
+                                year = null,
+                                thumbnail = item.thumbnail,
+                                explicit = item.explicit
+                            )
+                            else -> null
+                        }
+                    }.distinctBy { it.browseId }
+
+                    val resolvedNewReleases = (personalizedNewReleases + ytNewReleases).distinctBy { it.browseId }
+
+                    // Extract dedicated YouTube homepage albums
+                    val dedicatedAlbumSections = rawSections.filter { section ->
+                        val t = section.title.lowercase()
+                        !t.contains("video") && !t.contains("videos") && (
+                            t.contains("album") || section.label?.lowercase()?.contains("album") == true ||
+                            (t.contains("for you") && section.items.any { it is AlbumItem })
+                        )
                     }
-                }.distinctBy { it.browseId }
 
-                // Combine personalized home releases with official YouTube Music new release albums
-                val resolvedNewReleases = (personalizedNewReleases + ytNewReleases).distinctBy { it.browseId }
+                    val dedicatedAlbums = dedicatedAlbumSections.flatMap { it.items }.mapNotNull { item ->
+                        when (item) {
+                            is AlbumItem -> item
+                            is PlaylistItem -> if (item.title.contains("album", ignoreCase = true) || item.id.startsWith("MPRE")) {
+                                AlbumItem(
+                                    browseId = item.id,
+                                    playlistId = item.id,
+                                    title = item.title,
+                                    artists = listOfNotNull(item.author),
+                                    year = null,
+                                    thumbnail = item.thumbnail ?: "",
+                                    explicit = false
+                                )
+                            } else null
+                            else -> null
+                        }
+                    }
 
-                // Extract pure YouTube homepage albums (dedicated shelves + home feed album shelves)
-                val dedicatedAlbumSections = rawSections.filter { section ->
-                    val t = section.title.lowercase()
-                    !t.contains("video") && !t.contains("videos") && (
-                        t.contains("album") || section.label?.lowercase()?.contains("album") == true ||
-                        (t.contains("for you") && section.items.any { it is AlbumItem })
+                    val otherHomeAlbums = rawSections.filterNot { dedicatedAlbumSections.contains(it) }
+                        .filter { !it.title.contains("video", ignoreCase = true) }
+                        .flatMap { it.items }
+                        .filterIsInstance<AlbumItem>()
+
+                    val personalizedAlbums = (dedicatedAlbums + otherHomeAlbums + authAccountAlbums)
+                        .distinctBy { it.browseId }
+
+                    val uiSections = rawSections.map { it.toUiModel() }
+                    val rawChips = initialHome.chips ?: emptyList()
+                    val uiChips = rawChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
+
+                    PreparedExploreData(
+                        rawSections = rawSections,
+                        resolvedNewReleases = resolvedNewReleases,
+                        personalizedAlbums = personalizedAlbums,
+                        uiSections = uiSections,
+                        rawChips = rawChips,
+                        uiChips = uiChips,
+                        currentContinuation = continuation
                     )
                 }
 
-                val dedicatedAlbums = dedicatedAlbumSections.flatMap { it.items }.mapNotNull { item ->
-                    when (item) {
-                        is AlbumItem -> item
-                        is PlaylistItem -> if (item.title.contains("album", ignoreCase = true) || item.id.startsWith("MPRE")) {
-                            AlbumItem(
-                                browseId = item.id,
-                                playlistId = item.id,
-                                title = item.title,
-                                artists = listOfNotNull(item.author),
-                                year = null,
-                                thumbnail = item.thumbnail ?: "",
-                                explicit = false
-                            )
-                        } else null
-                        else -> null
-                    }
-                }
+                if (generation != currentRefreshGeneration) return
 
-                val otherHomeAlbums = rawSections.filterNot { dedicatedAlbumSections.contains(it) }
-                    .filter { !it.title.contains("video", ignoreCase = true) }
-                    .flatMap { it.items }
-                    .filterIsInstance<AlbumItem>()
-
-                // Pure YouTube homepage + Auth login YouTube Music account albums ONLY (no top artist dependency)
-                val personalizedAlbums = (dedicatedAlbums + otherHomeAlbums + authAccountAlbums)
-                    .distinctBy { it.browseId }
-
-                // Progressive streaming: map to domain UI models once
-                val uiSections = rawSections.map { it.toUiModel() }
-                val rawChips = initialHome.chips ?: emptyList()
-                val uiChips = rawChips.map { ExploreChipUiModel(it.title, it.endpoint?.browseId, it.endpoint?.params) }
-
-                _sectionsState.value = uiSections
-                _moodChipsState.value = uiChips
+                // 3. Commit exactly once atomically to observable state
+                _sectionsState.value = prepared.uiSections
+                _moodChipsState.value = prepared.uiChips
                 _isLoadingState.value = false
                 _isRefreshingState.value = false
                 _isSettledState.value = true
+                _errorState.value = null
 
                 _uiState.update {
                     it.copy(
@@ -640,64 +649,62 @@ class ExploreViewModel @Inject constructor(
                         isRefreshing = false,
                         isSettled = true,
                         isContinuationLoading = false,
-                        homePageSections = rawSections,
-                        homePageContinuation = currentContinuation,
-                        newReleaseAlbums = resolvedNewReleases,
-                        albumsForYou = personalizedAlbums,
-                        moodChips = rawChips,
+                        error = null,
+                        homePageSections = prepared.rawSections,
+                        homePageContinuation = prepared.currentContinuation,
+                        newReleaseAlbums = prepared.resolvedNewReleases,
+                        albumsForYou = prepared.personalizedAlbums,
+                        moodChips = prepared.rawChips,
                         isAdvancedExploreEnabled = isAdvancedExploreEnabled
                     )
                 }
 
-                initialHomeContinuation = currentContinuation
+                initialHomeContinuation = prepared.currentContinuation
                 lastFetchTimestamp = System.currentTimeMillis()
-                persistToCache(
-                    sections = rawSections,
-                    moodChips = rawChips,
-                    newReleases = resolvedNewReleases,
-                    albums = personalizedAlbums
-                )
                 hasFetchedFromNetwork = true
-            } else if (_sectionsState.value.isEmpty()) {
-                // Graceful fallback to cached data if network failed and sections are empty
-                val fallbackCache = runCatching {
-                    if (cacheFile.exists()) {
-                        val json = cacheFile.readText()
-                        gson.fromJson(json, ExploreCacheModel::class.java)
-                    } else null
-                }.getOrNull()
 
-                if (fallbackCache != null && fallbackCache.sections.isNotEmpty()) {
-                    val uiSections = fallbackCache.sections.map { it.toUiModel() }
-                    _sectionsState.value = uiSections
-                    _isLoadingState.value = false
-                    _isRefreshingState.value = false
-                    _isSettledState.value = true
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            isRefreshing = false,
-                            isSettled = true,
-                            homePageSections = fallbackCache.sections
-                        )
-                    }
-                } else {
-                    val msg = "Failed to fetch explore data. Check connection."
-                    _errorState.value = msg
-                    _isLoadingState.value = false
-                    _isRefreshingState.value = false
-                    _isSettledState.value = true
-                    _uiState.update { it.copy(isLoading = false, isRefreshing = false, isSettled = true, error = msg) }
+                // 4. Atomically write cache
+                persistToCacheAtomic(
+                    sections = prepared.rawSections,
+                    moodChips = prepared.rawChips,
+                    newReleases = prepared.resolvedNewReleases,
+                    albums = prepared.personalizedAlbums
+                )
+            } else {
+                // If primary data failed or was empty, surface error per contract (do NOT silently show stale cache)
+                if (generation != currentRefreshGeneration) return
+                val msg = "Failed to fetch explore data. Check connection."
+                _errorState.value = msg
+                _isLoadingState.value = false
+                _isRefreshingState.value = false
+                _isSettledState.value = true
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        isSettled = true,
+                        error = msg
+                    )
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.e(e, "Error loading Explore screen data")
+            if (generation != currentRefreshGeneration) return
             val msg = e.localizedMessage ?: "Unknown error occurred"
             _errorState.value = msg
             _isLoadingState.value = false
             _isRefreshingState.value = false
             _isSettledState.value = true
-            _uiState.update { it.copy(isLoading = false, isRefreshing = false, isSettled = true, error = msg) }
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    isRefreshing = false,
+                    isSettled = true,
+                    error = msg
+                )
+            }
         }
     }
 
@@ -716,44 +723,55 @@ class ExploreViewModel @Inject constructor(
         if (_uiState.value.isContinuationLoading || _uiState.value.isLoading || _uiState.value.isRefreshing) return
         if (!_uiState.value.isAdvancedExploreEnabled) return
 
+        val currentGen = currentRefreshGeneration
         viewModelScope.launch {
             _uiState.update { it.copy(isContinuationLoading = true) }
-            val continuationHome = withContext(Dispatchers.IO) {
-                runCatching { YouTube.home(continuation = continuation).getOrNull() }.getOrNull()
-            }
-
-            if (continuationHome != null && continuationHome.sections.isNotEmpty()) {
-                val newRawSections = continuationHome.sections.map { section ->
-                    val isVideoSection = section.title.contains("video", ignoreCase = true)
-                    if (isVideoSection) section else section.copy(items = section.items.filterVideo(true))
-                }.filter { section ->
-                    val title = section.title.lowercase()
-                    !title.contains("trending") &&
-                    !title.contains("long listens") &&
-                    !title.contains("local") &&
-                    section.items.isNotEmpty()
+            try {
+                val continuationHome = withContext(Dispatchers.IO) {
+                    runCatching { YouTube.home(continuation = continuation).getOrNull() }.getOrNull()
                 }
 
-                val currentRaw = _uiState.value.homePageSections
-                val mergedRaw = (currentRaw + newRawSections).distinctBy { it.title }
-                val uiSections = mergedRaw.map { it.toUiModel() }
+                if (currentGen != currentRefreshGeneration) return@launch
 
-                _sectionsState.value = uiSections
-                _uiState.update {
-                    it.copy(
-                        isContinuationLoading = false,
-                        homePageSections = mergedRaw,
-                        homePageContinuation = continuationHome.continuation
+                if (continuationHome != null && continuationHome.sections.isNotEmpty()) {
+                    val newRawSections = continuationHome.sections.map { section ->
+                        val isVideoSection = section.title.contains("video", ignoreCase = true)
+                        if (isVideoSection) section else section.copy(items = section.items.filterVideo(true))
+                    }.filter { section ->
+                        val title = section.title.lowercase()
+                        !title.contains("trending") &&
+                        !title.contains("long listens") &&
+                        !title.contains("local") &&
+                        section.items.isNotEmpty()
+                    }
+
+                    val currentRaw = _uiState.value.homePageSections
+                    val mergedRaw = (currentRaw + newRawSections).distinctBy { it.title }
+                    val uiSections = mergedRaw.map { it.toUiModel() }
+
+                    _sectionsState.value = uiSections
+                    _uiState.update {
+                        it.copy(
+                            isContinuationLoading = false,
+                            homePageSections = mergedRaw,
+                            homePageContinuation = continuationHome.continuation
+                        )
+                    }
+                    persistToCacheAtomic(
+                        sections = mergedRaw,
+                        moodChips = _uiState.value.moodChips,
+                        newReleases = _uiState.value.newReleaseAlbums,
+                        albums = _uiState.value.albumsForYou
                     )
+                } else {
+                    _uiState.update { it.copy(isContinuationLoading = false, homePageContinuation = null) }
                 }
-                persistToCache(
-                    sections = mergedRaw,
-                    moodChips = _uiState.value.moodChips,
-                    newReleases = _uiState.value.newReleaseAlbums,
-                    albums = _uiState.value.albumsForYou
-                )
-            } else {
-                _uiState.update { it.copy(isContinuationLoading = false, homePageContinuation = null) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (currentGen == currentRefreshGeneration) {
+                    _uiState.update { it.copy(isContinuationLoading = false) }
+                }
             }
         }
     }
@@ -797,7 +815,7 @@ class ExploreViewModel @Inject constructor(
             }
             _sectionsState.value = _uiState.value.homePageSections.map { it.toUiModel() }
             if (_uiState.value.homePageSections.isEmpty()) {
-                loadData(false)
+                refreshOnEntry(force = false)
             }
         } else {
             selectMoodChipByName(chip.title, chip)
@@ -806,6 +824,7 @@ class ExploreViewModel @Inject constructor(
 
     fun selectMoodChipByName(name: String, chip: HomePage.Chip? = null) {
         viewModelScope.launch {
+            val moodGen = ++currentMoodGeneration
             val effectiveChip = chip ?: _uiState.value.moodChips.firstOrNull {
                 it.title.equals(name, ignoreCase = true) ||
                 it.title.replace(" ", "").equals(name.replace(" ", ""), ignoreCase = true)
@@ -818,55 +837,66 @@ class ExploreViewModel @Inject constructor(
             _uiState.update { it.copy(activeMoodChip = effectiveChip, selectedFilter = effectiveChip.title, isLoading = true, error = null) }
             _isLoadingState.value = true
 
-            withContext(Dispatchers.IO) {
-                val params = effectiveChip.endpoint?.params
-                if (params != null) {
-                    val result = runCatching {
-                        YouTube.home(params = params).getOrThrow()
-                    }
-                    if (result.isSuccess && result.getOrNull()?.sections?.isNotEmpty() == true) {
-                        val homeResult = result.getOrThrow()
-                        val rawSections = homeResult.sections
-                        val uiSections = rawSections.map { it.toUiModel() }
-                        _sectionsState.value = uiSections
-                        _isLoadingState.value = false
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                explorePageSections = rawSections,
-                                homePageContinuation = homeResult.continuation
-                            )
+            try {
+                withContext(Dispatchers.IO) {
+                    val params = effectiveChip.endpoint?.params
+                    if (params != null) {
+                        val result = runCatching {
+                            YouTube.home(params = params).getOrThrow()
                         }
-                        return@withContext
-                    }
-                }
-                val endpoint = effectiveChip.endpoint
-                if (endpoint != null && endpoint.browseId.isNotBlank()) {
-                    val result = runCatching {
-                        YouTube.explore(browseId = endpoint.browseId, params = endpoint.params).getOrThrow()
-                    }
-                    if (result.isSuccess && result.getOrNull()?.sections?.isNotEmpty() == true) {
-                        val exp = result.getOrThrow()
-                        val rawSections = exp.sections
-                        val uiSections = rawSections.map { it.toUiModel() }
-                        _sectionsState.value = uiSections
-                        _isLoadingState.value = false
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                explorePageSections = rawSections,
-                                homePageContinuation = null
-                            )
+                        if (result.isSuccess && result.getOrNull()?.sections?.isNotEmpty() == true) {
+                            val homeResult = result.getOrThrow()
+                            val rawSections = homeResult.sections
+                            val uiSections = rawSections.map { it.toUiModel() }
+                            if (moodGen != currentMoodGeneration) return@withContext
+                            _sectionsState.value = uiSections
+                            _isLoadingState.value = false
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    explorePageSections = rawSections,
+                                    homePageContinuation = homeResult.continuation
+                                )
+                            }
+                            return@withContext
                         }
-                        return@withContext
                     }
+                    val endpoint = effectiveChip.endpoint
+                    if (endpoint != null && endpoint.browseId.isNotBlank()) {
+                        val result = runCatching {
+                            YouTube.explore(browseId = endpoint.browseId, params = endpoint.params).getOrThrow()
+                        }
+                        if (result.isSuccess && result.getOrNull()?.sections?.isNotEmpty() == true) {
+                            val exp = result.getOrThrow()
+                            val rawSections = exp.sections
+                            val uiSections = rawSections.map { it.toUiModel() }
+                            if (moodGen != currentMoodGeneration) return@withContext
+                            _sectionsState.value = uiSections
+                            _isLoadingState.value = false
+                            _uiState.update {
+                                it.copy(
+                                    isLoading = false,
+                                    explorePageSections = rawSections,
+                                    homePageContinuation = null
+                                )
+                            }
+                            return@withContext
+                        }
+                    }
+                    fetchMoodFallbackSections(name, moodGen)
                 }
-                fetchMoodFallbackSections(name)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (moodGen == currentMoodGeneration) {
+                    _isLoadingState.value = false
+                    _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
+                }
             }
         }
     }
 
-    private suspend fun fetchMoodFallbackSections(moodName: String) {
+    private suspend fun fetchMoodFallbackSections(moodName: String, moodGen: Long) {
         val playlistsResult = runCatching {
             YouTube.search(moodName, YouTube.SearchFilter.FILTER_FEATURED_PLAYLIST).getOrNull()
                 ?: YouTube.search(moodName, YouTube.SearchFilter.FILTER_COMMUNITY_PLAYLIST).getOrNull()
@@ -875,6 +905,8 @@ class ExploreViewModel @Inject constructor(
         val songsResult = runCatching {
             YouTube.search(moodName, YouTube.SearchFilter.FILTER_SONG).getOrNull()
         }.getOrNull()
+
+        if (moodGen != currentMoodGeneration) return
 
         val sections = mutableListOf<HomePage.Section>()
         val playlistItems = playlistsResult?.items?.filterIsInstance<PlaylistItem>().orEmpty()
@@ -901,6 +933,8 @@ class ExploreViewModel @Inject constructor(
                 )
             )
         }
+
+        if (moodGen != currentMoodGeneration) return
 
         val uiSections = sections.map { it.toUiModel() }
         _sectionsState.value = uiSections

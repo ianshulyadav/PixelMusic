@@ -798,11 +798,18 @@ private fun mainRootEnterTransition(
                     stiffness = ExpressiveSprings.DefaultSpatialStiffness,
                     dampingRatio = 0.82f
                 ),
-                initialOffsetX = { (it * 0.04f).toInt() }
+                initialOffsetX = { (it * 0.08f).toInt() }
+            ) + scaleIn(
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 0.82f
+                ),
+                initialScale = 0.92f,
+                transformOrigin = TransformOrigin.Center
             ) + fadeIn(
                 animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 200,
-                    delayMillis = 75,
+                    durationMillis = 300,
+                    delayMillis = 85,
                     easing = EmphasizedDecelerateEasing
                 )
             )
@@ -813,11 +820,18 @@ private fun mainRootEnterTransition(
                     stiffness = ExpressiveSprings.DefaultSpatialStiffness,
                     dampingRatio = 0.82f
                 ),
-                initialOffsetX = { -(it * 0.04f).toInt() }
+                initialOffsetX = { -(it * 0.08f).toInt() }
+            ) + scaleIn(
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 0.82f
+                ),
+                initialScale = 0.92f,
+                transformOrigin = TransformOrigin.Center
             ) + fadeIn(
                 animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 200,
-                    delayMillis = 75,
+                    durationMillis = 300,
+                    delayMillis = 85,
                     easing = EmphasizedDecelerateEasing
                 )
             )
@@ -841,10 +855,17 @@ private fun mainRootExitTransition(
                     stiffness = ExpressiveSprings.DefaultSpatialStiffness,
                     dampingRatio = 1f
                 ),
-                targetOffsetX = { -(it * 0.04f).toInt() }
+                targetOffsetX = { -(it * 0.08f).toInt() }
+            ) + scaleOut(
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 1f
+                ),
+                targetScale = 0.92f,
+                transformOrigin = TransformOrigin.Center
             ) + fadeOut(
                 animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 90,
+                    durationMillis = 160,
                     easing = EmphasizedAccelerateEasing
                 )
             )
@@ -855,10 +876,17 @@ private fun mainRootExitTransition(
                     stiffness = ExpressiveSprings.DefaultSpatialStiffness,
                     dampingRatio = 1f
                 ),
-                targetOffsetX = { (it * 0.04f).toInt() }
+                targetOffsetX = { (it * 0.08f).toInt() }
+            ) + scaleOut(
+                animationSpec = spring(
+                    stiffness = ExpressiveSprings.DefaultSpatialStiffness,
+                    dampingRatio = 1f
+                ),
+                targetScale = 0.92f,
+                transformOrigin = TransformOrigin.Center
             ) + fadeOut(
                 animationSpec = androidx.compose.animation.core.tween(
-                    durationMillis = 90,
+                    durationMillis = 160,
                     easing = EmphasizedAccelerateEasing
                 )
             )
