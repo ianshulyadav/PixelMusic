@@ -1361,9 +1361,9 @@ private fun SongMiniCard(
                     .align(Alignment.BottomEnd)
                     .padding(end = 4.5.dp, bottom = 4.5.dp),
                 shape = RoundedCornerShape(999.dp),
-                color = Color.Black.copy(alpha = 0.20f),
+                color = Color.Black.copy(alpha = 0.30f),
                 contentColor = Color.White.copy(alpha = 0.80f),
-                border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.15f))
+                border = BorderStroke(0.3.dp, Color.White.copy(alpha = 0.10f))
             ) {
                 Row(
                     modifier = Modifier
