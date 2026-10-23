@@ -1042,7 +1042,7 @@ private fun ShareableCard(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(surfaceContainerLowest)
+                        .background(Color.Black)
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
@@ -1056,11 +1056,11 @@ private fun ShareableCard(
                             .graphicsLayer {
                                 scaleX = 1.08f
                                 scaleY = 1.08f
-                                alpha = if (isCardDark) 0.90f else 0.85f
+                                alpha = 0.90f
                             }
                             .then(
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                    Modifier.blur(if (isCardDark) 14.dp else 16.dp)
+                                    Modifier.blur(14.dp)
                                 } else {
                                     Modifier
                                 }
@@ -1070,21 +1070,18 @@ private fun ShareableCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(
-                                if (isCardDark) Color.Black.copy(alpha = 0.16f)
-                                else Color.White.copy(alpha = 0.10f)
-                            )
+                            .background(Color.Black.copy(alpha = 0.16f))
                     )
-                    // Gradient scrim only at top and bottom for readability, leaving center artwork visible
+                    // Gradient scrim only at top and bottom for readability, keeping black tone in both light and dark
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
                                 brush = Brush.verticalGradient(
-                                    0.0f to if (isCardDark) Color.Black.copy(alpha = 0.35f) else Color.Transparent,
+                                    0.0f to Color.Black.copy(alpha = 0.35f),
                                     0.25f to Color.Transparent,
                                     0.70f to Color.Transparent,
-                                    1.0f to if (isCardDark) Color.Black.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.25f)
+                                    1.0f to Color.Black.copy(alpha = 0.45f)
                                 )
                             )
                     )
@@ -1290,7 +1287,7 @@ private fun ShareableCard(
             Row(
                 modifier = Modifier
                     .shadow(
-                        elevation = 6.dp,
+                        elevation = 3.dp,
                         shape = CircleShape,
                         ambientColor = Color.Black.copy(alpha = 0.40f),
                         spotColor = Color.Black.copy(alpha = 0.30f)
@@ -1305,11 +1302,11 @@ private fun ShareableCard(
                         )
                     )
                     .border(
-                        width = 1.dp,
+                        width = 0.5.dp,
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = 0.28f),
-                                Color.White.copy(alpha = 0.10f)
+                                Color.White.copy(alpha = 0.22f),
+                                Color.White.copy(alpha = 0.08f)
                             )
                         ),
                         shape = CircleShape
@@ -1317,9 +1314,10 @@ private fun ShareableCard(
                     .clickable {
                         try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
                     }
-                    .padding(horizontal = 12.dp, vertical = 3.5.dp),
+                    .height(22.dp)
+                    .padding(horizontal = 9.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(5.5.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.5.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.pixelmusic_base_monochrome),
@@ -1332,6 +1330,7 @@ private fun ShareableCard(
                     fontFamily = GoogleSansRounded,
                     fontWeight = FontWeight.Bold,
                     fontSize = 11.sp,
+                    lineHeight = 11.sp,
                     letterSpacing = 0.2.sp,
                     color = Color.White
                 )
