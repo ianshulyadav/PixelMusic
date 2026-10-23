@@ -158,13 +158,8 @@ android {
             }
             isMinifyEnabled = true
             isShrinkResources = true
-            // R8 Full Mode is enabled at the project level in
-            // gradle.properties (`android.enableR8.fullMode=true`) —
-            // the previous commented-out flag here left R8 in compat
-            // mode, which is significantly less aggressive and produces
-            // 15-25% larger dex plus slower cold starts. The existing
-            // proguard-rules.pro already covers the project-specific
-            // keep rules, so the full mode repackaging is safe.
+            // AGP 8+ enables R8 full mode by default. Keep project-specific
+            // rules in proguard-rules.pro and verify release behavior in CI.
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -370,7 +365,6 @@ dependencies {
     implementation(libs.tdlib)
 
     // UI Utilities & Performance
-    implementation("androidx.metrics:metrics-performance:1.0.0-beta01")
 
     implementation(libs.timber)
     // Gemini uses our lightweight REST client. Avoid the deprecated official SDK because

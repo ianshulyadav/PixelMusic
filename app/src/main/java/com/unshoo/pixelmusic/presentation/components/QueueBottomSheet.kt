@@ -333,7 +333,7 @@ fun QueueBottomSheet(
     // when upstream emits equivalent list instances during drag.
     var reorderPreviewQueueSignature by remember { mutableStateOf<Int?>(null) }
     val displaySongsSignature = remember(displaySongs, queueIndexOffset) {
-        (queueIndexOffset * 31) + System.identityHashCode(displaySongs)
+        (queueIndexOffset * 31) + displaySongs.hashCode()
     }
     val defaultDisplayOrder = remember(displaySongCount, queueIndexOffset) {
         List(displaySongCount) { queueIndexOffset + it }

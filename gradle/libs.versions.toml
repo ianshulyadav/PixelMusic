@@ -2,7 +2,6 @@
 accompanistDrawablepainter = "0.37.3"
 agp = "9.2.1"
 app = "1.7.0"
-googleGenai = "1.58.0"
 googlePlayServicesCast = "22.3.1"
 animation = "1.11.2"
 appcompat = "1.7.1"
@@ -90,7 +89,6 @@ wavySlider = "2.2.0"
 workRuntimeKtx = "2.11.2"
 composeTesting = "1.0.0-alpha03"
 timber = "5.0.1"
-generativeai = "0.9.0"
 mockk = "1.14.11"
 turbine = "1.2.1"
 truth = "1.4.5"
@@ -104,7 +102,6 @@ uiautomator = "2.3.0"
 benchmarkMacroJunit4 = "1.4.1"
 baselineprofile = "1.5.0-alpha06"
 profileinstaller = "1.4.1"
-pagingCommon = "3.3.6"
 
 [libraries]
 accompanist-drawablepainter = { module = "com.google.accompanist:accompanist-drawablepainter", version.ref = "accompanistDrawablepainter" }
@@ -119,10 +116,8 @@ googleid = { group = "com.google.android.libraries.identity.googleid", name = "g
 tdlib = { module = "com.github.tdlibx:td", version = "1.8.56" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version = "3.5.0" }
 androidx-app = { module = "androidx.car.app:app", version.ref = "app" }
-androidx-app-projected = { module = "androidx.car.app:app-projected", version.ref = "app" }
 androidx-media = { module = "androidx.media:media", version.ref = "media" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "composeUi" }
-google-genai = { group = "com.google.genai", name = "google-genai", version.ref = "googleGenai" }
 google-play-services-cast-framework = { group = "com.google.android.gms", name = "play-services-cast-framework", version.ref = "googlePlayServicesCast" }
 androidx-animation = { module = "androidx.compose.animation:animation", version.ref = "animation" }
 desugar-jdk-libs = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugarJdkLibs" }
@@ -221,7 +216,6 @@ taglib = { group = "io.github.kyant0", name = "taglib", version.ref = "taglib" }
 jaudiotagger = { group = "net.jthink", name = "jaudiotagger", version.ref = "jaudiotagger" }
 vorbisjava-core = { group = "org.gagravarr", name = "vorbis-java-core", version.ref = "vorbisjava" }
 reorderables = { group = "sh.calvin.reorderable", name = "reorderable", version.ref = "reorderables" }
-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
