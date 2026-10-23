@@ -176,6 +176,9 @@ class FileExplorerStateHolder(
                 val resolver = DirectoryRuleResolver(allowed, blocked)
                 rawEntries
                     .filter { raw ->
+                        if (DirectoryRuleResolver.isAndroidDirectory(raw.canonicalPath) || DirectoryRuleResolver.isAndroidDirectory(raw.file.name)) {
+                            return@filter false
+                        }
                         val hasAudio = raw.totalAudioCount > 0 || raw.directAudioCount > 0
                         val isConfigured = allowed.contains(raw.canonicalPath) || blocked.contains(raw.canonicalPath)
                         val isRecording = DirectoryRuleResolver.isRecordingDirectory(raw.canonicalPath)
@@ -386,7 +389,7 @@ class FileExplorerStateHolder(
             runCatching {
                 target.listFiles()
                     ?.asSequence()
-                    ?.filter { it.isDirectory && !it.isHidden }
+                    ?.filter { it.isDirectory && !it.isHidden && !DirectoryRuleResolver.isAndroidDirectory(it.name) && !DirectoryRuleResolver.isAndroidDirectory(it.absolutePath) }
                     ?.map { child ->
                         val childKey = normalizePath(child)
                         RawDirectoryEntry(
@@ -413,6 +416,7 @@ class FileExplorerStateHolder(
         val childPaths = index.childrenByParent[targetKey].orEmpty()
 
         childPaths
+            .filterNot { DirectoryRuleResolver.isAndroidDirectory(it) }
             .map { childPath ->
                 RawDirectoryEntry(
                     file = File(childPath),
@@ -438,6 +442,7 @@ class FileExplorerStateHolder(
             try {
                 val index = getOrBuildMediaStoreDirectoryIndex(forceRefresh)
                 val mediaStoreEntries = index.childrenByParent[targetKey].orEmpty()
+                    .filterNot { DirectoryRuleResolver.isAndroidDirectory(it) }
                     .map { childPath ->
                         RawDirectoryEntry(
                             file = File(childPath),

@@ -691,22 +691,12 @@ fun WelcomePage() {
             tonalElevation = 2.dp,
             shadowElevation = 0.dp
         ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.setup_beta_symbol),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Black
-                )
-                Text(
-                    text = stringResource(R.string.setup_beta_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+            Text(
+                text = "v${com.unshoo.pixelmusic.BuildConfig.VERSION_NAME}",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
         // Placeholder for vector art

@@ -91,6 +91,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.unshoo.pixelmusic.presentation.screens.TabAnimation
 import com.unshoo.pixelmusic.presentation.viewmodel.DirectoryEntry
 import com.unshoo.pixelmusic.ui.theme.GoogleSansRounded
+import com.unshoo.pixelmusic.utils.DirectoryRuleResolver
 import com.unshoo.pixelmusic.utils.StorageInfo
 import java.io.File
 
@@ -376,13 +377,19 @@ fun FileExplorerContent(
                         fadeIn(animationSpec = tween(220)) togetherWith fadeOut(animationSpec = tween(200))
                     }
                 ) { (_, children, _) ->
+                    val visibleChildren = remember(children) {
+                        children.filterNot {
+                            DirectoryRuleResolver.isAndroidDirectory(it.canonicalPath) ||
+                            DirectoryRuleResolver.isAndroidDirectory(it.file.name)
+                        }
+                    }
                     when {
                         showLoadingState -> ExplorerLoadingState(
                             message = loadingMessage,
                             supportingText = loadingHint
                         )
 
-                        children.isEmpty() -> ExplorerEmptyState(text = stringResource(R.string.presentation_batch_g_file_explorer_empty_folders))
+                        visibleChildren.isEmpty() -> ExplorerEmptyState(text = stringResource(R.string.presentation_batch_g_file_explorer_empty_folders))
 
                         else -> {
                             LazyColumn(
@@ -402,7 +409,7 @@ fun FileExplorerContent(
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
                                 state = listState
                             ) {
-                                items(children, key = { it.file.absolutePath }) { directoryEntry ->
+                                items(visibleChildren, key = { it.file.absolutePath }) { directoryEntry ->
                                     val displayCount = directoryEntry.totalAudioCount
 
                                     FileExplorerItem(

@@ -8,11 +8,11 @@ internal fun isMainRootRoute(route: String?): Boolean = when (route) {
     else -> false
 }
 
-internal fun mainRootRouteIndex(route: String?): Int? = when (route) {
+internal fun mainRootRouteIndex(route: String?, isFloatingPill: Boolean = false): Int? = when (route) {
     Screen.Home.route -> 0
     Screen.Explore.route -> 1
-    Screen.Library.route -> 2
-    Screen.Search.route -> 3
+    Screen.Search.route -> if (isFloatingPill) 3 else 2
+    Screen.Library.route -> if (isFloatingPill) 2 else 3
     else -> null
 }
 

@@ -29,13 +29,9 @@ class FolderTreeBuilder @Inject constructor() {
         val resolver = DirectoryRuleResolver(allowedDirs, blockedDirs)
 
         // 2. Filter Songs based on Directory Rules
-        val filteredSongs = if (isFolderFilterActive && blockedDirs.isNotEmpty()) {
-            folderSongs.filter { song ->
-                val normalizedParent = normalizePath(song.parentDirectoryPath)
-                normalizedParent.isNotBlank() && !resolver.isBlocked(normalizedParent)
-            }
-        } else {
-            folderSongs
+        val filteredSongs = folderSongs.filter { song ->
+            val normalizedParent = normalizePath(song.parentDirectoryPath)
+            normalizedParent.isNotBlank() && !resolver.isBlocked(normalizedParent)
         }
 
         if (filteredSongs.isEmpty()) return emptyList()

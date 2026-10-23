@@ -36,6 +36,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.unshoo.pixelmusic.data.preferences.NavBarStyle
 import com.unshoo.pixelmusic.data.preferences.LaunchTab
 import com.unshoo.pixelmusic.data.preferences.UserPreferencesRepository
 import com.unshoo.pixelmusic.presentation.screens.AlbumDetailScreen
@@ -84,6 +86,8 @@ fun AppNavigation(
     onOpenSidebar: () -> Unit
 ) {
     var startDestination by remember { mutableStateOf<String?>(null) }
+    val navBarStyle by playerViewModel.navBarStyle.collectAsStateWithLifecycle()
+    val isFloatingPill = navBarStyle == NavBarStyle.FLOATING_PILL
 
     LaunchedEffect(Unit) {
         startDestination = launchTabToRoute(userPreferencesRepository.launchTabFlow.first())
@@ -100,28 +104,32 @@ fun AppNavigation(
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = enterTransition()
+                        fallback = enterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 exitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = exitTransition()
+                        fallback = exitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popEnterTransition = {
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popEnterTransition()
+                        fallback = popEnterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popExitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popExitTransition()
+                        fallback = popExitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
             ) {
@@ -140,28 +148,32 @@ fun AppNavigation(
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = enterTransition()
+                        fallback = enterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 exitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = exitTransition()
+                        fallback = exitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popEnterTransition = {
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popEnterTransition()
+                        fallback = popEnterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popExitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popExitTransition()
+                        fallback = popExitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
             ) {
@@ -179,28 +191,32 @@ fun AppNavigation(
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = enterTransition()
+                        fallback = enterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 exitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = exitTransition()
+                        fallback = exitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popEnterTransition = {
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popEnterTransition()
+                        fallback = popEnterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popExitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popExitTransition()
+                        fallback = popExitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
             ) {
@@ -219,28 +235,32 @@ fun AppNavigation(
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = enterTransition()
+                        fallback = enterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 exitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = exitTransition()
+                        fallback = exitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popEnterTransition = {
                     mainRootEnterTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popEnterTransition()
+                        fallback = popEnterTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
                 popExitTransition = {
                     mainRootExitTransition(
                         fromRoute = initialState.destination.route,
                         toRoute = targetState.destination.route,
-                        fallback = popExitTransition()
+                        fallback = popExitTransition(),
+                        isFloatingPill = isFloatingPill
                     )
                 },
             ) {
@@ -799,10 +819,11 @@ private const val BOTTOM_NAV_FADE_IN_DURATION = 180
 
 private fun mainRootDirection(
     fromRoute: String?,
-    toRoute: String?
+    toRoute: String?,
+    isFloatingPill: Boolean = false
 ): MainRootDirection? {
-    val fromIndex = mainRootRouteIndex(fromRoute) ?: return null
-    val toIndex = mainRootRouteIndex(toRoute) ?: return null
+    val fromIndex = mainRootRouteIndex(fromRoute, isFloatingPill) ?: return null
+    val toIndex = mainRootRouteIndex(toRoute, isFloatingPill) ?: return null
     if (fromIndex == toIndex) return null
     return if (toIndex > fromIndex) MainRootDirection.FORWARD else MainRootDirection.BACKWARD
 }
@@ -810,9 +831,10 @@ private fun mainRootDirection(
 private fun mainRootEnterTransition(
     fromRoute: String?,
     toRoute: String?,
-    fallback: EnterTransition
+    fallback: EnterTransition,
+    isFloatingPill: Boolean = false
 ): EnterTransition {
-    return when (mainRootDirection(fromRoute, toRoute)) {
+    return when (mainRootDirection(fromRoute, toRoute, isFloatingPill)) {
         MainRootDirection.FORWARD -> {
             slideInHorizontally(
                 animationSpec = spring(
@@ -864,9 +886,10 @@ private fun mainRootEnterTransition(
 private fun mainRootExitTransition(
     fromRoute: String?,
     toRoute: String?,
-    fallback: ExitTransition
+    fallback: ExitTransition,
+    isFloatingPill: Boolean = false
 ): ExitTransition {
-    return when (mainRootDirection(fromRoute, toRoute)) {
+    return when (mainRootDirection(fromRoute, toRoute, isFloatingPill)) {
         MainRootDirection.FORWARD -> {
             slideOutHorizontally(
                 animationSpec = spring(

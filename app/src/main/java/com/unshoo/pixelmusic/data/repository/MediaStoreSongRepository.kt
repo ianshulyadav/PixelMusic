@@ -183,18 +183,14 @@ class MediaStoreSongRepository @Inject constructor(
                     allowedDirs.map(::normalizePath).toSet(),
                     blockedDirs.map(::normalizePath).toSet()
                 )
-                val isFilterActive = blockedDirs.isNotEmpty()
-
                 while (cursor.moveToNext()) {
                     val path = cursor.getString(pathCol)
 
-                    // Directory Filtering
-                    if (isFilterActive) {
-                        val lastSlashIndex = path.lastIndexOf('/')
-                        val parentPath = if (lastSlashIndex != -1) path.substring(0, lastSlashIndex) else ""
-                        if (resolver.isBlocked(parentPath)) {
-                            continue
-                        }
+                    // Directory Filtering (respects custom rules and default exclusions like recordings and Android)
+                    val lastSlashIndex = path.lastIndexOf('/')
+                    val parentPath = if (lastSlashIndex != -1) path.substring(0, lastSlashIndex) else ""
+                    if (resolver.isBlocked(parentPath)) {
+                        continue
                     }
 
                     val id = cursor.getLong(idCol)
@@ -437,18 +433,12 @@ class MediaStoreSongRepository @Inject constructor(
                     allowedDirs.map(::normalizePath).toSet(),
                     blockedDirs.map(::normalizePath).toSet()
                 )
-                val isFilterActive = blockedDirs.isNotEmpty()
-
                 while (cursor.moveToNext()) {
                     val path = cursor.getString(pathCol)
-                    if (isFilterActive) {
-                        if (isFilterActive) {
-                            val lastSlashIndex = path.lastIndexOf('/')
-                            val parentPath = if (lastSlashIndex != -1) path.substring(0, lastSlashIndex) else ""
-                            if (resolver.isBlocked(parentPath)) {
-                                continue
-                            }
-                        }
+                    val lastSlashIndex = path.lastIndexOf('/')
+                    val parentPath = if (lastSlashIndex != -1) path.substring(0, lastSlashIndex) else ""
+                    if (resolver.isBlocked(parentPath)) {
+                        continue
                     }
                     ids.add(cursor.getLong(idCol))
                 }

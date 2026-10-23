@@ -50,8 +50,8 @@ class DirectoryRuleResolver(
             return true
         }
 
-        // Default exclusion: exclude recordings directories out-of-the-box
-        return isRecordingDirectory(path)
+        // Default exclusion: exclude recordings and android directories out-of-the-box
+        return isRecordingDirectory(path) || isAndroidDirectory(path)
     }
 
     private fun normalize(path: String?): String? {
@@ -84,6 +84,12 @@ class DirectoryRuleResolver(
             val normalized = path.replace('\\', '/').trimEnd('/')
             val segments = normalized.split('/')
             return segments.any { it.lowercase() in RECORDING_DIR_NAMES }
+        }
+
+        fun isAndroidDirectory(path: String): Boolean {
+            val normalized = path.replace('\\', '/').trimEnd('/')
+            val segments = normalized.split('/')
+            return segments.any { it.equals("Android", ignoreCase = true) }
         }
     }
 }
