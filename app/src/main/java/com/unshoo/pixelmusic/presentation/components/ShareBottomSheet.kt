@@ -1149,12 +1149,9 @@ private fun ShareableCard(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Spacer above the song minicard
-            Spacer(Modifier.height(19.dp))
-
             if (!isLyricsMode) {
                 // ── SONG CARD (Full Player Sheet Layout) ──────────────────────
                 Box(
@@ -1281,60 +1278,6 @@ private fun ShareableCard(
                     )
                 }
             }
-
-            // ── PixelMusic pill — OUTSIDE mini card, in outer column ─────────
-            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
-            Row(
-                modifier = Modifier
-                    .shadow(
-                        elevation = 3.dp,
-                        shape = CircleShape,
-                        ambientColor = Color.Black.copy(alpha = 0.40f),
-                        spotColor = Color.Black.copy(alpha = 0.30f)
-                    )
-                    .clip(CircleShape)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.52f),
-                                Color.Black.copy(alpha = 0.38f)
-                            )
-                        )
-                    )
-                    .border(
-                        width = 0.5.dp,
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.White.copy(alpha = 0.22f),
-                                Color.White.copy(alpha = 0.08f)
-                            )
-                        ),
-                        shape = CircleShape
-                    )
-                    .clickable {
-                        try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
-                    }
-                    .height(22.dp)
-                    .padding(horizontal = 9.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.5.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.pixelmusic_base_monochrome),
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = "PixelMusic",
-                    fontFamily = GoogleSansRounded,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 11.sp,
-                    lineHeight = 11.sp,
-                    letterSpacing = 0.2.sp,
-                    color = Color.White
-                )
-            }
         }
     }
 }
@@ -1396,6 +1339,7 @@ private fun SongMiniCard(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         // ── 1. Album Artwork (Rounded corners matching full player sheet) ─────
+        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1410,6 +1354,43 @@ private fun SongMiniCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
+
+            // PixelMusic branding capsule pill — placed in bottom-right of album art (Material 3 Expressive)
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 4.5.dp, bottom = 4.5.dp),
+                shape = RoundedCornerShape(999.dp),
+                color = Color.Black.copy(alpha = 0.20f),
+                contentColor = Color.White.copy(alpha = 0.80f),
+                border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.15f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .clickable {
+                            try { uriHandler.openUri(GITHUB_LINK) } catch (e: Exception) { }
+                        }
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.pixelmusic_base_monochrome),
+                        contentDescription = null,
+                        tint = Color.White.copy(alpha = 0.80f),
+                        modifier = Modifier.size(7.5.dp)
+                    )
+                    Text(
+                        text = "PixelMusic",
+                        fontFamily = GoogleSansRounded,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 5.5.sp,
+                        lineHeight = 6.5.sp,
+                        letterSpacing = 0.2.sp,
+                        color = Color.White.copy(alpha = 0.80f)
+                    )
+                }
+            }
         }
 
         // ── 2. Song Info (Full width, no action buttons) ───────────────────
