@@ -453,10 +453,9 @@ fun HomeScreen(
                 onRefresh = {
                     scope.launch {
                         isManualRefreshing = true
-                        val qpJob = quickPicksViewModel.refresh(force = true)
+                        quickPicksViewModel.refresh(force = true)
                         playerViewModel.forceUpdateDailyMix()
                         kotlinx.coroutines.withTimeoutOrNull(15_000L) {
-                            qpJob.join()
                             while (playerViewModel.isDailyMixUpdating.value) {
                                 kotlinx.coroutines.delay(100L)
                             }
@@ -479,14 +478,14 @@ fun HomeScreen(
                 }
             ) {
                 val isInitialFetchFinished by com.unshoo.pixelmusic.utils.AppReadinessSignal.isInitialFetchFinished.collectAsStateWithLifecycle()
-                val isQuickPicksSettled by quickPicksViewModel.isSettled.collectAsStateWithLifecycle()
+                val isQuickPicksLoading by quickPicksViewModel.isLoading.collectAsStateWithLifecycle()
 
-                LaunchedEffect(isEffectivelyOnline, isQuickPicksSettled, isDailyMixUpdating) {
+                LaunchedEffect(isEffectivelyOnline, isQuickPicksLoading, isDailyMixUpdating) {
                     if (!isEffectivelyOnline) {
                         com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
                         return@LaunchedEffect
                     }
-                    if (isQuickPicksSettled && !isDailyMixUpdating) {
+                    if (!isQuickPicksLoading && !isDailyMixUpdating) {
                         com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
                     }
                 }
@@ -503,7 +502,7 @@ fun HomeScreen(
                 }
 
                 val showHomeLoading = if (isEffectivelyOnline) {
-                    !isInitialFetchFinished || !isQuickPicksSettled
+                    !isInitialFetchFinished || isQuickPicksLoading
                 } else {
                     yourMixSongs.isEmpty() && quickPicks.isEmpty()
                 }

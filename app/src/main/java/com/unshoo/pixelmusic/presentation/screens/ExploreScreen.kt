@@ -586,7 +586,7 @@ fun ExploreScreen(
                     isManualRefreshing = true
                     unshoo.ianshulyadav.pixelmusic.innertube.YouTube.invalidateHomeCache()
                     val exploreJob = launch { exploreViewModel.refreshOnEntry(force = true) }
-                    val quickPicksJob = quickPicksViewModel.refresh(force = true)
+                    val quickPicksJob = launch { quickPicksViewModel.refresh(force = true) }
                     val feedJob = launch { feedViewModel.refresh() }
                     joinAll(exploreJob, quickPicksJob, feedJob)
                     isManualRefreshing = false
