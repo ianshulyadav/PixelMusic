@@ -1510,21 +1510,36 @@ class DualPlayerEngine @Inject constructor(
     }
 
     private suspend fun resolveYoutubeUriAsync(uriString: String): Uri? = withContext(Dispatchers.IO) {
+        val youtubeId = uriString.removePrefix("youtube://")
         try {
             val localDiskUri = resolveLocalDiskFile(uriString)
             val isFlacDiskFile = localDiskUri?.path?.endsWith(".flac", true) == true
             val isLosslessEnabled = LosslessStreamResolver.isEnabled(context)
-            if (localDiskUri != null && (isFlacDiskFile || !isLosslessEnabled || !connectivityStateHolder.isOnline.value)) {
+            if (localDiskUri != null &&
+                (isFlacDiskFile || !isLosslessEnabled || !connectivityStateHolder.isOnline.value)
+            ) {
                 return@withContext localDiskUri
             }
 
-            val youtubeId = uriString.substringAfter("youtube://")
-            val matchingItem = queueSnapshot.firstOrNull { it.mediaId == youtubeId || it.requestMetadata.mediaUri?.toString() == uriString }
-                ?: withContext(Dispatchers.Main.immediate) {
-                    if (::playerA.isInitialized && (playerA.currentMediaItem?.mediaId == youtubeId || playerA.currentMediaItem?.requestMetadata?.mediaUri?.toString() == uriString)) {
-                        playerA.currentMediaItem
-                    } else null
+            val matchingItem = queueSnapshot.firstOrNull {
+                it.mediaId == youtubeId ||
+                    it.mediaId == "youtube_$youtubeId" ||
+                    it.requestMetadata.mediaUri?.toString() == uriString
+            } ?: withContext(Dispatchers.Main.immediate) {
+                fun matches(item: androidx.media3.common.MediaItem?): Boolean =
+                    item != null && (
+                        item.mediaId == youtubeId ||
+                            item.mediaId == "youtube_$youtubeId" ||
+                            item.requestMetadata.mediaUri?.toString() == uriString
+                    )
+                val itemA = if (::playerA.isInitialized) playerA.currentMediaItem else null
+                val itemB = if (::playerB.isInitialized) playerB.currentMediaItem else null
+                when {
+                    matches(itemA) -> itemA
+                    matches(itemB) -> itemB
+                    else -> null
                 }
+            }
 
             val youtubeSong = com.unshoo.pixelmusic.data.model.youtube.Song(
                 youtubeId = youtubeId,
@@ -1533,77 +1548,74 @@ class DualPlayerEngine @Inject constructor(
                 album = matchingItem?.mediaMetadata?.albumTitle?.toString().orEmpty()
             )
 
-            // getSongPlayerUrl honors Settings quality:
-            // HIGH → highest stream first; LOW → lowest first (weak nets).
+            // Never retry the full quality-aware resolver without an outer timeout.
             val timeoutMs = if (connectivityStateHolder.isMeteredNetwork.value) {
                 STREAM_RESOLVE_TIMEOUT_LOW_CONNECTIVITY_MS
             } else {
                 STREAM_RESOLVE_TIMEOUT_MS
             }
-            val path = withTimeoutOrNull(timeoutMs) {
+            // Reserve time for one emergency fallback; never launch a second unbounded full resolve.
+            val fallbackBudgetMs = 3_000L
+            val primaryBudgetMs = (timeoutMs - fallbackBudgetMs).coerceAtLeast(1_000L)
+            var path = withTimeoutOrNull(primaryBudgetMs) {
                 com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
                     .getSongPlayerUrl(context, youtubeSong, allowLocal = localDiskUri == null)
-            } ?: run {
-                // If high-quality / lossless stream resolve timed out, fall back to local disk file if available
+            }
+
+            if (path.isNullOrBlank()) {
                 if (localDiskUri != null) return@withContext localDiskUri
-                // Timeout: still try quality-aware path once more without outer timeout;
-                // on failure fall back to lowest so something can play.
-                try {
-                    com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
-                        .getSongPlayerUrl(context, youtubeSong, allowLocal = true)
-                } catch (_: Exception) {
+                path = withTimeoutOrNull(fallbackBudgetMs) {
                     com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
                         .getLowestQualityStreamUrl(context, youtubeSong)
                 }
             }
 
-            // Lossless sources: custom schemes (deezer://, tidal-dash://) are served by the
-            // scheme router inside the player's data-source chain and flattened Apple Music
-            // files come back as file:// URIs — none of them is a downloaded local song, so they
-            // must not be registered in the local-file caches (they expire / get evicted).
-            if (path.contains("monochrome.st/track/")) {
-                preCacheFirstChunk(path, youtubeId)
-                return@withContext Uri.parse(path)
+            val resolvedPath = path?.takeIf { it.isNotBlank() } ?: return@withContext null
+            when {
+                resolvedPath.contains("monochrome.st/track/") -> {
+                    preCacheFirstChunk(resolvedPath, youtubeId)
+                    Uri.parse(resolvedPath)
+                }
+                LosslessSchemeRoutingDataSource.isCustomLosslessScheme(resolvedPath) ||
+                    resolvedPath.startsWith("file:") ||
+                    resolvedPath.startsWith("apple-pending:") -> Uri.parse(resolvedPath)
+                !resolvedPath.startsWith("http") -> {
+                    com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
+                        .registerLocalFilePath(youtubeId, resolvedPath)
+                    localFilePathCache[uriString] = resolvedPath
+                    Uri.fromFile(java.io.File(resolvedPath))
+                }
+                else -> {
+                    // Cache warming is background work; never wait for it before returning the URL.
+                    preCacheFirstChunk(resolvedPath, youtubeId)
+                    Uri.parse(resolvedPath)
+                }
             }
-
-            if (LosslessSchemeRoutingDataSource.isCustomLosslessScheme(path) ||
-                path.startsWith("file:") ||
-                path.startsWith("apple-pending:")
-            ) {
-                return@withContext Uri.parse(path)
-            }
-
-            if (!path.startsWith("http")) {
-                com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
-                    .registerLocalFilePath(youtubeId, path)
-                localFilePathCache[uriString] = path
-                return@withContext Uri.fromFile(java.io.File(path))
-            }
-
-            preCacheFirstChunk(path, youtubeId)
-            Uri.parse(path)
+        } catch (cancel: kotlinx.coroutines.CancellationException) {
+            throw cancel
         } catch (e: Exception) {
-            Timber.tag("DualPlayerEngine").e(e, "resolveYoutubeUriAsync failed for $uriString")
+            Timber.tag("DualPlayerEngine").e(e, "resolveYoutubeUriAsync failed for %s", uriString)
             val localDiskUri = resolveLocalDiskFile(uriString)
-            if (localDiskUri != null) {
-                return@withContext localDiskUri
+            if (localDiskUri != null) return@withContext localDiskUri
+
+            val low = withTimeoutOrNull(3_000L) {
+                runCatching {
+                    com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
+                        .getLowestQualityStreamUrl(
+                            context,
+                            com.unshoo.pixelmusic.data.model.youtube.Song(youtubeId = youtubeId)
+                        )
+                }.getOrNull()
             }
-            // Last-ditch: lowest stream so weak nets still get audio
-            try {
-                val youtubeId = uriString.substringAfter("youtube://")
-                val youtubeSong = com.unshoo.pixelmusic.data.model.youtube.Song(youtubeId = youtubeId)
-                val low = com.unshoo.pixelmusic.data.remote.youtube.YoutubeHelper
-                    .getLowestQualityStreamUrl(context, youtubeSong)
-                if (low.startsWith("http")) {
+            when {
+                low.isNullOrBlank() -> null
+                low.startsWith("http") -> {
                     preCacheFirstChunk(low, youtubeId)
-                    return@withContext Uri.parse(low)
+                    Uri.parse(low)
                 }
-                if (low.isNotBlank() && java.io.File(low).exists()) {
-                    return@withContext Uri.fromFile(java.io.File(low))
-                }
-            } catch (_: Exception) {
+                java.io.File(low).isFile -> Uri.fromFile(java.io.File(low))
+                else -> null
             }
-            null
         }
     }
 

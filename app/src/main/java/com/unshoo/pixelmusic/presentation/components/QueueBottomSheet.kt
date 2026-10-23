@@ -569,6 +569,9 @@ fun QueueBottomSheet(
                 reorderHandleInUse
         }
     }
+    val hasScrollableQueue by remember {
+        derivedStateOf { listState.canScrollForward || listState.canScrollBackward }
+    }
     val queueListShape = remember(useLightweightQueueListShape) {
         if (useLightweightQueueListShape) {
             RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)
@@ -777,7 +780,7 @@ fun QueueBottomSheet(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(
                                 start = 0.dp,
-                                end = if (listState.canScrollForward || listState.canScrollBackward) 26.dp else 0.dp,
+                                end = if (hasScrollableQueue) 26.dp else 0.dp,
                                 bottom = MiniPlayerHeight + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 32.dp
                             )
                         ) {
