@@ -974,14 +974,6 @@ fun SettingsCategoryScreen(
                                         )
                                     }
                                 )
-                                SliderSettingsItem(
-                                    label = stringResource(R.string.setcat_navbar_height_adjustment),
-                                    value = uiState.navBarHeightOffset.toFloat(),
-                                    valueRange = -20f..20f,
-                                    steps = 40,
-                                    onValueChange = { settingsViewModel.setNavBarHeightOffset(it.toInt()) },
-                                    valueText = { value -> "${value.toInt()} dp" }
-                                )
                                 SettingsItem(
                                     title = stringResource(R.string.setcat_navbar_corner_title),
                                     subtitle = stringResource(R.string.setcat_navbar_corner_subtitle),
