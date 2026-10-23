@@ -222,10 +222,10 @@ fun ExploreScreen(
     quickPicksViewModel: QuickPicksViewModel = hiltViewModel(),
     exploreViewModel: ExploreViewModel = hiltViewModel(),
 ) {
-    val isSheetCollapsed by remember(playerViewModel) {
-        playerViewModel.sheetState.map { it == PlayerSheetState.COLLAPSED }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(initialValue = playerViewModel.sheetState.value == PlayerSheetState.COLLAPSED)
-    androidx.activity.compose.BackHandler(enabled = isSheetCollapsed) {
+    com.unshoo.pixelmusic.presentation.components.PlayerSheetAwareBackHandler(
+        coordinator = playerViewModel.playerSheetBackCoordinator,
+        enabled = true
+    ) {
         navController.navigateToTopLevelSafely(Screen.Home.route)
     }
 

@@ -381,7 +381,7 @@ class QuickPicksViewModel @Inject constructor(
 
     // ─────────────────────────────────────────────────────────────────────────
     // 5-bucket parallel algorithm — all buckets fetched concurrently
-    // Final output: flat shuffled list of ~25 songs
+    // Final output: flat shuffled list of ~20 songs
     // ─────────────────────────────────────────────────────────────────────────
 
     private suspend fun loadEnhancedQuickPicks(): List<Song> = coroutineScope {
@@ -549,7 +549,7 @@ class QuickPicksViewModel @Inject constructor(
             }
         } else emptyList()
 
-        // Bucket C: YouTube Music personalized Home page sections + Trending + category chips
+        // Bucket C: YouTube Music personalized Home page sections + Trending
         val ytHomeRecommendationsDeferred = async(Dispatchers.IO) {
             try {
                 val homePage = boundedNetworkRequest { YouTube.home().getOrNull() }
@@ -559,7 +559,7 @@ class QuickPicksViewModel @Inject constructor(
                 _categories.value = updatedCategories.toImmutableList()
 
                 val items = mutableListOf<SongItem>()
-                // Extract items from home sections (including Daily Discover, Quick Picks, Trending, etc.)
+                // Extract items from home sections (including Trending songs for you section if present)
                 homePage.sections.forEach { section ->
                     items.addAll(section.items.filterIsInstance<SongItem>())
                 }
@@ -595,43 +595,25 @@ class QuickPicksViewModel @Inject constructor(
         val homeRecSongs = ytHomeRecommendationsDeferred.await()
         val localPopularSongs = localPopularDeferred.await()
 
-        val onlineSongs = withContext(Dispatchers.Default) {
-            (songMixSongs + artistRadioSongs + artistNameRadioSongs + homeRecSongs).map { it.toNativeSong() }
-        }
+        val onlineSongs = (songMixSongs + artistRadioSongs + artistNameRadioSongs + homeRecSongs).map { it.toNativeSong() }
 
         if (onlineSongs.isEmpty()) {
             return@coroutineScope loadOfflineQuickPicks()
         }
 
-        withContext(Dispatchers.Default) {
-            // 3. Blend online recommendations with sparse local sampling
-            val combinedCandidates = ArrayList<Song>(onlineSongs.size + localPopularSongs.size)
-            combinedCandidates.addAll(onlineSongs)
-            combinedCandidates.addAll(localPopularSongs)
+        // 3. Blend online recommendations with sparse local sampling
+        val combinedCandidates = mutableListOf<Song>()
+        combinedCandidates.addAll(onlineSongs)
+        combinedCandidates.addAll(localPopularSongs)
 
-            val deduplicated = combinedCandidates
-                .distinctBy { it.id }
-                .distinctBy { song ->
-                    song.youtubeId?.takeIf { it.isNotBlank() } ?: "${song.title.lowercase()}|${song.artist.lowercase()}"
-                }
-
-            // Filter out disliked and not-interested tracks
-            val dislikedYtIds = runCatching { musicRepository.getDislikedYoutubeIds() }.getOrNull() ?: emptySet()
-            val notInterestedIds = runCatching { userPreferencesRepository.notInterestedSongIdsFlow.first() }.getOrNull() ?: emptySet()
-            val notDisliked = deduplicated.filter { song ->
-                val yId = song.youtubeId ?: if (song.contentUriString.startsWith("youtube://")) {
-                    song.contentUriString.removePrefix("youtube://")
-                } else if (song.id.startsWith("youtube_")) {
-                    song.id.removePrefix("youtube_")
-                } else null
-                (yId == null || !dislikedYtIds.contains(yId)) &&
-                song.id !in notInterestedIds &&
-                (yId == null || !notInterestedIds.contains(yId))
+        val deduplicated = combinedCandidates
+            .distinctBy { it.id }
+            .distinctBy { song ->
+                song.youtubeId?.takeIf { it.isNotBlank() } ?: "${song.title.lowercase()}|${song.artist.lowercase()}"
             }
 
-            // Shuffle completely to make it dynamic on every view/refresh
-            notDisliked.shuffled().take(QUICK_PICK_COUNT)
-        }
+        // Shuffle completely to make it dynamic on every view/refresh
+        deduplicated.shuffled().take(QUICK_PICK_COUNT)
     }
 
     private suspend fun loadOfflineQuickPicks(): List<Song> = withContext(Dispatchers.IO) {
@@ -735,19 +717,7 @@ class QuickPicksViewModel @Inject constructor(
             }
         }
         if (songs.isNotEmpty()) {
-            val dislikedYtIds = runCatching { musicRepository.getDislikedYoutubeIds() }.getOrNull() ?: emptySet()
-            val notInterestedIds = runCatching { userPreferencesRepository.notInterestedSongIdsFlow.first() }.getOrNull() ?: emptySet()
-            val filtered = songs.filter { song ->
-                val yId = song.youtubeId ?: if (song.contentUriString.startsWith("youtube://")) {
-                    song.contentUriString.removePrefix("youtube://")
-                } else if (song.id.startsWith("youtube_")) {
-                    song.id.removePrefix("youtube_")
-                } else null
-                (yId == null || !dislikedYtIds.contains(yId)) &&
-                song.id !in notInterestedIds &&
-                (yId == null || !notInterestedIds.contains(yId))
-            }
-            _quickPicks.value = filtered.toImmutableList()
+            _quickPicks.value = songs.toImmutableList()
         } else {
             // Offline fallback for categories if net is unreachable
             _quickPicks.value = loadOfflineQuickPicks().toImmutableList()

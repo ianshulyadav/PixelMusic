@@ -211,8 +211,10 @@ fun SearchScreen(
         com.unshoo.pixelmusic.utils.AppReadinessSignal.markInitialFetchFinished()
     }
 
-    val sheetState by playerViewModel.sheetState.collectAsStateWithLifecycle()
-    androidx.activity.compose.BackHandler(enabled = sheetState == com.unshoo.pixelmusic.presentation.viewmodel.PlayerSheetState.COLLAPSED) {
+    com.unshoo.pixelmusic.presentation.components.PlayerSheetAwareBackHandler(
+        coordinator = playerViewModel.playerSheetBackCoordinator,
+        enabled = true
+    ) {
         when {
             selectedMoodGenre != null -> {
                 selectedMoodGenre = null

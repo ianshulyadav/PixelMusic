@@ -39,8 +39,8 @@ data class StorageSenseUiState(
     val minFileSizeMb: Int = 0,
     val neverSuggestFavorites: Boolean = true,
     val ignoreRecentDays: Int = 14,
-    val streamCacheTtlDays: Int = 14,
-    val streamCacheMaxSizeMb: Int = 2048,
+    val streamCacheTtlDays: Int = 7,
+    val streamCacheMaxSizeMb: Int = 1024,
     val autoPruneSearchHistory: Boolean = true,
     val autoCleanInvalidSongs: Boolean = false
 )

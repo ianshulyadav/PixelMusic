@@ -603,6 +603,8 @@ class PlayerViewModel @Inject constructor(
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    internal val playerSheetBackCoordinator = com.unshoo.pixelmusic.presentation.navigation.PlayerSheetBackCoordinator()
+
     private val _sheetState = MutableStateFlow(PlayerSheetState.COLLAPSED)
     val sheetState: StateFlow<PlayerSheetState> = _sheetState.asStateFlow()
     private val _isSheetVisible = MutableStateFlow(false)

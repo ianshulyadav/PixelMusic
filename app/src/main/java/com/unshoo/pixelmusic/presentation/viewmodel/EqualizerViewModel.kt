@@ -155,20 +155,24 @@ class EqualizerViewModel @Inject constructor(
             }
             
             // Update UI state with device capabilities
-            _uiState.value = _uiState.value.copy(
-                isBassBoostSupported = equalizerManager.isBassBoostSupported(),
-                isVirtualizerSupported = equalizerManager.isVirtualizerSupported(),
-                isLoudnessEnhancerSupported = equalizerManager.isLoudnessEnhancerSupported()
-            )
+            _uiState.update {
+                it.copy(
+                    isBassBoostSupported = equalizerManager.isBassBoostSupported(),
+                    isVirtualizerSupported = equalizerManager.isVirtualizerSupported(),
+                    isLoudnessEnhancerSupported = equalizerManager.isLoudnessEnhancerSupported()
+                )
+            }
 
             dualPlayerEngine.activeAudioSessionId.collect { sessionId ->
                 if (sessionId != 0) {
                     Timber.tag(TAG).d("Audio Session ID changed to $sessionId.")
-                    _uiState.value = _uiState.value.copy(
-                        isBassBoostSupported = equalizerManager.isBassBoostSupported(),
-                        isVirtualizerSupported = equalizerManager.isVirtualizerSupported(),
-                        isLoudnessEnhancerSupported = equalizerManager.isLoudnessEnhancerSupported()
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isBassBoostSupported = equalizerManager.isBassBoostSupported(),
+                            isVirtualizerSupported = equalizerManager.isVirtualizerSupported(),
+                            isLoudnessEnhancerSupported = equalizerManager.isLoudnessEnhancerSupported()
+                        )
+                    }
                 }
             }
         }

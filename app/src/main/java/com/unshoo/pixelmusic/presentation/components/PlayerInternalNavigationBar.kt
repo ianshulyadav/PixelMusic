@@ -69,11 +69,11 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-internal val NavBarContentHeight = 76.dp
+internal val NavBarContentHeight = 90.dp
 internal val NavBarCompactContentHeight = 64.dp
 internal val NavBarContentHeightFullWidth = NavBarContentHeight
 private val FloatingPillContentHeight = 76.dp
-private val MainScreenBottomGradientExtraHeight = 76.dp + MiniPlayerBottomSpacer + 8.dp
+private val MainScreenBottomGradientExtraHeight = MiniPlayerHeight + MiniPlayerBottomSpacer + 8.dp
 internal val MaxNavigationBarBottomInset = 96.dp
 
 internal fun sanitizeNavigationBarBottomInset(systemNavBarInset: Dp): Dp {
@@ -475,33 +475,33 @@ private fun PlayerInternalNavigationItemsRow(
             val selectedTextColor = MaterialTheme.colorScheme.onSurface
             val unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-            val unselectedIconResId = item.iconResId
-            val selectedIconResId = if (item.selectedIconResId != null && item.selectedIconResId != 0) {
+            val iconPainterResId = if (isSelected && item.selectedIconResId != null && item.selectedIconResId != 0) {
                 item.selectedIconResId
             } else {
                 item.iconResId
             }
-            val iconLambda: @Composable () -> Unit = remember(unselectedIconResId, item.label) {
+            val label = item.label
+            val iconLambda: @Composable () -> Unit = remember(iconPainterResId, label) {
                 {
                     Icon(
-                        painter = painterResource(id = unselectedIconResId),
-                        contentDescription = item.label
+                        painter = painterResource(id = iconPainterResId),
+                        contentDescription = label
                     )
                 }
             }
-            val selectedIconLambda: @Composable () -> Unit = remember(selectedIconResId, item.label) {
+            val selectedIconLambda: @Composable () -> Unit = remember(iconPainterResId, label) {
                 {
                     Icon(
-                        painter = painterResource(id = selectedIconResId),
-                        contentDescription = item.label
+                        painter = painterResource(id = iconPainterResId),
+                        contentDescription = label
                     )
                 }
             }
             val labelLambda: (@Composable () -> Unit)? = if (compactMode) {
                 null
             } else {
-                remember(item.label) {
-                    { Text(item.label) }
+                remember(label) {
+                    { Text(label) }
                 }
             }
             val onClickLambda: () -> Unit = remember(item.screen.route, navController, scope) {
@@ -555,11 +555,8 @@ private fun PlayerInternalNavigationItemsRow(
                 icon = iconLambda,
                 selectedIcon = selectedIconLambda,
                 label = labelLambda,
-                contentDescription = item.label,
-                // Label only the selected tab, and drop labels entirely on compact
-                // bars / large font scales. Previously every tab kept its label
-                // composed permanently.
-                alwaysShowLabel = false,
+                contentDescription = label,
+                alwaysShowLabel = true,
                 selectedIconColor = selectedIconColor,
                 unselectedIconColor = unselectedIconColor,
                 selectedTextColor = selectedTextColor,

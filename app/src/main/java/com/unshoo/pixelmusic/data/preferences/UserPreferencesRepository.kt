@@ -461,7 +461,7 @@ constructor(
 
     val playerExpansionBlurEnabledFlow: Flow<Boolean> =
         dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.PLAYER_EXPANSION_BLUR_ENABLED] ?: true
+            preferences[PreferencesKeys.PLAYER_EXPANSION_BLUR_ENABLED] ?: false
         }.distinctUntilChanged()
 
     suspend fun setPlayerExpansionBlurEnabled(enabled: Boolean) {
@@ -494,7 +494,7 @@ constructor(
 
     val storyCardBlurEnabledFlow: Flow<Boolean> =
         dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.STORY_CARD_BLUR_ENABLED] ?: true
+            preferences[PreferencesKeys.STORY_CARD_BLUR_ENABLED] ?: false
         }.distinctUntilChanged()
 
     suspend fun setStoryCardBlurEnabled(enabled: Boolean) {
@@ -505,7 +505,7 @@ constructor(
 
     val lyricsScreenBlurEnabledFlow: Flow<Boolean> =
         dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.LYRICS_SCREEN_BLUR_ENABLED] ?: true
+            preferences[PreferencesKeys.LYRICS_SCREEN_BLUR_ENABLED] ?: false
         }.distinctUntilChanged()
 
     suspend fun setLyricsScreenBlurEnabled(enabled: Boolean) {
@@ -1297,15 +1297,15 @@ constructor(
         setStreamingAudioQualityWifi(streamingQuality)
     }
 
-    /** Album art quality on mobile data. Default: LOW (256px). */
+    /** Album art quality on mobile data. Default: MEDIUM (512px). */
     val albumArtQualityMobileFlow: Flow<AlbumArtQuality> =
         dataStore.data.map { preferences ->
             try {
                 AlbumArtQuality.valueOf(
-                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "ORIGINAL"
+                    preferences[PreferencesKeys.ALBUM_ART_QUALITY_MOBILE] ?: "MEDIUM"
                 )
             } catch (e: Exception) {
-                AlbumArtQuality.ORIGINAL
+                AlbumArtQuality.MEDIUM
             }
         }
 
@@ -2036,7 +2036,7 @@ constructor(
 
     val animatedLyricsBlurEnabledFlow: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[PreferencesKeys.ANIMATED_LYRICS_BLUR_ENABLED] ?: true
+            preferences[PreferencesKeys.ANIMATED_LYRICS_BLUR_ENABLED] ?: false
         }
 
     suspend fun setAnimatedLyricsBlurEnabled(enabled: Boolean) {
@@ -2221,9 +2221,9 @@ constructor(
             preferences[PreferencesKeys.ALBUM_ART_QUALITY]
                 ?.let {
                     try { AlbumArtQuality.valueOf(it) }
-                    catch (e: Exception) { AlbumArtQuality.ORIGINAL }
+                    catch (e: Exception) { AlbumArtQuality.MEDIUM }
                 }
-                ?: AlbumArtQuality.ORIGINAL
+                ?: AlbumArtQuality.MEDIUM
         }
 
     suspend fun setAlbumArtQuality(quality: AlbumArtQuality) {
@@ -2992,7 +2992,7 @@ constructor(
 
     val streamCacheTtlDaysFlow: Flow<Int> =
         dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.STREAM_CACHE_TTL_DAYS] ?: 14
+            preferences[PreferencesKeys.STREAM_CACHE_TTL_DAYS] ?: 7
         }.distinctUntilChanged()
 
     suspend fun setStreamCacheTtlDays(days: Int) {
@@ -3003,7 +3003,7 @@ constructor(
 
     val streamCacheMaxSizeMbFlow: Flow<Int> =
         dataStore.data.map { preferences ->
-            preferences[PreferencesKeys.STREAM_CACHE_MAX_SIZE_MB] ?: 2048
+            preferences[PreferencesKeys.STREAM_CACHE_MAX_SIZE_MB] ?: 1024
         }.distinctUntilChanged()
 
     suspend fun setStreamCacheMaxSizeMb(sizeMb: Int) {

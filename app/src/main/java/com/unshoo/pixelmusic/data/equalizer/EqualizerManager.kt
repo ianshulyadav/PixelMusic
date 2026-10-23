@@ -96,35 +96,21 @@ class EqualizerManager @Inject constructor() {
             Timber.tag(TAG).d("Global Support Check - BassBoost: $isBassBoostSupportedGlobal, Virtualizer: $isVirtualizerSupportedGlobal")
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to query global audio effects")
-            // Fallback to assuming false until proven otherwise? Or true? 
-            // Better false to avoid broken UI, but unlikely to fail.
         }
     }
 
     private fun markBassBoostUnavailable(reason: String) {
-        if (!isBassBoostSupportedGlobal && bassBoost == null) return
-
-        isBassBoostSupportedGlobal = false
-        _bassBoostEnabled.value = false
         bassBoost?.runCatching { release() }
         bassBoost = null
-        Timber.tag(TAG).w("BassBoost disabled for this process: %s", reason)
+        Timber.tag(TAG).w("BassBoost unavailable for current session: %s", reason)
     }
 
     private fun markVirtualizerUnavailable(reason: String) {
-        if (!isVirtualizerSupportedGlobal && virtualizer == null) return
-
-        isVirtualizerSupportedGlobal = false
-        _virtualizerEnabled.value = false
         virtualizer?.runCatching { release() }
         virtualizer = null
-        Timber.tag(TAG).w("Virtualizer disabled for this process: %s", reason)
+        Timber.tag(TAG).w("Virtualizer unavailable for current session: %s", reason)
     }
 
-    /**
-     * Attaches the equalizer to an audio session ID.
-     * Call this when the player is created or swapped during crossfade.
-     */
     /**
      * Attaches the equalizer to an audio session ID.
      * Call this when the player is created or swapped during crossfade.
@@ -161,15 +147,12 @@ class EqualizerManager @Inject constructor() {
                 }
             } catch (e: Exception) {
                 // Some OEM/route combinations do not expose an effect engine for this session.
-                // Disable effects for this process to avoid repeated hard failures and log spam.
                 effectsDisabledForProcess = true
                 effectsDisableReason = "${e.javaClass.simpleName}: ${e.message ?: "unknown"}"
                 _isEnabled.value = false
                 _bassBoostEnabled.value = false
                 _virtualizerEnabled.value = false
                 _loudnessEnhancerEnabled.value = false
-                isBassBoostSupportedGlobal = false
-                isVirtualizerSupportedGlobal = false
                 Timber.tag(TAG).w(
                     e,
                     "Audio effects unavailable on this device/audio route. Disabling EQ stack for this process."
@@ -221,7 +204,7 @@ class EqualizerManager @Inject constructor() {
                 markVirtualizerUnavailable("No effect engine was created for audio session $audioSessionId after $maxRetries attempts")
             }
 
-            // Initialize Loudness Enhancer (usually robust, but let's be safe)
+            // Initialize Loudness Enhancer
             loudnessEnhancer = try {
                 android.media.audiofx.LoudnessEnhancer(audioSessionId).apply {
                     setTargetGain(_loudnessEnhancerStrength.value.coerceIn(0, MAX_LOUDNESS_GAIN_MB))
@@ -276,7 +259,7 @@ class EqualizerManager @Inject constructor() {
     
     /**
      * Sets the level for a specific band.
-     * @param bandIndex 0-4 for the 5 bands
+     * @param bandIndex 0-9 for UI bands
      * @param level -15 to +15 normalized level
      */
     fun setBandLevel(bandIndex: Int, level: Int) {
@@ -500,25 +483,19 @@ class EqualizerManager @Inject constructor() {
         if (deviceBandCount <= 0) return
         
         // Map UI bands (10) to device bands (typically 5)
-        // If device has fewer bands than UI, we need to average/map appropriately
         val uiBandCount = levels.size
         
         if (deviceBandCount >= uiBandCount) {
-            // Device has same or more bands than UI - apply directly
             levels.forEachIndexed { index, level ->
                 applyBandLevelDirect(index, level)
             }
         } else {
-            // Device has fewer bands than UI - map UI bands to device bands
-            // Calculate how many UI bands map to each device band
             val ratio = uiBandCount.toFloat() / deviceBandCount.toFloat()
             
             for (deviceBand in 0 until deviceBandCount) {
-                // Calculate which UI bands this device band covers
                 val startUiBand = (deviceBand * ratio).toInt()
                 val endUiBand = ((deviceBand + 1) * ratio).toInt().coerceAtMost(uiBandCount)
                 
-                // Average the UI band levels for this device band
                 var sum = 0
                 var count = 0
                 for (uiBand in startUiBand until endUiBand) {
@@ -551,7 +528,6 @@ class EqualizerManager @Inject constructor() {
     }
     
     private fun applyBandLevel(bandIndex: Int, normalizedLevel: Int) {
-        // This now triggers a full reapply to ensure proper mapping
         val currentLevels = _bandLevels.value.toMutableList()
         if (bandIndex < currentLevels.size) {
             currentLevels[bandIndex] = normalizedLevel.coerceIn(MIN_LEVEL, MAX_LEVEL)
@@ -565,7 +541,7 @@ class EqualizerManager @Inject constructor() {
     fun getBandFrequencies(): List<Int> {
         val eq = equalizer ?: return listOf(31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000)
         return (0 until eq.numberOfBands).map { band ->
-            eq.getCenterFreq(band.toShort()) / 1000 // Convert milliHz to Hz
+            eq.getCenterFreq(band.toShort()) / 1000
         }
     }
     

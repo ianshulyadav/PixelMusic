@@ -627,8 +627,10 @@ fun LibraryScreen(
         }
     }
 
-    val sheetState by playerViewModel.sheetState.collectAsStateWithLifecycle()
-    BackHandler(enabled = sheetState == com.unshoo.pixelmusic.presentation.viewmodel.PlayerSheetState.COLLAPSED) {
+    com.unshoo.pixelmusic.presentation.components.PlayerSheetAwareBackHandler(
+        coordinator = playerViewModel.playerSheetBackCoordinator,
+        enabled = true
+    ) {
         when {
             hasSelectionInCurrentTab -> {
                 when (currentTabId) {

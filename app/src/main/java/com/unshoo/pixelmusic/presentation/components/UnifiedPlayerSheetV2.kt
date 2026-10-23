@@ -23,6 +23,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -451,7 +452,7 @@ fun UnifiedPlayerSheetV2(
         sheetMotionController = sheetMotionController,
         animationDurationMs = ANIMATION_DURATION_MS,
         onSwipeEdgeChanged = { playerViewModel.updatePredictiveBackSwipeEdge(it) },
-        registrationKey = currentBackStackEntry?.id to canHandlePlayerBack
+        registrationKey = currentBackStackEntry?.id
     )
 
     val sheetOverlayState = rememberSheetOverlayState(
@@ -471,16 +472,22 @@ fun UnifiedPlayerSheetV2(
     val shouldRenderQueueHost = true
     val isQueueTelemetryActive = showQueueSheet
 
+    val isPlayerSheetHandlingBack = canHandlePlayerBack || (isQueueVisible && !internalIsKeyboardVisible)
+    SideEffect {
+        playerViewModel.playerSheetBackCoordinator.updatePlayerSheetHandlingBack(isPlayerSheetHandlingBack)
+    }
+
     LaunchedEffect(showQueueSheet) {
         playerViewModel.updateQueueSheetVisibility(showQueueSheet)
     }
     LaunchedEffect(castSheetState.showCastSheet) {
         playerViewModel.updateCastSheetVisibility(castSheetState.showCastSheet)
     }
-    DisposableEffect(Unit) {
+    DisposableEffect(playerViewModel) {
         onDispose {
             playerViewModel.updateQueueSheetVisibility(false)
             playerViewModel.updateCastSheetVisibility(false)
+            playerViewModel.playerSheetBackCoordinator.updatePlayerSheetHandlingBack(false)
         }
     }
 
