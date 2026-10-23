@@ -60,12 +60,9 @@ internal fun PlayerSheetPredictiveBackHandler(
                             playerViewModel.updatePredictiveBackCollapseFraction(this.value)
                         }
 
-                        if (playerViewModel.sheetState.value == PlayerSheetState.EXPANDED) {
-                            playerViewModel.expandPlayerSheet()
-                        } else {
-                            playerViewModel.collapsePlayerSheet()
-                        }
-
+                        // Cancellation is not a committed Back action. Restore only the
+                        // transient predictive animation; mutating sheet state here races
+                        // with concurrent animations and can collapse the player by mistake.
                         onSwipeEdgeChanged(null)
                     }
                 }

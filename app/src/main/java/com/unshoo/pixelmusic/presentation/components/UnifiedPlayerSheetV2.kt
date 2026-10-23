@@ -399,17 +399,23 @@ fun UnifiedPlayerSheetV2(
     )
     val pendingSaveQueueOverlay = sheetModalOverlayController.pendingSaveQueueOverlay
     val selectedSongForInfo = sheetModalOverlayController.selectedSongForInfo
+
+    // The full-player handler is eligible only when no modal owns Back.
+    // Queue Back ownership is handled separately below, including its opening
+    // and closing transition before the first measured height is available.
     val canHandlePlayerBack by remember(
         sheetBackAndDragState.predictiveBackEnabled,
         showQueueSheet,
         castSheetState.showCastSheet,
-        selectedSongForInfo
+        selectedSongForInfo,
+        pendingSaveQueueOverlay
     ) {
         derivedStateOf {
             sheetBackAndDragState.predictiveBackEnabled &&
                 !showQueueSheet &&
                 !castSheetState.showCastSheet &&
-                selectedSongForInfo == null
+                selectedSongForInfo == null &&
+                pendingSaveQueueOverlay == null
         }
     }
     val sheetActionHandlers = rememberSheetActionHandlers(
@@ -472,7 +478,15 @@ fun UnifiedPlayerSheetV2(
     val shouldRenderQueueHost = true
     val isQueueTelemetryActive = showQueueSheet
 
-    val isPlayerSheetHandlingBack = canHandlePlayerBack || (isQueueVisible && !internalIsKeyboardVisible)
+    // Keep navigation behind the player disabled for the entire modal lifetime.
+    // isQueueVisible depends on measured height and can briefly be false while
+    // the queue is already opening; showQueueSheet is the authoritative state.
+    val isPlayerSheetHandlingBack =
+        canHandlePlayerBack ||
+            (showQueueSheet && !internalIsKeyboardVisible) ||
+            castSheetState.showCastSheet ||
+            selectedSongForInfo != null ||
+            pendingSaveQueueOverlay != null
     SideEffect {
         playerViewModel.playerSheetBackCoordinator.updatePlayerSheetHandlingBack(isPlayerSheetHandlingBack)
     }
@@ -720,8 +734,14 @@ fun UnifiedPlayerSheetV2(
                 )
             }
 
-            BackHandler(enabled = isQueueVisible && selectedSongForInfo == null) {
-                sheetActionHandlers.animateQueueSheet(false)
+            BackHandler(
+                enabled = (showQueueSheet || isQueueVisible) && !internalIsKeyboardVisible
+            ) {
+                when {
+                    selectedSongForInfo != null -> sheetActionHandlers.onSelectedSongForInfoChange(null)
+                    pendingSaveQueueOverlay != null -> sheetModalOverlayController.dismissSaveQueueOverlay()
+                    showQueueSheet || isQueueVisible -> sheetActionHandlers.animateQueueSheet(false)
+                }
             }
 
             UnifiedPlayerQueueAndSongInfoHost(
