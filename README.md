@@ -2,23 +2,23 @@
 
 <img src="assets/banner.png" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
 
-<br><br>
+<p align="center">
+<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
+<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="50"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-github.svg"><img src="assets/readme/light/btn-github.svg" alt="PixelMusic source code" height="50"></picture></a>
+</p>
 
-<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="68"></picture></a>
-<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="68"></picture></a>
-<a href="https://github.com/ianshulyadav/PixelMusicApp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-github.svg"><img src="assets/readme/light/btn-github.svg" alt="PixelMusic source code" height="68"></picture></a>
-
-<br><br>
-
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-adfree.svg"><img src="assets/readme/light/badge-adfree.svg" alt="100% ad-free" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-lossless.svg"><img src="assets/readme/light/badge-lossless.svg" alt="Hi-Res lossless" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-formats.svg"><img src="assets/readme/light/badge-formats.svg" alt="FLAC ALAC AAC OPUS Dolby" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-ytsync.svg"><img src="assets/readme/light/badge-ytsync.svg" alt="YouTube Music sync" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-m3e.svg"><img src="assets/readme/light/badge-m3e.svg" alt="Material 3 Expressive" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-android.svg"><img src="assets/readme/light/badge-android.svg" alt="Android 11+" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-kotlin.svg"><img src="assets/readme/light/badge-kotlin.svg" alt="Kotlin 100%" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-gpl.svg"><img src="assets/readme/light/badge-gpl.svg" alt="GPL-3.0" height="38"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-prs.svg"><img src="assets/readme/light/badge-prs.svg" alt="PRs welcome" height="38"></picture>
+<p align="center">
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-adfree.svg"><img src="assets/readme/light/badge-adfree.svg" alt="100% ad-free" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-lossless.svg"><img src="assets/readme/light/badge-lossless.svg" alt="Hi-Res lossless" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-formats.svg"><img src="assets/readme/light/badge-formats.svg" alt="FLAC ALAC AAC OPUS Dolby" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-ytsync.svg"><img src="assets/readme/light/badge-ytsync.svg" alt="YouTube Music sync" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-m3e.svg"><img src="assets/readme/light/badge-m3e.svg" alt="Material 3 Expressive" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-android.svg"><img src="assets/readme/light/badge-android.svg" alt="Android 11+" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-kotlin.svg"><img src="assets/readme/light/badge-kotlin.svg" alt="Kotlin 100%" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-gpl.svg"><img src="assets/readme/light/badge-gpl.svg" alt="GPL-3.0" height="28"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-prs.svg"><img src="assets/readme/light/badge-prs.svg" alt="PRs welcome" height="28"></picture>
+</p>
 
 </div>
 
@@ -31,43 +31,16 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 
 <img src="assets/overview.png" alt="PixelMusic product overview: Home, Explore, Now Playing, Lyrics, Equalizer and Library" width="100%">
 
-<table width="100%"><thead><tr><th align="left" width="28%">Category</th><th align="left">Details & Capabilities</th></tr></thead><tbody>
-<tr>
-  <td><b>App Identity</b><br><sub>Name & Overview</sub></td>
-  <td><b>PixelMusic (Pixel Music)</b><br>A unified, privacy-first audio streaming and local playback client for Android.<br>Combines local library organization with YouTube Music and Telegram streaming under a single fluid interface.</td>
-</tr>
-<tr>
-  <td><b>Platform Support</b><br><sub>Operating System</sub></td>
-  <td><b>Android 11 and above (API 30+)</b><br>Engineered with modern Android APIs, scoped storage, and battery-friendly background playback.<br>Optimized for phones, foldables, and tablets with adaptive navigation layouts.</td>
-</tr>
-<tr>
-  <td><b>Pricing & Integrity</b><br><sub>Monetization Policy</sub></td>
-  <td><b>100% Free & Ad-Free</b><br>Zero commercial ads, tracking, analytics, or feature paywalls.<br>Open-source and non-commercial, ensuring complete user privacy and fast playback performance.</td>
-</tr>
-<tr>
-  <td><b>Audio Quality</b><br><sub>Decoders & DSP</sub></td>
-  <td><b>Hi-Res Lossless (FLAC, ALAC, WAV, APE) + 10-Band EQ</b><br>Media3 ExoPlayer coupled with FFmpeg decoders for bit-perfect audio playback up to 24-bit/192kHz.<br>Includes custom 10-band equalizer presets, bass boost, virtualizer, loudness enhancer, and EBU R128 loudness leveling.</td>
-</tr>
-<tr>
-  <td><b>Content Sources</b><br><sub>Local, Cloud & Online</sub></td>
-  <td><b>Local Storage · YouTube Music · Telegram · Playlist Import</b><br>Scan device audio directories, browse channels & voice chats on Telegram, and stream YouTube Music.<br>One-tap import for public Spotify and YouTube playlists, with Google Drive cloud streaming in progress.</td>
-</tr>
-<tr>
-  <td><b>Synced Lyrics</b><br><sub>Lyrics & Translation</sub></td>
-  <td><b>LRCLIB Integration with Room Cache</b><br>Real-time synchronized scrolling lyrics with millisecond manual timing correction.<br>Supports live language translation, romanization (Romaji/Pinyin), offline caching, and shareable lyric cards.</td>
-</tr>
-<tr>
-  <td><b>Design System</b><br><sub>UI/UX & Dynamic Color</sub></td>
-  <td><b>Material 3 Expressive (M3E)</b><br>Declarative Jetpack Compose interface featuring morphing containers, spring motion, and floating pill navigation.<br>Dynamic color extraction dynamically adapts to current album artwork or system wallpaper in dark and light modes.</td>
-</tr>
-<tr>
-  <td><b>Device Ecosystem</b><br><sub>Automotive & Connected Audio</sub></td>
-  <td><b>Android Auto · Chromecast · Wear OS · Scrobbling</b><br>Car dashboard integration via Media3 MediaLibraryService and remote casting to TVs and Nest speakers.<br>Standalone Wear OS playback companion, along with Last.fm and ListenBrainz background scrobbling.</td>
-</tr>
-<tr>
-  <td><b>Open Source License</b><br><sub>Community & Governance</sub></td>
-  <td><b>GNU General Public License v3.0 (GPL-3.0)</b><br>Freely inspectable, modifiable, and community-driven.<br>Built on the foundation of PixelPlayerOSS by Theo Vilardo and Duhan Yağmur Delikkulak.</td>
-</tr>
+<table width="100%"><thead><tr><th align="left" width="28%">Quick facts</th><th align="left">Details</th></tr></thead><tbody>
+<tr><td><b>App name</b></td><td>PixelMusic (Pixel Music)</td></tr>
+<tr><td><b>Platform</b></td><td>Android 11 and above (API 30+)</td></tr>
+<tr><td><b>Price</b></td><td>Free and 100% ad-free</td></tr>
+<tr><td><b>Audio</b></td><td>Hi-Res lossless (FLAC, ALAC, WAV, APE, OPUS, OGG, MP3) with 10-band EQ</td></tr>
+<tr><td><b>Sources</b></td><td>Local files, YouTube Music, Telegram, Spotify & YouTube playlist import, Google Drive (WIP)</td></tr>
+<tr><td><b>Lyrics</b></td><td>LRCLIB synced lyrics with timing offset, translation and romanization</td></tr>
+<tr><td><b>Design</b></td><td>Jetpack Compose, Material 3 Expressive and dynamic color</td></tr>
+<tr><td><b>Ecosystem</b></td><td>Android Auto, Chromecast, Wear OS, Last.fm & ListenBrainz scrobbling</td></tr>
+<tr><td><b>License</b></td><td>GNU GPL v3.0</td></tr>
 </tbody></table>
 
 <h3 id="get"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-get.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-get.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-get.svg"><img src="assets/readme/light/h-get.svg" alt="Get PixelMusic: Download, join the community, contribute" width="100%"></picture></h3>
@@ -86,13 +59,13 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 
 <div align="center">
 
-<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="60"></picture></a>
-<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="60"></picture></a>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-youtube.svg"><img src="assets/readme/light/btn-youtube.svg" alt="YouTube Music" height="60"></picture>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
+<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="50"></picture></a>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-youtube.svg"><img src="assets/readme/light/btn-youtube.svg" alt="YouTube Music" height="50"></picture>
 <br>
-<a href="https://github.com/ianshulyadav/PixelMusicApp/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-issues.svg"><img src="assets/readme/light/btn-issues.svg" alt="Report an issue" height="60"></picture></a>
-<a href="https://github.com/ianshulyadav/PixelMusicApp/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-contribute.svg"><img src="assets/readme/light/btn-contribute.svg" alt="Contribute" height="60"></picture></a>
-<a href="https://github.com/ianshulyadav/PixelMusicApp/blob/main/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-license.svg"><img src="assets/readme/light/btn-license.svg" alt="GPL-3.0 license" height="60"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-issues.svg"><img src="assets/readme/light/btn-issues.svg" alt="Report an issue" height="50"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-contribute.svg"><img src="assets/readme/light/btn-contribute.svg" alt="Contribute" height="50"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/blob/main/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-license.svg"><img src="assets/readme/light/btn-license.svg" alt="GPL-3.0 license" height="50"></picture></a>
 
 </div>
 
@@ -128,16 +101,16 @@ PixelMusic is built with Jetpack Compose and follows the Material 3 Expressive d
 
 **How PixelMusic compares to similar open-source Android music clients:**
 
-| Feature Category | OpenTune | Metrolist | ArchiveTune | PixelMusic |
+| Feature | OpenTune | Metrolist | ArchiveTune | PixelMusic |
 |---|---|---|---|---|
-| **Audio Sources**<br><sub>Where you can fetch and play music</sub> | YouTube Music | YouTube Music | YT Music + Local | **Local · YouTube Music · Telegram · Google Drive (WIP)**<br>Play your local files, stream from YouTube Music, and play Telegram channels in one place. |
-| **UI Design System**<br><sub>Visual interface & motion physics</sub> | Material 3 | Material 3 | Material 3 | **Material 3 Expressive**<br>Shape-morphing containers, floating pill nav bar, and smooth spring physics. |
-| **Dynamic Theming**<br><sub>Color extraction and styling</sub> | Material You | Album color | Album color | **Wallpaper + Album Art Extraction**<br>Dynamic accent palette extracted from current album art in both light and dark modes. |
-| **Audio Processing**<br><sub>Playback engine and equalization</sub> | ExoPlayer | ExoPlayer + R128 | ExoPlayer + R128 | **Media3 ExoPlayer + FFmpeg + 10-Band EQ**<br>Bit-perfect Hi-Res decoding (FLAC, ALAC, WAV, APE), presets, and EBU R128 volume leveling. |
-| **Lyrics Experience**<br><sub>Synced lyrics and language tools</sub> | LRCLIB | LRCLIB + romanization | LRCLIB + translation | **LRCLIB + Offset + Translation + Romaji**<br>Synced lyrics with millisecond offset tuning, offline Room cache, and shareable story cards. |
-| **AI Mix & Playlists**<br><sub>Smart recommendations and generation</sub> | None | None | None | **Gemini · DeepSeek · OpenAI · Custom Proxy**<br>Natural language prompt-to-playlist generation and 8-mode Last.fm Smart Mix. |
-| **Device Ecosystem**<br><sub>Multi-device streaming and scrobbling</sub> | Background play | Cast · sleep timer | Scrobbling · Cast | **Android Auto · Cast · Wear OS · Scrobbling**<br>Full dashboard display for car head units, Chromecast, smartwatch remote control, and scrobbling. |
-| **License & Freedom**<br><sub>Code licensing and monetization</sub> | GPL-3.0 | GPL-3.0 | GPL-3.0 | **GPL-3.0 (100% Free & Ad-Free)**<br>Zero advertisements, no subscription fees, and transparent community code. |
+| **Sources** | YouTube Music | YouTube Music | YT Music + Local | Local · YouTube Music · Telegram · Google Drive (WIP) |
+| **UI Design** | Material 3 | Material 3 | Material 3 | Material 3 Expressive · shape-morphing · spring motion |
+| **Dynamic Color** | Material You | Album color | Album color | Wallpaper + album palette extraction |
+| **Audio Engine** | ExoPlayer | ExoPlayer + R128 | ExoPlayer + R128 | Media3 ExoPlayer + FFmpeg + 10-band EQ |
+| **Lyrics** | LRCLIB | LRCLIB + romanization | LRCLIB + translation | LRCLIB + offset sync + offline cache + manual search |
+| **AI Playlists** | None | None | None | Gemini · DeepSeek · OpenAI · custom proxy |
+| **Ecosystem** | Background play | Cast · sleep timer | Scrobbling · Cast | Android Auto · Chromecast · Wear OS · Last.fm · ListenBrainz |
+| **License** | GPL-3.0 | GPL-3.0 | GPL-3.0 | GPL-3.0 |
 
 <h3 id="audio"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-audio.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-audio.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-audio.svg"><img src="assets/readme/light/h-audio.svg" alt="Audio engine: Lossless playback, EQ and loudness" width="100%"></picture></h3>
 
