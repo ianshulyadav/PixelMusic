@@ -6,7 +6,7 @@
 
 <p align="center">
 <a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
-<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="50"></picture></a>
+<a href="https://t.me/pixelmusicapp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="50"></picture></a>
 <a href="https://github.com/ianshulyadav/PixelMusicApp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-github.svg"><img src="assets/readme/light/btn-github.svg" alt="PixelMusic source code" height="50"></picture></a>
 <a href="#support"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-donate.svg"><img src="assets/readme/light/btn-donate.svg" alt="Support PixelMusic" height="50"></picture></a>
 </p>
@@ -53,9 +53,10 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 | Action | Link |
 |--------|------|
 | **Download APK** | [GitHub Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) |
-| **Telegram Channel** | [t.me/indiaflacmusic](https://t.me/indiaflacmusic) |
+| **Telegram Channel** | [t.me/pixelmusicapp](https://t.me/pixelmusicapp) |
 | **Report an Issue** | [GitHub Issues](https://github.com/ianshulyadav/PixelMusicApp/issues) |
 | **Contribute** | [GitHub Pull Requests](https://github.com/ianshulyadav/PixelMusicApp/pulls) |
+| **Support / Donate** | [Ko-fi](https://ko-fi.com/H2K222J1ME) · [UPI](#support) |
 | **License** | [GPL-3.0](https://github.com/ianshulyadav/PixelMusicApp/blob/main/LICENSE) |
 
 </div>
@@ -63,7 +64,7 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 <div align="center">
 
 <a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
-<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="50"></picture></a>
+<a href="https://t.me/pixelmusicapp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="50"></picture></a>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-youtube.svg"><img src="assets/readme/light/btn-youtube.svg" alt="YouTube Music" height="50"></picture>
 <br>
 <a href="https://github.com/ianshulyadav/PixelMusicApp/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-issues.svg"><img src="assets/readme/light/btn-issues.svg" alt="Report an issue" height="50"></picture></a>
@@ -246,7 +247,7 @@ cd PixelMusicApp
 
 **Where do the lyrics come from?** Synced lyrics are fetched from LRCLIB with offset adjustment, live translation and romanization.
 
-**Where can I get help?** Join the [Telegram channel](https://t.me/indiaflacmusic) or open an [issue](https://github.com/ianshulyadav/PixelMusicApp/issues).
+**Where can I get help?** Join the [Telegram channel](https://t.me/pixelmusicapp) or open an [issue](https://github.com/ianshulyadav/PixelMusicApp/issues).
 
 <h3 id="support"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-support.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-support.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-support.svg"><img src="assets/readme/light/h-support.svg" alt="Support PixelMusic: Donate with Ko-fi or UPI" width="100%"></picture></h3>
 
@@ -254,8 +255,16 @@ PixelMusic is free and ad-free. If it makes your day better, you can help with d
 
 <div align="center">
 
-<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-donate.svg"><img src="assets/readme/light/btn-donate.svg" alt="Donate to PixelMusic" height="60"></picture></a>
-<a href="#support"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-upi.svg"><img src="assets/readme/light/btn-upi.svg" alt="Donate to PixelMusic with UPI" height="60"></picture></a>
+<a href="https://ko-fi.com/H2K222J1ME" target="_blank"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-kofi.svg"><img src="assets/readme/light/btn-kofi.svg" alt="Support on Ko-fi" height="50"></picture></a>
+<a href="upi://pay?pa=anshulyadavv@fam&pn=PixelMusic&cu=INR"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-upi.svg"><img src="assets/readme/light/btn-upi.svg" alt="Donate with UPI" height="50"></picture></a>
+
+<br><br>
+
+| Method | Link / Details |
+|---|---|
+| **Ko-fi** | [ko-fi.com/H2K222J1ME](https://ko-fi.com/H2K222J1ME) |
+| **UPI ID** | `anshulyadavv@fam` |
+| **UPI Intent** | [upi://pay?pa=anshulyadavv@fam&pn=PixelMusic&cu=INR](upi://pay?pa=anshulyadavv@fam&pn=PixelMusic&cu=INR) |
 
 </div>
 
