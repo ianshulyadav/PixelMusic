@@ -45,7 +45,7 @@
         android:name=".PixelMusicApplication"
         android:allowBackup="true"
         android:appCategory="audio"
-        android:enableOnBackInvokedCallback="true"
+        android:enableOnBackInvokedCallback="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
