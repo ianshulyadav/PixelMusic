@@ -350,10 +350,20 @@ object SaavnService {
                 val candTitleClean = cleanTitle(candidate.name).lowercase(Locale.US).trim()
                 val candArtists = candidate.artists.all.map { it.name.lowercase(Locale.US).trim() }
 
+                // Avoid matching mismatched versions (e.g. remix, instrumental, karaoke, cover, live, slowed, acoustic, etc.)
+                val versionKeywords = listOf("remix", "instrumental", "karaoke", "cover", "acoustic", "live", "sped up", "speed up", "slowed", "reverb", "tribute")
+                for (keyword in versionKeywords) {
+                    val wantedHas = wantedTitleLower.contains(keyword)
+                    val candHas = candTitleClean.contains(keyword)
+                    if (wantedHas != candHas) {
+                        return@firstOrNull false
+                    }
+                }
+
                 // 1. Title match (exact or clean)
                 val titleMatches = candTitleClean == wantedTitleLower ||
-                        candTitleClean.contains(wantedTitleLower) ||
-                        wantedTitleLower.contains(candTitleClean)
+                        (candTitleClean.contains(wantedTitleLower) && (candTitleClean.length - wantedTitleLower.length <= 10)) ||
+                        (wantedTitleLower.contains(candTitleClean) && (wantedTitleLower.length - candTitleClean.length <= 10))
 
                 if (!titleMatches) return@firstOrNull false
 

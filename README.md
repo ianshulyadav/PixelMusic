@@ -103,18 +103,16 @@ PixelMusic is built with Jetpack Compose and follows the Material 3 Expressive d
 
 </div>
 
-**How PixelMusic compares to similar open-source Android music clients:**
+How PixelMusic compares to other music apps
 
-| Feature | OpenTune | Metrolist | ArchiveTune | PixelMusic |
-|---|---|---|---|---|
-| **Sources** | YouTube Music | YouTube Music | YT Music + Local | Local · YouTube Music · Telegram · Google Drive (WIP) |
-| **UI Design** | Material 3 | Material 3 | Material 3 | Material 3 Expressive · shape-morphing · spring motion |
-| **Dynamic Color** | Material You | Album color | Album color | Wallpaper + album palette extraction |
-| **Audio Engine** | ExoPlayer | ExoPlayer + R128 | ExoPlayer + R128 | Media3 ExoPlayer + FFmpeg + 10-band EQ |
-| **Lyrics** | LRCLIB | LRCLIB + romanization | LRCLIB + translation | LRCLIB + offset sync + offline cache + manual search |
-| **AI Playlists** | None | None | None | Gemini · DeepSeek · OpenAI · custom proxy |
-| **Ecosystem** | Background play | Cast · sleep timer | Scrobbling · Cast | Android Auto · Chromecast · Wear OS · Last.fm · ListenBrainz |
-| **License** | GPL-3.0 | GPL-3.0 | GPL-3.0 | GPL-3.0 |
+* Sources: Plays local music, YouTube Music, and Telegram audio. Google Drive support is in progress.
+* Interface: Built with Material 3 Expressive. It has shape transitions and smooth spring motion.
+* Colors: Extracts dynamic colors from both album covers and system wallpapers.
+* Audio: Uses Media3 ExoPlayer with FFmpeg decoding and a 10 band equalizer.
+* Lyrics: Loads synchronized lyrics with time sync, offline storage, and manual search.
+* AI Playlists: Creates smart playlists using Gemini, DeepSeek, or OpenAI prompts.
+* Ecosystem: Works with Android Auto, Chromecast, Wear OS, Last.fm, and ListenBrainz.
+* License: Fully free and open source under GPL 3.0.
 
 <h3 id="audio"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-audio.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-audio.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-audio.svg"><img src="assets/readme/light/h-audio.svg" alt="Audio engine: Lossless playback, EQ and loudness" width="100%"></picture></h3>
 

@@ -152,10 +152,11 @@ object DownloadHelper {
             try { tempFile.delete() } catch (_: Exception) {}
         }
 
+        val isSaavnEnabled = userPreferencesRepository?.enableSaavnStreamingFlow?.first() ?: true
         val maxRetries = 3
         var lastException: Exception? = null
         var bypassLossless = !allowLossless
-        var bypassSaavn = (downloadQuality == DownloadAudioQuality.LOW)
+        var bypassSaavn = (downloadQuality == DownloadAudioQuality.LOW) || !isSaavnEnabled
 
         for (attempt in 1..maxRetries) {
             try {

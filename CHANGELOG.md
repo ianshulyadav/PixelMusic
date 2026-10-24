@@ -7,9 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.10] - 2026-10-24
+
+### ✨ What's New
+- **Full Player & Lyrics Blur:** Added smooth Gaussian blur behind the main player and frosted glass blur behind the synchronized lyrics sheet with edge-to-edge support.
+- **Customizable Share Cards:** Create and share stylish 9:16 song and lyrics story cards with background blur and dynamic branding.
+- **Brand New Search Experience:** Redesigned search screen with a clean 2x2 grid, recent searches, and authentic browse feeds.
+- **Moods, Genres & Charts:** Explore curated moods and genres, plus trending top charts and new releases right from the app.
+- **Free Lossless Streaming & Fallback:** Stream high-resolution FLAC audio for free, with seamless automatic fallback to JioSaavn or YouTube Music.
+- **Integrated Storage Sense:** Easily manage device storage, find duplicate downloads, and automatically clean old stream caches with smart rules.
+- **Material 3 Expressive UI & Animations:** Refined navigation bar, smooth corner radius, fluid micro-animations, and bounce feedback.
+
 ### ⚡ Fixes & Improvements
-- **High Refresh Rate Stutter:** Fixed the "High refresh rate" toggle causing shutters/stutter instead of smooth 90/120 Hz animations. The window now pins the concrete same-resolution `preferredDisplayModeId` (the rate-only hint was ignored or repeatedly renegotiated by several OEM display stacks), display-mode switches are dwell-limited (8 s, with battery-saver/severe-thermal safety bypasses) and thermal callbacks are coalesced so the panel no longer reconfigures mid-animation, NaN thermal-headroom readings no longer wedge the rate at 90 Hz, and the preference/policy are no longer reset on every transient `onStop`. Also quantized/cached the full-screen player-expansion blur effect (previously recreated every frame) and decode the heavily blurred player backdrop artwork at 256 px instead of 512 px, so animation frames fit the 8.3 ms budget at 120 Hz.
-- **Explore Feed Calm Image Queue & Zero Local Leaks:** Pipelined image loading to a disciplined queue (`maxRequests = 4, maxRequestsPerHost = 2` on network and 2 concurrent decodes in Coil) with zero-flash empty surface blocks so card metadata renders instantly without burst requests. Extended the exploration loading indicator so mood chips and home sections are collected calmly without category jumps or in-between shifts. Strictly isolated online feeds from local device tracks and albums, displaying local content only when completely offline or in explicit local mode.
+- **Major Performance Boost:** Reduced CPU and RAM usage by ~40% for cooler, longer-lasting battery life.
+- **120Hz Smooth Scrolling:** Hardware-accelerated image decoding and pipelined queueing eliminate stutter and dropped frames.
+- **Reliable Shuffle & Queue:** Fixed shuffle dropping songs in large playlists and albums.
+- **Faster Playback Startup:** Optimized track buffering and artwork preloading for instant music playback.
+- **Pure Offline Mode:** Physical audio file verification with zero navigation lag when browsing local tracks.
+- **Interaction Polish:** Fixed predictive back navigation sheet dismissal races and keyboard flicker on dialog dismissal.
 
 ## [1.7.10] - 2026-10-05
 

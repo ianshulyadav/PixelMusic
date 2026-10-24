@@ -1311,12 +1311,13 @@ object YoutubeHelper {
         }
 
         // JioSaavn check:
-        // - For downloads: user settings dictate quality:
+        // - If JioSaavn is turned OFF, never query JioSaavn (neither for downloads nor streaming).
+        // - For downloads when JioSaavn is enabled:
         //   * Max / High: JioSaavn 320 kbps
         //   * Medium: JioSaavn 160 kbps
         //   * Low: bypass JioSaavn completely, fall back to YouTube downloads
         // - For playback: only if JioSaavn streaming toggle is ON
-        val shouldTrySaavn = if (bypassSaavn) {
+        val shouldTrySaavn = if (bypassSaavn || !isSaavnEnabled) {
             false
         } else if (forDownload) {
             downloadQuality != com.unshoo.pixelmusic.data.preferences.DownloadAudioQuality.LOW

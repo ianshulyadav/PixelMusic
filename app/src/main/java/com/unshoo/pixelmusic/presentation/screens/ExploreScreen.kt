@@ -268,26 +268,16 @@ fun ExploreScreen(
         }
     }
     val categories by quickPicksViewModel.categories.collectAsStateWithLifecycle()
-    val canonicalCategoryQueue = remember {
-        listOf("All", "Podcasts", "Romance", "Relax", "Feel good", "Party", "Workout", "Focus", "Energize")
-    }
-    val effectiveCategories = remember(canonicalCategoryQueue, exploreUiState.moodChips, isLocalMode, isEffectivelyOnline) {
+    val effectiveCategories = remember(categories, exploreUiState.moodChips, isLocalMode, isEffectivelyOnline) {
         if (isLocalMode || !isEffectivelyOnline) {
             listOf("Local")
+        } else if (exploreUiState.moodChips.isNotEmpty()) {
+            (listOf("All", "Local") + exploreUiState.moodChips.map { it.title }).distinct()
         } else {
-            val dynamicTitles = exploreUiState.moodChips.map { it.title.trim() }.filter { it.isNotBlank() }
-            val canonicalNormalized = canonicalCategoryQueue.map { it.lowercase(java.util.Locale.ROOT).trim() }.toSet()
-            val queuedCategories = canonicalCategoryQueue.toMutableList()
-            dynamicTitles.forEach { title ->
-                val normalized = title.lowercase(java.util.Locale.ROOT).trim()
-                if (normalized !in canonicalNormalized && queuedCategories.none { it.equals(title, ignoreCase = true) }) {
-                    queuedCategories.add(title)
-                }
-            }
-            queuedCategories
+            categories
         }
     }
-    val selectedCategory = if (isLocalMode) "Local" else exploreUiState.selectedFilter
+    val selectedCategory by quickPicksViewModel.selectedCategory.collectAsStateWithLifecycle()
     val isLocalSelected = isLocalMode || selectedCategory.equals("Local", ignoreCase = true)
     val quickPicksDisplayMode by playerViewModel.quickPicksDisplayMode.collectAsStateWithLifecycle()
     val localAlbums by playerViewModel.albumsFlow.collectAsStateWithLifecycle()
@@ -312,6 +302,7 @@ fun ExploreScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 if (isLocalMode) {
+                    quickPicksViewModel.setCategory("Local")
                     exploreViewModel.setSelectedFilter("Local")
                 } else {
                     exploreViewModel.refreshOnEntry(force = false)

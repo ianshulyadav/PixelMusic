@@ -1151,10 +1151,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 ) { innerPadding ->
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                         val density = LocalDensity.current
-                        val configuration = LocalConfiguration.current
-                        val containerHeight = configuration.screenHeightDp.dp
+                        val containerHeight = this.maxHeight
                         val screenHeightPx = remember(containerHeight, density) {
                             with(density) { containerHeight.toPx() }
                         }

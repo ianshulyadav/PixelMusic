@@ -170,18 +170,28 @@ object LocalAudioDuplicateMatcher {
         candidateArtist: String,
         candidateDurationSeconds: Int?
     ): Boolean {
-        // 1. Title similarity check (>= 80%)
+        // 1. Version keywords check: do not match remix, live, acoustic, instrumental, etc. against original
+        val versionKeywords = listOf("remix", "instrumental", "karaoke", "cover", "acoustic", "live", "sped up", "speed up", "slowed", "reverb", "tribute")
+        for (keyword in versionKeywords) {
+            val targetHas = targetTitle.contains(keyword, ignoreCase = true)
+            val candidateHas = candidateTitle.contains(keyword, ignoreCase = true)
+            if (targetHas != candidateHas) {
+                return false
+            }
+        }
+
+        // 2. Title similarity check (>= 80%)
         val titleSim = calculateStringSimilarity(targetTitle, candidateTitle)
         if (titleSim < TITLE_SIMILARITY_THRESHOLD) {
             return false
         }
 
-        // 2. Artist similarity check (at least one artist similar)
+        // 3. Artist similarity check (at least one artist similar)
         if (!hasSimilarArtist(targetArtist, candidateArtist)) {
             return false
         }
 
-        // 3. Duration check if both durations are present (> 0)
+        // 4. Duration check if both durations are present (> 0)
         if (targetDurationSeconds != null && targetDurationSeconds > 0 &&
             candidateDurationSeconds != null && candidateDurationSeconds > 0
         ) {
