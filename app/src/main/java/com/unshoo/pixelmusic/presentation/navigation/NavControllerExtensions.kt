@@ -1,25 +1,24 @@
 package com.unshoo.pixelmusic.presentation.navigation
 
-import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavOptionsBuilder
 
-// STARTED does not mean a navigation transition has settled. Coalesce operations
-// while an outgoing destination is being disposed to avoid overlapping stack mutations.
-private const val NAVIGATION_DEBOUNCE_MS = 350L
-private var lastNavigationUptimeMs = 0L
-
-@Synchronized
-private fun NavController.claimNavigationSlot(): Boolean {
-    val now = SystemClock.uptimeMillis()
-    if (now - lastNavigationUptimeMs < NAVIGATION_DEBOUNCE_MS) return false
-    val ready = runCatching {
+// Lifecycle gate for navigation controller extensions.
+//
+// 1. `lifecycle == null -> false`. Returns false when there is no current
+//    back stack entry; navigating with a null entry (during graph setup races) is
+//    the case this gate catches.
+//
+// 2. We allow navigation if the current entry is at least STARTED.
+//    Deduplication of rapid double navigation is already handled correctly by
+//    `launchSingleTop = true` and by the ScreenWrapper input gate, which stops
+//    touches from reaching the screen that is being popped.
+private fun NavController.isReadyForNavigation(): Boolean {
+    return runCatching {
         currentBackStackEntry?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.STARTED) == true
     }.getOrDefault(false)
-    if (ready) lastNavigationUptimeMs = now
-    return ready
 }
 
 /**
@@ -28,7 +27,7 @@ private fun NavController.claimNavigationSlot(): Boolean {
  * cannot pop a *second* destination (the classic "double back -> blank screen" bug).
  */
 fun NavController.popBackStackSafely(): Boolean {
-    if (!claimNavigationSlot()) return false
+    if (!isReadyForNavigation()) return false
     return try {
         popBackStack()
     } catch (e: IllegalStateException) {
@@ -41,7 +40,7 @@ fun NavController.popBackStackSafely(): Boolean {
 }
 
 fun NavController.navigateSafely(route: String): Boolean {
-    if (!claimNavigationSlot()) return false
+    if (!isReadyForNavigation()) return false
     if (isMainRootRoute(route)) {
         return navigateToTopLevelSafely(route)
     }
@@ -60,7 +59,7 @@ fun NavController.navigateSafely(
     route: String,
     builder: NavOptionsBuilder.() -> Unit
 ): Boolean {
-    if (!claimNavigationSlot()) return false
+    if (!isReadyForNavigation()) return false
     return try {
         navigate(route) {
             launchSingleTop = true
@@ -78,7 +77,7 @@ fun NavController.navigateSafelyReplacing(
     patternToPop: String,
     builder: NavOptionsBuilder.() -> Unit = {}
 ): Boolean {
-    if (!claimNavigationSlot()) return false
+    if (!isReadyForNavigation()) return false
     return try {
         navigate(route) {
             launchSingleTop = false
@@ -95,7 +94,7 @@ fun NavController.navigateSafelyReplacing(
 }
 
 fun NavController.navigateToTopLevelSafely(route: String): Boolean {
-    if (!claimNavigationSlot()) return false
+    if (!isReadyForNavigation()) return false
     val startDestinationId = runCatching { graph.startDestinationId }.getOrNull() ?: return false
     return try {
         navigate(route) {
