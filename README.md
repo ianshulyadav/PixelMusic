@@ -6,6 +6,7 @@
 <a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
 <a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="50"></picture></a>
 <a href="https://github.com/ianshulyadav/PixelMusicApp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-github.svg"><img src="assets/readme/light/btn-github.svg" alt="PixelMusic source code" height="50"></picture></a>
+<a href="#support"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-donate.svg"><img src="assets/readme/light/btn-donate.svg" alt="Support PixelMusic" height="50"></picture></a>
 </p>
 
 <p align="center">
