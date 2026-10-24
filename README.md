@@ -2,6 +2,8 @@
 
 <img src="assets/banner.png" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
 
+<br>
+
 <p align="center">
 <a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="50"></picture></a>
 <a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Join the PixelMusic Telegram channel" height="50"></picture></a>
