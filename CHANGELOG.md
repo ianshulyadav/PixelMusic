@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## [1.8.10] - 2026-10-24
+
+### ✨ What's New
+- **Full Player & Lyrics Blur:** Added smooth Gaussian blur behind the main player and frosted glass blur behind the synchronized lyrics sheet with edge-to-edge support.
+- **Customizable Share Cards:** Create and share stylish 9:16 song and lyrics story cards with background blur and dynamic branding.
+- **Brand New Search Experience:** Redesigned search screen with a clean 2x2 grid, recent searches, and authentic browse feeds.
+- **Moods, Genres & Charts:** Explore curated moods and genres, plus trending top charts and new releases right from the app.
+- **Free Lossless Streaming & Fallback:** Stream high-resolution FLAC audio for free, with seamless automatic fallback to JioSaavn or YouTube Music.
+- **Integrated Storage Sense:** Easily manage device storage, find duplicate downloads, and automatically clean old stream caches with smart rules.
+- **Material 3 Expressive UI & Animations:** Refined navigation bar, smooth corner radius, fluid micro-animations, and bounce feedback.
+
+### ⚡ Fixes & Improvements
+- **Major Performance Boost:** Reduced CPU and RAM usage by ~40% for cooler, longer-lasting battery life.
+- **120Hz Smooth Scrolling:** Hardware-accelerated image decoding and pipelined queueing eliminate stutter and dropped frames.
+- **Reliable Shuffle & Queue:** Fixed shuffle dropping songs in large playlists and albums.
+- **Faster Playback Startup:** Optimized track buffering and artwork preloading for instant music playback.
+- **Pure Offline Mode:** Physical audio file verification with zero navigation lag when browsing local tracks.
+- **Interaction Polish:** Fixed predictive back navigation sheet dismissal races and keyboard flicker on dialog dismissal.
+
 ## [1.7.10] - 2026-10-05
 
 ### ✨ What's New
