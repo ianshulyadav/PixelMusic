@@ -87,7 +87,7 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 
 <h3 id="design"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-design.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-design.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-design.svg"><img src="assets/readme/light/h-design.svg" alt="Material 3 Expressive: Shapes, springs and dynamic colour" width="100%"></picture></h3>
 
-PixelMusic is built with Jetpack Compose and follows the Material 3 Expressive design system. Containers change shape as you interact with them, navigation uses a floating pill bar, and the color palette updates to match your current album artwork or your Android wallpaper. The UI foundation is based on [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
+PixelMusic is built with Jetpack Compose and follows the Material 3 Expressive design system. Containers change shape as you interact with them, navigation uses a floating pill bar, and the color palette updates to match your current album artwork or your Android wallpaper.
 
 <h3 id="features"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-features.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-features.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-features.svg"><img src="assets/readme/light/h-features.svg" alt="Features: Everything inside PixelMusic" width="100%"></picture></h3>
 
