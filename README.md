@@ -1,163 +1,225 @@
-# PixelMusic Official APK Download [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2K222J1ME)
+<div align="center">
 
-<p align="center">
-  <img src="icons/store/hero_icon.png" alt="PixelMusic Official App Icon" width="160"/>
-</p>
+<img src="assets/banner.png" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
 
-<p align="center">
-  <strong>PixelMusic is an Android music player</strong> built with Material 3 Expressive and dynamic Material You theming.<br>
-  It plays your offline local audio files and supports streaming from YouTube Music, Telegram audio channels, and Google Drive in a clean, privacy-focused interface.
-</p>
+<br><br>
 
-<p align="center">
-  <img src="icons/store/blue_purple_store.png" alt="Blue Purple" width="72" style="margin:4px;"/>
-  <img src="icons/store/baby_pink_purple_store.png" alt="Baby Pink Purple" width="72" style="margin:4px;"/>
-  <img src="icons/store/graphite_store.png" alt="Graphite" width="72" style="margin:4px;"/>
-  <img src="icons/store/lime_green_store.png" alt="Lime Green" width="72" style="margin:4px;"/>
-  <img src="icons/store/lime_lemon_store.png" alt="Lime Lemon" width="72" style="margin:4px;"/>
-  <img src="icons/store/orange_yellow_store.png" alt="Orange Yellow" width="72" style="margin:4px;"/>
-</p>
-<p align="center"><em>6 themed launcher icons — pick your favorite color</em></p>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download" height="68"></picture></a>
+<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="68"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-github.svg"><img src="assets/readme/light/btn-github.svg" alt="Source code" height="68"></picture></a>
 
-<p align="center">
-  <img src="assets/homepage.jpg" alt="PixelMusic Home Screen" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/explorepage.jpg" alt="PixelMusic Explore Discovery" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer.jpg" alt="PixelMusic Material 3 Player" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/fullplayer_alt.jpg" alt="PixelMusic Dynamic Theme Player" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/library.jpg" alt="PixelMusic Music Library" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/analytics.jpg" alt="PixelMusic Listening Analytics" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/song_cards.jpg" alt="PixelMusic Share Cards" width="150" style="border-radius:26px; margin:4px;"/>
-  <img src="assets/streaming_supports.jpg" alt="PixelMusic Streaming Sources" width="150" style="border-radius:26px; margin:4px;"/>
-</p>
+<br><br>
 
-<p align="center">
-  <a href="https://github.com/ianshulyadav/PixelMusicApp/releases/latest">
-    <img src="https://img.shields.io/badge/Download%20APK-v1.7.10%20Latest-success?style=for-the-badge&logo=android&logoColor=white" alt="Download Latest APK">
-  </a>
-  <a href="https://t.me/PixelMusicApp">
-    <img src="https://img.shields.io/badge/Telegram-Join%20Channel-229ED9?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Channel">
-  </a>
-  <a href="https://ko-fi.com/H2K222J1ME" target="_blank">
-    <img src="https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support on Ko-fi">
-  </a>
-</p>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-android.svg"><img src="assets/readme/light/badge-android.svg" alt="Android 11+" height="38"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-kotlin.svg"><img src="assets/readme/light/badge-kotlin.svg" alt="Kotlin 100%" height="38"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-m3e.svg"><img src="assets/readme/light/badge-m3e.svg" alt="Material 3 Expressive" height="38"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-lossless.svg"><img src="assets/readme/light/badge-lossless.svg" alt="Hi-Res lossless" height="38"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-gpl.svg"><img src="assets/readme/light/badge-gpl.svg" alt="GPL-3.0" height="38"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/badge-prs.svg"><img src="assets/readme/light/badge-prs.svg" alt="PRs welcome" height="38"></picture>
 
-<p align="center">
-  <a href="https://android.com"><img src="https://img.shields.io/badge/Android-11%2B-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android 11+"></a>
-  <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin 100%"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=flat-square" alt="GPL-3.0 License"></a>
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/Release-v1.7.10-informational?style=flat-square" alt="Version 1.7.10"></a>
-</p>
+</div>
 
----
 
-## 📥 Direct APK Downloads
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-overview.svg"><img src="assets/readme/light/h-overview.svg" alt="Overview" height="36"></picture>
 
-Official signed APK builds from the [Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) page and the [Telegram Channel](https://t.me/PixelMusicApp):
+PixelMusic is an open-source Android music player that plays music from multiple sources in one place. You can listen to files stored on your device, stream from YouTube Music, play audio from your Telegram channels and chats, or build smart playlists using AI within the same app.
 
-| Package | Target | Link |
-|:---|:---|:---:|
-| **`app-arm64-v8a-release.apk`** | **Recommended:** Most Android phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-arm64-v8a-release.apk) |
-| **`app-universal-release.apk`** | Universal build for all devices | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-universal-release.apk) |
-| **`app-armeabi-v7a-release.apk`** | Older 32-bit phones | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-armeabi-v7a-release.apk) |
-| **`app-x86_64-release.apk`** | Emulators and ChromeOS tablets | [Download](https://github.com/ianshulyadav/PixelMusicApp/releases/latest/download/app-x86_64-release.apk) |
+It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, and MP3. The interface automatically picks its color scheme from the album art of the track that is currently playing. There are no ads and no subscriptions.
 
-### Installation
-1. Download the `arm64-v8a` APK (or `universal` if unsure).
-2. Tap the file in your browser or file manager to install.
-3. If requested by Android, enable **Allow from this source** in Settings.
-4. Open PixelMusic and grant storage permission to load your local music.
+<img src="assets/overview.png" alt="PixelMusic product overview: Home, Now Playing, Lyrics, Equalizer and Library" width="100%">
 
----
 
-## 🌟 Core Features
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-get.svg"><img src="assets/readme/light/h-get.svg" alt="Get PixelMusic" height="36"></picture>
 
-- **Local Audio Playback:** Native playback for FLAC, ALAC (Apple Lossless), WAV, OPUS, OGG, APE, MP3, and .caf with gapless playback.
-- **YouTube Music Streaming:** Browse, search, and play songs, albums, and playlists from YouTube Music without ads.
-- **Telegram Audio:** Connect your Telegram account to play audio files directly from your channels, chats, and saved messages.
-- **Google Drive Playback:** Stream audio files directly from your Google Drive without downloading them to your phone first.
-- **Hi-Fi Lossless Streaming:** High-resolution playback and downloads with audio format tags *(bring your own API / account)*.
-- **Playlist Importer:** Paste public Spotify and YouTube playlist links to import them directly into your library.
-- **Real-Time Synced Lyrics:** Synchronized LRC lyrics with millisecond offset adjustments, offline caching, and translation.
-- **Material 3 Expressive UI:** Fluid animations, floating bottom navigation, home screen collage, and dynamic themes derived from album art.
+<div align="center">
 
----
+| Action | Link |
+|--------|------|
+| **Download APK** | [GitHub Releases](https://github.com/ianshulyadav/PixelMusicApp/releases) |
+| **Telegram Channel** | [t.me/indiaflacmusic](https://t.me/indiaflacmusic) |
+| **Report an Issue** | [GitHub Issues](https://github.com/ianshulyadav/PixelMusicApp/issues) |
+| **Contribute** | [GitHub Pull Requests](https://github.com/ianshulyadav/PixelMusicApp/pulls) |
+| **License** | [GPL-3.0](https://github.com/ianshulyadav/PixelMusicApp/blob/main/LICENSE) |
 
-## ⚡ Feature Matrix
+</div>
+
+<div align="center">
+
+<a href="https://github.com/ianshulyadav/PixelMusicApp/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download" height="60"></picture></a>
+<a href="https://t.me/indiaflacmusic"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="60"></picture></a>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-youtube.svg"><img src="assets/readme/light/btn-youtube.svg" alt="YouTube Music" height="60"></picture>
+<br>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-issues.svg"><img src="assets/readme/light/btn-issues.svg" alt="Report an issue" height="60"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-contribute.svg"><img src="assets/readme/light/btn-contribute.svg" alt="Contribute" height="60"></picture></a>
+<a href="https://github.com/ianshulyadav/PixelMusicApp/blob/main/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-license.svg"><img src="assets/readme/light/btn-license.svg" alt="GPL-3.0 license" height="60"></picture></a>
+
+</div>
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-design.svg"><img src="assets/readme/light/h-design.svg" alt="Material 3 Expressive" height="36"></picture>
+
+PixelMusic is built with Jetpack Compose and follows the Material 3 Expressive design system. Containers change shape as you interact with them, navigation uses a floating pill bar, and the color palette updates to match your current album artwork or your Android wallpaper. The UI foundation is based on [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS).
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-features.svg"><img src="assets/readme/light/h-features.svg" alt="Features" height="36"></picture>
+
+<div align="center">
+
+| | |
+|:---:|:---:|
+| <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-audio.svg"><img src="assets/readme/light/card-audio.svg" alt="Premium audio" width="430"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-streaming.svg"><img src="assets/readme/light/card-streaming.svg" alt="Hybrid streaming" width="430"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-lyrics.svg"><img src="assets/readme/light/card-lyrics.svg" alt="Synced lyrics" width="430"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-eq.svg"><img src="assets/readme/light/card-eq.svg" alt="10-band equalizer" width="430"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-ai.svg"><img src="assets/readme/light/card-ai.svg" alt="AI Smart Mix" width="430"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-theme.svg"><img src="assets/readme/light/card-theme.svg" alt="Dynamic colour" width="430"></picture> |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-share.svg"><img src="assets/readme/light/card-share.svg" alt="Share cards" width="430"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-eco.svg"><img src="assets/readme/light/card-eco.svg" alt="Connected" width="430"></picture> |
+
+</div>
+
+**How PixelMusic compares to similar open-source Android music clients:**
+
+| Feature | OpenTune | Metrolist | ArchiveTune | PixelMusic |
+|---------|----------|-----------|-------------|------------|
+| **Sources** | YouTube Music | YouTube Music | YT Music + Local | Local · YouTube Music · Telegram · Google Drive (WIP) |
+| **UI Design** | Material 3 | Material 3 | Material 3 | Material 3 Expressive · shape-morphing · spring motion |
+| **Dynamic Color** | Material You | Album color | Album color | Wallpaper + album palette extraction |
+| **Audio Engine** | ExoPlayer | ExoPlayer + R128 | ExoPlayer + R128 | Media3 ExoPlayer + FFmpeg + 10-band EQ |
+| **Lyrics** | LRCLIB | LRCLIB + romanization | LRCLIB + translation | LRCLIB + offset sync + offline cache + manual search |
+| **AI Playlists** | None | None | None | Gemini · DeepSeek · OpenAI · custom proxy |
+| **Ecosystem** | Background play | Cast · sleep timer | Scrobbling · Cast | Android Auto · Chromecast · Wear OS · Last.fm · ListenBrainz |
+| **License** | GPL-3.0 | GPL-3.0 | GPL-3.0 | GPL-3.0 |
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-audio.svg"><img src="assets/readme/light/h-audio.svg" alt="Audio engine" height="36"></picture>
 
 | Feature | Details |
-|:---|:---|
-| **Audio Engine** | ExoPlayer Media3 with FFmpeg decoders, 10-band equalizer, bass boost, and EBU R128 loudness normalization. |
-| **Unified Library** | Combines local storage, YouTube Music, Telegram channels, and Google Drive into one searchable library. |
-| **Lossless Streaming** | High-fidelity audio streaming and caching *(BYO API / account)*. |
-| **Lyrics** | Synchronized LRC lyrics with time offset calibration and translation support. |
-| **Playlist Import** | One-tap import for Spotify and YouTube playlist links. |
-| **Material 3 UI** | Expressive wavy sliders, pill navigation, and 10 dynamic color themes. |
-| **Explore & Discovery** | Daily discover carousel, mood tags (Chill, Focus, Workout, Party), and personalized new releases. |
-| **Social Sharing** | Song cards and lyric stories for Snapchat and social media sharing. |
-| **Ecosystem** | Android Auto support, Wear OS companion, and Glance home screen widgets. |
-| **Languages** | Full localization in 11 languages (English, German, Spanish, French, Indonesian, Italian, Korean, Norwegian, Portuguese, Russian, Simplified Chinese). |
+|---------|---------|
+| **Playback Engine** | Media3 ExoPlayer with FFmpeg extension |
+| **Formats** | FLAC · ALAC · WAV · APE · OPUS · OGG · MP3 |
+| **Equalizer** | 10-band EQ · Bass Boost · Virtualizer · Loudness Enhancer |
+| **Presets** | Bass Booster · Vocal · Treble · Classical & more |
+| **Normalization** | EBU R128 across local and streaming sources |
+| **Crossfade & Gapless** | 0 – 15 s crossfade · true gapless transitions |
 
----
 
-## 🎨 Themes & Customization
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-streaming.svg"><img src="assets/readme/light/h-streaming.svg" alt="Streaming and cloud" height="36"></picture>
 
-- **Dynamic Material You:** Automatically extracts colors from current album art for player controls, sliders, and background sheets.
-- **Color Presets:** Blue Purple, Baby Pink Purple, Graphite Gray, Pure Monochrome, Dark & Grey, Lime Green, and Dynamic Pastel.
-- **Store Icons:** 6 matching launcher icons with 512×512 store variants.
+| Source | Status | Notes |
+|--------|--------|-------|
+| **YouTube Music** | Available | Search, playback, liked tracks & playlists via secure WebView sign-in. Personal use only. |
+| **Telegram** | Available | Channels, chats & saved messages audio pipeline |
+| **Spotify / YouTube Import** | Available | Quick Import of public playlists |
+| **Google Drive** | In Progress | Streaming coming soon |
+| **Deezer Artwork** | Available | Artist artwork fetched automatically |
 
----
 
-## 📋 System Requirements & Permissions
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-lyrics.svg"><img src="assets/readme/light/h-lyrics.svg" alt="Lyrics" height="36"></picture>
 
-- **Minimum Version:** Android 11 (API 30)
-- **Target Version:** Android 15+ (API 37)
-- **Architectures:** `arm64-v8a`, `armeabi-v7a`, `x86_64`, `universal`
-- **Permissions:**
-  - `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` (local audio files)
-  - `INTERNET` (streaming, album artwork, lyrics)
-  - `FOREGROUND_SERVICE` & `FOREGROUND_SERVICE_MEDIA_PLAYBACK` (background playback)
-  - `POST_NOTIFICATIONS` (playback notification controls)
+| Feature | Details |
+|---------|---------|
+| **Source** | LRCLIB synced lyrics, cached in Room for offline use |
+| **Timing** | Millisecond offset correction when lines don't match the audio |
+| **Language** | Live translation and romanization |
 
----
 
-## 📚 Documentation & Project Links
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-ai.svg"><img src="assets/readme/light/h-ai.svg" alt="AI and Smart Mix" height="36"></picture>
 
-- 🔒 **[Security Policy](SECURITY.md)** — Release verification and vulnerability reporting.
-- 🛡️ **[Privacy Policy](PRIVACY_POLICY.md)** — Privacy details and on-device data handling.
-- ⚖️ **[Disclaimer & Legal Notice](DISCLAIMER.md)** — Third-party service terms and fair use policy.
-- 📜 **[Provenance & Lineage](PROVENANCE.md)** — Attribution and project history.
-- 📦 **[Third-Party Notices](THIRD_PARTY_NOTICES.md)** — Open source libraries and dependencies.
-- 🤝 **[Contributing Guidelines](CONTRIBUTING.md)** — Bug reporting and contribution guide.
-- 📝 **[Changelog](CHANGELOG.md)** — Full version history and release notes.
+| Feature | Details |
+|---------|---------|
+| **AI Music Assistant** | Builds queues from your prompt |
+| **Supported Models** | Gemini · DeepSeek · OpenAI · Custom proxy |
+| **Smart Mix** | Last.fm-powered generator with 8 modes |
+| **Retention Rules** | 24 hours · 7 days · 30 days · Permanent |
+| **Overwrite Mode** | In-place overwrite of existing mixes |
 
----
 
-## ⚖️ Disclaimer & Fair Use Notice
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-customize.svg"><img src="assets/readme/light/h-customize.svg" alt="Customize and share" height="36"></picture>
 
-PixelMusic is an independent open-source media player and is not affiliated with Google, YouTube, Deezer, Telegram, Spotify, Snapchat, Last.fm, or ListenBrainz.
+| Feature | Details |
+|---------|---------|
+| **Dynamic Color** | System palette (Android 12+) or album art extraction |
+| **Share Cards** | Snapchat & Instagram stories · pastel themes · frosted glass · wavy seekbar |
+| **Landing Tab** | Choose Home · Explore · Search or Library as your default |
 
-- **No Media Hosting:** PixelMusic does not host or store copyrighted audio on external servers. It acts as an audio player for local storage and an interface for public and user-authenticated APIs.
-- **User Responsibility:** Users are responsible for their own use and compliance with the terms of service of any third-party platforms they access.
 
-For full legal details, see [DISCLAIMER.md](DISCLAIMER.md).
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-ecosystem.svg"><img src="assets/readme/light/h-ecosystem.svg" alt="Ecosystem" height="36"></picture>
 
----
+| Platform | Integration |
+|----------|-------------|
+| **Android Auto** | Via Media3 `MediaLibraryService` |
+| **Chromecast** | TVs · Dongles · Nest speakers |
+| **Wear OS** | Independent playback & remote control |
+| **Scrobbling** | Last.fm & ListenBrainz |
 
-## 📦 License & Open Source Attribution
 
-PixelMusic is free software released under the **GNU General Public License v3.0** (`GPL-3.0-or-later`).
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-performance.svg"><img src="assets/readme/light/h-performance.svg" alt="Performance" height="36"></picture>
 
-Portions of this project are based on the open-source [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) project. Upstream notices and credits are preserved in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [PROVENANCE.md](PROVENANCE.md).
+| Optimization | Details |
+|-------------|---------|
+| **Phased Loading** | Defers heavy Explore queries to background jobs |
+| **MIUI / HyperOS Fix** | Lockscreen artwork via dedicated content provider |
+| **Thread Safety** | Thread-safe DB queries with tuned R8 / ProGuard rules |
 
-> Gratitude to the foundational open-source authors and community contributors whose work inspired and empowered this project.
 
-```text
-PixelMusic
-Copyright (C) 2026 PixelMusic Contributors
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-stack.svg"><img src="assets/readme/light/h-stack.svg" alt="Tech stack" height="36"></picture>
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+<div align="center">
+
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/stack.svg"><img src="assets/readme/light/stack.svg" alt="Tech stack diagram" width="880"></picture>
+
+</div>
+
+<br>
+
+| Layer | Library / Tool | Role |
+|-------|---------------|------|
+| **Language** | Kotlin 2.x · JVM 21 | 100% Kotlin codebase |
+| **UI Framework** | Jetpack Compose · Compose BOM | Declarative UI |
+| **Design System** | Material 3 Expressive | UI components and theming |
+| **Media Player** | Media3 ExoPlayer · Session · UI | Playback, session management |
+| **Audio Processing** | FFmpeg extension · EBU R128 normalization | Lossless decoding, volume leveling |
+| **Database** | Room + KSP | Local library and lyrics cache |
+| **Dependency Injection** | Dagger Hilt | Android and WorkManager modules |
+| **Networking** | Ktor Client · OkHttp | API calls, Brotli encoding |
+| **Serialization** | Retrofit · Gson · Kotlinx Serialization | API parsing |
+| **Image Loading** | Coil 3 | Compose-native with LRU caching |
+| **Async** | Coroutines · StateFlow · SharedFlow | Background work and state |
+| **Background Tasks** | WorkManager | Sync, backup, scheduled refresh |
+| **Metadata** | JAudioTagger | Audio tag reading and writing |
+| **Widgets** | Glance | Material 3 home screen widgets |
+| **Min SDK** | Android 11 (API 30) | |
+| **Target SDK** | Android 37 | |
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-start.svg"><img src="assets/readme/light/h-start.svg" alt="Getting started" height="36"></picture>
+
+**Requirements**
+
+| Requirement | Version |
+|-------------|---------|
+| Android Studio | Ladybug (2024.2.1) or newer |
+| Android SDK | 34+ (target 37) |
+| JDK | 21 |
+
+**Build**
+
+```bash
+git clone https://github.com/ianshulyadav/PixelMusicApp.git
+cd PixelMusicApp
+./gradlew :app:assembleDebug
 ```
+
+> Add your Gemini or DeepSeek keys to `local.properties` to enable the AI playlist features.
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-legal.svg"><img src="assets/readme/light/h-legal.svg" alt="Disclaimer" height="36"></picture>
+
+PixelMusic is an independent, community-driven audio player. It is not associated with Google LLC, YouTube Music, Deezer, Telegram, Snapchat, Last.fm, ListenBrainz or their parent companies. It does not host or store copyrighted music, and users are responsible for complying with applicable laws and platform terms. All third-party integrations are unofficial unless stated otherwise.
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-license.svg"><img src="assets/readme/light/h-license.svg" alt="License" height="36"></picture>
+
+PixelMusic is licensed under the **GNU General Public License v3.0**. See [`LICENSE`](LICENSE). Portions are based on PixelPlayerOSS by Theo Vilardo and Duhan Yağmur Delikkulak.
+
+
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-credits.svg"><img src="assets/readme/light/h-credits.svg" alt="Credits" height="36"></picture>
+
+PixelMusic is an independent, unofficial fork of [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [Theo Vilardo](https://github.com/theovilardo) and Duhan Yağmur Delikkulak. Not affiliated with or endorsed by the upstream project. Upstream notice kept in [`LICENSE`](LICENSE) and [`PROVENANCE.md`](PROVENANCE.md).
