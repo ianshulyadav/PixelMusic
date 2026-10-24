@@ -65,6 +65,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,6 +102,39 @@ import java.io.File
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import racra.compose.smooth_corner_rect_library.AbsoluteSmoothCornerShape
+
+private val ChannelCardShape = AbsoluteSmoothCornerShape(
+    cornerRadiusTR = 28.dp,
+    cornerRadiusTL = 28.dp,
+    cornerRadiusBR = 28.dp,
+    cornerRadiusBL = 28.dp,
+    smoothnessAsPercentTR = 60,
+    smoothnessAsPercentTL = 60,
+    smoothnessAsPercentBR = 60,
+    smoothnessAsPercentBL = 60
+)
+
+private val ChannelImageShape = AbsoluteSmoothCornerShape(
+    cornerRadiusTR = 20.dp,
+    cornerRadiusTL = 20.dp,
+    cornerRadiusBR = 20.dp,
+    cornerRadiusBL = 20.dp,
+    smoothnessAsPercentTR = 60,
+    smoothnessAsPercentTL = 60,
+    smoothnessAsPercentBR = 60,
+    smoothnessAsPercentBL = 60
+)
+
+private val ChannelActionCardShape = AbsoluteSmoothCornerShape(
+    cornerRadiusTR = 18.dp,
+    cornerRadiusTL = 18.dp,
+    cornerRadiusBR = 18.dp,
+    cornerRadiusBL = 18.dp,
+    smoothnessAsPercentTR = 60,
+    smoothnessAsPercentTL = 60,
+    smoothnessAsPercentBR = 60,
+    smoothnessAsPercentBL = 60
+)
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -148,13 +182,13 @@ fun TelegramDashboardScreen(
     val maxTopBarHeightPx = with(density) { maxTopBarHeight.toPx() }
 
     val topBarHeight = remember(maxTopBarHeightPx) { Animatable(maxTopBarHeightPx) }
-    var collapseFraction by remember { mutableStateOf(0f) }
-
-    LaunchedEffect(topBarHeight.value, maxTopBarHeightPx) {
-        collapseFraction = 1f - (
+    val collapseFraction by remember(minTopBarHeightPx, maxTopBarHeightPx) {
+        derivedStateOf {
+            1f - (
                 (topBarHeight.value - minTopBarHeightPx) /
-                        (maxTopBarHeightPx - minTopBarHeightPx)
-                ).coerceIn(0f, 1f)
+                    (maxTopBarHeightPx - minTopBarHeightPx)
+            ).coerceIn(0f, 1f)
+        }
     }
 
     val nestedScrollConnection = remember {
@@ -197,7 +231,9 @@ fun TelegramDashboardScreen(
         }
     }
 
-    val currentTopBarHeightDp = with(density) { topBarHeight.value.toDp() }
+    val currentTopBarHeightDp by remember(density) {
+        derivedStateOf { with(density) { topBarHeight.value.toDp() } }
+    }
     val fabBottomPadding = navigationBottomPadding + 16.dp
 
     Surface(
@@ -232,7 +268,8 @@ fun TelegramDashboardScreen(
                     ) {
                         itemsIndexed(
                             items = channels,
-                            key = { _, channel -> channel.chatId }
+                            key = { _, channel -> channel.chatId },
+                            contentType = { _, _ -> "telegram_channel_item" }
                         ) { _, channel ->
                             val channelTopics = topicsMap[channel.chatId] ?: emptyList()
                             val isExpanded = channel.chatId in expandedChannels
@@ -262,15 +299,6 @@ fun TelegramDashboardScreen(
                     .zIndex(5f)
             )
 
-        val fabScale by animateFloatAsState(
-            targetValue = 1f,
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness = Spring.StiffnessMedium
-            ),
-            label = "telegramFabScale"
-        )
-
         if (channels.isNotEmpty()) {
             MediumExtendedFloatingActionButton(
                 onClick = onAddChannel,
@@ -286,11 +314,7 @@ fun TelegramDashboardScreen(
                 shape = CircleShape,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = fabBottomPadding)
-                    .graphicsLayer {
-                        scaleX = fabScale
-                        scaleY = fabScale
-                    },
+                    .padding(end = 16.dp, bottom = fabBottomPadding),
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -386,28 +410,6 @@ private fun ExpressiveChannelItem(
     onToggleExpand: () -> Unit
 ) {
     val context = LocalContext.current
-    val cardShape = AbsoluteSmoothCornerShape(
-        cornerRadiusTR = 28.dp,
-        cornerRadiusTL = 28.dp,
-        cornerRadiusBR = 28.dp,
-        cornerRadiusBL = 28.dp,
-        smoothnessAsPercentTR = 60,
-        smoothnessAsPercentTL = 60,
-        smoothnessAsPercentBR = 60,
-        smoothnessAsPercentBL = 60
-    )
-
-    val imageShape = AbsoluteSmoothCornerShape(
-        cornerRadiusTR = 20.dp,
-        cornerRadiusTL = 20.dp,
-        cornerRadiusBR = 20.dp,
-        cornerRadiusBL = 20.dp,
-        smoothnessAsPercentTR = 60,
-        smoothnessAsPercentTL = 60,
-        smoothnessAsPercentBR = 60,
-        smoothnessAsPercentBL = 60
-    )
-
     val usernameLabel = remember(channel.username) {
         channel.username
             ?.trim()
@@ -420,7 +422,7 @@ private fun ExpressiveChannelItem(
     }
 
     Surface(
-        shape = cardShape,
+        shape = ChannelCardShape,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         tonalElevation = 1.dp,
         shadowElevation = 0.dp
@@ -439,7 +441,7 @@ private fun ExpressiveChannelItem(
                 Box(
                     modifier = Modifier
                         .size(62.dp)
-                        .clip(imageShape)
+                        .clip(ChannelImageShape)
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
@@ -798,24 +800,13 @@ private fun ChannelActionCard(
     enabled: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
-    val shape = AbsoluteSmoothCornerShape(
-        cornerRadiusTR = 18.dp,
-        cornerRadiusTL = 18.dp,
-        cornerRadiusBR = 18.dp,
-        cornerRadiusBL = 18.dp,
-        smoothnessAsPercentTR = 60,
-        smoothnessAsPercentTL = 60,
-        smoothnessAsPercentBR = 60,
-        smoothnessAsPercentBL = 60
-    )
-
     Surface(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
         enabled = enabled,
         color = containerColor,
         contentColor = contentColor,
-        shape = shape
+        shape = ChannelActionCardShape
     ) {
         Row(
             modifier = Modifier
