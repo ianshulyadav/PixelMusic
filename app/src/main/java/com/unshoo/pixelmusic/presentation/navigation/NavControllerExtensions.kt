@@ -1,31 +1,25 @@
 package com.unshoo.pixelmusic.presentation.navigation
 
+import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavOptionsBuilder
 
-// Lifecycle gate for navigation controller extensions.
-//
-// Two behaviors were intentionally refined:
-//
-// 1. `lifecycle == null -> false`. Returns false when there is no current
-//    back stack entry; navigating with a null entry (during graph setup races) is
-//    exactly the case the gate exists to catch.
-//
-// 2. The `currentDestination?.route == targetRoute` block. `currentDestination?.route`
-//    is the route *pattern* (e.g. "settings_category/{categoryId}") while callers pass
-//    fully-built routes ("settings_category/appearance"), so the check silently never
-//    fired for parameterized destinations; for static routes it ate legitimate taps
-//    (e.g. re-opening a section you just left) and produced "dead tap" reports.
-//    Deduplication of rapid double navigation is already handled correctly by
-//    `launchSingleTop = true` below and by the ScreenWrapper input gate, which stops
-//    touches from reaching the screen that is being popped.
-private fun NavController.isReadyForNavigation(): Boolean {
-    return runCatching {
-        // We allow navigation if the current entry is at least STARTED.
-        // This is safer than strictly RESUMED as transitions can sometimes delay RESUMED state.
+// STARTED does not mean a navigation transition has settled. Coalesce operations
+// while an outgoing destination is being disposed to avoid overlapping stack mutations.
+private const val NAVIGATION_DEBOUNCE_MS = 350L
+private var lastNavigationUptimeMs = 0L
+
+@Synchronized
+private fun NavController.claimNavigationSlot(): Boolean {
+    val now = SystemClock.uptimeMillis()
+    if (now - lastNavigationUptimeMs < NAVIGATION_DEBOUNCE_MS) return false
+    val ready = runCatching {
         currentBackStackEntry?.lifecycle?.currentState?.isAtLeast(Lifecycle.State.STARTED) == true
     }.getOrDefault(false)
+    if (ready) lastNavigationUptimeMs = now
+    return ready
 }
 
 /**
@@ -34,18 +28,20 @@ private fun NavController.isReadyForNavigation(): Boolean {
  * cannot pop a *second* destination (the classic "double back -> blank screen" bug).
  */
 fun NavController.popBackStackSafely(): Boolean {
-    val lifecycle = currentBackStackEntry?.lifecycle
-    if (lifecycle != null && !lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return false
+    if (!claimNavigationSlot()) return false
     return try {
         popBackStack()
+    } catch (e: IllegalStateException) {
+        Log.w("NavController", "Back navigation ignored during a stack transition", e)
+        false
     } catch (e: Exception) {
-        android.util.Log.e("NavController", "Safe popBackStack failed", e)
+        Log.e("NavController", "Safe popBackStack failed", e)
         false
     }
 }
 
 fun NavController.navigateSafely(route: String): Boolean {
-    if (!isReadyForNavigation()) return false
+    if (!claimNavigationSlot()) return false
     if (isMainRootRoute(route)) {
         return navigateToTopLevelSafely(route)
     }
@@ -55,7 +51,7 @@ fun NavController.navigateSafely(route: String): Boolean {
         }
         true
     } catch (e: Exception) {
-        android.util.Log.e("NavController", "Safe navigation failed for route: $route", e)
+        Log.e("NavController", "Safe navigation failed for route: $route", e)
         false
     }
 }
@@ -64,7 +60,7 @@ fun NavController.navigateSafely(
     route: String,
     builder: NavOptionsBuilder.() -> Unit
 ): Boolean {
-    if (!isReadyForNavigation()) return false
+    if (!claimNavigationSlot()) return false
     return try {
         navigate(route) {
             launchSingleTop = true
@@ -72,7 +68,7 @@ fun NavController.navigateSafely(
         }
         true
     } catch (e: Exception) {
-        android.util.Log.e("NavController", "Safe navigation failed for route: $route", e)
+        Log.e("NavController", "Safe navigation failed for route: $route", e)
         false
     }
 }
@@ -82,7 +78,7 @@ fun NavController.navigateSafelyReplacing(
     patternToPop: String,
     builder: NavOptionsBuilder.() -> Unit = {}
 ): Boolean {
-    if (!isReadyForNavigation()) return false
+    if (!claimNavigationSlot()) return false
     return try {
         navigate(route) {
             launchSingleTop = false
@@ -93,13 +89,13 @@ fun NavController.navigateSafelyReplacing(
         }
         true
     } catch (e: Exception) {
-        android.util.Log.e("NavController", "Safe navigation replacing failed for route: $route", e)
+        Log.e("NavController", "Safe navigation replacing failed for route: $route", e)
         false
     }
 }
 
 fun NavController.navigateToTopLevelSafely(route: String): Boolean {
-    if (!isReadyForNavigation()) return false
+    if (!claimNavigationSlot()) return false
     val startDestinationId = runCatching { graph.startDestinationId }.getOrNull() ?: return false
     return try {
         navigate(route) {
@@ -111,7 +107,7 @@ fun NavController.navigateToTopLevelSafely(route: String): Boolean {
         }
         true
     } catch (e: Exception) {
-        android.util.Log.e("NavController", "Safe top-level navigation failed for route: $route", e)
+        Log.e("NavController", "Safe top-level navigation failed for route: $route", e)
         false
     }
 }

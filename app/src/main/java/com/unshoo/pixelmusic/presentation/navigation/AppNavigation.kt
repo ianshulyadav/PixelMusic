@@ -73,6 +73,7 @@ import com.unshoo.pixelmusic.presentation.viewmodel.PlayerViewModel
 import com.unshoo.pixelmusic.presentation.viewmodel.PlaylistViewModel
 import kotlinx.coroutines.flow.first
 import com.unshoo.pixelmusic.presentation.components.ScreenWrapper
+import com.unshoo.pixelmusic.presentation.navigation.popBackStackSafely
 
 @OptIn(UnstableApi::class)
 @SuppressLint("UnrememberedGetBackStackEntry")
@@ -280,7 +281,7 @@ fun AppNavigation(
                         navController = navController,
                         playerViewModel = playerViewModel,
                         onNavigationIconClick = {
-                            navController.popBackStack()
+                            navController.popBackStackSafely()
                         }
                     )
                 }
@@ -294,7 +295,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     AccountsScreen(
-                        onBackClick = { navController.popBackStack() },
+                        onBackClick = { navController.popBackStackSafely() },
                         onOpenYoutubeAuth = {
                             navController.navigateSafely(Screen.YoutubeAuth.route)
                         },
@@ -320,7 +321,7 @@ fun AppNavigation(
                                 categoryId = categoryId,
                                 navController = navController,
                                 playerViewModel = playerViewModel,
-                                onBackClick = { navController.popBackStack() }
+                                onBackClick = { navController.popBackStackSafely() }
                             )
                         }
                     }
@@ -336,7 +337,7 @@ fun AppNavigation(
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     PaletteStyleSettingsScreen(
                         playerViewModel = playerViewModel,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -350,7 +351,7 @@ fun AppNavigation(
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     BlurSettingsScreen(
                         playerViewModel = playerViewModel,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -365,7 +366,7 @@ fun AppNavigation(
                     ExperimentalSettingsScreen(
                         navController = navController,
                         playerViewModel = playerViewModel,
-                        onNavigationIconClick = { navController.popBackStack() }
+                        onNavigationIconClick = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -454,8 +455,8 @@ fun AppNavigation(
                             playlistId = playlistId,
                             playerViewModel = playerViewModel,
                             playlistViewModel = playlistViewModel,
-                            onBackClick = { navController.popBackStack() },
-                            onDeletePlayListClick = { navController.popBackStack() },
+                            onBackClick = { navController.popBackStackSafely() },
+                            onDeletePlayListClick = { navController.popBackStackSafely() },
                             navController = navController
                         )
                     }
@@ -610,7 +611,7 @@ fun AppNavigation(
                     AboutScreen(
                         navController = navController,
                         viewModel = playerViewModel,
-                        onNavigationIconClick = { navController.popBackStack() }
+                        onNavigationIconClick = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -624,7 +625,7 @@ fun AppNavigation(
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     EasterEggScreen(
                         viewModel = playerViewModel,
-                        onNavigationIconClick = { navController.popBackStack() },
+                        onNavigationIconClick = { navController.popBackStackSafely() },
                     )
                 }
             }
@@ -710,7 +711,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.unshoo.pixelmusic.presentation.screens.youtube.AuthScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -725,7 +726,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.unshoo.pixelmusic.presentation.screens.lossless.TidalLoginScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -738,7 +739,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.unshoo.pixelmusic.presentation.screens.lossless.DeezerLoginScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -751,7 +752,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.unshoo.pixelmusic.presentation.screens.lossless.QobuzLoginScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackSafely() }
                     )
                 }
             }
@@ -764,7 +765,7 @@ fun AppNavigation(
             ) {
                 ScreenWrapper(navController = navController, playerViewModel = playerViewModel) {
                     com.unshoo.pixelmusic.presentation.screens.lossless.AppleMusicLoginScreen(
-                        onBack = { navController.popBackStack() }
+                        onBack = { navController.popBackStackSafely() }
                     )
                 }
             }

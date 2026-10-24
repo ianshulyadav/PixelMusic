@@ -199,69 +199,68 @@ fun TelegramDashboardScreen(
 
     val currentTopBarHeightDp = with(density) { topBarHeight.value.toDp() }
     val fabBottomPadding = navigationBottomPadding + 16.dp
-    val collapsedTopBarAlpha = (collapseFraction / 0.6f).coerceIn(0f, 1f)
-    val topBarContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest.copy(
-        alpha = collapsedTopBarAlpha
-    )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(nestedScrollConnection)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
     ) {
-        Crossfade(targetState = channels.isEmpty(), label = "telegramContentState") { isEmpty ->
-            if (isEmpty) {
-                ExpressiveEmptyState(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .fillMaxSize()
-                    //.padding(top = currentTopBarHeightDp + 8.dp)
-                    ,
-                    onAdd = onAddChannel
-                )
-            } else {
-                LazyColumn(
-                    state = lazyListState,
-                    contentPadding = PaddingValues(
-                        top = currentTopBarHeightDp + 8.dp,
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = fabBottomPadding + 110.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    itemsIndexed(
-                        items = channels,
-                        key = { _, channel -> channel.chatId }
-                    ) { _, channel ->
-                        val channelTopics = topicsMap[channel.chatId] ?: emptyList()
-                        val isExpanded = channel.chatId in expandedChannels
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(nestedScrollConnection)
+        ) {
+            Crossfade(targetState = channels.isEmpty(), label = "telegramContentState") { isEmpty ->
+                if (isEmpty) {
+                    ExpressiveEmptyState(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .fillMaxSize()
+                        //.padding(top = currentTopBarHeightDp + 8.dp)
+                        ,
+                        onAdd = onAddChannel
+                    )
+                } else {
+                    LazyColumn(
+                        state = lazyListState,
+                        contentPadding = PaddingValues(
+                            top = currentTopBarHeightDp + 8.dp,
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = fabBottomPadding + 110.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        itemsIndexed(
+                            items = channels,
+                            key = { _, channel -> channel.chatId }
+                        ) { _, channel ->
+                            val channelTopics = topicsMap[channel.chatId] ?: emptyList()
+                            val isExpanded = channel.chatId in expandedChannels
 
-                        ExpressiveChannelItem(
-                            channel = channel,
-                            isSyncing = isRefreshingId == channel.chatId,
-                            topics = channelTopics,
-                            isExpanded = isExpanded,
-                            onSync = { viewModel.refreshChannel(channel) },
-                            onOpenActions = { selectedChannelForActions = channel },
-                            onToggleExpand = { viewModel.toggleChannelExpanded(channel.chatId) }
-                        )
+                            ExpressiveChannelItem(
+                                channel = channel,
+                                isSyncing = isRefreshingId == channel.chatId,
+                                topics = channelTopics,
+                                isExpanded = isExpanded,
+                                onSync = { viewModel.refreshChannel(channel) },
+                                onOpenActions = { selectedChannelForActions = channel },
+                                onToggleExpand = { viewModel.toggleChannelExpanded(channel.chatId) }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        CollapsibleCommonTopBar(
-            title = stringResource(R.string.presentation_batch_f_telegram_channels_title),
-            collapseFraction = collapseFraction,
-            headerHeight = currentTopBarHeightDp,
-            onBackClick = onBack,
-            containerColor = topBarContainerColor,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .zIndex(5f)
-        )
+            CollapsibleCommonTopBar(
+                title = stringResource(R.string.presentation_batch_f_telegram_channels_title),
+                collapseFraction = collapseFraction,
+                headerHeight = currentTopBarHeightDp,
+                onBackClick = onBack,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .zIndex(5f)
+            )
 
         val fabScale by animateFloatAsState(
             targetValue = 1f,
@@ -372,6 +371,8 @@ fun TelegramDashboardScreen(
         }
     }
 }
+}
+
 
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable

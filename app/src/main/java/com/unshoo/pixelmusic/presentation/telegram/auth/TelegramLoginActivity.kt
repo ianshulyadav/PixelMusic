@@ -70,6 +70,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -130,6 +131,9 @@ class TelegramLoginActivity : ComponentActivity() {
             val appFontMode by themePreferencesRepository.appFontModeFlow.collectAsStateWithLifecycle(initialValue = com.unshoo.pixelmusic.data.preferences.AppFontMode.APP_DEFAULT)
             val appThemeMode by themePreferencesRepository.appThemeModeFlow.collectAsStateWithLifecycle(initialValue = com.unshoo.pixelmusic.data.preferences.AppThemeMode.FOLLOW_SYSTEM)
             val pitchBlackEnabled by themePreferencesRepository.pitchBlackEnabledFlow.collectAsStateWithLifecycle(initialValue = false)
+            val playerThemePreference by themePreferencesRepository.playerThemePreferenceFlow.collectAsStateWithLifecycle(initialValue = com.unshoo.pixelmusic.data.preferences.ThemePreference.ALBUM_ART)
+            val colorPalette by themePreferencesRepository.colorPalettePreferenceFlow.collectAsStateWithLifecycle(initialValue = "SAGE")
+            val dynamicColorEnabled = colorPalette == "DYNAMIC" || playerThemePreference == com.unshoo.pixelmusic.data.preferences.ThemePreference.DYNAMIC
             val systemDarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
             val useDarkTheme = when (appThemeMode) {
                 com.unshoo.pixelmusic.data.preferences.AppThemeMode.DARK -> true
@@ -138,10 +142,17 @@ class TelegramLoginActivity : ComponentActivity() {
             }
             PixelMusicTheme(
                 darkTheme = useDarkTheme,
+                dynamicColor = dynamicColorEnabled,
+                colorPalette = colorPalette,
                 useSystemFont = (appFontMode == com.unshoo.pixelmusic.data.preferences.AppFontMode.SYSTEM),
                 pitchBlack = (useDarkTheme && pitchBlackEnabled)
             ) {
-                TelegramLoginScreen(onFinish = { finish() })
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    TelegramLoginScreen(onFinish = { finish() })
+                }
             }
         }
     }
@@ -249,12 +260,12 @@ fun TelegramLoginScreen(
                 )
             )
         },
-        containerColor = Color.Transparent
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 20.dp),
