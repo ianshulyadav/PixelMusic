@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
+<img src="assets/banner-thin-rounded.webp" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
 
 <br>
 
