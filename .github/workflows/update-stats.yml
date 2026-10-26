@@ -1,0 +1,50 @@
+name: Update stats
+
+on:
+  schedule:
+    - cron: '17 3 * * *'   # every day at 03:17 UTC
+  workflow_dispatch:        # run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stats
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install tools
+        run: |
+          pip install uharfbuzz fonttools
+          npm install --no-save @resvg/resvg-js
+
+      - name: Read counts and redraw the banner pills
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}   # optional
+        run: python tools/stats/update_stats.py
+
+      - name: Render PNG banners
+        run: |
+          node tools/stats/render.mjs assets/banner-thin.svg assets/banner-thin.png
+          node tools/stats/render.mjs assets/banner-thin-rounded.svg assets/banner-thin-rounded.png
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add stats.json assets/banner-thin.svg assets/banner-thin.png assets/banner-thin-rounded.svg assets/banner-thin-rounded.png
+          git diff --cached --quiet || (git commit -m "chore: update download and community stats" && git push)

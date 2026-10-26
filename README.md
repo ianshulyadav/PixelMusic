@@ -276,6 +276,6 @@ PixelMusic is licensed under the **GNU General Public License v3.0**. See [`LICE
 
 <h3 id="credits"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-credits.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-credits.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-credits.svg"><img src="assets/readme/light/h-credits.svg" alt="Credits: Built on PixelPlayerOSS" width="100%"></picture></h3>
 
-PixelMusic is an independent, unofficial fork of [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [Theo Vilardo](https://github.com/theovilardo) and Duhan Yağmur Delikkulak. Not affiliated with or endorsed by the upstream project. Upstream notice kept in [`LICENSE`](LICENSE) and [`PROVENANCE.md`](PROVENANCE.md).
+PixelMusic is an independent, unofficial fork of [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [Theo Vilardo](https://github.com/theovilardo) and Duhan Yağmur Delikkulak. Not affiliated with or endorsed by the upstream project. Upstream notice kept in [`LICENSE`](LICENSE) and [`PROVENANCE.md`](docs/PROVENANCE.md).
 
 <sub>Search terms: Pixel Music, PixelMusic, Android music player, ad-free music player, open-source music player, Hi-Res lossless player, FLAC player, ALAC player, YouTube Music client, Telegram music player, LRCLIB lyrics, Material 3 Expressive.</sub>

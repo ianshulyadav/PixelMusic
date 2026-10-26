@@ -1,0 +1,38 @@
+﻿{
+  "release_repos": [
+    "ianshulyadav/PixelMusic",
+    "elitemarketingexe-png/ThePixelMusic"
+  ],
+  "telegram_channel": "indiaflacmusic",
+  "downloads_offset": 0,
+  "downloads_min": 15000,
+  "community_min": 1000,
+  "banners": [
+    "assets/banner-thin.svg",
+    "assets/banner-thin-rounded.svg"
+  ],
+  "origin": [
+    58,
+    226
+  ],
+  "stats": [
+    {
+      "key": "downloads",
+      "label": "downloads",
+      "icon": "download",
+      "fill": "#bbefc2",
+      "fg": "#2c5b39",
+      "cont": "#3a6945",
+      "cfg": "#e8ffe8"
+    },
+    {
+      "key": "community",
+      "label": "community",
+      "icon": "groups",
+      "fill": "#ffb192",
+      "fg": "#633019",
+      "cont": "#8b5037",
+      "cfg": "#fff7f5"
+    }
+  ]
+}
