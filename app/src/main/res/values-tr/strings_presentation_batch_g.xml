@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="device_capabilities_advanced_diagnostics_description">Varsayılan olarak kapalıdır. Beta sorun giderme için kısa bir takılma zaman çizelgesi kaydeder.</string>
     <string name="device_capabilities_advanced_diagnostics_expires">%1$s tarihine kadar aktif</string>
@@ -50,7 +50,7 @@
     <string name="device_capabilities_report_generate">Rapor oluştur</string>
     <string name="device_capabilities_report_regenerate">Yeniden Oluştur</string>
     <string name="device_capabilities_report_share">Paylaş</string>
-    <string name="device_capabilities_report_share_title">PixelPlayer performans raporu</string>
+    <string name="device_capabilities_report_share_title">PixelMusic performans raporu</string>
     <string name="device_capabilities_report_title">Performans raporu</string>
     <string name="device_capabilities_review_title">Oynatmanın gözden geçirilmesi gerekiyor</string>
     <string name="device_capabilities_storage_available">Kullanılabilir</string>

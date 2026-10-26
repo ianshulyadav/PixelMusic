@@ -121,14 +121,14 @@ private data class Contributor(
 )
 
 private val CoreMaintainer = Contributor(
-    id = "lostf1sh",
-    displayName = "@lostf1sh",
+    id = "unshoo",
+    displayName = "@unshoo",
     role = "FOSS Maintainer",
-    detail = "Maintains PixelMusic. GitHub and Telegram: @lostf1sh.",
-    avatarUrl = "https://github.com/lostf1sh.png",
+    detail = "Maintains PixelMusic. GitHub and Telegram: @unshoo.",
+    avatarUrl = "https://github.com/ianshulyadav.png",
     iconRes = R.drawable.round_developer_board_24,
-    githubUrl = "https://github.com/lostf1sh",
-    telegramUrl = "https://t.me/lostf1sh",
+    githubUrl = "https://github.com/ianshulyadav",
+    telegramUrl = "https://t.me/indiaflacmusic",
 )
 
 private val NonFossMaintainer = Contributor(
@@ -147,9 +147,9 @@ private val AboutMaintainers = listOf(
     NonFossMaintainer,
 )
 
-private const val SourceRepoUrl = "https://github.com/lostf1sh/PixelMusic"
+private const val SourceRepoUrl = "https://github.com/ianshulyadav/PixelMusic"
 private const val FDroidUrl = "https://f-droid.org/packages/com.unshoo.pixelmusic/"
-private const val SponsorUrl = "https://github.com/sponsors/lostf1sh"
+private const val SponsorUrl = "https://ko-fi.com/ianshulyadav"
 
 private data class ProjectLink(
     val id: String,

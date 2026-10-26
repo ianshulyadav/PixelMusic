@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="about_contributions_format">%1$d مساهمة</string>
     <string name="about_link_fdroid_subtitle">متوفر في كتالوج F-Droid</string>
     <string name="about_link_fdroid_title">F-Droid</string>
     <string name="about_link_source_title">الكود المصدري</string>
-    <string name="about_maintainer_subtitle">الشخص الذي يقف وراء PixelPlayer.</string>
+    <string name="about_maintainer_subtitle">الشخص الذي يقف وراء PixelMusic.</string>
     <string name="about_maintainer_title">المشرف الرئيسي</string>
     <string name="about_project_subtitle">الكود المصدري والإصدارات ونقاط الدخول إلى المجتمع.</string>
     <string name="about_project_title">المشروع</string>
