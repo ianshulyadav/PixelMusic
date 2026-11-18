@@ -1,5 +1,6 @@
 # Adds the "Sponsor" button to the repository page.
 # ko_fi: <handle>   # enable once the ko-fi handle (not the page id) is confirmed
+ko_fi: ianshulyadav
 custom:
   - "https://ko-fi.com/H2K222J1ME"
   - "https://ianshulyadav.github.io/PixelMusic/#support"
