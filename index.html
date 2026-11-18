@@ -62,7 +62,7 @@ html[data-theme="dark"] .theme-btn .i-sun{display:none}
 html[data-theme="dark"] .theme-btn .i-moon{display:grid}
 html.theming,html.theming *{transition:background-color .3s ease,color .3s ease,border-color .3s ease,fill .3s ease!important}
 /* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:1rem;border:0;cursor:pointer;font-family:inherit;transition:border-radius .2s,transform .15s}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 24px;border-radius:999px;text-decoration:none;font-weight:700;font-size:1rem;border:0;cursor:pointer;font-family:inherit;transition:border-radius .2s,transform .15s;white-space:nowrap}
 .btn:hover{border-radius:18px}
 .bar .btn.support-btn{align-self:center;height:46px;padding:0 20px;font-size:var(--fs-label);line-height:1;white-space:nowrap}.btn:active{border-radius:12px;transform:scale(.98)}
 .filled{background:var(--p);color:var(--on-p)}.tonal{background:var(--sec-c);color:var(--on-sec-c)}.ter{background:var(--ter-c);color:var(--on-ter-c)}.outlined{border:2px solid var(--outline);background:transparent;color:var(--on-bg)}
@@ -76,9 +76,13 @@ h1 .hl{color:var(--p);white-space:nowrap}
 .lead{font-size:calc(var(--fs-lead) + .04rem);color:var(--on-sv);margin:22px 0 28px;max-width:34em;line-height:1.6}
 .stats{display:flex;gap:8px;flex-wrap:nowrap;margin:24px 0 18px;min-width:0}
 .stat{min-width:0}
-.cnt{display:inline-flex;align-items:center;gap:4px;background:rgba(105,56,67,.12);color:var(--on-ter-c);font-weight:750;font-size:.82rem;padding:3px 9px 3px 7px;border-radius:999px;font-variant-numeric:tabular-nums;line-height:1}
-.cnt .ic{width:1.05em;height:1.05em;fill:currentColor;color:inherit;flex:none}
-html[data-theme="dark"] .cnt{background:rgba(255,217,223,.18);color:var(--on-ter-c)}
+.cnt{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.9);color:var(--on-ter-c);font-weight:800;font-size:.82rem;padding:3px 9px 3px 6px;border-radius:999px;font-variant-numeric:tabular-nums;line-height:1;border:1px solid rgba(105,56,67,.15);box-shadow:0 1px 3px rgba(105,56,67,.08);transition:transform .2s ease}
+.cnt .ic{width:1.05em;height:1.05em;fill:#e3b341;color:#e3b341;flex:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15));transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+html[data-theme="dark"] .cnt{background:rgba(0,0,0,.35);color:#fed7ff;border:1px solid rgba(255,217,223,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 1px 4px rgba(0,0,0,.25)}
+html[data-theme="dark"] .cnt .ic{fill:#f5c039;color:#f5c039}
+.btn.ter:hover .cnt{transform:scale(1.05)}
+.btn.ter:hover .cnt .ic{transform:rotate(14deg) scale(1.12)}
+@media (max-width:560px){.gh-t-long{display:none}}
 .stat{display:inline-flex;align-items:center;gap:12px;padding:8px 22px 8px 8px;border-radius:999px;background:var(--ac);color:var(--on-ac);font-weight:600;font-size:var(--fs-label)}
 .stat b{font-weight:850;font-size:1.2rem}
 .stat .ico{--ac:var(--ap);--on-ac:var(--on-ap);width:44px;height:44px}
@@ -335,7 +339,7 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <div class="group">
 <a class="btn filled" id="cta-download" href="https://github.com/ianshulyadav/PixelMusic/releases/latest"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span id="cta-label">Download v1.8.11</span></a>
 <a class="btn tonal" href="https://t.me/pixelmusicapp"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-telegram"/></svg>Telegram</a>
-<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>Star us on GitHub <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
+<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg><span class="gh-t"><span class="gh-t-long">Star on </span>GitHub</span> <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
 </div>
 <div class="stats" aria-label="PixelMusic in numbers">
 <span class="stat a-green"><span class="ico a-green s" aria-hidden="true"><svg class="blob" focusable="false"><use href="#sh-cookie9"/></svg><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></span><span><b id="stat-dl">25k+</b> downloads</span></span>
