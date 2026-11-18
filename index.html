@@ -192,7 +192,15 @@ html[data-theme="dark"] .tag.beta{background:#4a2578;color:#e8def8}
 .sd-upi .btn{padding:8px 14px;font-size:.85rem}
 @media (max-width:430px){.sd-grid{grid-template-columns:1fr}}
 
+.dl-card b{font-weight:850}
 .dl-card .btn{position:relative;z-index:1}
+.dl-preview{position:relative;z-index:1;margin-top:auto;padding-top:10px}
+.dl-preview-frame{border-radius:18px;overflow:hidden;background:var(--sc-high);border:1px solid var(--outline-v);box-shadow:0 8px 24px rgba(0,0,0,.08);transition:transform .3s ease,box-shadow .3s ease}
+.dl-preview-frame:hover{transform:scale(1.02);box-shadow:0 12px 28px rgba(0,0,0,.14)}
+.dl-preview-bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--sc-highest);border-bottom:1px solid var(--outline-v)}
+.dl-preview-dot{width:8px;height:8px;border-radius:50%;background:var(--outline-v);display:inline-block}
+.dl-preview-title{margin-left:6px;font-size:var(--fs-micro);font-weight:700;color:var(--on-sv);letter-spacing:.02em}
+.dl-preview img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:top}
 /* segmented build picker (Material 3) */
 .seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;background:var(--sc-high);border-radius:26px;padding:4px;position:relative;z-index:1;width:100%}
 .seg-btn{min-width:0;display:flex;flex-direction:column;gap:1px;align-items:center;justify-content:center;border:0;cursor:pointer;background:transparent;color:var(--on-bg);font-family:inherit;padding:8px 6px;border-radius:22px;text-align:center;overflow:hidden;transition:background .25s,border-radius .25s,color .2s}
@@ -331,7 +339,7 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <div class="group">
 <a class="btn filled" id="cta-download" href="https://github.com/ianshulyadav/PixelMusic/releases/latest"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span id="cta-label">Download v1.8.11</span></a>
 <a class="btn tonal" href="https://t.me/pixelmusicapp"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-telegram"/></svg>Telegram</a>
-<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>GitHub <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
+<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>Star us on GitHub <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
 </div>
 <div class="stats" aria-label="PixelMusic in numbers">
 <span class="stat a-green"><span class="ico a-green s" aria-hidden="true"><svg class="blob" focusable="false"><use href="#sh-cookie9"/></svg><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></span><span><b id="stat-dl">25k+</b> downloads</span></span>
@@ -367,6 +375,12 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 </dl>
 <a class="btn filled dl-main" id="dl-win-btn" href="https://github.com/Rajat-Solankii/PixelMusic/releases" data-track-dl><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span class="dl-main-t" id="dl-win-btn-label">Download for Windows</span></a>
 <p class="dl-alt" id="dl-win-file-line">Setup · <a href="https://github.com/Rajat-Solankii/PixelMusic/releases">All releases →</a></p>
+<div class="dl-preview">
+<div class="dl-preview-frame">
+<div class="dl-preview-bar"><span class="dl-preview-dot"></span><span class="dl-preview-dot"></span><span class="dl-preview-dot"></span><span class="dl-preview-title">PixelMusic Desktop</span></div>
+<img src="assets/site/s-desktop.webp" alt="PixelMusic Desktop app preview" loading="lazy" decoding="async">
+</div>
+</div>
 </article>
 </div></section>
 <section class="wrap" data-amb="blue:cookie12" aria-labelledby="h-src"><div class="head"><h2 id="h-src">Play from everywhere</h2><p>Your phone, YouTube Music, Telegram and your playlists, all in one library.</p></div>
