@@ -70,11 +70,8 @@ html.theming,html.theming *{transition:background-color .3s ease,color .3s ease,
 /* hero */
 .hero{overflow-x:clip;display:grid;grid-template-columns:1.05fr .95fr;gap:28px 40px;align-items:center;padding-top:28px;padding-bottom:40px}
 .hero>.chips{grid-column:1/-1;margin-top:-4px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--pc);color:var(--on-pc);font-weight:700;font-size:.9rem;padding:6px 16px;border-radius:999px;margin-bottom:20px;text-decoration:none;transition:transform .2s cubic-bezier(.2,.9,.25,1),box-shadow .2s,background .2s}
-a.eyebrow:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.08);color:var(--on-pc)}
-.eyebrow-tag{display:inline-flex;align-items:center;gap:4px;background:var(--p);color:var(--on-p);font-size:.7rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:4px}
-.eyebrow-pulse{width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:eyepulse 1.8s infinite}
-@keyframes eyepulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.7)}70%{box-shadow:0 0 0 6px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--pc);color:var(--on-pc);font-weight:700;font-size:.9rem;padding:6px 16px;border-radius:999px;margin-bottom:20px;text-decoration:none;transition:background .2s,opacity .2s}
+a.eyebrow:hover{background:var(--sc-highest);color:var(--on-bg)}
 h1{font-weight:850;font-size:clamp(2.3rem,5.4vw,4.2rem);line-height:1.04;letter-spacing:-.02em}
 h1 .hl{color:var(--p);white-space:nowrap}
 .lead{font-size:calc(var(--fs-lead) + .04rem);color:var(--on-sv);margin:22px 0 28px;max-width:34em;line-height:1.6}
@@ -328,7 +325,7 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <main id="main">
 <section class="wrap hero" data-amb="purple:sunny" aria-labelledby="h1">
 <div>
-<a class="eyebrow" href="https://github.com/Rajat-Solankii/PixelMusic/releases" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-widgets"/></svg>Try PixelMusic for Desktop <span class="eyebrow-tag"><span class="eyebrow-pulse"></span>New</span></a>
+<a class="eyebrow" href="https://github.com/Rajat-Solankii/PixelMusic/releases" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-widgets"/></svg>Try PixelMusic for Desktop &rarr;</a>
 <h1 id="h1">Free, ad-free <span class="hl">Hi-Res</span> music player for Android</h1>
 <p class="lead">PixelMusic (also searched as Pixel Music) plays your lossless files and streams from YouTube Music and Telegram. It has no ads, it is free and open source, and it runs on Android 11 and above.</p>
 <div class="group">
