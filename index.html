@@ -331,7 +331,7 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <div class="group">
 <a class="btn filled" id="cta-download" href="https://github.com/ianshulyadav/PixelMusic/releases/latest"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span id="cta-label">Download v1.8.11</span></a>
 <a class="btn tonal" href="https://t.me/pixelmusicapp"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-telegram"/></svg>Telegram</a>
-<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>GitHub</a>
+<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>GitHub <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
 </div>
 <div class="stats" aria-label="PixelMusic in numbers">
 <span class="stat a-green"><span class="ico a-green s" aria-hidden="true"><svg class="blob" focusable="false"><use href="#sh-cookie9"/></svg><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></span><span><b id="stat-dl">25k+</b> downloads</span></span>
@@ -494,6 +494,7 @@ var loadStats=function(){
  /* site stats (written daily by the workflow) */
  fetch('stats.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(!d)return;
   txt('stat-dl',d.downloads_label);txt('stat-com',d.community_label);
+  if(d.stars_label)txt('gh-stars',d.stars_label);
   txt('updated',d.updated);
   if(d.version_label){state.tag=d.version_label;txt('stat-ver',d.version_label)}
   if(d.assets&&d.assets.length){                 // builds straight from the daily workflow snapshot
@@ -504,7 +505,12 @@ var loadStats=function(){
   document.documentElement.setAttribute('data-gh','ready');
  }).catch(function(){document.documentElement.setAttribute('data-gh','error')});
  /* repo + releases, live from GitHub */
- gh('/repos/'+REPO).then(function(r){/* star count no longer shown in the UI */}).catch(function(){});
+ gh('/repos/'+REPO).then(function(r){
+  if(r&&r.d&&typeof r.d.stargazers_count==='number'){
+   var s=r.d.stargazers_count;
+   txt('gh-stars',s>=1000?(Math.round(s/100)/10)+'k':(''+s));
+  }
+ }).catch(function(){});
  gh('/repos/'+REPO+'/releases?per_page=40').then(function(r){
   var rels=r.d;if(!rels||!rels.length)return;
   var total=0;rels.forEach(function(x){(x.assets||[]).forEach(function(a){total+=a.download_count||0})});
