@@ -82,7 +82,6 @@ html[data-theme="dark"] .cnt{background:rgba(255,217,223,.16);color:var(--on-ter
 html[data-theme="dark"] .cnt .ic{fill:#f5c039;color:#f5c039}
 .btn.ter:hover .cnt{transform:scale(1.05)}
 .btn.ter:hover .cnt .ic{transform:rotate(14deg) scale(1.12)}
-@media (max-width:560px){.gh-t-long{display:none}}
 .stat{display:inline-flex;align-items:center;gap:12px;padding:8px 22px 8px 8px;border-radius:999px;background:var(--ac);color:var(--on-ac);font-weight:600;font-size:var(--fs-label)}
 .stat b{font-weight:850;font-size:1.2rem}
 .stat .ico{--ac:var(--ap);--on-ac:var(--on-ap);width:44px;height:44px}
@@ -228,10 +227,8 @@ html[data-theme="dark"] .dl-main-c{background:rgba(255,255,255,.18)}
 .dl-grid{max-width:640px;margin-inline:auto}
 }
 @media (max-width:560px){
-.group{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.group #cta-download{grid-column:1/-1}
+.group{display:flex;flex-direction:column;gap:8px}
 .group .btn{width:100%;justify-content:center}
-.group #cta-download{order:-1;grid-column:1/-1}
 /* sources: two per row -> 5 items land on exactly three lines */
 .strip{grid-template-columns:1fr 1fr;gap:8px}
 .src{font-size:.86rem;padding:7px 12px 7px 7px;gap:8px}
@@ -339,7 +336,7 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <div class="group">
 <a class="btn filled" id="cta-download" href="https://github.com/ianshulyadav/PixelMusic/releases/latest"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span id="cta-label">Download v1.8.11</span></a>
 <a class="btn tonal" href="https://t.me/pixelmusicapp"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-telegram"/></svg>Telegram</a>
-<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg><span class="gh-t"><span class="gh-t-long">Star on </span>GitHub</span> <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
+<a class="btn ter" href="https://github.com/ianshulyadav/PixelMusic" target="_blank" rel="noopener"><svg class="ic" aria-hidden="true" focusable="false"><use href="#b-github"/></svg>Star us on GitHub <span class="cnt" id="gh-stars"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span class="v">370</span></span></a>
 </div>
 <div class="stats" aria-label="PixelMusic in numbers">
 <span class="stat a-green"><span class="ico a-green s" aria-hidden="true"><svg class="blob" focusable="false"><use href="#sh-cookie9"/></svg><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></span><span><b id="stat-dl">25k+</b> downloads</span></span>
