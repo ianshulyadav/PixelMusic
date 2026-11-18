@@ -152,6 +152,8 @@ thead th{background:var(--sc-high);font-weight:750}
 tbody tr+tr td{border-top:1px solid var(--outline-v)}td:first-child{font-weight:700;white-space:nowrap}
 .tag{display:inline-block;padding:2px 12px;border-radius:999px;font-size:var(--fs-small);font-weight:700;background:var(--sec-c);color:var(--on-sec-c);white-space:nowrap}
 .tag.soon{background:var(--ter-c);color:var(--on-ter-c)}
+.tag.beta{background:#e8def8;color:#4a2578}
+html[data-theme="dark"] .tag.beta{background:#4a2578;color:#e8def8}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px;margin-bottom:6px}
 .dl-card{position:relative;background:var(--sc);border-radius:36px;padding:28px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
@@ -354,16 +356,16 @@ td:nth-child(3){grid-column:1/-1;color:var(--on-sv);font-size:.97rem;line-height
 <div class="seg" id="dl-builds" role="group" aria-label="Choose an APK build"><button class="seg-btn" type="button" data-arch="universal" aria-pressed="true"><span class="seg-t">Universal</span><span class="seg-s">any device</span></button><button class="seg-btn" type="button" data-arch="arm64" aria-pressed="false"><span class="seg-t">arm64</span><span class="seg-s">most phones</span></button><button class="seg-btn" type="button" data-arch="armv7" aria-pressed="false"><span class="seg-t">armv7</span><span class="seg-s">old phones</span></button><button class="seg-btn" type="button" data-arch="x86" aria-pressed="false"><span class="seg-t">x86_64</span><span class="seg-s">emulators</span></button></div><a class="btn filled dl-main" id="dl-universal" href="https://github.com/ianshulyadav/PixelMusic/releases/download/v1.8.11/app-universal-release.apk" data-track-dl><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span class="dl-main-t" id="dl-btn-label">Download v1.8.11</span></a>
 <p class="dl-alt" id="dl-file-line">app-universal-release.apk · 71.6 MB · <span id="dl-count">1,862 downloads</span></p>
 </article>
-<article class="dl-card a-blue soon" id="dl-windows" aria-labelledby="dl-h-windows">
+<article class="dl-card a-blue" id="dl-windows" aria-labelledby="dl-h-windows">
 <span class="ico a-blue" aria-hidden="true"><svg class="blob" focusable="false"><use href="#sh-flower"/></svg><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-widgets"/></svg></span>
-<div class="dl-top"><h3 id="dl-h-windows">Download for Windows</h3><span class="tag soon">Coming soon</span></div>
-<p>A desktop build is in the works. Follow the dev channel to hear about the first release.</p>
+<div class="dl-top"><h3 id="dl-h-windows">Download for Windows</h3><span class="tag beta" id="dl-win-tag">Beta</span></div>
+<p id="dl-win-desc">Desktop beta — fetching the latest release from GitHub…</p>
 <dl class="dl-meta">
-<dt>Version</dt><dd><b>Not released</b></dd>
-<dt>Status</dt><dd>In development</dd>
+<dt>Version</dt><dd><b id="dl-win-ver">…</b></dd>
+<dt>Size</dt><dd><b id="dl-win-size">…</b></dd>
 </dl>
-<span class="btn outlined dis" aria-disabled="true">Windows build unavailable</span>
-<p class="dl-alt"><a href="https://t.me/unshoodev">Get notified on Unshoo-Dev →</a></p>
+<a class="btn filled dl-main" id="dl-win-btn" href="https://github.com/Rajat-Solankii/PixelMusic/releases" data-track-dl><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span class="dl-main-t" id="dl-win-btn-label">Download for Windows</span></a>
+<p class="dl-alt" id="dl-win-file-line">Setup · <a href="https://github.com/Rajat-Solankii/PixelMusic/releases">All releases →</a></p>
 </article>
 </div></section>
 <section class="wrap" data-amb="blue:cookie12" aria-labelledby="h-src"><div class="head"><h2 id="h-src">Play from everywhere</h2><p>Your phone, YouTube Music, Telegram and your playlists, all in one library.</p></div>
@@ -517,6 +519,53 @@ var loadStats=function(){
   paintBuild();
  }).catch(function(){document.documentElement.setAttribute('data-gh','error')});
 };
+/* ---- Desktop (Windows) release from Rajat-Solankii/PixelMusic ---- */
+var DESKTOP_REPO='Rajat-Solankii/PixelMusic';
+(function loadDesktop(){
+ gh('/repos/'+DESKTOP_REPO+'/releases?per_page=10').then(function(r){
+  var rels=r.d;if(!rels||!rels.length)return;
+  // pick latest release (pre-release or stable)
+  var rel=rels[0];
+  var tag=rel.tag_name;
+  var isPrerelease=rel.prerelease;
+  // find .exe or .msi setup asset for Windows
+  var setup=null;
+  (rel.assets||[]).forEach(function(a){
+   var n=a.name.toLowerCase();
+   if(!setup&&(n.indexOf('.exe')!==-1||n.indexOf('.msi')!==-1))setup=a;
+  });
+  // update tag badge
+  var tagEl=$('dl-win-tag');
+  if(tagEl){tagEl.textContent=isPrerelease?'Beta':'Latest';tagEl.className='tag '+(isPrerelease?'beta':'live')}
+  // update version
+  txt('dl-win-ver',tag);
+  // update description
+  var desc=$('dl-win-desc');
+  if(desc)desc.textContent=isPrerelease
+   ?'Desktop beta build for Windows. Download and try the latest features.'
+   :'Desktop release for Windows, ready to install.';
+  if(setup){
+   txt('dl-win-size',mb(setup.size));
+   txt('dl-win-btn-label','Download '+tag);
+   var btn=$('dl-win-btn');
+   if(btn)btn.href=setup.browser_download_url;
+   var fl=$('dl-win-file-line');
+   if(fl)fl.innerHTML=setup.name+' · '+mb(setup.size)+' · <a href="https://github.com/'+DESKTOP_REPO+'/releases">All releases \u2192</a>';
+  } else {
+   // no .exe/.msi found — link to the release page
+   txt('dl-win-size','see release page');
+   txt('dl-win-btn-label','Download '+tag);
+   var btn2=$('dl-win-btn');
+   if(btn2)btn2.href=rel.html_url;
+  }
+ }).catch(function(){
+  // API failed — keep the static link to releases page
+  txt('dl-win-ver','see releases');
+  txt('dl-win-size','—');
+  var desc2=$('dl-win-desc');
+  if(desc2)desc2.textContent='Could not fetch the latest release. Click below to visit the releases page.';
+ });
+})();
 /* support popup: header button + menu item */
 (function(){
  var dlg=$('support-dialog'), open=[$('support-btn'),$('support-link')].filter(Boolean);
