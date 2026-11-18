@@ -16,8 +16,8 @@ from fontTools.pens.svgPathPen import SVGPathPen
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
-CFG = json.loads((HERE / 'config.json').read_text())
-ICONS = json.loads((HERE / 'icons.json').read_text())
+CFG = json.loads((HERE / 'config.json').read_text(encoding='utf-8-sig'))
+ICONS = json.loads((HERE / 'icons.json').read_text(encoding='utf-8-sig'))
 
 
 def http(url, headers=None, timeout=25):
@@ -38,6 +38,124 @@ def release_downloads(repo):
         if len(data) < 100:
             return total
         page += 1
+
+
+ARCH_OF = [('universal', 'app-universal-release.apk'), ('arm64', 'app-arm64-v8a-release.apk'),
+           ('armv7', 'app-armeabi-v7a-release.apk'), ('x86', 'app-x86_64-release.apk')]
+
+
+def release_assets(repo, tag):
+    """Direct download links + sizes for every APK.
+
+    Uses the REST API when it answers, and falls back to the release's expanded_assets HTML, which is
+    not rate-limited (60 req/hour per IP applies to the API only).
+    """
+    headers = {'Accept': 'application/vnd.github+json'}
+    if os.environ.get('GITHUB_TOKEN'):
+        headers['Authorization'] = 'Bearer ' + os.environ['GITHUB_TOKEN']
+    try:
+        rel = json.loads(http(f'https://api.github.com/repos/{repo}/releases/tags/{tag}', headers))
+        by_name = {a.get('name'): a for a in rel.get('assets', [])}
+        out = []
+        for arch, name in ARCH_OF:
+            a = by_name.get(name)
+            if not a: continue
+            out.append({'arch': arch, 'name': name, 'size': a.get('size', 0),
+                        'downloads': a.get('download_count', 0), 'url': a.get('browser_download_url', '')})
+        if out: return out, rel.get('published_at')
+    except Exception as e:
+        print('assets API failed, falling back to release HTML:', e)
+    # --- HTML fallback
+    html = http(f'https://github.com/{repo}/releases/expanded_assets/{tag}')
+    out = []
+    for arch, name in ARCH_OF:
+        m = re.search(r'href="(/[^"]*/releases/download/[^"]*' + re.escape(name) + r')"', html)
+        if not m: continue
+        size = 0
+        # size sits in the row after the filename, e.g. class="...">71.6 MB</span>
+        mb = re.search(re.escape(name) + r'.{0,3000}?>\s*([\d.]+)\s*(MB|KB|GB)\s*<', html, re.S)
+        if mb:
+            size = int(float(mb.group(1)) * {'KB': 1024, 'MB': 1048576, 'GB': 1073741824}[mb.group(2)])
+        dl = 0
+        dc = re.search(re.escape(name) + r'.{0,400}?([\d,]+)\s*Downloads?', html, re.S)
+        if dc: dl = int(dc.group(1).replace(',', ''))
+        out.append({'arch': arch, 'name': name, 'size': size, 'downloads': dl,
+                    'url': 'https://github.com' + m.group(1)})
+    published = None
+    try:
+        feed = http(f'https://github.com/{repo}/releases.atom')
+        m2 = re.search(r'<entry>.*?<updated>([^<]+)</updated>', feed, re.S)
+        if m2: published = m2.group(1)
+    except Exception as e:
+        print('atom feed failed:', e)
+    return out, published
+
+def apk_version(url):
+    """versionCode + versionName from a release APK's binary manifest (no Android SDK needed).
+
+    Cached in tools/stats/apk-version.json so CI never re-downloads a 70 MB APK unless the tag moved.
+    """
+    cache_file = HERE / 'apk-version.json'
+    try: cache = json.loads(cache_file.read_text(encoding='utf-8-sig'))
+    except Exception: cache = {}
+    if cache.get('url') == url and cache.get('version_code'):
+        return cache['version_code'], cache.get('version_name')
+    import struct, zipfile, io
+    with urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'pixelmusic-stats/1.0'}), timeout=180) as r:
+        blob = r.read()
+    data = zipfile.ZipFile(io.BytesIO(blob)).read('AndroidManifest.xml')
+    pool, found = [], {}
+
+    def strpool(off):
+        cnt, _styc, flags, sstart = struct.unpack_from('<IIII', data, off + 8)
+        utf8 = bool(flags & 0x100)
+        offs = [struct.unpack_from('<I', data, off + 28 + 4 * i)[0] for i in range(cnt)]
+        base, out = off + sstart, []
+        for o in offs:
+            q = base + o
+            if utf8:
+                q += 2 if data[q] & 0x80 else 1
+                n = data[q]; q += 2 if n & 0x80 else 1
+                out.append(data[q:q + n].decode('utf-8', 'replace'))
+            else:
+                n = struct.unpack_from('<H', data, q)[0]; q += 2
+                out.append(data[q:q + n * 2].decode('utf-16-le', 'replace'))
+        return out
+
+    off = 8
+    while off < len(data) - 8:
+        typ, _h, size = struct.unpack_from('<HHI', data, off)
+        if not size: break
+        if typ == 0x0001: pool = strpool(off)
+        elif typ == 0x0102:
+            _ns, name = struct.unpack_from('<II', data, off + 16)
+            astart, asize, acount = struct.unpack_from('<HHH', data, off + 24)
+            for i in range(acount):
+                a = off + 16 + astart + i * asize
+                _ans, aname, _raw, _sz, _r0, dtype, adata = struct.unpack_from('<IIIHBBI', data, a)
+                key = pool[aname] if aname < len(pool) else ''
+                if key in ('versionCode', 'versionName', 'versionCodeMajor'):
+                    found[key] = adata if dtype != 3 else (pool[adata] if adata < len(pool) else '')
+        off += size
+    vc = int(found.get('versionCode') or 0) + (int(found.get('versionCodeMajor') or 0) << 32)
+    cache_file.write_text(json.dumps({'url': url, 'version_code': vc, 'version_name': found.get('versionName', '')}, indent=2) + '\n')
+    return vc, found.get('versionName')
+
+def repo_stats(repo):
+    """Live star count and latest release tag (drives the hero's secondary pills)."""
+    headers = {'Accept': 'application/vnd.github+json'}
+    if os.environ.get('GITHUB_TOKEN'):
+        headers['Authorization'] = 'Bearer ' + os.environ['GITHUB_TOKEN']
+    stars, version = None, None
+    try:
+        stars = int(json.loads(http(f'https://api.github.com/repos/{repo}', headers)).get('stargazers_count') or 0)
+    except Exception as e:
+        print('stars failed:', e)
+    try:
+        version = json.loads(http(f'https://api.github.com/repos/{repo}/releases/latest', headers)).get('tag_name')
+    except Exception as e:
+        print('latest release failed:', e)
+    return stars, version
 
 
 def parse_count(text):
@@ -70,17 +188,29 @@ def telegram_members(channel):
 
 
 def label(n):
-    if n >= 1_000_000: return f'{n // 1_000_000}M+'
-    if n >= 1000: return f'{n // 1000}k+'
+    """Round to one decimal so the number keeps growing visibly: 1368 -> '1.4k', 25025 -> '25k'."""
+    if n >= 1_000_000:
+        v = round(n / 1_000_000, 1)
+        return f'{v:g}M+'
+    if n >= 1000:
+        v = round(n / 1000, 1)
+        return (f'{v:.1f}k' if v < 10 and v != int(v) else f'{v:g}k') + '+'
     if n >= 100: return f'{n // 100 * 100}+'
     if n >= 10: return f'{n // 10 * 10}+'
+    return str(n)
     return str(n)
 
 
 def floor_n(n):
-    """Round down to the milestone shown on the banner (15234 -> 15000), so stats.json only changes when a milestone is crossed."""
-    for step in (1_000_000, 1000, 100, 10):
-        if n >= step: return n // step * step
+    """Keep one decimal of k (1,368 -> 1,300 -> '1.3k') and one decimal of M, but round bigger numbers.
+
+    Small floors keep stats.json stable while still letting the label tick 1.3k -> 1.4k -> 1.5k.
+    """
+    if n >= 1_000_000: return n // 100_000 * 100_000      # 0.1M steps
+    if n >= 100_000: return n // 1000 * 1000
+    if n >= 1000: return n // 100 * 100                   # 0.1k steps
+    if n >= 100: return n // 100 * 100
+    if n >= 10: return n // 10 * 10
     return n
 
 
@@ -131,7 +261,7 @@ def blob(cx, cy, r, rot=0, n=96):
 
 
 def pill(x, y, spec, num, h=50):
-    r = h / 2; w = round(h + 4 + FN.width(num, 26) + 7 + FL.width(spec['label'], 20) + 20); nx = x + h + 2
+    r = h / 2; w = round(h + 4 + FN.width(num, 26) + 7 + FL.width(spec['label'], 20) + 14); nx = x + h + 2
     ic = ICONS[spec['icon']]; k = (h * .42) / ic['upem']; b = ic['bounds']
     svg = (f'<path d="{rr(x, y, w, h, r)}" fill="{spec["fill"]}"/><path d="{blob(x + r, y + r, r - 6, .3)}" fill="{spec["cont"]}"/>'
            f'<path fill="{spec["cfg"]}" transform="translate({x + r:.2f} {y + r:.2f}) scale({k:.5f} {-k:.5f}) '
@@ -158,7 +288,7 @@ def update_banners(labels):
 
 def main():
     stats_file = ROOT / 'stats.json'
-    prev = json.loads(stats_file.read_text()) if stats_file.exists() else {}
+    prev = json.loads(stats_file.read_text(encoding='utf-8-sig')) if stats_file.exists() else {}
     forced = os.environ.get('PM_FORCE_STATS')
     dl = com = None
     if forced:
@@ -168,13 +298,35 @@ def main():
         except Exception as e: print('release downloads failed, keeping last value:', e)
         try: com = telegram_members(CFG['telegram_channel'])
         except Exception as e: print('Telegram count failed, keeping last value:', e)
+    stars = version = version_code = None
+    if CFG.get('github_repo'):
+        try: stars, version = repo_stats(CFG['github_repo'])
+        except Exception as e: print('repo stats failed, keeping last value:', e)
+    if not version and prev.get('version_label'):      # API rate-limited -> reuse the last known tag
+        version = prev['version_label']
+        print('using last known release tag:', version)
+    assets, published = [], None
+    if version and CFG.get('github_repo'):
+        try: assets, published = release_assets(CFG['github_repo'], version)
+        except Exception as e: print('release assets failed, keeping last value:', e)
+        try:
+            apk = f'https://github.com/{CFG["github_repo"]}/releases/download/{version}/app-universal-release.apk'
+            version_code, _vn = apk_version(apk)
+        except Exception as e: print('APK version code failed, keeping last value:', e)
     downloads = max(floor_n(dl or 0), CFG['downloads_min'], prev.get('downloads', 0))
     community = max(floor_n(com or 0), CFG['community_min'], prev.get('community', 0))
     moved = (downloads, community) != (prev.get('downloads'), prev.get('community'))
     today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     out = {'downloads': downloads, 'community': community, 'downloads_label': label(downloads), 'community_label': label(community),
            'updated': today if moved else prev.get('updated', today)}
-    if moved or not stats_file.exists():
+    if stars is not None: out['stars_label'] = f'{stars:,}'   # exact count reads better than a floored 300+
+    if version: out['version_label'] = version
+    if version_code: out['version_code'] = version_code
+    if assets: out['assets'] = assets
+    if published: out['published_at'] = published
+    for k in ('stars_label', 'version_label', 'version_code', 'assets', 'published_at'):
+        if k not in out and prev.get(k): out[k] = prev[k]
+    if moved or not stats_file.exists() or out != prev:
         stats_file.write_text(json.dumps(out, indent=2) + '\n')
     print('raw counts (not saved):', {'release_downloads': dl, 'telegram_members': com})
     changed, end_x = update_banners({'downloads': out['downloads_label'], 'community': out['community_label']})

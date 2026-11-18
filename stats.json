@@ -1,7 +1,41 @@
 {
-  "downloads": 15000,
-  "community": 1000,
-  "downloads_label": "15k+",
-  "community_label": "1k+",
-  "updated": "2026-10-26"
+  "downloads": 25000,
+  "community": 1300,
+  "downloads_label": "25k+",
+  "community_label": "1.3k+",
+  "updated": "2026-11-18",
+  "version_label": "v1.8.11",
+  "version_code": 968,
+  "assets": [
+    {
+      "arch": "universal",
+      "name": "app-universal-release.apk",
+      "size": 75078041,
+      "downloads": 0,
+      "url": "https://github.com/ianshulyadav/PixelMusic/releases/download/v1.8.11/app-universal-release.apk"
+    },
+    {
+      "arch": "arm64",
+      "name": "app-arm64-v8a-release.apk",
+      "size": 44983910,
+      "downloads": 0,
+      "url": "https://github.com/ianshulyadav/PixelMusic/releases/download/v1.8.11/app-arm64-v8a-release.apk"
+    },
+    {
+      "arch": "armv7",
+      "name": "app-armeabi-v7a-release.apk",
+      "size": 43725619,
+      "downloads": 0,
+      "url": "https://github.com/ianshulyadav/PixelMusic/releases/download/v1.8.11/app-armeabi-v7a-release.apk"
+    },
+    {
+      "arch": "x86",
+      "name": "app-x86_64-release.apk",
+      "size": 44774195,
+      "downloads": 0,
+      "url": "https://github.com/ianshulyadav/PixelMusic/releases/download/v1.8.11/app-x86_64-release.apk"
+    }
+  ],
+  "published_at": "2026-10-31T16:04:30Z",
+  "stars_label": "362"
 }

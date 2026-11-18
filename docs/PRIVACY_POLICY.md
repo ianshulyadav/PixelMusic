@@ -112,4 +112,4 @@ We may occasionally update this Privacy Policy to reflect app updates and regula
 For questions, feedback, or privacy inquiries regarding PixelMusic:
 
 * **Telegram Channel:** [https://t.me/PixelMusicApp](https://t.me/PixelMusicApp)
-* **GitHub Repository:** [https://github.com/ianshulyadav/PixelMusicApp](https://github.com/ianshulyadav/PixelMusicApp)
+* **GitHub Repository:** [https://github.com/ianshulyadav/PixelMusic](https://github.com/ianshulyadav/PixelMusic)

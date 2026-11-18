@@ -1,12 +1,11 @@
-﻿{
+{
   "release_repos": [
-    "ianshulyadav/PixelMusic",
-    "elitemarketingexe-png/ThePixelMusic"
+    "ianshulyadav/PixelMusic"
   ],
-  "telegram_channel": "indiaflacmusic",
+  "telegram_channel": "pixelmusicapp",
   "downloads_offset": 0,
   "downloads_min": 15000,
-  "community_min": 1000,
+  "community_min": 0,
   "banners": [
     "assets/banner-thin.svg",
     "assets/banner-thin-rounded.svg"
@@ -27,12 +26,13 @@
     },
     {
       "key": "community",
-      "label": "community",
+      "label": "members",
       "icon": "groups",
       "fill": "#ffb192",
       "fg": "#633019",
       "cont": "#8b5037",
       "cfg": "#fff7f5"
     }
-  ]
+  ],
+  "github_repo": "ianshulyadav/PixelMusic"
 }

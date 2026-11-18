@@ -42,4 +42,4 @@ By submitting issues, suggestions, documentation, assets, or feedback to Pixel M
 ## 💬 Community & Discussion
 
 * **Official Telegram Channel:** [https://t.me/PixelMusicApp](https://t.me/PixelMusicApp)
-* **GitHub Issues:** [https://github.com/ianshulyadav/PixelMusicApp/issues](https://github.com/ianshulyadav/PixelMusicApp/issues)
+* **GitHub Issues:** [https://github.com/ianshulyadav/PixelMusic/issues](https://github.com/ianshulyadav/PixelMusic/issues)
