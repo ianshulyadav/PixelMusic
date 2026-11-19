@@ -1,4 +1,10 @@
-﻿<div align="center">
+## Achievements
+<p align="center">
+  <a href="https://trendshift.io/repositories/181534?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-181534" target="_blank" rel="noopener noreferrer">
+    <img src="https://trendshift.io/api/badge/repositories/181534" alt="ianshulyadav/PixelMusic | Trendshift" width="250" height="55"/>
+  </a>
+</p>
+ <div align="center">
 
 <img src="assets/banner-thin-rounded.webp" alt="PixelMusic is an open source Android music player built with Material 3 Expressive. Stream YouTube Music, import Spotify playlists, play FLAC, ALAC and hi-res lossless audio, download for offline, 100% ad free." width="100%">
 
