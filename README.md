@@ -1,11 +1,13 @@
 <div align="center">
-<img src="assets/banner-thin-rounded.webp" alt="PixelMusic" width="100%">
+<img src="assets/banner-thin-rounded.webp" alt="PixelMusic Banner" width="100%">
 <br><br>
+
 <p align="center">
   <a href="https://trendshift.io/repositories/181534" target="_blank" rel="noopener noreferrer">
     <img src="https://trendshift.io/api/badge/repositories/181534" alt="Trendshift #1 Trending in Kotlin" width="250" height="55"/>
   </a>
 </p>
+
 <p align="center">
 <a href="https://github.com/ianshulyadav/PixelMusic/releases"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-download.svg"><img src="assets/readme/light/btn-download.svg" alt="Download PixelMusic" height="48"></picture></a>
 <a href="https://t.me/pixelmusicapp"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/btn-telegram.svg"><img src="assets/readme/light/btn-telegram.svg" alt="Telegram channel" height="48"></picture></a>
@@ -28,7 +30,18 @@ PixelMusic is an open-source Android music player that plays music from multiple
 
 It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, and MP3. The interface automatically picks its color scheme from the album art of the track that is currently playing. There are no ads and no subscriptions.
 
+<h3 id="website"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-overview.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-overview.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-overview.svg"><img src="assets/readme/light/h-overview.svg" alt="Official Website" width="100%"></picture></h3>
+
+<div align="center">
+  <a href="https://pixelmusic.me" target="_blank" rel="noopener noreferrer">
+    <img src="assets/site/s-home.webp" alt="PixelMusic Official Website - pixelmusic.me" width="85%" style="border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+  </a>
+  <br><br>
+  <p>🌐 <b>Visit official website:</b> <a href="https://pixelmusic.me" target="_blank" rel="noopener noreferrer"><b>pixelmusic.me</b></a></p>
+</div>
+
 <h3 id="screenshots"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-screenshots.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-screenshots.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-screenshots.svg"><img src="assets/readme/light/h-screenshots.svg" alt="Screenshots" width="100%"></picture></h3>
+
 <div align="center">
 <img src="assets/store/thumbs/01-home.jpg" width="32%">
 <img src="assets/store/thumbs/02-now-playing.jpg" width="32%">
@@ -55,30 +68,17 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 </details>
 
 <div align="center">
+
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-audio.svg"><img src="assets/readme/light/card-audio.svg" alt="Premium audio" width="32%"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-streaming.svg"><img src="assets/readme/light/card-streaming.svg" alt="Hybrid streaming" width="32%"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-lyrics.svg"><img src="assets/readme/light/card-lyrics.svg" alt="Synced lyrics" width="32%"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-eq.svg"><img src="assets/readme/light/card-eq.svg" alt="10-band equalizer" width="32%"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-ai.svg"><img src="assets/readme/light/card-ai.svg" alt="AI Smart Mix" width="32%"></picture>
 <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-theme.svg"><img src="assets/readme/light/card-theme.svg" alt="Dynamic colour" width="32%"></picture>
+
 </div>
 
 <h3 id="start"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-start.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-start.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-start.svg"><img src="assets/readme/light/h-start.svg" alt="Build from source" width="100%"></picture></h3>
-
-<details>
-<summary><b>Architecture & Full Tech Stack</b></summary>
-<br>
-
-* **Core Platform:** 100% Kotlin 2.x, target SDK 37 (Android 17), min SDK 30 (Android 11)
-* **UI & Design:** Jetpack Compose, Compose BOM, Material 3 Expressive, Dynamic Theme Palettes
-* **Audio Engine:** AndroidX Media3 ExoPlayer, FFmpeg Extension, EBU R128 loudness normalization
-* **Database & Persistence:** Room 2.6+ with KSP, DataStore Preferences
-* **Dependency Injection:** Dagger Hilt 2.5x
-* **Networking & Parsing:** Ktor Client, OkHttp, Kotlinx Serialization, Retrofit
-* **Image Loading:** Coil 3 with memory & disk LRU caching
-* **Background Processing:** AndroidX WorkManager, Kotlin Coroutines & Flow
-
-</details>
 
 ```bash
 git clone https://github.com/ianshulyadav/PixelMusic.git
@@ -97,22 +97,10 @@ cd PixelMusic
 
 <br>
 
-<details>
-<summary><b>Frequently Asked Questions (FAQ)</b></summary>
-<br>
-
-* **Is PixelMusic completely free and ad-free?** Yes, 100% free with no ads, tracking, or paywalls.
-* **Does it support Android Auto and Chromecast?** Yes, both are natively supported via Media3.
-* **Can I play local FLAC/lossless files offline?** Yes, up to 24-bit/192kHz with bit-perfect output.
-* **How does YouTube Music streaming work?** It uses public InnerTube streams with zero account requirements (or optional account sync).
-* **Where do lyrics come from?** Real-time synchronized lyrics via the LRCLIB API with offline caching.
-
-</details>
-
 ## CREDITS
 
 Special thanks to **[InnerTube](https://github.com/vfsfitvnm/ViMusic)**, **[ArchiveTune](https://github.com/ArchiveTune)**, and **[ViMusic](https://github.com/vfsfitvnm/ViMusic)**.
 
-PixelMusic is licensed under the **GNU General Public License v3.0**. Portions are based on [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [Theo Vilardo](https://github.com/theovilardo) and Duhan Yağmur Delikkulak. Not affiliated with or endorsed by the upstream project. Upstream notice kept in [`LICENSE`](LICENSE) and [`PROVENANCE.md`](docs/PROVENANCE.md).
+Search terms: Pixel Music, PixelMusic, Android music player, ad-free music player, open-source music player, Hi-Res lossless player, FLAC player, ALAC player, YouTube Music client, Telegram music player, LRCLIB lyrics, Material 3 Expressive.
 
-<sub>Search terms: Pixel Music, PixelMusic, Android music player, ad-free music player, open-source music player, Hi-Res lossless player, FLAC player, ALAC player, YouTube Music client, Telegram music player, LRCLIB lyrics, Material 3 Expressive.</sub>
+PixelMusic is licensed under the **GNU General Public License v3.0**. Portions are based on [PixelPlayerOSS](https://github.com/PixelPlayerHQ/PixelPlayerOSS) by [Theo Vilardo](https://github.com/theovilardo) and Duhan Yağmur Delikkulak. Not affiliated with or endorsed by the upstream project. Upstream notice kept in [`LICENSE`](LICENSE) and [`PROVENANCE.md`](docs/PROVENANCE.md).
