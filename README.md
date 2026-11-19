@@ -30,16 +30,6 @@ PixelMusic is an open-source Android music player that plays music from multiple
 
 It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, and MP3. The interface automatically picks its color scheme from the album art of the track that is currently playing. There are no ads and no subscriptions.
 
-<h3 id="website"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-overview.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-overview.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-overview.svg"><img src="assets/readme/light/h-overview.svg" alt="Official Website" width="100%"></picture></h3>
-
-<div align="center">
-  <a href="https://pixelmusic.me" target="_blank" rel="noopener noreferrer">
-    <img src="assets/site/s-home.webp" alt="PixelMusic Official Website - pixelmusic.me" width="85%" style="border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
-  </a>
-  <br><br>
-  <p>🌐 <b>Visit official website:</b> <a href="https://pixelmusic.me" target="_blank" rel="noopener noreferrer"><b>pixelmusic.me</b></a></p>
-</div>
-
 <h3 id="screenshots"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-screenshots.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-screenshots.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-screenshots.svg"><img src="assets/readme/light/h-screenshots.svg" alt="Screenshots" width="100%"></picture></h3>
 
 <div align="center">
