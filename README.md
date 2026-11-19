@@ -55,12 +55,12 @@ It supports high-resolution local audio formats including FLAC, ALAC, WAV, APE, 
 </details>
 
 <div align="center">
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-audio.svg"><img src="assets/readme/light/card-audio.svg" alt="Premium audio" width="32%"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-streaming.svg"><img src="assets/readme/light/card-streaming.svg" alt="Hybrid streaming" width="32%"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-lyrics.svg"><img src="assets/readme/light/card-lyrics.svg" alt="Synced lyrics" width="32%"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-eq.svg"><img src="assets/readme/light/card-eq.svg" alt="10-band equalizer" width="32%"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-ai.svg"><img src="assets/readme/light/card-ai.svg" alt="AI Smart Mix" width="32%"></picture>
-<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-theme.svg"><img src="assets/readme/light/card-theme.svg" alt="Dynamic colour" width="32%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-audio.svg"><img src="assets/readme/light/card-audio.svg" alt="Premium audio" width="48%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-streaming.svg"><img src="assets/readme/light/card-streaming.svg" alt="Hybrid streaming" width="48%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-lyrics.svg"><img src="assets/readme/light/card-lyrics.svg" alt="Synced lyrics" width="48%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-eq.svg"><img src="assets/readme/light/card-eq.svg" alt="10-band equalizer" width="48%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-ai.svg"><img src="assets/readme/light/card-ai.svg" alt="AI Smart Mix" width="48%"></picture>
+<picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/card-theme.svg"><img src="assets/readme/light/card-theme.svg" alt="Dynamic colour" width="48%"></picture>
 </div>
 
 <h3 id="start"><picture><source media="(prefers-color-scheme: dark) and (max-width: 640px)" srcset="assets/readme/dark/hm-start.svg"><source media="(prefers-color-scheme: dark)" srcset="assets/readme/dark/h-start.svg"><source media="(max-width: 640px)" srcset="assets/readme/light/hm-start.svg"><img src="assets/readme/light/h-start.svg" alt="Build from source" width="100%"></picture></h3>
